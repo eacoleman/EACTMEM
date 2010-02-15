@@ -1,0 +1,39 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//// CMS 
+//// Preliminary Sensitivity Analysis
+//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////Files Used:
+1. PerformSelection.cc, BuildFile - place in CMSSW_3_3_0/src/Analysis/SimpleExamples/bin :
+These are used to create the PerformSelection.exe (via scram b), which in turn runs over the PAT tuples and generates 
+  a) the output .root file with the Event Tree. 
+  b) the .txt table, which contains the information on how many events pass the cuts. E.g. 
+    PerformSelection.exe inputFiles=/uscms_data/d2/ilyao/MadGraph/TTbarMG_sample107.root \outputEvery=1000 /uscms_data/d2/ilyao/MadGraph/First100KEvts/TTbarMG_outfile.root First100K_TTbarMG_Params.txt
+    
+    -Note that there is a hack in place, which requires that the user defined output files above, be the last two listed on the command line.
+    -The .txt table is then used by MakeSelectionTable.C
+
+2. MakeSelectionTable.C - place in CMSSW_3_3_0/src/ :
+A macro, which reads in the input tables for the desired processes and produces the final SelectionTable.
+
+3. InputXSections_PerformSelectionMG.txt - 
+A listing of input CrossSections & Filter efficiencies for the madgraph MC.
+  
+4. CRAB_Launch_Files: QCDPY.py  QCD_HT100to250MG.py  STopSMG.py  STopTMG.py  TTbarMG.py  TTbarPY.py  TTbarPY.py~  VVpJMG.py  WWPY.py  WZPY.py  WpJMG.py  ZZPY.py  ZpJMG.py - place in CMSSW_3_3_5/src/ :
+Generate the corresponding PAT tuples via CRAB.
+MG=MadGraph
+PY=PYTHIA
+The Monte Carlo is obtained from https://twiki.cern.ch/twiki/bin/viewauth/CMS/ProductionSummer2009at7TeV .
+
+////Packages Used in Analysis:
+DataFormats/PatCandidates : V05-08-07                        
+PhysicsTools/PatAlgos : V07-09-24  
+PhysicsTools/PatUtils : V03-09-03    
+PhysicsTools/PatExamples : V00-00-08-00                                                
+PhysicsTools/Utilities : V07-02-03 
+DataFormats/FWLite : V00-15-07
+PhysicsTools/FWLite : V02-00-12   
+CondFormats/JetMETObjects : V01-08-08-02
+CommonTools/Utils : V00-00-08-04
