@@ -1,0 +1,6 @@
+This is how I submitted the jobs 
+<input pattern> <output directory> <label> <caf> <queue> <tree> <time per event (in seconds)> [option]
+
+./submit_me_directory.sh /cdf/disk01/g6/caf_ICHEP2008/tnt_ICHEP2008/tnt_WHlvbb/\*_chgt1b_\*root  /cdf/atom/home/eusebi/ME_Analysis/run_MatrixElement/results/WH115 WH115 namcaf short jet2 100
+
+./submit_me_directory.sh /cdf/disk01/g6/caf_ICHEP2008/tnt_ICHEP2008/tnt_WBB012p/\*W\?nBB0p\*root /cdf/atom/home/eusebi/ME_Analysis/run_MatrixElement/results/WBB0p WBB0p caf short jet2 100
