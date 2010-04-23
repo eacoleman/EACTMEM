@@ -1,4 +1,4 @@
-<use name="f77compiler">
+<use name="f77compiler"/>
 <export>
    <lib name="1"/>
 </export>
