@@ -1,0 +1,11 @@
+
+<bin name="PerformSelection.exe" file="PerformSelection.cc">
+ <use name="root"/>
+ <use name="FWCore/FWLite"/>
+ <use name="FWCore/Framework"/>
+ <use name="DataFormats/FWLite"/>
+ <use name="DataFormats/PatCandidates"/>
+ <use name="PhysicsTools/FWLite"/>
+ <use name="TAMUWW/MEPATNtuple"/>
+
+</bin>
