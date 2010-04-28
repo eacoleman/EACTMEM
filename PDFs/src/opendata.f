@@ -24,8 +24,8 @@ c generic subroutine to open the table files in the right directories
 c********************************************************************
       implicit none
 c
-      Character Tablefile*40,up*3,dir*15
-      data up,dir/'../','../lib/Pdfdata/'/
+      Character Tablefile*40,up*3,dir*20
+      data up,dir/'../','TAMUWW/PDFs/Pdfdata/'/
       Integer IU,NextUnopen
       External NextUnopen
       common/IU/IU
@@ -59,11 +59,18 @@ c     move up one more step
       Open(IU, File=up//up//up//up//dir//Tablefile,Status='OLD',Err=105)
       return
  105  continue
+c     move up one more step
+      Open(IU, File=up//up//up//up//up//dir//Tablefile,Status='OLD',
+     cErr=106)
+      return
+ 106  continue
+c     move up one more step
+      Open(IU, File=up//up//up//up//up//dir//Tablefile,Status='OLD',
+     cErr=107)
+      return
+ 107  continue
 
-
-
-
-      print*,'table for the pdf NOT found!!!'
+      print*,'table for the pdf (',Tablefile,') NOT found!!!'
       
       return
       end
