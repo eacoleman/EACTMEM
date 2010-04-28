@@ -176,9 +176,12 @@ int main(int argc, char* argv[]){
 // *************************
 // **** Input File Type ****
 // *************************
-//   RecoRootEventFile inputFile(inputFilename, "tag2", nEvents, nSkip,
-//                               nPrescale, false);
-   MadEventFile inputFile(inputFilename, nEvents, nSkip, nPrescale, false);
+   RecoRootEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
+
+
+  // MadEventFile inputFile(inputFilename, nEvents, nSkip, nPrescale, false);
+
+
 //   SmearedMadEventFile inputFile(inputFilename, nEvents, nSkip, nPrescale,
 //   false);
 
@@ -256,8 +259,6 @@ int main(int argc, char* argv[]){
 // *************************
   vector<EventProb*> eventProbs2jet;
   vector<EventProb*> eventProbs3jet;
-
-  /*
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH105GeV, 105)); //1
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
@@ -269,7 +270,9 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH140GeV, 140)); //8
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH145GeV, 145)); //9
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH150GeV, 150)); //10
-  
+   
+  cout << "3" << endl;
+
   //s-channel
   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //11 
   eventProbs3jet.push_back(new sChannelEventProb3Jet(divonneInt, bTF, gluonTF)); //11
@@ -321,95 +324,95 @@ int main(int argc, char* argv[]){
   // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//21
   eventProbs3jet.push_back(new DummyEventProb("Dummy WZ", rootInt));//21
-  */
+ 
   
-  // ********************************************************
-  // The following are the ME's for Ricardo's correlated EPD
-  // ********************************************************
-  vector<EventProb*> evtPrb2jetCEPD;
+//   // ********************************************************
+//   // The following are the ME's for Ricardo's correlated EPD
+//   // ********************************************************
+//   vector<EventProb*> evtPrb2jetCEPD;
 
-  if (1){
+//   if (1){
 
-    //WH matrix elements
-    evtPrb2jetCEPD.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
+//     //WH matrix elements
+//     evtPrb2jetCEPD.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
      
-    //s-channel
-    evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //1 
+//     //s-channel
+//     evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //1 
     
-    //t-channel
-    evtPrb2jetCEPD.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //2
+//     //t-channel
+//     evtPrb2jetCEPD.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //2
     
-    //t-channel alternate
-    evtPrb2jetCEPD.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //3
+//     //t-channel alternate
+//     evtPrb2jetCEPD.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //3
     
-    //Wbbbar
-    evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //4
+//     //Wbbbar
+//     evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //4
     
-    //Wcc ME, use same as Wbb ME but with a different TF
-    evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //5
+//     //Wcc ME, use same as Wbb ME but with a different TF
+//     evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //5
     
-    //Wc, use a Dummy class that is never evaluated for the 3 jets events
-    evtPrb2jetCEPD.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//6
+//     //Wc, use a Dummy class that is never evaluated for the 3 jets events
+//     evtPrb2jetCEPD.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//6
     
-    //Wjg, use a Dummy class that is never evaluated for the 3 jets events
-    evtPrb2jetCEPD.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //7
+//     //Wjg, use a Dummy class that is never evaluated for the 3 jets events
+//     evtPrb2jetCEPD.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //7
     
-    //Wgg, use a Dummy class that is never evaluated for the 3 jets events
-    evtPrb2jetCEPD.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //8
+//     //Wgg, use a Dummy class that is never evaluated for the 3 jets events
+//     evtPrb2jetCEPD.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //8
     
-    // tt-bar matrix element 2-jet
-    evtPrb2jetCEPD.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //9
-    evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
-    evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
-    evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
+//     // tt-bar matrix element 2-jet
+//     evtPrb2jetCEPD.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //9
+//     evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//     evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
+//     evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
     
-    // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
-    evtPrb2jetCEPD.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //10
+//     // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
+//     evtPrb2jetCEPD.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //10
     
-    // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
-    evtPrb2jetCEPD.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//11
+//     // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
+//     evtPrb2jetCEPD.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//11
     
-  }else { // DEBUG
-    //evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(divonneInt, bTF));
-    // In principle there is no need to set the bounds here as 
-    // long as it is done in the EPDEventProb2Jet  object below
-    evtPrb2jetCEPD.push_back(new ttEventProb2Jet(rootInt, bTF)); //18
-    evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
-    evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
-    evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
+//   }else { // DEBUG
+//     //evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(divonneInt, bTF));
+//     // In principle there is no need to set the bounds here as 
+//     // long as it is done in the EPDEventProb2Jet  object below
+//     evtPrb2jetCEPD.push_back(new ttEventProb2Jet(rootInt, bTF)); //18
+//     evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//     evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
+//     evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
 
-    if (0){
-      //eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF)); //11
+//     if (0){
+//       //eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF)); //11
 
-      eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF)); //18
-      eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-      eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-      eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-    }
+//       eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF)); //18
+//       eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//       eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//       eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+//     }
     
- }
+//  }
 
-  divonneInt.setEpsilon(.01, 0);
-  divonneInt.setNeval(10000, 1000000);
+//   divonneInt.setEpsilon(.01, 0);
+//   divonneInt.setNeval(10000, 1000000);
 
-  rootInt.setEpsilon(.10, 0);
-  rootInt.setNeval(10000, 100000);
+//   rootInt.setEpsilon(.10, 0);
+//   rootInt.setNeval(10000, 100000);
 
-  //For each of the 11 Higgs masses
-  for (int mh=100; mh <101; mh += 5){
+//   //For each of the 11 Higgs masses
+//   for (int mh=100; mh <101; mh += 5){
 
-    //Finnaly put the vector into the new EPD class, and the new EPD into the 
-    // MEJob vector 
-    eventProbs2jet.push_back(new EPDEventProb2Jet(divonneInt, evtPrb2jetCEPD,
-						  bTF, 175, mh)); 
-    eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-    eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-    eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-  }
+//     //Finnaly put the vector into the new EPD class, and the new EPD into the 
+//     // MEJob vector 
+//     eventProbs2jet.push_back(new EPDEventProb2Jet(divonneInt, evtPrb2jetCEPD,
+// 						  bTF, 175, mh)); 
+//     eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//     eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//     eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+//   }
 
-  // ********************************************************
-  // END of ME's for Ricardo's correlated EPD
-  // ********************************************************
+//   // ********************************************************
+//   // END of ME's for Ricardo's correlated EPD
+//   // ********************************************************
 
 
 
