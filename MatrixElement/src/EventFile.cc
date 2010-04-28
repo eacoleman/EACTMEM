@@ -307,7 +307,12 @@ RecoRootEventFile::RecoRootEventFile(string filename, string treename,
    RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut),
    m_lepton(0),
    m_jet1(0),
-   m_jet2(0)
+   m_jet2(0),
+   m_neutrino(0),
+   m_quark1type(0),
+   m_quark2type(0),
+   m_lepCharge(0),
+   m_detector(0)
 {}
 
 pair<int, int> RecoRootEventFile::getRunEvent() const
@@ -336,14 +341,30 @@ void RecoRootEventFile::setBranches(PartonColl& partons)
    delete m_lepton;
    delete m_jet1;
    delete m_jet2;
+   delete m_neutrino;
+   delete m_quark1type;
+   delete m_quark2type;
+   delete m_lepCharge;
+   delete m_detector;
 
    m_lepton = new TLorentzVector();
    m_jet1 = new TLorentzVector();
    m_jet2 = new TLorentzVector();
+   m_neutrino = new TLorentzVector();
+   m_quark1type = new int();
+   m_quark2type = new int();
+   m_lepCharge = new int();
+   m_detector = new int();
 
    tree->SetBranchAddress("j1LV_L5.", &m_jet1);
    tree->SetBranchAddress("j2LV_L5.", &m_jet2);
    tree->SetBranchAddress("lLV.", &m_lepton);
+   tree->SetBranchAddress("nLV_L5.", &m_neutrino);
+   tree->SetBranchAddress("j1Btag", &m_quark1type);
+   tree->SetBranchAddress("j2Btag", &m_quark2type);
+   tree->SetBranchAddress("lQ", &m_lepCharge);
+   tree->SetBranchAddress("ldetComp", &m_detector);
+
 
 //   m_jet1 = partons.getJet1Address();
 //   m_jet2 = partons.getJet2Address();
@@ -361,20 +382,34 @@ void RecoRootEventFile::fillBranches(PartonColl& partons)
    TTree* tree = getTree();
 
    partons.setLepton(*m_lepton);
-   PartonColl::Jet jet1(*m_jet1, static_cast<int>(tree->GetBranch("h")
-                                      ->GetLeaf("secvtxTag")->GetValue(0)),
+   partons.setNeutrino(*m_neutrino);
+//    PartonColl::Jet jet1(*m_jet1, static_cast<int>(tree->GetBranch("h")
+//                                       ->GetLeaf("secvtxTag")->GetValue(0)),
+//                         true, 0, false, 0, 0, 0, 0, 0);
+//    PartonColl::Jet jet2(*m_jet2, static_cast<int>(tree->GetBranch("h")
+//                                       ->GetLeaf("secvtxTag")->GetValue(1)),
+//                         true, 0, false, 0, 0, 0, 0, 0);
+
+   PartonColl::Jet jet1(*m_jet1, *m_quark1type,
                         true, 0, false, 0, 0, 0, 0, 0);
-   PartonColl::Jet jet2(*m_jet2, static_cast<int>(tree->GetBranch("h")
-                                      ->GetLeaf("secvtxTag")->GetValue(1)),
+   PartonColl::Jet jet2(*m_jet2, *m_quark1type,
                         true, 0, false, 0, 0, 0, 0, 0);
 
    partons.addJet(jet1);
    partons.addJet(jet2);
 
-   partons.setLepCharge(static_cast<int>(tree->GetBranch("h")
-                                         ->GetLeaf("lQ")->GetValue()));
-   partons.setDetector(static_cast<int>(tree->GetBranch("h")
-                                        ->GetLeaf("detector")->GetValue()));
+//    partons.setLepCharge(static_cast<int>(tree->GetBranch("h")
+//                                          ->GetLeaf("lQ")->GetValue()));
+
+   partons.setLepCharge(*m_lepCharge);
+
+//    partons.setDetector(static_cast<int>(tree->GetBranch("h")
+//                                         ->GetLeaf("detector")->GetValue()));
+
+   partons.setDetector(*m_detector);
+
+
+
 //   partons.setBtag1();
 //   partons.setBtag2(static_cast<int>(tree->GetBranch("h")
 //                                     ->GetLeaf("secvtxTag")->GetValue(1)));

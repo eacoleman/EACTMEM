@@ -1,8 +1,12 @@
 #ifndef EVENTNTUPLE_HH
 #define EVENTNTUPLE_HH
 
+#include "TLorentzVector.h"
 #include "TObject.h"
-#include "string"
+//#include "TROOT.h"
+//#include "TTree.h"
+#include <string>
+//#include <math>
 
 // class DumbClassToTrickRoot2 : public TObject
 // {
@@ -87,9 +91,22 @@ public:
 //   Double_t epd1tagWZ;
 //   Double_t epd2tagWZ;
 
+  //Needed for ME
+  TLorentzVector lLV;
+  TLorentzVector j1LV_L5;
+  TLorentzVector j2LV_L5;
+  TLorentzVector nLV_L5;
 
-  Int_t           passAll;
-  Double_t        Mjj;
+  int j1Btag;
+  int j2Btag;
+  int lQ;
+  int ldetComp;
+
+  //Additional
+  double        Mjj;
+  int           passAll;
+
+
 
 //   enum {nWHmasses = 11};
 //   Double_t epd1tagWH[nWHmasses];

@@ -22,8 +22,8 @@
 
 // Root includes
 #include "TROOT.h"
-#include <TTree.h>
-#include <TLorentzVector.h>
+#include "TTree.h"
+#include "TLorentzVector.h"
 // #include "HTValOrderedVector.h"
 // #include "Tuple.h"
 // #include "TupleManager.h"
@@ -35,6 +35,21 @@
 using namespace std;
 #include <TAMUWW/Tools/GlobalTools.cc>
 //#include <GlobalTools.cc>
+
+// ///////////////////// //
+// // Custom Functions// //
+// ///////////////////// //
+void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[NCUTS][NJETS], int LpPass[NCUTS][NJETS], int MuPresent, int ElPresent ) {
+//// increments the specified counters: either El&Lp or Mu&Lp depending on whether MuPresent or ElPresent = 1 (the other counter should = 0 ).
+  if ( (MuPresent==1)&&(ElPresent==0) ) {
+    MuPass[nCut][nJets]++;
+    LpPass[nCut][nJets]++;
+  }
+  if ( (MuPresent==0)&&(ElPresent==1) ) {
+    ElPass[nCut][nJets]++;
+    LpPass[nCut][nJets]++;
+  }
+}
 
 ///////////////////////////
 // ///////////////////// //
@@ -79,8 +94,9 @@ int main (int argc, char* argv[])
    EventNtuple * EvtNtuple = new EventNtuple();
    EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
 
+
    //fill the evtNtuple object
-   EvtNtuple->Mjj = -1;
+   //EvtNtuple->Mjj = -1;
 
    //Testing:
    //   Double_t lId;
@@ -124,7 +140,7 @@ int main (int argc, char* argv[])
 
    // jets
    Int_t jcnt_tot;
-   Int_t jBtag;
+   Int_t nBtag;
    // Int_t jet_Pass=0; // Counts the number of jets with jpt>jet_PtMin
    // Int_t jetCounter=-1;
    Double_t jpt;
@@ -133,7 +149,13 @@ int main (int argc, char* argv[])
    //Double_t jemFrac;
    Double_t Mjj;
    math::XYZTLorentzVector j1p4;
+   math::XYZTLorentzVector j2p4;
+   bool jBtag;
+   Int_t j1Btag;
+   Int_t j2Btag;
 
+   //TLorentzVector j1p4;
+   //TLorentzVector j2p4;
 
    //leptons
    Double_t let;
@@ -146,11 +168,13 @@ int main (int argc, char* argv[])
    Double_t muEcalE;
    Double_t muHcalE;
    //Double_t lId;
-   Int_t lq;
+   Int_t lQ;
    bool ZVeto=false;
    bool ConvVeto=false;//Always set to false for now
    math::XYZTLorentzVector lp4;
+   //TLorentzVector lp4;
    Int_t passAll=0; //=1 for mu, =2 for el if the event passes all of the cuts
+
 
    Int_t lcnt_kin=0;
    Int_t lcnt_iso=0;
@@ -164,6 +188,7 @@ int main (int argc, char* argv[])
    //Double_t dB;
    Double_t Rlj;
    Double_t METEt=-1;
+   math::XYZTLorentzVector METp4;
    //Double_t Vz0=-1;
    Int_t EvtTotCount=0;
    bool LRPresent=false;
@@ -242,7 +267,7 @@ int main (int argc, char* argv[])
 //    EvtTree->Branch("Muv_EcalE",&Muv_EcalE);
 //    EvtTree->Branch("Muv_HcalE",&Muv_HcalE);
 
-   
+  
 
    // Parse the command line arguments
    parser.parseArguments (argc, argv);
@@ -392,7 +417,7 @@ int main (int argc, char* argv[])
 	       lcnt_iso++;
 	       elcnt_iso++;
 	       lp4=elIter->p4();
-	       lq=elIter->charge();
+	       lQ=elIter->charge();
 	       //	       lM=elIter->mass();
 	     }
 	   }
@@ -467,7 +492,7 @@ int main (int argc, char* argv[])
 	       lcnt_iso++;
 	       mucnt_iso++;
 	       lp4=muIter->p4();
-	       lq=muIter->charge();
+	       lQ=muIter->charge();
 // 	       lM=muIter->mass();
 	       
 	     }
@@ -495,7 +520,9 @@ int main (int argc, char* argv[])
      //DRMin=1000;
      Mjj=-1;
      //isEl=-1;
-     jBtag=0;
+     nBtag=0;
+     j1Btag=0;
+     j2Btag=0;
      //j_DRfail=false;
      jcnt_tot=0;
 
@@ -534,15 +561,25 @@ int main (int argc, char* argv[])
 		&&((lcnt_iso!=1)||(Rlj>Rlj_Min)) ) {
 	     //jet_Pass++;
 	     jcnt_tot++;
-	     if ( jcnt_tot==1 ) {
-	       j1p4=jetIter->p4();
-	     }
-	     if ( jcnt_tot==2 ) {
-	       Mjj=(j1p4+jetIter->p4()).M();
-	     }
 	     if ( (jetIter->bDiscriminator("simpleSecondaryVertexBJetTags"))>2.03 ) {
 	       //2.03 corresponds to the 'medium' cut.
-	       jBtag++;
+	       jBtag=true;
+	       nBtag++;
+	     } else {
+	       jBtag=false;
+	     }
+	     if ( jcnt_tot==1 ) {
+	       j1p4=jetIter->p4();
+	       if (jBtag==true) {
+		 j1Btag=1;
+	       }
+	     }
+	     if ( jcnt_tot==2 ) {
+	       j2p4=jetIter->p4();
+	       if (jBtag==true) {
+		 j2Btag=1;
+	       }
+	       Mjj=(j1p4+j2p4).M();
 	     }
 	   }
 	 }
@@ -573,8 +610,9 @@ int main (int argc, char* argv[])
      }
 
      //METs
-     METEt=METHandle->front().et();
-
+     //METEt=METHandle->front().et();
+     METp4=METHandle->front().p4();
+     METEt=METp4.E();
      
      ///Perform the Z veto
      ZVeto=false;
@@ -598,7 +636,7 @@ int main (int argc, char* argv[])
 
 	   if ( !((let>l_EtMin)&&(abs(muIter->dB())<dB_Max)&&(muEcalE<muEcalE_Max)&&(muHcalE<muHcalE_Max)&&((muIter->vertexChi2())<lvtxChi2_Max)&&(lrelIso<l_relIsoMax))
 		&&((let>sl_EtMin)&&(abs(muIter->eta())<l_etaMax)&&((muIter->isGood("All"))>0.99)&&(abs(muIter->vz())<Vz0_Max))    ) {
-	     if ( ((muIter->charge() * lq)<0.0)&&
+	     if ( ((muIter->charge() * lQ)<0.0)&&
 		  ((muIter->p4() + lp4).M()>MZ_min)&&
 		  ((muIter->p4() + lp4).M()<MZ_max) ) {
 	       ZVeto=true;
@@ -625,7 +663,7 @@ int main (int argc, char* argv[])
 	   if ( !((let>l_EtMin)&&(abs(elIter->dB())<dB_Max)&&((elIter->electronID("eidRobustTight"))>0.99)&&(lrelIso<l_relIsoMax)&&((elIter->vertexChi2())<lvtxChi2_Max))
 		&&((let>sl_EtMin)&&(abs(leta)<l_etaMax)&&( (elIter->electronID("eidRobustLoose"))>0.99 )&&(abs(elIter->vz())<Vz0_Max)) ) {
 	     //
-	     if ( ((elIter->charge() * lq)<0.0)&&
+	     if ( ((elIter->charge() * lQ)<0.0)&&
 		  ((elIter->p4() + lp4).M()>MZ_min)&&
 		  ((elIter->p4() + lp4).M()<MZ_max) ) {
 	       ZVeto=true;
@@ -653,114 +691,262 @@ int main (int argc, char* argv[])
 	     PassEl[3][Nj]++;
 	   }
 	 }
-	 
-	 if (lcnt_iso==1) {
-	   PassLp[4][Nj]++;
-	   if ( mucnt_iso==1) {
-	     PassMu[4][Nj]++;
-	   }
-	   if ( elcnt_iso==1) {
-	     PassEl[4][Nj]++;
-	   }
-	 
-	   if ( METEt>MET_EtMin ) {
-	     PassLp[5][Nj]++;
-	     if ( mucnt_iso==1) {
-	       PassMu[5][Nj]++;
-	     }
-	     if ( elcnt_iso==1) {
-	       PassEl[5][Nj]++;
-	     }
-	     if ( ZVeto==false ) {
-	       PassLp[6][Nj]++;
-	       if ( mucnt_iso==1) {
-		 PassMu[6][Nj]++;
-	       }
-	       if ( elcnt_iso==1) {
-		 PassEl[6][Nj]++;
-	       } 
-	       if ( ConvVeto==false ) {
-		 //all events should pass this cut
-		 PassLp[7][Nj]++;
-		 if ( mucnt_iso==1) {
-		   PassMu[7][Nj]++;
-		 }
-		 if ( elcnt_iso==1) {
-		   PassEl[7][Nj]++;
-		 }   
-		 
-		 if ( abs(lEta)<l_etaMaxBARREL ) {
-		   //EvtPassCount[Nj]++;
-		   PassLp[8][Nj]++;
-		   if ( mucnt_iso==1) {
-		     PassMu[8][Nj]++;
-		     passAll=1;
-		   }
-		   if ( elcnt_iso==1) {
-		     PassEl[8][Nj]++;
-		     passAll=2;
-		   }
 
-		   if ( jBtag==0 ) {
-		     //BTag[0][Nj]++;
-		     PassLp[9][Nj]++;
-		     if ( mucnt_iso==1) {
-		       //MuBTag[0][Nj]++;
-		       PassMu[9][Nj]++;
-		     }
-		     if ( elcnt_iso==1) {
-		       //ElBTag[0][Nj]++;
-		       PassEl[9][Nj]++;
-		     }
+	 if ( lcnt_iso==1 ) {
+	   incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+	   if ( METEt>MET_EtMin ) {
+	     incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+	     if ( ZVeto==false ) {
+	       incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+	       if ( ConvVeto==false ) {
+		 incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+		 if ( abs(lEta)<l_etaMaxBARREL ) {
+		   incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+		   if ( mucnt_iso==1 ) {
+		   passAll=1;
+		   }
+		   if ( elcnt_iso==1 ) {
+		   passAll=2;
+		   }
+		   if ( nBtag==0 ) {
+		     incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
 		   } else {
-		     if ( jBtag==1 ) {
-		       //BTag[1][Nj]++;
-		       PassLp[10][Nj]++;
-		       if ( mucnt_iso==1) {
-			 //MuBTag[1][Nj]++;
-			 PassMu[10][Nj]++;
-		       }
-		       if ( elcnt_iso==1) {
-			 //ElBTag[1][Nj]++;
-			 PassEl[10][Nj]++;
-		       }
+		     if ( nBtag==1 ) {
+		       incrementCounter(10,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
 		     } else {
-		       if ( jBtag==2 ) {
-			 //BTag[2][Nj]++;
-			 PassLp[11][Nj]++;
-			 if ( mucnt_iso==1) {
-			   //MuBTag[2][Nj]++;
-			   PassMu[11][Nj]++;
-			 }
-			 if ( elcnt_iso==1) {
-			   //ElBTag[2][Nj]++;
-			   PassEl[11][Nj]++;
-			 }
+		       if ( nBtag==2 ) {
+			 incrementCounter(11,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
 		       } else {
-			 //BTag[3][Nj]++;
-			 PassLp[12][Nj]++;
-			 if ( mucnt_iso==1) {
-			   //MuBTag[3][Nj]++;
-			   PassMu[12][Nj]++;
-			 }
-			 if ( elcnt_iso==1) {
-			   //ElBTag[3][Nj]++;
-			   PassEl[12][Nj]++;
-			 }
+			 incrementCounter(12,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
 		       }
 		     }
 		   }//BTags
-
 		 }
 	       }
 	     }
 	   }
 	 }
+
+// 	 //muons:
+// 	 if ( (lcnt_iso==1)&&(mucnt_iso==1) ) {
+// 	   PassMu[4][Nj]++;
+// 	   PassLp[4][Nj]++;
+// 	   if ( METEt>MET_EtMin ) {
+// 	     PassMu[5][Nj]++;
+// 	     PassLp[5][Nj]++;
+// 	     if ( ZVeto==false ) {
+// 	       PassMu[6][Nj]++;
+// 	       PassLp[6][Nj]++;
+// 	       if ( ConvVeto==false ) {
+// 		 PassMu[7][Nj]++;
+// 		 PassLp[7][Nj]++;
+// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
+// 		   PassMu[8][Nj]++;
+// 		   PassLp[8][Nj]++;
+// 		   passAll=1;
+// 		   if ( nBtag==0 ) {
+// 		     PassMu[9][Nj]++;
+// 		     PassLp[9][Nj]++;
+// 		   } else {
+// 		     if ( nBtag==1 ) {
+// 		       PassMu[10][Nj]++;
+// 		       PassLp[10][Nj]++;
+// 		     } else {
+// 		       if ( nBtag==2 ) {
+// 			 PassMu[11][Nj]++;
+// 			 PassLp[11][Nj]++;
+// 		       } else {
+// 			 PassMu[12][Nj]++;
+// 			 PassLp[12][Nj]++;
+// 		       }
+// 		     }
+// 		   }//BTags
+// 		 }
+// 	       }
+// 	     }
+// 	   }
+// 	 }
+// 	 //electros:
+// 	 if ( (lcnt_iso==1)&&(elcnt_iso==1) ) {
+// 	   PassEl[4][Nj]++;
+// 	   PassLp[4][Nj]++;
+// 	   if ( METEt>MET_EtMin ) {
+// 	     PassEl[5][Nj]++;
+// 	     PassLp[5][Nj]++;
+// 	     if ( ZVeto==false ) {
+// 	       PassEl[6][Nj]++;
+// 	       PassLp[6][Nj]++;
+// 	       if ( ConvVeto==false ) {
+// 		 PassEl[7][Nj]++;
+// 		 PassLp[7][Nj]++;
+// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
+// 		   PassEl[8][Nj]++;
+// 		   PassLp[8][Nj]++;
+// 		   passAll=2;
+// 		   if ( nBtag==0 ) {
+// 		     PassEl[9][Nj]++;
+// 		     PassLp[9][Nj]++;
+// 		   } else {
+// 		     if ( nBtag==1 ) {
+// 		       PassEl[10][Nj]++;
+// 		       PassLp[10][Nj]++;
+// 		     } else {
+// 		       if ( nBtag==2 ) {
+// 			 PassEl[11][Nj]++;
+// 			 PassLp[11][Nj]++;
+// 		       } else {
+// 			 PassEl[12][Nj]++;
+// 			 PassLp[12][Nj]++;
+// 		       }
+// 		     }
+// 		   }//BTags
+// 		 }
+// 	       }
+// 	     }
+// 	   }
+// 	 }
+
+
+
+	 
+// 	 if (lcnt_iso==1) {
+// 	   PassLp[4][Nj]++;
+// 	   if ( mucnt_iso==1) {
+// 	     PassMu[4][Nj]++;
+// 	   }
+// 	   if ( elcnt_iso==1) {
+// 	     PassEl[4][Nj]++;
+// 	   }
+	 
+// 	   if ( METEt>MET_EtMin ) {
+// 	     PassLp[5][Nj]++;
+// 	     if ( mucnt_iso==1) {
+// 	       PassMu[5][Nj]++;
+// 	     }
+// 	     if ( elcnt_iso==1) {
+// 	       PassEl[5][Nj]++;
+// 	     }
+// 	     if ( ZVeto==false ) {
+// 	       PassLp[6][Nj]++;
+// 	       if ( mucnt_iso==1) {
+// 		 PassMu[6][Nj]++;
+// 	       }
+// 	       if ( elcnt_iso==1) {
+// 		 PassEl[6][Nj]++;
+// 	       } 
+// 	       if ( ConvVeto==false ) {
+// 		 //all events should pass this cut
+// 		 PassLp[7][Nj]++;
+// 		 if ( mucnt_iso==1) {
+// 		   PassMu[7][Nj]++;
+// 		 }
+// 		 if ( elcnt_iso==1) {
+// 		   PassEl[7][Nj]++;
+// 		 }   
+		 
+// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
+// 		   //EvtPassCount[Nj]++;
+// 		   PassLp[8][Nj]++;
+// 		   if ( mucnt_iso==1) {
+// 		     PassMu[8][Nj]++;
+// 		     passAll=1;
+// 		   }
+// 		   if ( elcnt_iso==1) {
+// 		     PassEl[8][Nj]++;
+// 		     passAll=2;
+// 		   }
+
+// 		   if ( nBtag==0 ) {
+// 		     //BTag[0][Nj]++;
+// 		     PassLp[9][Nj]++;
+// 		     if ( mucnt_iso==1) {
+// 		       //MuBTag[0][Nj]++;
+// 		       PassMu[9][Nj]++;
+// 		     }
+// 		     if ( elcnt_iso==1) {
+// 		       //ElBTag[0][Nj]++;
+// 		       PassEl[9][Nj]++;
+// 		     }
+// 		   } else {
+// 		     if ( nBtag==1 ) {
+// 		       //BTag[1][Nj]++;
+// 		       PassLp[10][Nj]++;
+// 		       if ( mucnt_iso==1) {
+// 			 //MuBTag[1][Nj]++;
+// 			 PassMu[10][Nj]++;
+// 		       }
+// 		       if ( elcnt_iso==1) {
+// 			 //ElBTag[1][Nj]++;
+// 			 PassEl[10][Nj]++;
+// 		       }
+// 		     } else {
+// 		       if ( nBtag==2 ) {
+// 			 //BTag[2][Nj]++;
+// 			 PassLp[11][Nj]++;
+// 			 if ( mucnt_iso==1) {
+// 			   //MuBTag[2][Nj]++;
+// 			   PassMu[11][Nj]++;
+// 			 }
+// 			 if ( elcnt_iso==1) {
+// 			   //ElBTag[2][Nj]++;
+// 			   PassEl[11][Nj]++;
+// 			 }
+// 		       } else {
+// 			 //BTag[3][Nj]++;
+// 			 PassLp[12][Nj]++;
+// 			 if ( mucnt_iso==1) {
+// 			   //MuBTag[3][Nj]++;
+// 			   PassMu[12][Nj]++;
+// 			 }
+// 			 if ( elcnt_iso==1) {
+// 			   //ElBTag[3][Nj]++;
+// 			   PassEl[12][Nj]++;
+// 			 }
+// 		       }
+// 		     }
+// 		   }//BTags
+
+// 		 }
+// 	       }
+// 	     }
+// 	   }
+// 	 }
+
+
+
        }
      } // for Njets
 
-     EvtNtuple->Mjj=Mjj;
-     EvtTree->Fill();
+     ///fill the Ntuple to be used in Matrix Element computations.
+
+     if ( (passAll>0.5)&&(jcnt_tot==2) ) {
+       //Needed for ME:
+       //test=lp4[0];
+       //EvtNtuple->lLV.p1()=lp4.Px();
+
+       EvtNtuple->lLV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
+       EvtNtuple->j1LV_L5.SetPxPyPzE(j1p4.Px(),j1p4.Py(),j1p4.Pz(),j1p4.E());
+       EvtNtuple->j2LV_L5.SetPxPyPzE(j2p4.Px(),j2p4.Py(),j2p4.Pz(),j2p4.E());
+       EvtNtuple->nLV_L5.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
+
+       EvtNtuple->j1Btag=j1Btag;
+       EvtNtuple->j2Btag=j2Btag;
+       EvtNtuple->lQ=lQ;
+       if (abs(lEta)<l_etaMaxBARREL) {
+	 //barrel
+	 EvtNtuple->ldetComp=0;
+       } else {
+	 //endcap (should never happen with the current selection):
+	 EvtNtuple->ldetComp=1;
+       }
+
+       //Additional Variables
+       EvtNtuple->Mjj=Mjj;
+       EvtNtuple->passAll=passAll;
+       
+       EvtTree->Fill();
+     }
+
      EvtTotCount++;
 
    } // for eventCont

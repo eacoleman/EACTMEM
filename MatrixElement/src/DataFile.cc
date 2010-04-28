@@ -14,7 +14,8 @@ InputDataFile::InputDataFile(string filename)
 
    if (!input)
    {
-      throw std::runtime_error("InputDataFile: File not found!\n");
+     string errname="InputDataFile::InputDataFile File "+filename+" not found!\n";
+     throw std::runtime_error(errname);
    }
 
    while (!input.eof())

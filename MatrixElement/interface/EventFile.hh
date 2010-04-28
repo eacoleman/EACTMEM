@@ -144,6 +144,11 @@ class RecoRootEventFile : public RootEventFile
       TLorentzVector* m_lepton;
       TLorentzVector* m_jet1;
       TLorentzVector* m_jet2;
+      TLorentzVector* m_neutrino;
+      int* m_quark1type;
+      int* m_quark2type;
+      int* m_lepCharge;
+      int* m_detector;
 };
 
 class SingleTopNtuple;
