@@ -1,3 +1,8 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//// CMS 
+//// WW CrossSection Measurement using Matrix Element 
+//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
+/////////////////////////////////////////////////////////////////////////////////////////////////
 #include "TAMUWW/MatrixElement/interface/EventFile.hh"
 
 #include <cmath>
@@ -13,13 +18,16 @@
 #include <TTree.h>
 #include <TLeaf.h>
 
+
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
 // #include "TAMUWW/MatrixElement/interface/SingleTopNtuple/SingleTopNtuple.hh"
-// #include "TAMUWW/MatrixElement/interface/SingleTopNtuple/UCLAnt.hh"
+#include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
+#include "TLorentzVector.h"
 #include <iostream>
+using namespace std;
 
 using std::make_pair;
 using std::pair;
@@ -307,21 +315,14 @@ RecoRootEventFile::RecoRootEventFile(string filename, string treename,
    RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut),
    m_lepton(0),
    m_jet1(0),
-   m_jet2(0),
-   m_neutrino(0),
-   m_quark1type(0),
-   m_quark2type(0),
-   m_lepCharge(0),
-   m_detector(0)
+   m_jet2(0)
 {}
 
 pair<int, int> RecoRootEventFile::getRunEvent() const
 {
    TTree* tree = const_cast<TTree*>(getTree());
-   int run =
-      static_cast<int>(tree->GetBranch("h")->GetLeaf("run")->GetValue());
-   int event =
-      static_cast<int>(tree->GetBranch("h")->GetLeaf("event")->GetValue());
+   int run = static_cast<int>(tree->GetBranch("h")->GetLeaf("run")->GetValue());
+   int event = static_cast<int>(tree->GetBranch("h")->GetLeaf("event")->GetValue());
    return make_pair(run, event);
 }
 
@@ -341,29 +342,14 @@ void RecoRootEventFile::setBranches(PartonColl& partons)
    delete m_lepton;
    delete m_jet1;
    delete m_jet2;
-   delete m_neutrino;
-   delete m_quark1type;
-   delete m_quark2type;
-   delete m_lepCharge;
-   delete m_detector;
 
    m_lepton = new TLorentzVector();
    m_jet1 = new TLorentzVector();
    m_jet2 = new TLorentzVector();
-   m_neutrino = new TLorentzVector();
-   m_quark1type = new int();
-   m_quark2type = new int();
-   m_lepCharge = new int();
-   m_detector = new int();
 
    tree->SetBranchAddress("j1LV_L5.", &m_jet1);
    tree->SetBranchAddress("j2LV_L5.", &m_jet2);
    tree->SetBranchAddress("lLV.", &m_lepton);
-   tree->SetBranchAddress("nLV_L5.", &m_neutrino);
-   tree->SetBranchAddress("j1Btag", &m_quark1type);
-   tree->SetBranchAddress("j2Btag", &m_quark2type);
-   tree->SetBranchAddress("lQ", &m_lepCharge);
-   tree->SetBranchAddress("ldetComp", &m_detector);
 
 
 //   m_jet1 = partons.getJet1Address();
@@ -383,237 +369,71 @@ void RecoRootEventFile::fillBranches(PartonColl& partons)
 
    partons.setLepton(*m_lepton);
    partons.setNeutrino(*m_neutrino);
-//    PartonColl::Jet jet1(*m_jet1, static_cast<int>(tree->GetBranch("h")
-//                                       ->GetLeaf("secvtxTag")->GetValue(0)),
-//                         true, 0, false, 0, 0, 0, 0, 0);
-//    PartonColl::Jet jet2(*m_jet2, static_cast<int>(tree->GetBranch("h")
-//                                       ->GetLeaf("secvtxTag")->GetValue(1)),
-//                         true, 0, false, 0, 0, 0, 0, 0);
+   PartonColl::Jet jet1(*m_jet1, static_cast<int>(tree->GetBranch("h")
+                                      ->GetLeaf("secvtxTag")->GetValue(0)),
+                        true, 0, false, 0, 0, 0, 0, 0);
+   PartonColl::Jet jet2(*m_jet2, static_cast<int>(tree->GetBranch("h")
+                                      ->GetLeaf("secvtxTag")->GetValue(1)),
+                        true, 0, false, 0, 0, 0, 0, 0);
 
-   PartonColl::Jet jet1(*m_jet1, *m_quark1type,
-                        true, 0, false, 0, 0, 0, 0, 0);
-   PartonColl::Jet jet2(*m_jet2, *m_quark1type,
-                        true, 0, false, 0, 0, 0, 0, 0);
 
    partons.addJet(jet1);
    partons.addJet(jet2);
 
-//    partons.setLepCharge(static_cast<int>(tree->GetBranch("h")
-//                                          ->GetLeaf("lQ")->GetValue()));
-
-   partons.setLepCharge(*m_lepCharge);
-
-//    partons.setDetector(static_cast<int>(tree->GetBranch("h")
-//                                         ->GetLeaf("detector")->GetValue()));
-
-   partons.setDetector(*m_detector);
-
-
+   partons.setLepCharge(static_cast<int>(tree->GetBranch("h")
+                                         ->GetLeaf("lQ")->GetValue()));
+   partons.setDetector(static_cast<int>(tree->GetBranch("h")
+                                        ->GetLeaf("detector")->GetValue()));
 
 //   partons.setBtag1();
 //   partons.setBtag2(static_cast<int>(tree->GetBranch("h")
 //                                     ->GetLeaf("secvtxTag")->GetValue(1)));
 }
-/*
-SingleTopNtupleEventFile::SingleTopNtupleEventFile(string filename,
-                                                   string treename,
-                                                   int jetLevel,
-                                                   unsigned nEvents,
-                                                   unsigned nSkip,
-                                                   unsigned nPrescale,
-                                                   bool doCut) :
-   RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut),
-   m_jetCorrLevel(jetLevel)
+
+
+
+
+
+
+
+EventNtupleEventFile::EventNtupleEventFile(string filename, string treename, 
+				       unsigned nEvents, unsigned nSkip, 
+				       unsigned nPrescale, bool doCut) :
+  RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut)
 {
-   m_ntuple = new SingleTopNtuple();
-   getTree()->SetBranchAddress("SingleTopNtuple", &m_ntuple);
+  m_ntuple = new EventNtuple();
+  getTree()->SetBranchAddress("EvtNtuple", &m_ntuple);
 }
 
-SingleTopNtupleEventFile::~SingleTopNtupleEventFile()
+EventNtupleEventFile::~EventNtupleEventFile()
 {
    delete m_ntuple;
 }
 
-bool SingleTopNtupleEventFile::m_cut(const PartonColl& partons) const
+pair<int, int> EventNtupleEventFile::getRunEvent() const
 {
-   float met = m_ntuple->getMet(m_jetCorrLevel, SingleTopNtuple::kNoSys).Pt();
-
-   return met > 25 && partons.getNBtags() > 0;
+  return make_pair(m_ntuple->run, m_ntuple->event);
 }
 
-pair<int, int> SingleTopNtupleEventFile::getRunEvent() const
-{
-   return make_pair(m_ntuple->getRun(), m_ntuple->getEvent());
-}
 
-void SingleTopNtupleEventFile::setBranches(PartonColl&)
+void EventNtupleEventFile::setBranches(PartonColl&)
 {}
 
-void SingleTopNtupleEventFile::fillBranches(PartonColl& partons)
+void EventNtupleEventFile::fillBranches(PartonColl& partons)
 {
-   int charge = m_ntuple->getLepCharge() > 0 ? 1 : -1;
 
-//   std::cerr << "Filling btags " << m_ntuple->getJet(0)->getSecVtx()
-//             << m_ntuple->getJet(1)->getSecVtx() << std::endl;
+  partons.setLepton(m_ntuple->lLV);
+  partons.setNeutrino(m_ntuple->METLV);
 
-   partons.setLepton(m_ntuple->getLepton());
-   unsigned max = m_getForceJets() ? m_getForceJets()
-      : static_cast<unsigned>(m_ntuple->getNJets(SingleTopNtuple::kNoSys));
-
-   for (unsigned i = 0; i < max; ++i)
-   {
-      const SingleTopJet* myJet = m_ntuple->getJet(i, SingleTopNtuple::kNoSys);
-      PartonColl::Jet jet(myJet->getLV(m_jetCorrLevel),
-                          myJet->getSecVtx() == 1, myJet->isTaggable(), 
-                          myJet->getTrkJetSumPt(), false, 0, 0, 0, 0, 0);
-      partons.addJet(jet);
-   }
-   partons.setLepCharge(charge);
-   partons.setDetector(m_ntuple->getDetector());
-}
-
-
-UCLAntEventFile::UCLAntEventFile(string filename, string treename,
-                                 int jetLevel, unsigned nEvents,
-                                 unsigned nSkip, unsigned nPrescale,
-                                 bool doCut) :
-   RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut)
-{
-   m_ntuple = new UCLAnt();
-   getTree()->SetBranchAddress("UCLAnt", &m_ntuple);
-
-   setJetCorrLevel(jetLevel);
-}
-
-UCLAntEventFile::~UCLAntEventFile()
-{
-   delete m_ntuple;
-}
-
-void UCLAntEventFile::setJetCorrLevel(int level)
-{
-   if ((level > 0 && level < 4) || (level > 7))
-   {
-      throw std::runtime_error("Invalid jet level in UCLAntEventFile::setJetCorrLevel");
-   }
-   m_jetCorrLevel = level;
-}
-
-pair<int, int> UCLAntEventFile::getRunEvent() const
-{
-   return make_pair(m_ntuple->h.run, m_ntuple->h.event);
-}
-
-bool UCLAntEventFile::m_cut(const PartonColl& partons) const
-{
-   float met = m_ntuple->h.met;
-
-   return met > 25 && partons.getNBtags() > 0;
-}
-
-void UCLAntEventFile::setBranches(PartonColl&)
-{}
-
-void UCLAntEventFile::fillBranches(PartonColl& partons)
-{
-  bool useIsoTrack = false;
-  if (m_ntuple->h.det == -1 && m_ntuple->h.isIso) 
-    useIsoTrack = true;
-
-   int charge = m_ntuple->h.lepQ > 0 ? 1 : -1;
-   if (useIsoTrack) 
-     charge = m_ntuple->h.isoQ > 0 ? 1 : -1;
-
-   std::cout << "UCLAntEventFile now reading run " << m_ntuple->h.run << " event "
-             << m_ntuple->h.event << std::endl;
-
-//   std::cerr << "njets: " << m_ntuple->njets << std::endl;
-   if (useIsoTrack) 
-     partons.setLepton(m_ntuple->isotrk[0]);
-   else
-     partons.setLepton(m_ntuple->lepton[0]);
-
-   unsigned max = m_getForceJets() ? m_getForceJets()
-      : static_cast<unsigned>(m_ntuple->njets);
-
-   for (unsigned i = 0; i < max; ++i)
-   {
-      UCLAJet& jet = m_ntuple->jets[i];
-
-      TLorentzVector energy;
-      switch (m_jetCorrLevel)
-      {
-         case 0:
-            energy = jet.lv.raw;
-            break;
-
-         case 4:
-            energy = jet.lv.l4;
-            break;
-
-         case 5:
-            energy = jet.lv.l5;
-            break;
-
-         case 6:
-            energy = jet.lv.l6;
-            break;
-
-         case 7:
-            energy = jet.lv.l7;
-            break;
-
-         default:
-            throw std::runtime_error("Invalid jet level in UCLAntEventFile::fillBranches");
-      }
-
-
-      // Decide whether this jet is considered tagged/taggable or not
-      double jetIsTagged = 0, jetIsTaggable = 0;
-      if (jet.secvTag == 1){
-	jetIsTagged = 1; 
-	jetIsTaggable = jet.secvTaggable;
-      } else if(jet.isJPtag(0.05) == true){
-	jetIsTagged = 1; 
-	jetIsTaggable = jet.jpTaggable;
-      }else{
-	jetIsTagged = 0; 
-	jetIsTaggable = jet.secvTaggable;
-      }		 
-
-      //PartonColl::Jet myJet(energy, jet.secvTag ? 1 : 0, jet.secvTaggable, 
-      PartonColl::Jet myJet(energy, jetIsTagged, jetIsTaggable, 
-                            jet.trkSumPt, static_cast<bool>(jet.sltm),
-                            jet.cone07L5E, jet.EMFraction, jet.NTracks, jet.Ptjet, jet.RawE);
-
-      
-      // std::cerr << "*************************" << std::endl;
-      // std::cerr << "Jet " << i << " energy: " << energy.E() << std::endl;
-      // std::cerr << "Energy 07: " << jet.cone07L5E << std::endl;
-      // std::cerr << "EMFraction: " << jet.EMFraction << std::endl;
-      // std::cerr << "NTracks: " << jet.NTracks << std::endl;
-      // std::cerr << "Ptjet: " << jet.Ptjet << std::endl;
-      // std::cerr << "RawE: " << jet.RawE << std::endl;
-      // std::cerr << "Njets: " << m_ntuple->njets << std::endl;
-      
-      partons.addJet(myJet);
-   }
-   partons.setLepCharge(charge);
-   partons.setDetector(m_ntuple->h.det);
+  PartonColl::Jet jet1(m_ntuple->jLV[0], m_ntuple->jBtag[0],
+		       true, 0, false, 0, 0, 0, 0, 0);
+  PartonColl::Jet jet2(m_ntuple->jLV[1], m_ntuple->jBtag[1],
+		       true, 0, false, 0, 0, 0, 0, 0);
+  
+  partons.addJet(jet1);
+  partons.addJet(jet2);
+  
+  partons.setLepCharge(m_ntuple->lQ);
+  partons.setDetector(m_ntuple->ldetComp);
 
 }//fillBranches
-
-//Report what we consider important
-void UCLAntEventFile::m_report() const
-{  
-   unsigned max = m_getForceJets() ? m_getForceJets()
-      : static_cast<unsigned>(m_ntuple->njets);
-
-   for (unsigned i = 0; i < max; ++i)
-   {
-      UCLAJet& jet = m_ntuple->jets[i];
-      std::cout << "  Jet # " << i << " (unordered)" << " tagged = " <<
-         (jet.secvTag ? "SV" : (jet.isJPtag(0.05) ? "JP" : "no")) << std::endl;
-   }//for 
-}
-*/

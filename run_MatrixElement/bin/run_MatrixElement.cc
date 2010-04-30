@@ -1,7 +1,14 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//// CMS 
+//// WW CrossSection Measurement using Matrix Element 
+//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
+/////////////////////////////////////////////////////////////////////////////////////////////////
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 #include "TAMUWW/Integrator/interface/CubaIntegrator.hh"
 #include "TAMUWW/Integrator/interface/RootIntegrator.hh"
@@ -54,112 +61,121 @@ int main(int argc, char* argv[]){
        << " ++++ Running over " << nEvents << " events ++++\n"
        << " ++++ Skipping the first " << nSkip << " events ++++\n"
        << " ++++ Prescale by " << nPrescale << " ++++" << endl;
-  
-// Change this part!!!
-  
+
 // ****************************
 // **** Transfer Functions ****
 // ****************************
-//   NullTransferFunction bTF, lightTF;
-//
-//   OldTransferFunction bTF("oldBTF.df");
-//   OldTransferFunction lightTF("oldLightTF.df");
 
-//   const float etaCut = .9;
-//   NewTransferFunction bTF("newBTFCentral.df", "newBTFCentralSumE.df",
-//                           "newBTFForward.df", etaCut);
-//   NewTransferFunction lightTF("newLightTFCentral.df",
-//                               "newLightTFCentralSumE.df",
-//                               "newLightTFForward.df", etaCut);
+  edm::FileInPath central07_file("TAMUWW/run_MatrixElement/datafiles/central07.df");
+  edm::FileInPath central04_file("TAMUWW/run_MatrixElement/datafiles/central04.df");
+  edm::FileInPath middle07_file("TAMUWW/run_MatrixElement/datafiles/middle07.df");
+  edm::FileInPath middle04_file("TAMUWW/run_MatrixElement/datafiles/middle04.df");
+  edm::FileInPath forward07_file("TAMUWW/run_MatrixElement/datafiles/forward07.df");
+  edm::FileInPath forward04_file("TAMUWW/run_MatrixElement/datafiles/forward04.df");
+  edm::FileInPath lcentral07_file("TAMUWW/run_MatrixElement/datafiles/lcentral07.df");
+  edm::FileInPath lcentral04_file("TAMUWW/run_MatrixElement/datafiles/lcentral04.df");
+  edm::FileInPath lmiddle07_file("TAMUWW/run_MatrixElement/datafiles/lmiddle07.df");
+  edm::FileInPath lmiddle04_file("TAMUWW/run_MatrixElement/datafiles/lmiddle04.df");
+  edm::FileInPath lforward07_file("TAMUWW/run_MatrixElement/datafiles/lforward07.df");
+  edm::FileInPath lforward04_file("TAMUWW/run_MatrixElement/datafiles/lforward04.df");
+  edm::FileInPath gcentral07_file("TAMUWW/run_MatrixElement/datafiles/gcentral07.df");
+  edm::FileInPath gcentral04_file("TAMUWW/run_MatrixElement/datafiles/gcentral04.df");
 
-//   SimpleSmearing bTF(.15);
-//   SimpleSmearing lightTF(.2);
 
-/*
-   NewerTransferFunction::ParamFiles params = {"central07SLT.df",
-                                               "central07noSLT.df",
-                                               "central04SLT.df",
-                                               "central04noSLT.df",
-                                               "middle07.df",
-                                               "middle04.df",
-                                               "forward07.df",
-                                               "forward04.df"};
-   const float centralEtaBorder = .9;
-   const float forwardEtaBorder = 1.2;
-   NewerTransferFunction bTF(params, centralEtaBorder, forwardEtaBorder);
-   NewerTransferFunction lightTF(params, centralEtaBorder, forwardEtaBorder);
-*/
-  ////TEMPORARY HACK to make the code run from the src directory: Add the full path for all of the .df files
-
-  NewerTransferFunction::ParamFiles params = {"TAMUWW/run_MatrixElement/datafiles/central07.df",
-					      "TAMUWW/run_MatrixElement/datafiles/central07.df",
-					      "TAMUWW/run_MatrixElement/datafiles/central04.df", 
-					      "TAMUWW/run_MatrixElement/datafiles/central04.df",
-					      "TAMUWW/run_MatrixElement/datafiles/middle07.df",
-					      "TAMUWW/run_MatrixElement/datafiles/middle04.df",
-					      "TAMUWW/run_MatrixElement/datafiles/forward07.df",
-					      "TAMUWW/run_MatrixElement/datafiles/forward04.df"};
+  NewerTransferFunction::ParamFiles params = {central07_file.fullPath(),
+					      central07_file.fullPath(),
+					      central04_file.fullPath(),
+					      central04_file.fullPath(),
+					      middle07_file.fullPath(),
+					      middle04_file.fullPath(),
+					      forward07_file.fullPath(),
+					      forward04_file.fullPath()};
   
   
-  NewerTransferFunction::ParamFiles lparams = {"TAMUWW/run_MatrixElement/datafiles/lcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lcentral04.df", 
-					       "TAMUWW/run_MatrixElement/datafiles/lcentral04.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lmiddle07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lmiddle04.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lforward07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/lforward04.df"};
+  NewerTransferFunction::ParamFiles lparams = {lcentral07_file.fullPath(),
+					       lcentral07_file.fullPath(),
+					       lcentral04_file.fullPath(), 
+					       lcentral04_file.fullPath(),
+					       lmiddle07_file.fullPath(),
+					       lmiddle04_file.fullPath(),
+					       lforward07_file.fullPath(),
+					       lforward04_file.fullPath()};
   
-  NewerTransferFunction::ParamFiles gparams = {"TAMUWW/run_MatrixElement/datafiles/gcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral04.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral04.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral04.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral07.df",
-					       "TAMUWW/run_MatrixElement/datafiles/gcentral04.df"};
+  NewerTransferFunction::ParamFiles gparams = {gcentral07_file.fullPath(),
+					       gcentral07_file.fullPath(),
+					       gcentral04_file.fullPath(),
+					       gcentral04_file.fullPath(),
+					       gcentral07_file.fullPath(),
+					       gcentral04_file.fullPath(),
+					       gcentral07_file.fullPath(),
+					       gcentral04_file.fullPath()};
   
   
   
   const float centralEtaBorder = .9;
   const float forwardEtaBorder = 1.2;
   
-  
+
+  edm::FileInPath NN_TF_WH100GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH100GeV.df");
+  edm::FileInPath NN_TF_WH105GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH105GeV.df");
+  edm::FileInPath NN_TF_WH110GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH110GeV.df");
+  edm::FileInPath NN_TF_WH115GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH115GeV.df");
+  edm::FileInPath NN_TF_WH120GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH120GeV.df");
+  edm::FileInPath NN_TF_WH125GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH125GeV.df");
+  edm::FileInPath NN_TF_WH130GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH130GeV.df");
+  edm::FileInPath NN_TF_WH135GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH135GeV.df");
+  edm::FileInPath NN_TF_WH140GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH140GeV.df");
+  edm::FileInPath NN_TF_WH145GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH145GeV.df");
+  edm::FileInPath NN_TF_WH150GeV_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH150GeV.df");
+  edm::FileInPath NN_TF_Wbb_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wbb.df");
+  edm::FileInPath NN_TF_schan_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_schan.df");
+  edm::FileInPath NN_TF_ttbar_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_ttbar.df");
+  edm::FileInPath NN_TF_tchan_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_tchan.df");
+  edm::FileInPath NN_TF_WCC_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WCC.df");
+  edm::FileInPath NN_TF_WC_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WC.df");
+  edm::FileInPath NN_TF_WC_gluon_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_WC_gluon.df");
+  edm::FileInPath NN_TF_Wgg_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wgg.df");
+  edm::FileInPath NN_TF_Wjg_gluon_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wjg_gluon.df");
+  edm::FileInPath NN_TF_tchan_light_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_tchan_light.df");
+  edm::FileInPath NN_TF_diboson_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_diboson.df");
+  edm::FileInPath NN_TF_Wjg_light_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wjg_light.df");
+
   //NN TF
-  NN_TF_TransferFunction bTF_WH100GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH100GeV.df", "WH100GeV");
-  NN_TF_TransferFunction bTF_WH105GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH105GeV.df", "WH105GeV");
-  NN_TF_TransferFunction bTF_WH110GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH110GeV.df", "WH110GeV");
-  NN_TF_TransferFunction bTF_WH115GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH115GeV.df", "WH115GeV");
-  NN_TF_TransferFunction bTF_WH120GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH120GeV.df", "WH120GeV");
-  NN_TF_TransferFunction bTF_WH125GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH125GeV.df", "WH125GeV");
-  NN_TF_TransferFunction bTF_WH130GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH130GeV.df", "WH130GeV");
-  NN_TF_TransferFunction bTF_WH135GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH135GeV.df", "WH135GeV");
-  NN_TF_TransferFunction bTF_WH140GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH140GeV.df", "WH140GeV");
-  NN_TF_TransferFunction bTF_WH145GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH145GeV.df", "WH145GeV");
-  NN_TF_TransferFunction bTF_WH150GeV("TAMUWW/run_MatrixElement/datafiles/NN_TF_WH150GeV.df", "WH150GeV");
+  NN_TF_TransferFunction bTF_WH100GeV(NN_TF_WH100GeV_file.fullPath(), "WH100GeV");
+  NN_TF_TransferFunction bTF_WH105GeV(NN_TF_WH105GeV_file.fullPath(), "WH105GeV");
+  NN_TF_TransferFunction bTF_WH110GeV(NN_TF_WH110GeV_file.fullPath(), "WH110GeV");
+  NN_TF_TransferFunction bTF_WH115GeV(NN_TF_WH115GeV_file.fullPath(), "WH115GeV");
+  NN_TF_TransferFunction bTF_WH120GeV(NN_TF_WH120GeV_file.fullPath(), "WH120GeV");
+  NN_TF_TransferFunction bTF_WH125GeV(NN_TF_WH125GeV_file.fullPath(), "WH125GeV");
+  NN_TF_TransferFunction bTF_WH130GeV(NN_TF_WH130GeV_file.fullPath(), "WH130GeV");
+  NN_TF_TransferFunction bTF_WH135GeV(NN_TF_WH135GeV_file.fullPath(), "WH135GeV");
+  NN_TF_TransferFunction bTF_WH140GeV(NN_TF_WH140GeV_file.fullPath(), "WH140GeV");
+  NN_TF_TransferFunction bTF_WH145GeV(NN_TF_WH145GeV_file.fullPath(), "WH145GeV");
+  NN_TF_TransferFunction bTF_WH150GeV(NN_TF_WH150GeV_file.fullPath(), "WH150GeV");
   
   
   
-  NN_TF_TransferFunction bTF_WBB("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wbb.df", "WBB");
-  NN_TF_TransferFunction bTF_schan("TAMUWW/run_MatrixElement/datafiles/NN_TF_schan.df", "schan");
-  NN_TF_TransferFunction bTF_ttbar("TAMUWW/run_MatrixElement/datafiles/NN_TF_ttbar.df", "ttbar");
-  NN_TF_TransferFunction bTF_tchan("TAMUWW/run_MatrixElement/datafiles/NN_TF_tchan.df", "tchan");
+  NN_TF_TransferFunction bTF_WBB(NN_TF_Wbb_file.fullPath(), "WBB");
+  NN_TF_TransferFunction bTF_schan(NN_TF_schan_file.fullPath(), "schan");
+  NN_TF_TransferFunction bTF_ttbar(NN_TF_ttbar_file.fullPath(), "ttbar");
+  NN_TF_TransferFunction bTF_tchan(NN_TF_tchan_file.fullPath(), "tchan");
   
   //c-jet TF
-  NN_TF_TransferFunction cTF_WCC("TAMUWW/run_MatrixElement/datafiles/NN_TF_WCC.df", "WCC");
-  NN_TF_TransferFunction cTF_WC("TAMUWW/run_MatrixElement/datafiles/NN_TF_WC.df", "Wcg_charm");
+  NN_TF_TransferFunction cTF_WCC(NN_TF_WCC_file.fullPath(), "WCC");
+  NN_TF_TransferFunction cTF_WC(NN_TF_WC_file.fullPath(), "Wcg_charm");
   
   //gluon
-  NN_TF_TransferFunction gluonTF_WC("TAMUWW/run_MatrixElement/datafiles/NN_TF_WC_gluon.df", "Wcg_gluon");
-  NN_TF_TransferFunction gluonTF_Wgg("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wgg.df", "Wgg");
-  NN_TF_TransferFunction gluonTF_Wjg("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wjg_gluon.df", "Wjg_gluon");
+  NN_TF_TransferFunction gluonTF_WC(NN_TF_WC_gluon_file.fullPath(), "Wcg_gluon");
+  NN_TF_TransferFunction gluonTF_Wgg(NN_TF_Wgg_file.fullPath(), "Wgg");
+  NN_TF_TransferFunction gluonTF_Wjg(NN_TF_Wjg_gluon_file.fullPath(), "Wjg_gluon");
   
   //light TF
-  NN_TF_TransferFunction lightTF_tchan("TAMUWW/run_MatrixElement/datafiles/NN_TF_tchan_light.df", "tchan_light");
-  NN_TF_TransferFunction lightTF_diboson("TAMUWW/run_MatrixElement/datafiles/NN_TF_diboson.df", "diboson");
-  NN_TF_TransferFunction lightTF_Wjg("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wjg_light.df", "Wjg_light");
+  NN_TF_TransferFunction lightTF_tchan(NN_TF_tchan_light_file.fullPath(), "tchan_light");
+  NN_TF_TransferFunction lightTF_diboson(NN_TF_diboson_file.fullPath(), "diboson");
+  NN_TF_TransferFunction lightTF_Wjg(NN_TF_Wjg_light_file.fullPath(), "Wjg_light");
   
-  
+
+
   
   NewerTransferFunction bTF(params, centralEtaBorder, forwardEtaBorder);
   NewerTransferFunction lightTF(lparams, centralEtaBorder, forwardEtaBorder);
@@ -176,8 +192,8 @@ int main(int argc, char* argv[]){
 // *************************
 // **** Input File Type ****
 // *************************
-   RecoRootEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
-
+  //RecoRootEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
+  EventNtupleEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
 
   // MadEventFile inputFile(inputFilename, nEvents, nSkip, nPrescale, false);
 
@@ -270,8 +286,6 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH140GeV, 140)); //8
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH145GeV, 145)); //9
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH150GeV, 150)); //10
-   
-  cout << "3" << endl;
 
   //s-channel
   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //11 

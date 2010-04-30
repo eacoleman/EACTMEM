@@ -1,8 +1,9 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//// CMS 
-//// Preliminary Sensitivity Analysis
-//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
 /////////////////////////////////////////////////////////////////////////////////////////////////
+//// CMS 
+//// WW CrossSection Measurement using Matrix Element 
+//// Created by Osipenkov, Ilya : ilyao@fnal.gov
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//// Use to skim the PATNtuples and create a custom made .root file containing the needed information.
 
 // CMS includes
 #include "DataFormats/FWLite/interface/Handle.h"
@@ -24,9 +25,6 @@
 #include "TROOT.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
-// #include "HTValOrderedVector.h"
-// #include "Tuple.h"
-// #include "TupleManager.h"
 
 #include <iostream>
 #include <strstream>
@@ -34,7 +32,6 @@
 
 using namespace std;
 #include <TAMUWW/Tools/GlobalTools.cc>
-//#include <GlobalTools.cc>
 
 // ///////////////////// //
 // // Custom Functions// //
@@ -72,8 +69,6 @@ int main (int argc, char* argv[])
    // Change any defaults or add any new command //
    //      line options you would like here.     //
    ////////////////////////////////////////////////
-   //parser.stringValue ("outputFile") = "jetPt"; // .root added automatically
-
 
    //// Output Files:
    // corresponds to the last string on the command line
@@ -81,42 +76,22 @@ int main (int argc, char* argv[])
    outtablefilename=argv[argc-1];
    ofstream outtablefile;
    outtablefile.open(outtablefilename,ios::out);
-   //const char* outtablefilename=argv[argc-1];
    // corresponds to the next to last string on the command line
    TString outrootfilename;
    outrootfilename=argv[argc-2];
    TFile * outrootfile = new TFile(outrootfilename, "RECREATE");
-   //TTree *EvtTree = new TTree("EvtTree", "EvtTree");
    // adjust argc to account for inputing the two character strings above
    argc=argc-2;
 
+   // create the tree
    TTree* EvtTree = new TTree("EvtTree", "Output tree for matrix element");
    EventNtuple * EvtNtuple = new EventNtuple();
    EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
 
 
-   //fill the evtNtuple object
-   //EvtNtuple->Mjj = -1;
-
-   //Testing:
-   //   Double_t lId;
-   // Double_t lId_loose;
-//    Double_t j1BDiscr;
-//    Double_t lM=-1;
-//    Double_t j1emFrac;
-//    Double_t DRj1=-1;
-//    Double_t lEt=-1;			
-//    Double_t lDB=-1;
-//    Double_t lVz0=-1;
-//    Int_t isEl=-1; //=1 for El, 0 for Mu, -1 by default 
-//    Double_t DRMin=1000;
-//    Int_t MucntIso; 
-//    Int_t ElcntIso;
-
 
    ////Selection Parameters
    // cuts   
-   //Int_t jet_NMax=6;
    Double_t MET_EtMin=30;
    Double_t j_PtMin=30;
    Double_t l_EtMin=30;
@@ -127,39 +102,28 @@ int main (int argc, char* argv[])
    Double_t muEcalE_Max=4.0;
    Double_t muHcalE_Max=6.0;
    Double_t lvtxChi2_Max=10.0;
-
-
    Double_t l_relIsoMax=0.1;
    Double_t Rlj_Min=0.3;
-
    Double_t l_etaMaxBARREL=1.442;
    Double_t Vz0_Max=7.5; //7.465 gives 95% efficiency
    Double_t dB_Max=0.2;
    Double_t MZ_min=76.0;
    Double_t MZ_max=106.0;
+   Double_t bDiscriminator_min=2.03; //2.03 corresponds to the 'medium' cut.
 
    // jets
    Int_t jcnt_tot;
    Int_t nBtag;
-   // Int_t jet_Pass=0; // Counts the number of jets with jpt>jet_PtMin
-   // Int_t jetCounter=-1;
    Double_t jpt;
    Double_t jeta;
    Double_t jphi;
-   //Double_t jemFrac;
    Double_t Mjj;
-   math::XYZTLorentzVector j1p4;
-   math::XYZTLorentzVector j2p4;
-   bool jBtag;
-   Int_t j1Btag;
-   Int_t j2Btag;
-
-   //TLorentzVector j1p4;
-   //TLorentzVector j2p4;
+   vector <math::XYZTLorentzVector> jp4;
+   bool IsjBtag;
+   vector <int> jBtag;
 
    //leptons
    Double_t let;
-   //Double_t lphi;
    Double_t lPhi;
    Double_t lrelIso;
    Double_t leta;
@@ -167,12 +131,11 @@ int main (int argc, char* argv[])
    Double_t lvtxChi2;
    Double_t muEcalE;
    Double_t muHcalE;
-   //Double_t lId;
    Int_t lQ;
    bool ZVeto=false;
    bool ConvVeto=false;//Always set to false for now
    math::XYZTLorentzVector lp4;
-   //TLorentzVector lp4;
+   TLorentzVector jp4LV;
    Int_t passAll=0; //=1 for mu, =2 for el if the event passes all of the cuts
 
 
@@ -185,11 +148,9 @@ int main (int argc, char* argv[])
 
 
    // other
-   //Double_t dB;
    Double_t Rlj;
    Double_t METEt=-1;
    math::XYZTLorentzVector METp4;
-   //Double_t Vz0=-1;
    Int_t EvtTotCount=0;
    bool LRPresent=false;
    Int_t cnt_LR=0;
@@ -201,71 +162,6 @@ int main (int argc, char* argv[])
    InitializeIntMatrix(PassEl);
    InitializeIntMatrix(PassMu);
    InitializeIntMatrix(PassLp);
-
-//    // For Testing Purposes Only
-//    Double_t j1M;
-//    Double_t j1Vz;
-//    Double_t j1Eta;
-//    Double_t jPt[7];
-
-//    EvtTree->Branch("j1Pt",&jPt[1],"j1Pt/D");
-//    EvtTree->Branch("j2Pt",&jPt[2],"j2Pt/D");
-//    EvtTree->Branch("j1emFrac",&j1emFrac,"j1emFrac/D");
-//    EvtTree->Branch("j1BDiscr",&j1BDiscr,"j1BDiscr/D");
-//    EvtTree->Branch("j1M",&j1M,"j1M/D");
-//    EvtTree->Branch("j1Vz",&j1Vz,"j1Vz/D");
-//    EvtTree->Branch("j1Eta",&j1Eta,"j1Eta/D");
-//    EvtTree->Branch("DRj1",&DRj1,"DRj1/D");
-//    EvtTree->Branch("DRMin",&DRMin,"DRMin/D");
-
-//    EvtTree->Branch("lEt",&lEt,"lEt/D");
-//    EvtTree->Branch("lEta",&lEta,"lEta/D");
-//    EvtTree->Branch("lPhi",&lPhi,"lPhi/D");
-
-//    EvtTree->Branch("lId",&lId,"lId/D");
-//    EvtTree->Branch("lM",&lM,"lM/D");
-//    EvtTree->Branch("lvtxChi2",&lvtxChi2,"lvtxChi2/D");
-//    EvtTree->Branch("lrelIso",&lrelIso,"lrelIso/D");
-//    EvtTree->Branch("lDB",&lDB,"lDB/D");
-//    EvtTree->Branch("lVz0",&lVz0,"lVz0/D");
-//    EvtTree->Branch("LcntKin",&lcnt_kin,"LcntKin/I");
-//    EvtTree->Branch("MucntKin",&mucnt_kin,"MucntKin/I");
-//    EvtTree->Branch("ElcntKin",&elcnt_kin,"ElcntKin/I");
-//    EvtTree->Branch("JcntTot",&jcnt_tot,"JcntTot/I");
-//    EvtTree->Branch("LcntIso",&lcnt_iso,"LcntIso/I");
-//    EvtTree->Branch("MucntIso",&mucnt_iso,"MucntIso/I");
-//    EvtTree->Branch("ElcntIso",&elcnt_iso,"ElcntIso/I");
-//    EvtTree->Branch("muEcalE",&muEcalE,"muEcalE/D");
-//    EvtTree->Branch("muHcalE",&muHcalE,"muHcalE/D");
-
-//    EvtTree->Branch("METEt",&METEt,"METEt/D");
-
-// // // // //    EvtTree->Branch("passAll",&passAll,"passAll/I");
-// // // // //    EvtTree->Branch("Mjj",&Mjj,"Mjj/D");
-
-
-//    // Component Quantities.
-//    vector < double > Jv_Pt, Jv_DR, Jv_Eta, Jv_Phi, Elv_Et, Muv_Et, Elv_Eta, Muv_Eta, Elv_DB, Muv_DB, Elv_Vz0, Muv_Vz0, Elv_Id, Muv_Id, Elv_relIso, Muv_relIso, Elv_Phi, Muv_Phi, Muv_EcalE, Muv_HcalE;
-//    EvtTree->Branch("Jv_Pt",&Jv_Pt);
-//    EvtTree->Branch("Jv_DR",&Jv_DR);
-//    EvtTree->Branch("Jv_Eta",&Jv_Eta);
-//    EvtTree->Branch("Jv_Phi",&Jv_Phi);
-//    EvtTree->Branch("Elv_Et",&Elv_Et);
-//    EvtTree->Branch("Muv_Et",&Muv_Et);
-//    EvtTree->Branch("Elv_Eta",&Elv_Eta);
-//    EvtTree->Branch("Muv_Eta",&Muv_Eta);
-//    EvtTree->Branch("Elv_DB",&Elv_DB);
-//    EvtTree->Branch("Muv_DB",&Muv_DB);
-//    EvtTree->Branch("Elv_Vz0",&Elv_Vz0);
-//    EvtTree->Branch("Muv_Vz0",&Muv_Vz0);
-//    EvtTree->Branch("Elv_Id",&Elv_Id);
-//    EvtTree->Branch("Muv_Id",&Muv_Id);
-//    EvtTree->Branch("Elv_relIso",&Elv_relIso);
-//    EvtTree->Branch("Muv_relIso",&Muv_relIso);
-//    EvtTree->Branch("Elv_Phi",&Elv_Phi);
-//    EvtTree->Branch("Muv_Phi",&Muv_Phi);
-//    EvtTree->Branch("Muv_EcalE",&Muv_EcalE);
-//    EvtTree->Branch("Muv_HcalE",&Muv_HcalE);
 
   
 
@@ -294,12 +190,6 @@ int main (int argc, char* argv[])
 
    // Book those histograms (not used)
    eventCont.add( new TH1F( "jetPt", "jetPt", 1000, 0, 1000) );
-   //eventCont.add( new TH1F( "jetPtg20", "jetPtg20", 1000, 0, 1000) );
-   //   eventCont.add( new TTree("jetTree", "jetTree") );
-
-   //jetTree->Branch("jPt",&Pt,"jPt/D");
-
-   // eventCont.add( new TH1F( "jetPtMETPtg20", "jetPtMETPtg20", 1000, 0, 1000) );
 
 
    //////////////////////
@@ -354,28 +244,10 @@ int main (int argc, char* argv[])
      LRPresent=false;
 
      //// LEPTONS:
-//      isEl=-1;
-//      lEt=-1;
-//      lDB=-1;
-//      lVz0=-1;
-//      lrelIso=-1;
-//      lId=-1;
-//      lM=-1;
      lcnt_kin=0;
      lcnt_iso=0;
 
      /// Electrons:
-//      Elv_Et.clear();
-//      Elv_Eta.clear();
-//      Elv_DB.clear();
-//      Elv_Vz0.clear();
-//      Elv_Id.clear();
-//      Elv_Phi.clear();
-// //      Elv_EcalE.clear();
-// //      Elv_HcalE.clear();
-//      lrelIso=-1;
-//      Elv_relIso.clear();
-
      elcnt_kin=0;
      elcnt_iso=0;
      vector< pat::Electron > const & electronVec = *electronHandle;
@@ -384,13 +256,6 @@ int main (int argc, char* argv[])
        for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
 	 let=elIter->et();
 	 leta=elIter->eta();
-	 //lphi=elIter->phi();
-	 //Vz0=elIter->vz();
-	 //	 dB=elIter->dB();
-	 //	 lId=elIter->electronID("eidRobustTight");
-// 	 lEcalE=elIter->ecalEnergy();
-// 	 lHcalE=(elIter->hcalOverEcal())*lEcalE;
-//	 lvtxChi2=elIter->vertexChi2();
 
 	 /// Luminous Region Cut
 	 if ( abs(elIter->vz())<Vz0_Max ) {
@@ -401,16 +266,11 @@ int main (int argc, char* argv[])
 	   
 	   /// Kinematics Cut
 	   if ( (let>l_EtMin)&&(abs(leta)<l_etaMax)&&(abs(elIter->dB())<dB_Max)&&((elIter->electronID("eidRobustTight"))>0.99)&&((elIter->vertexChi2())<lvtxChi2_Max) ) {
-	     //&&(lEcalE>lEcalE_Min)&&(lHcalE>lHcalE_Min)
-	     //	    lPt=lpt;
 	     lcnt_kin++;
 	     elcnt_kin++;
 	     ///Isolation Cut
 	     lrelIso=(elIter->caloIso()+elIter->trackIso())/let;
 	     if ( lrelIso<l_relIsoMax ) {
-// 	       lEt=let;
-// 	       lDB=dB;
-// 	       lVz0=Vz0;
 	       lEta=leta;
 	       lPhi=elIter->phi();
 	       
@@ -418,35 +278,13 @@ int main (int argc, char* argv[])
 	       elcnt_iso++;
 	       lp4=elIter->p4();
 	       lQ=elIter->charge();
-	       //	       lM=elIter->mass();
 	     }
 	   }
 	 }
-// 	 Elv_Et.push_back(let);
-// 	 Elv_Eta.push_back(leta);
-// 	 Elv_DB.push_back(dB);
-// 	 Elv_Vz0.push_back(Vz0);
-// 	 Elv_Id.push_back(lId);
-// 	 Elv_Phi.push_back(lphi);
-// 	 Elv_relIso.push_back(lrelIso);
-	 // 	 Elv_EcalE.push_back(lEcalE);
-	 // 	 Elv_HcalE.push_back(lHcalE);
-	 
        }
      }
 
      /// Muons:
-//      Muv_Et.clear();
-//      Muv_Eta.clear();
-//      Muv_DB.clear();
-//      Muv_Vz0.clear();
-//      Muv_Id.clear();
-//      Muv_Phi.clear();
-//      Muv_EcalE.clear();
-//      Muv_HcalE.clear();
-//      lrelIso=-1;
-//      Muv_relIso.clear();
-
      muEcalE=100;
      muHcalE=100;
 
@@ -458,10 +296,6 @@ int main (int argc, char* argv[])
        for ( vector< pat::Muon >::const_iterator muIter = muonVec.begin(); ( (muIter!=EndmuIter) ) ; ++muIter ) {
 	 let=muIter->et();
 	 leta=muIter->eta();
-// 	 lphi=muIter->phi();
-// 	 Vz0=muIter->vz();
-// 	 dB=muIter->dB();
-// 	 lId=muIter->isGood("All");
 	 reco::MuonEnergy muonEnergy=muIter->calEnergy();
 	 muEcalE=muonEnergy.em;
 	 muHcalE=muonEnergy.had;
@@ -476,66 +310,34 @@ int main (int argc, char* argv[])
 	   
 	   ///Kinematics Cut
 	   if ( (let>l_EtMin)&&(abs(leta)<l_etaMax)&&(abs(muIter->dB())<dB_Max)&&((muIter->isGood("All"))>0.99)&&(muEcalE<muEcalE_Max)&&(muHcalE<muHcalE_Max)&&((muIter->vertexChi2())<lvtxChi2_Max) ) {
-	     //
-	     //	    lPt=lpt;
 	     lcnt_kin++;
 	     mucnt_kin++;
 	     ///Isolation Cut
 	     lrelIso=(muIter->caloIso()+muIter->trackIso())/let;
 	     if ( lrelIso<l_relIsoMax ) {
-	       //	       lEt=let;
-// 	       lDB=dB;
-// 	       lVz0=Vz0;
 	       lEta=leta;
 	       lPhi=muIter->phi();
 	       
 	       lcnt_iso++;
 	       mucnt_iso++;
 	       lp4=muIter->p4();
-	       lQ=muIter->charge();
-// 	       lM=muIter->mass();
-	       
+	       lQ=muIter->charge();	       
 	     }
 	   }
 	 }
-// 	 Muv_Et.push_back(let);
-// 	 Muv_Eta.push_back(leta);
-// 	 Muv_DB.push_back(dB);
-// 	 Muv_Vz0.push_back(Vz0);
-// 	 Muv_Id.push_back(lId);	
-// 	 Muv_Phi.push_back(lphi);
-// 	 Muv_relIso.push_back(lrelIso);
-//  	 Muv_EcalE.push_back(muEcalE);
-//  	 Muv_HcalE.push_back(muHcalE);
-
        }
      }
 
      //// JETS:
-//      Jv_Pt.clear();
-//      Jv_Eta.clear();
-//      Jv_Phi.clear();
      Rlj=-1;
-//      Jv_DR.clear();
-     //DRMin=1000;
      Mjj=-1;
-     //isEl=-1;
      nBtag=0;
-     j1Btag=0;
-     j2Btag=0;
-     //j_DRfail=false;
+     jp4.clear();
+     jBtag.clear();
      jcnt_tot=0;
 
 
      const vector< pat::Jet >::const_iterator kJetEnd = jetHandle->end();
-     //     jetCounter=1;
-     //     jet_Pass=0;
-//      jPt[1]=-1;
-//      jPt[2]=-1;
-//      jPt[3]=-1;
-//      jPt[4]=-1;
-//      jPt[5]=-1;
-//      jPt[6]=-1;
      
      for (vector< pat::Jet >::const_iterator jetIter = jetHandle->begin();
 	  ( kJetEnd != jetIter ); 
@@ -543,8 +345,6 @@ int main (int argc, char* argv[])
        { 
    	 jpt=jetIter->pt();
 	 jeta=jetIter->eta();
-// 	 jemFrac=jetIter->emEnergyFraction();
-// 	 Vz0=jetIter->vz();
 	 /// Luminous Region Cut
 	 if ( abs(jetIter->vz())<Vz0_Max ) {
 	   if ( LRPresent==false ) {
@@ -559,58 +359,38 @@ int main (int argc, char* argv[])
 	   /// Jet Kinematics And Cleaning Cut:
 	   if ( (jpt>j_PtMin)&&(abs(jeta)<j_etaMax)&&((jetIter->emEnergyFraction())>jemFrac_Min) 
 		&&((lcnt_iso!=1)||(Rlj>Rlj_Min)) ) {
-	     //jet_Pass++;
 	     jcnt_tot++;
-	     if ( (jetIter->bDiscriminator("simpleSecondaryVertexBJetTags"))>2.03 ) {
-	       //2.03 corresponds to the 'medium' cut.
-	       jBtag=true;
+	     if ( (jetIter->bDiscriminator("simpleSecondaryVertexBJetTags"))>bDiscriminator_min ) {
+	       IsjBtag=true;
 	       nBtag++;
 	     } else {
-	       jBtag=false;
+	       IsjBtag=false;
 	     }
 	     if ( jcnt_tot==1 ) {
-	       j1p4=jetIter->p4();
-	       if (jBtag==true) {
-		 j1Btag=1;
+	       jp4.push_back(jetIter->p4());
+	       if (IsjBtag==true) {
+		 jBtag.push_back(1);
+	       } else {
+		 jBtag.push_back(0);
 	       }
 	     }
 	     if ( jcnt_tot==2 ) {
-	       j2p4=jetIter->p4();
-	       if (jBtag==true) {
-		 j2Btag=1;
+	       jp4.push_back(jetIter->p4());
+	       if (IsjBtag==true) {
+		 jBtag.push_back(1);
+	       } else {
+		 jBtag.push_back(0);
 	       }
-	       Mjj=(j1p4+j2p4).M();
+	       Mjj=(jp4[0]+jp4[1]).M();
 	     }
 	   }
 	 }
-  
-// 	 Jv_Pt.push_back(jpt);
-// 	 Jv_Eta.push_back(jeta);
-// 	 Jv_Phi.push_back(jphi);
-// 	 Jv_DR.push_back(Rlj);
-	 
-
-//          //eventCont.hist("jetPt")->Fill (jpt);
-// 	 if ( jetCounter< (jet_NMax+1) ) {
-// 	   jPt[jetCounter]=jpt;
-// 	 }
-// 	 if ( jet_Pass==1 ) {
-// 	   j1Eta=jetIter->eta();
-// 	   j1M=jetIter->mass();
-// 	   j1Vz=jetIter->vz();
-// 	   j1emFrac=jetIter->emEnergyFraction();
-// 	   //j1BDiscr=jetIter->bDiscriminator( "jetProbabilityBJetTags" );
-// 	   j1BDiscr=jetIter->bDiscriminator("simpleSecondaryVertexBJetTags");
-// 	 }
-// 	 jetCounter++;
-
        } // for jetIter
      if ( jcnt_tot!=2 ) {
        Mjj=-2;
      }
 
-     //METs
-     //METEt=METHandle->front().et();
+     //// METs:
      METp4=METHandle->front().p4();
      METEt=METp4.E();
      
@@ -623,11 +403,6 @@ int main (int argc, char* argv[])
 	 const vector< pat::Muon >::const_iterator EndmuIter       = muonVec.end();
 	 for ( vector< pat::Muon >::const_iterator muIter = muonVec.begin(); ( (muIter!=EndmuIter) ) ; ++muIter ) {
 	   let=muIter->et();
-	   //leta=muIter->eta();
-	   //lphi=muIter->phi();
-// 	   Vz0=muIter->vz();
-// 	   dB=muIter->dB();
-// 	   lId=muIter->isGood("All");
 	   reco::MuonEnergy muonEnergy=muIter->calEnergy();
 	   muEcalE=muonEnergy.em;
 	   muHcalE=muonEnergy.had;
@@ -652,12 +427,6 @@ int main (int argc, char* argv[])
 	 const vector< pat::Electron >::const_iterator EndelIter       = electronVec.end();
 	 for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
 	   let=elIter->et();
-// 	   leta=elIter->eta();
-// 	   lphi=elIter->phi();
-// 	   Vz0=elIter->vz();
-// 	   dB=elIter->dB();
-	   //lId=elIter->electronID("eidRobustTight");
-	   //	   lvtxChi2=elIter->vertexChi2();
 	   lrelIso=(elIter->caloIso()+elIter->trackIso())/let;
 
 	   if ( !((let>l_EtMin)&&(abs(elIter->dB())<dB_Max)&&((elIter->electronID("eidRobustTight"))>0.99)&&(lrelIso<l_relIsoMax)&&((elIter->vertexChi2())<lvtxChi2_Max))
@@ -727,210 +496,24 @@ int main (int argc, char* argv[])
 	   }
 	 }
 
-// 	 //muons:
-// 	 if ( (lcnt_iso==1)&&(mucnt_iso==1) ) {
-// 	   PassMu[4][Nj]++;
-// 	   PassLp[4][Nj]++;
-// 	   if ( METEt>MET_EtMin ) {
-// 	     PassMu[5][Nj]++;
-// 	     PassLp[5][Nj]++;
-// 	     if ( ZVeto==false ) {
-// 	       PassMu[6][Nj]++;
-// 	       PassLp[6][Nj]++;
-// 	       if ( ConvVeto==false ) {
-// 		 PassMu[7][Nj]++;
-// 		 PassLp[7][Nj]++;
-// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
-// 		   PassMu[8][Nj]++;
-// 		   PassLp[8][Nj]++;
-// 		   passAll=1;
-// 		   if ( nBtag==0 ) {
-// 		     PassMu[9][Nj]++;
-// 		     PassLp[9][Nj]++;
-// 		   } else {
-// 		     if ( nBtag==1 ) {
-// 		       PassMu[10][Nj]++;
-// 		       PassLp[10][Nj]++;
-// 		     } else {
-// 		       if ( nBtag==2 ) {
-// 			 PassMu[11][Nj]++;
-// 			 PassLp[11][Nj]++;
-// 		       } else {
-// 			 PassMu[12][Nj]++;
-// 			 PassLp[12][Nj]++;
-// 		       }
-// 		     }
-// 		   }//BTags
-// 		 }
-// 	       }
-// 	     }
-// 	   }
-// 	 }
-// 	 //electros:
-// 	 if ( (lcnt_iso==1)&&(elcnt_iso==1) ) {
-// 	   PassEl[4][Nj]++;
-// 	   PassLp[4][Nj]++;
-// 	   if ( METEt>MET_EtMin ) {
-// 	     PassEl[5][Nj]++;
-// 	     PassLp[5][Nj]++;
-// 	     if ( ZVeto==false ) {
-// 	       PassEl[6][Nj]++;
-// 	       PassLp[6][Nj]++;
-// 	       if ( ConvVeto==false ) {
-// 		 PassEl[7][Nj]++;
-// 		 PassLp[7][Nj]++;
-// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
-// 		   PassEl[8][Nj]++;
-// 		   PassLp[8][Nj]++;
-// 		   passAll=2;
-// 		   if ( nBtag==0 ) {
-// 		     PassEl[9][Nj]++;
-// 		     PassLp[9][Nj]++;
-// 		   } else {
-// 		     if ( nBtag==1 ) {
-// 		       PassEl[10][Nj]++;
-// 		       PassLp[10][Nj]++;
-// 		     } else {
-// 		       if ( nBtag==2 ) {
-// 			 PassEl[11][Nj]++;
-// 			 PassLp[11][Nj]++;
-// 		       } else {
-// 			 PassEl[12][Nj]++;
-// 			 PassLp[12][Nj]++;
-// 		       }
-// 		     }
-// 		   }//BTags
-// 		 }
-// 	       }
-// 	     }
-// 	   }
-// 	 }
-
-
-
-	 
-// 	 if (lcnt_iso==1) {
-// 	   PassLp[4][Nj]++;
-// 	   if ( mucnt_iso==1) {
-// 	     PassMu[4][Nj]++;
-// 	   }
-// 	   if ( elcnt_iso==1) {
-// 	     PassEl[4][Nj]++;
-// 	   }
-	 
-// 	   if ( METEt>MET_EtMin ) {
-// 	     PassLp[5][Nj]++;
-// 	     if ( mucnt_iso==1) {
-// 	       PassMu[5][Nj]++;
-// 	     }
-// 	     if ( elcnt_iso==1) {
-// 	       PassEl[5][Nj]++;
-// 	     }
-// 	     if ( ZVeto==false ) {
-// 	       PassLp[6][Nj]++;
-// 	       if ( mucnt_iso==1) {
-// 		 PassMu[6][Nj]++;
-// 	       }
-// 	       if ( elcnt_iso==1) {
-// 		 PassEl[6][Nj]++;
-// 	       } 
-// 	       if ( ConvVeto==false ) {
-// 		 //all events should pass this cut
-// 		 PassLp[7][Nj]++;
-// 		 if ( mucnt_iso==1) {
-// 		   PassMu[7][Nj]++;
-// 		 }
-// 		 if ( elcnt_iso==1) {
-// 		   PassEl[7][Nj]++;
-// 		 }   
-		 
-// 		 if ( abs(lEta)<l_etaMaxBARREL ) {
-// 		   //EvtPassCount[Nj]++;
-// 		   PassLp[8][Nj]++;
-// 		   if ( mucnt_iso==1) {
-// 		     PassMu[8][Nj]++;
-// 		     passAll=1;
-// 		   }
-// 		   if ( elcnt_iso==1) {
-// 		     PassEl[8][Nj]++;
-// 		     passAll=2;
-// 		   }
-
-// 		   if ( nBtag==0 ) {
-// 		     //BTag[0][Nj]++;
-// 		     PassLp[9][Nj]++;
-// 		     if ( mucnt_iso==1) {
-// 		       //MuBTag[0][Nj]++;
-// 		       PassMu[9][Nj]++;
-// 		     }
-// 		     if ( elcnt_iso==1) {
-// 		       //ElBTag[0][Nj]++;
-// 		       PassEl[9][Nj]++;
-// 		     }
-// 		   } else {
-// 		     if ( nBtag==1 ) {
-// 		       //BTag[1][Nj]++;
-// 		       PassLp[10][Nj]++;
-// 		       if ( mucnt_iso==1) {
-// 			 //MuBTag[1][Nj]++;
-// 			 PassMu[10][Nj]++;
-// 		       }
-// 		       if ( elcnt_iso==1) {
-// 			 //ElBTag[1][Nj]++;
-// 			 PassEl[10][Nj]++;
-// 		       }
-// 		     } else {
-// 		       if ( nBtag==2 ) {
-// 			 //BTag[2][Nj]++;
-// 			 PassLp[11][Nj]++;
-// 			 if ( mucnt_iso==1) {
-// 			   //MuBTag[2][Nj]++;
-// 			   PassMu[11][Nj]++;
-// 			 }
-// 			 if ( elcnt_iso==1) {
-// 			   //ElBTag[2][Nj]++;
-// 			   PassEl[11][Nj]++;
-// 			 }
-// 		       } else {
-// 			 //BTag[3][Nj]++;
-// 			 PassLp[12][Nj]++;
-// 			 if ( mucnt_iso==1) {
-// 			   //MuBTag[3][Nj]++;
-// 			   PassMu[12][Nj]++;
-// 			 }
-// 			 if ( elcnt_iso==1) {
-// 			   //ElBTag[3][Nj]++;
-// 			   PassEl[12][Nj]++;
-// 			 }
-// 		       }
-// 		     }
-// 		   }//BTags
-
-// 		 }
-// 	       }
-// 	     }
-// 	   }
-// 	 }
-
-
-
        }
      } // for Njets
 
      ///fill the Ntuple to be used in Matrix Element computations.
 
      if ( (passAll>0.5)&&(jcnt_tot==2) ) {
-       //Needed for ME:
-       //test=lp4[0];
-       //EvtNtuple->lLV.p1()=lp4.Px();
-
        EvtNtuple->lLV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
-       EvtNtuple->j1LV_L5.SetPxPyPzE(j1p4.Px(),j1p4.Py(),j1p4.Pz(),j1p4.E());
-       EvtNtuple->j2LV_L5.SetPxPyPzE(j2p4.Px(),j2p4.Py(),j2p4.Pz(),j2p4.E());
-       EvtNtuple->nLV_L5.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
+       EvtNtuple->jLV.clear();
+       jp4LV.SetPxPyPzE(jp4[0].Px(),jp4[0].Py(),jp4[0].Pz(),jp4[0].E());
+       EvtNtuple->jLV.push_back(jp4LV);
+       jp4LV.SetPxPyPzE(jp4[1].Px(),jp4[1].Py(),jp4[1].Pz(),jp4[1].E());
+       EvtNtuple->jLV.push_back(jp4LV);
+       EvtNtuple->METLV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
+       
+       EvtNtuple->jBtag.clear();
+       EvtNtuple->jBtag.push_back(jBtag[0]);
+       EvtNtuple->jBtag.push_back(jBtag[1]);
 
-       EvtNtuple->j1Btag=j1Btag;
-       EvtNtuple->j2Btag=j2Btag;
        EvtNtuple->lQ=lQ;
        if (abs(lEta)<l_etaMaxBARREL) {
 	 //barrel
@@ -939,14 +522,18 @@ int main (int argc, char* argv[])
 	 //endcap (should never happen with the current selection):
 	 EvtNtuple->ldetComp=1;
        }
-
+       EvtNtuple->run=runNumber;
+       EvtNtuple->event=eventNumber;
+       
+       
        //Additional Variables
        EvtNtuple->Mjj=Mjj;
        EvtNtuple->passAll=passAll;
-       
+
+       //Fill The Tree  
        EvtTree->Fill();
      }
-
+     
      EvtTotCount++;
 
    } // for eventCont
@@ -974,11 +561,6 @@ int main (int argc, char* argv[])
    // ////////////////// //
    ////////////////////////
 
-   // Histograms will be automatically written to the root file
-   // specificed by command line options.
-
-   // All done!  Bye bye.
-   //cout << "TESTING 123" << endl;
    return 0;
 
 }

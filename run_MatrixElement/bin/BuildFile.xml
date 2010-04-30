@@ -5,6 +5,7 @@
 <use name="rootrflx"/>
 <use name="TAMUWW/MatrixElement"/>
 <use name="TAMUWW/Integrator"/>
+<use name="FWCore/ParameterSet"/>
 <bin file="run_MatrixElement.cc"/>
 <export>
    <lib name="1"/>

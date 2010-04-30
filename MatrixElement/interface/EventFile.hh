@@ -1,3 +1,8 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//// CMS 
+//// WW CrossSection Measurement using Matrix Element 
+//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
+/////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef EVENTFILE_HH
 #define EVENTFILE_HH
 
@@ -151,6 +156,7 @@ class RecoRootEventFile : public RootEventFile
       int* m_detector;
 };
 
+
 class SingleTopNtuple;
 
 class SingleTopNtupleEventFile : public RootEventFile
@@ -203,6 +209,30 @@ class UCLAntEventFile : public RootEventFile
       UCLAnt* m_ntuple;
 
       int m_jetCorrLevel;
+};
+
+
+class EventNtuple;
+
+class EventNtupleEventFile : public RootEventFile
+{
+   public:
+      EventNtupleEventFile(std::string filename, std::string treename,
+                      unsigned nEvents = 0, unsigned nSkip = 0,
+                      unsigned nPrescale = 1, bool doCut = false);
+      virtual ~EventNtupleEventFile();
+      
+      virtual std::pair<int, int> getRunEvent() const;
+
+      EventNtuple* getPointer() {return m_ntuple;}
+
+   protected:
+      virtual void setBranches(PartonColl& partons);
+      virtual void fillBranches(PartonColl& partons);
+
+   private:
+      EventNtuple* m_ntuple;
+
 };
 
 #endif

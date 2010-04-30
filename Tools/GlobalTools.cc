@@ -1,13 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //// CMS 
-//// Preliminary Sensitivity Analysis
-//// Modified by Osipenkov, Ilya : ilyao@fnal.gov
+//// WW CrossSection Measurement using Matrix Element 
+//// Created by Osipenkov, Ilya : ilyao@fnal.gov
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //// A Common Set of variables and functions.
 
-
-// ofstream outTableFile;
-//ofstream outtablefile;
 const int NPROCESSES=11;
 const int NCUTS=13;
 const int FINALCUT=8;
@@ -106,11 +103,7 @@ void readCutLine(const char* linein, double Evt[NCUTS][NJETS], TString *token, i
 }
 
 void writeProcessTable(ofstream& outtablefile, double EvtTableEl[NCUTS][NJETS], double EvtTableMu[NCUTS][NJETS], double EvtTableLp[NCUTS][NJETS]) {
-  //const char* outTableFileName
 //// Writes a .txt table file for the process
-  //ofstream outtablefile;
-  //outtablefile.open(outtablefileName,ios::out);
-   // loop over the desired jet counts
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
      outtablefile << "ELECTRONS:  " << setprecision(3) << double(EvtTableEl[8][nj])/double(EvtTableLp[8][nj])*100 << "% of electrons (after cut 8)" << endl;
@@ -124,10 +117,7 @@ void writeProcessTable(ofstream& outtablefile, double EvtTableEl[NCUTS][NJETS], 
 }
 
 void writeIntProcessTable(ofstream& outtablefile, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[NCUTS][NJETS], int EvtTableLp[NCUTS][NJETS]) {
-  //const char* outTableFileName
 //// Writes a .txt table file for the process
-  //ofstream outtablefile;
-  //outtablefile.open(outtablefileName,ios::out);
    // loop over the desired jet counts
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
@@ -158,16 +148,13 @@ void readProcessTable(const char* selFileName, double EvtTableEl[NCUTS][NJETS], 
     selFile.getline(linein,300);
     readCutLine(linein,EvtTableEl,token,nJ);
     if ( nJ!=nj ) {
-      //cout << "File: " << selFileName << endl;
       cout << "Error - Electrons: nJ=" << nJ << ",while nj=" << nj << endl;
     }
     //read in the muons
     selFile.getline(linein,300);
     selFile.getline(linein,300);
-    //cout << "preprocessing linein=" << linein << endl;
     readCutLine(linein,EvtTableMu,token,nJ);
     if ( nJ!=nj ) {
-      //cout << "File: " << selFileName << endl;
       cout << "Error - Muons: nJ=" << nJ << ",while nj=" << nj << endl;
     }	
     //read in all leptons
@@ -175,7 +162,6 @@ void readProcessTable(const char* selFileName, double EvtTableEl[NCUTS][NJETS], 
     selFile.getline(linein,300);
     readCutLine(linein,EvtTableLp,token,nJ);
     if ( nJ!=nj ) {
-      //cout << "File: " << selFileName << endl;
       cout << "Error - All Leptons: nJ=" << nJ << ",while nj=" << nj << endl;
     }
       
