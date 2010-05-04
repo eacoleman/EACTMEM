@@ -4,4 +4,4 @@
 #### Created by Osipenkov, Ilya : ilyao@fnal.gov
 #################################################################################################
 from CRABLaunch_Any import *
-process.out.fileName = 'ZpJMG.root'
+process.out.fileName = 'STopTWMG.root'

@@ -66,7 +66,7 @@ double WWEventProb2Jet::matrixElement() const
    if (partons->getLepCharge() > 0)
    {
       // Calculate the lepton only once per integration
-      static Array1 vec3;
+      static Array1 vec3; //wavefunction
       static double lepE = 0;
       if (lepE != partons->getLepton().E())
       {
@@ -74,7 +74,7 @@ double WWEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec1 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1);
+      Array2 vec1 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1); //Convert the fortran routines to c++.
       Array2 vec2 = DHELAS::oxxxxx<2>(partons->getQuark2(), 0, -1);
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
@@ -84,12 +84,12 @@ double WWEventProb2Jet::matrixElement() const
       Array1 vec1W, vec2W;
       vec1W[0] = vec1[0];
       vec2W[0] = vec2[1];
-      Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factor, wMass, wWidth);
+      Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factor, wMass, wWidth); //'Same" as the fortran routines.
       Array1 vec8 = DHELAS::fvixxx(vec1W, vec7, factor, 0, 0);
       Array1 vec9 = DHELAS::jioxxx(vec8, vec2W, factor, wMass, wWidth);
 
       SimpleArray<doublecomplex, 1> output = DHELAS::iovxxx(vec5, vec6, vec9,
-                                                            factor);
+                                                            factor); //output
       
       // Rigamarole to reduce unnecessary function calls:
       // Initial quarks must have same helicities
@@ -99,7 +99,7 @@ double WWEventProb2Jet::matrixElement() const
       vec2_0[0] = vec2[0];
       vec2_1[0] = vec2[1];
       Array1 vec10_0 = DHELAS::jioxxx(vec1_0, vec2_1, zFactor, zMass, zWidth);
-      Array1 vec10_1 = DHELAS::jioxxx(vec1_1, vec2_0, zFactor, zMass, zWidth);
+      Array1 vec10_1 = DHELAS::jioxxx(vec1_1, vec2_0, zFactor, zMass, zWidth);//Not needed
       Array2 vec10;
       vec10[0] = vec10_0[0];
       vec10[1] = vec10_1[0];
@@ -173,7 +173,7 @@ double WWEventProb2Jet::matrixElement() const
    }
 
 
-   answer /= 36;
+   answer /= 36; //relative weight
 //   std::cerr << "New Answer: " << answer << std::endl;
    return answer;
 //   const PartonColl* partons = getPartonColl();
