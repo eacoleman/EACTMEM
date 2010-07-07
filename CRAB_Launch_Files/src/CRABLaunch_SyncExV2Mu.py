@@ -90,7 +90,7 @@ process.MuHLTFilter.HLTPaths = ["HLT_Mu9"]
 process.GlobalTag.globaltag = cms.string('START36_V9::All')
 
 ##process.patMuons.usePV = False
-process.patElectrons.usePV = cms.bool(False)
+process.patMuons.usePV = cms.bool(False)
 
 ## Run the pat sequences
 ## process.p1 = cms.Path(
