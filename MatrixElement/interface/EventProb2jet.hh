@@ -29,6 +29,8 @@ class EventProb2Jet : public EventProb
 
       const TransferFunction& getBTF() const {return m_tf;}
 
+      virtual bool onSwitch();
+
    private:
       const TransferFunction& m_tf;
 };

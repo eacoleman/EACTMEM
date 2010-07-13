@@ -463,12 +463,3 @@ void WjgEventProb2Jet::setQuarkIDs() const
    }
 }
 
-bool WjgEventProb2Jet::onSwitch()
-{
-   if (getLoop())
-   {
-      swapJets(0, 1);
-   }
-   return true;
-}
-

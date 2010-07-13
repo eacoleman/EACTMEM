@@ -65,7 +65,7 @@ void EventProb::setBounds(unsigned param, double lower, double upper)
       throw std::runtime_error
          ("Parameter subscript out of range in EventProb::setBounds()");
 
-// correct volume if a value exists already
+   // correct volume if a value exists already
    if (m_bounds[param].second)
    {
       m_volume /= m_bounds[param].second;
@@ -75,6 +75,11 @@ void EventProb::setBounds(unsigned param, double lower, double upper)
    m_volume *= upper - lower;
 }
 
+
+// This is the loop mechanism to recalculate the ME with the 
+// different permutations. It will keep on looping  until either 
+// the permutation reaching the given m_nLoop number or the 
+// virtual onSwitch method return false;
 bool EventProb::incrementLoop()
 {
    ++m_loop;

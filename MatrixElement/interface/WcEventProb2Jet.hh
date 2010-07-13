@@ -38,7 +38,6 @@ class WjgEventProb2Jet : public WcEventProb2Jet
    protected:
       virtual void changeVars(const std::vector<double>& parameters);
       virtual void setQuarkIDs() const;
-      virtual bool onSwitch();
 };
 
 #endif

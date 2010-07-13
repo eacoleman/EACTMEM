@@ -20,7 +20,7 @@ extern "C"
 
 WWEventProb2Jet::WWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-   EventProb2Jet("WW", integrator, 3, 1, tf)
+   EventProb2Jet("WW", integrator, 3, 2, tf)
 {}
 
 void WWEventProb2Jet::changeVars(const vector<double>& parameters)
@@ -233,3 +233,5 @@ void WWEventProb2Jet::getScale(double& scale1, double& scale2) const
    else
       scale1 = scale2 = std::sqrt(scale);
 }
+
+

@@ -13,6 +13,7 @@ class WWEventProb2Jet : public EventProb2Jet
       virtual double matrixElement() const;
       virtual void setQuarkIDs() const;
       virtual void getScale(double& scale1, double& scale2) const;
+
 };
 
 #endif

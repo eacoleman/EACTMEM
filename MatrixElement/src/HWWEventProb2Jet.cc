@@ -31,7 +31,7 @@ extern "C" {
 HWWEventProb2Jet::HWWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf, 
 				   double higgsMass) :
-   EventProb2Jet("HWW", integrator, 3, 1, tf)
+   EventProb2Jet("HWW", integrator, 3, 2, tf)
 {
   setHiggsMassAndWidth(higgsMass);
 }
@@ -212,6 +212,7 @@ void HWWEventProb2Jet::getScale(double& scale1, double& scale2) const
    else
       scale1 = scale2 = std::sqrt(scale);
 }
+
 // ------------------------------------------------------------------
 void HWWEventProb2Jet::setupIntegral() {
   // ONLY if running a mass scan un-comment the line below

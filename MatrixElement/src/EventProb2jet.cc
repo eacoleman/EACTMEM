@@ -172,3 +172,16 @@ void EventProb2Jet::makeFortranArray(double array[][4]) const
    makeArray(getPartonColl()->getJet(0), array[4]);
    makeArray(getPartonColl()->getJet(1), array[5]);
 }
+
+// ------------------------------------------------------------------
+// The maximum number of permutations with two jets is just two 
+// regardless of the tagging information.Fill onSwitch in this class
+// so it affects the default behaviour of all l+2jets ME's.
+bool EventProb2Jet::onSwitch(){
+
+  if (getLoop())
+    swapJets(0,1);
+
+  return true;
+
+}//onSwitch
