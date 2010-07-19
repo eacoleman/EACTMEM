@@ -11,6 +11,9 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/PatCandidates/interface/UserData.h"
+
 
 #include "PhysicsTools/FWLite/interface/EventContainer.h"
 #include "PhysicsTools/FWLite/interface/CommandLineParser.h" 
@@ -33,9 +36,9 @@
 using namespace std;
 #include <TAMUWW/Tools/GlobalTools.cc>
 
-// ///////////////////// //
-// // Custom Functions// //
-// ///////////////////// //
+///////////////////////////
+///// Custom Functions/////
+///////////////////////////
 void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[NCUTS][NJETS], int LpPass[NCUTS][NJETS], int MuPresent, int ElPresent ) {
 //// increments the specified counters: either El&Lp or Mu&Lp depending on whether MuPresent or ElPresent = 1 (the other counter should = 0 ).
   if ( (MuPresent==1)&&(ElPresent==0) ) {
@@ -56,437 +59,540 @@ void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[
 
 int main (int argc, char* argv[]) 
 {
-   ////////////////////////////////
-   // ////////////////////////// //
-   // // Command Line Options // //
-   // ////////////////////////// //
-   ////////////////////////////////
-
-   // Tell people what this analysis code does and setup default options.
-   optutl::CommandLineParser parser ("Plots Jet Pt");
-
-   ////////////////////////////////////////////////
-   // Change any defaults or add any new command //
-   //      line options you would like here.     //
-   ////////////////////////////////////////////////
-
-   //// Output Files:
-   // corresponds to the last string on the command line
-   TString outtablefilename;
-   outtablefilename=argv[argc-1];
-   ofstream outtablefile;
-   outtablefile.open(outtablefilename,ios::out);
-   // corresponds to the next to last string on the command line
-   TString outrootfilename;
-   outrootfilename=argv[argc-2];
-   TFile * outrootfile = new TFile(outrootfilename, "RECREATE");
-   // adjust argc to account for inputing the two character strings above
-   argc=argc-2;
-
-   // create the tree
-   TTree* EvtTree = new TTree("EvtTree", "Output tree for matrix element");
-   EventNtuple * EvtNtuple = new EventNtuple();
-   EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
-
-
-
-   ////Selection Parameters
-   // cuts   
-   Double_t MET_EtMin=30;
-   Double_t j_PtMin=30;
-   Double_t l_EtMin=30;
-   Double_t sl_EtMin=20;
-   Double_t j_etaMax=2.4; //2.4; A cut on (the absolute vaulue of) eta.
-   Double_t l_etaMax=2.5;
-   Double_t jemFrac_Min=0.01;
-   Double_t muEcalE_Max=4.0;
-   Double_t muHcalE_Max=6.0;
-   Double_t lvtxChi2_Max=10.0;
-   Double_t l_relIsoMax=0.1;
-   Double_t Rlj_Min=0.3;
-   Double_t l_etaMaxBARREL=1.442;
-   Double_t Vz0_Max=7.5; //7.465 gives 95% efficiency
-   Double_t dB_Max=0.2;
-   Double_t MZ_min=76.0;
-   Double_t MZ_max=106.0;
-   Double_t bDiscriminator_min=2.03; //2.03 corresponds to the 'medium' cut.
-
-   // jets
-   Int_t jcnt_tot;
-   Int_t nBtag;
-   Double_t jpt;
-   Double_t jeta;
-   Double_t jphi;
-   Double_t Mjj;
-   vector <math::XYZTLorentzVector> jp4;
-   bool IsjBtag;
-   vector <int> jBtag;
-
-   //leptons
-   Double_t let;
-   Double_t lPhi;
-   Double_t lrelIso;
-   Double_t leta;
-   Double_t lEta;
-   Double_t lvtxChi2;
-   Double_t muEcalE;
-   Double_t muHcalE;
-   Int_t lQ;
-   bool ZVeto=false;
-   bool ConvVeto=false;//Always set to false for now
-   math::XYZTLorentzVector lp4;
-   TLorentzVector jp4LV;
-   Int_t passAll=0; //=1 for mu, =2 for el if the event passes all of the cuts
-
-
-   Int_t lcnt_kin=0;
-   Int_t lcnt_iso=0;
-   Int_t mucnt_kin=0;
-   Int_t mucnt_iso=0;
-   Int_t elcnt_kin=0;
-   Int_t elcnt_iso=0;
-
-
-   // other
-   Double_t Rlj;
-   Double_t METEt=-1;
-   math::XYZTLorentzVector METp4;
-   Int_t EvtTotCount=0;
-   bool LRPresent=false;
-   Int_t cnt_LR=0;
-
-   // global counters
-   Int_t PassEl[NCUTS][NJETS];
-   Int_t PassMu[NCUTS][NJETS];
-   Int_t PassLp[NCUTS][NJETS];
-   InitializeIntMatrix(PassEl);
-   InitializeIntMatrix(PassMu);
-   InitializeIntMatrix(PassLp);
-
+  ////////////////////////////////
+  // ////////////////////////// //
+  // // Command Line Options // //
+  // ////////////////////////// //
+  ////////////////////////////////
   
+  // Tell people what this analysis code does and setup default options.
+  optutl::CommandLineParser parser ("Plots Jet Pt");
+   
+  ////////////////////////////////////////////////
+  // Change any defaults or add any new command //
+  //      line options you would like here.     //
+  ////////////////////////////////////////////////
+  
+  //// Output Files:
+  // corresponds to the last string on the command line
+  TString outtablefilename;
+  outtablefilename=argv[argc-1];
+  ofstream outtablefile;
+  outtablefile.open(outtablefilename,ios::out);
+  // corresponds to the next to last string on the command line
+  TString outrootfilename;
+  outrootfilename=argv[argc-2];
+  TFile * outrootfile = new TFile(outrootfilename, "RECREATE");
+  // adjust argc to account for inputing the two character strings above
+  argc=argc-2;
+  
+  // create the tree
+  TTree* EvtTree = new TTree("EvtTree", "Output tree for matrix element");
+  EventNtuple * EvtNtuple = new EventNtuple();
+  EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
 
-   // Parse the command line arguments
-   parser.parseArguments (argc, argv);
+  //////////////////////// Selection Parameters and Cut Values ////////////////////////////////
+  /// Vertex:
+  double vtx_ndofMin=4.5;
+  double vtx_zMax=15.0;
+  double vtx_RhoMax=2.0;
 
-   //////////////////////////////////
-   // //////////////////////////// //
-   // // Create Event Container // //
-   // //////////////////////////// //
-   //////////////////////////////////
+  /// Jets (apply after the Primary Electrons but before the Primary Muons):
+  double j_pt;
+  double j_ptMin=30.0;
+  double j_eta;
+  double j_aetaMax=2.4;
+  double j_emFracMin=0.01;
+  double j_n90HitsMin=1.01;
+  double j_fHPDMax=0.98;
+  double j_DRel;
+  double j_DRelMin=0.3;
+  double pi_=TMath::Pi();
+  double adphi;
 
-   // This object 'event' is used both to get all information from the
-   // event as well as to store histograms, etc.
-   fwlite::EventContainer eventCont (parser);
+  /// Primary Electrons (used in electron selection):
+  double el_et;
+  double elPrim_etMin=30.0;
+  double el_eta;
+  double elPrim_aetaMax=2.5;
+  double el_aetasc;
+  double elPrim_aetascExcludeMax=1.5660;
+  double elPrim_aetascExcludeMin=1.4442;
+  double elPrim_dBMax=0.02;
+  double el_RelIso;
+  double elPrim_RelIsoMax=0.1;
+  int el_eid;
+  int elPrim_eid1=1;
+  int elPrim_eid2=3;
+  int elPrim_eid3=5;
+  int elPrim_eid4=7;
+  int elPrim_trackerInnerHitsMin=0;
 
-   ////////////////////////////////////////
-   // ////////////////////////////////// //
-   // //         Begin Run            // //
-   // // (e.g., book histograms, etc) // //
-   // ////////////////////////////////// //
-   ////////////////////////////////////////
+  /// Loose Electrons (used in muon selection):
+  double elLoose_etMin=15.0;
+  double elLoose_aetaMax=2.5;
+  double elLoose_RelIsoMax=0.2;
 
-   // Setup a style
-   gROOT->SetStyle ("Plain");
+  /// Electron ZVeto (used in electron selection):
+  double elZVeto_etMin=20.0;
+  double elZVeto_aetaMax=2.5;
+  double elZVeto_RelIsoMax=1.0;
+  double elZVeto_MZMin=76.0;
+  double elZVeto_MZMax=106.0;
+	 
+  /// Primary Muons (used in muon selection):
+  double mu_pt;
+  double muPrim_ptMin=20.0;
+  double mu_eta;
+  double mu_phi;
+  double muPrim_aetaMax=2.1;
+  double muPrim_gtNormChi2Max=10.0;
+  double muPrim_gtNMuHitsMin=0.5;
+  double muPrim_itNHits;
+  double muPrim_itNHitsMin=10.5;
+  double muPrim_DRj;
+  double muPrim_DRjMax=0.3;
+  double muPrim_dB;
+  double muPrim_dBMax=0.02;
+  double muPrim_RelIso;
+  double muPrim_RelIsoMax=0.05;
+  bool muisGmTm;
+  bool muisTightPrompt;
+  bool muDRPass;
 
-   // Book those histograms (not used)
-   eventCont.add( new TH1F( "jetPt", "jetPt", 1000, 0, 1000) );
 
+  /// Loose Muons (used in both electron and muon selection):
+  double muLoose_ptMin=10.0;
+  double muLoose_aetaMax=2.5;
+  double muLoose_RelIsoMax=0.2;
 
-   //////////////////////
-   // //////////////// //
-   // // Event Loop // //
-   // //////////////// //
-   //////////////////////
+  /// Optional (i.e. not a part of V2 Synchronization Exercize):
+  double MET_Et;
+  double MET_EtMin=30;
+  double bDiscriminator_min=2.03; //2.03 corresponds to the 'medium' cut.
+  double etaBarrelMax=1.442; //The Maximum value of eta for the Barrel 
 
+  //////////////////////// Counters & Flags ////////////////////////////////
+  ///Global Counters:
+  int vtxcnt=0;
+  int EvtTotCount=0;
+  int PassEl[NCUTS][NJETS];
+  int PassMu[NCUTS][NJETS];
+  int PassLp[NCUTS][NJETS];
+  InitializeIntMatrix(PassEl);
+  InitializeIntMatrix(PassMu);
+  InitializeIntMatrix(PassLp);
+  ///Event Based Counters & Flags:
+  long runNumber;
+  long eventNumber;
+  bool isPrimaryVertex=false;
+  bool el_aetaPass=false;
+  bool el_conv=false;
+  int elcnt_Prim=0;
+  int elcnt_Loose=0;
+  bool muDRPass=true;
+  int mucnt_Prim=0;
+  int mucnt_Loose=0;
+  bool el_ZVeto=false;
+  int jcnt_tot=0;
+  int nBtag=0;
+  int passAll=0;//=1 for mu, =2 for el if the event passes all of the cuts
 
-    // Create a set containing all the run and event numbers
-    // so we can keep track of duplicate events.
-    RunEventSet runEventSet;
+  /// Additional Parameters
+  vector <math::XYZTLorentzVector> jp4;
+  TLorentzVector jp4LV;
+  math::XYZTLorentzVector lp4;
+  double Mjj=-1;
+  int lQ;
 
-   for (eventCont.toBegin(); ! eventCont.atEnd(); ++eventCont) 
-   {
-     
-     //find the runNumber and eventNumber here
-     //edm::EventID evtid = eventCont.id();
+  // Parse the command line arguments
+  parser.parseArguments (argc, argv);
+  
+  //////////////////////////////////
+  // //////////////////////////// //
+  // // Create Event Container // //
+  // //////////////////////////// //
+  //////////////////////////////////
 
-     long runNumber = eventCont.id().run();
-     long eventNumber = eventCont.id().event();
-     
-     //Check and remove duplicates here
-     if ( runEventSet.alreadySeen(runNumber, eventNumber)) {
-       cout << "WARNING, event Run = " << runNumber
-	    << ", Event = " << eventNumber
-	    <<" is duplicated" << endl
-	    << "We will skip this event." << endl;
-       continue;
-     } //if
-
+  // This object 'event' is used both to get all information from the
+  // event as well as to store histograms, etc.
+  fwlite::EventContainer eventCont (parser);
+  
+  ////////////////////////////////////////
+  // ////////////////////////////////// //
+  // //         Begin Run            // //
+  // // (e.g., book histograms, etc) // //
+  // ////////////////////////////////// //
+  ////////////////////////////////////////
+  
+  // Setup a style
+  gROOT->SetStyle ("Plain");
+  
+  // Book those histograms (not used)
+  eventCont.add( new TH1F( "jetPt", "jetPt", 1000, 0, 1000) );
+  
+  
+  //////////////////////
+  // //////////////// //
+  // // Event Loop // //
+  // //////////////// //
+  //////////////////////
+  
+  
+  // Create a set containing all the run and event numbers
+  // so we can keep track of duplicate events.
+  RunEventSet runEventSet;
+  
+  for (eventCont.toBegin(); ! eventCont.atEnd(); ++eventCont) 
+    {
+      
+      //find the runNumber and eventNumber here
+      
+      runNumber = eventCont.id().run();
+      eventNumber = eventCont.id().event();
+      
+      //Check and remove duplicates here
+      if ( runEventSet.alreadySeen(runNumber, eventNumber)) {
+	cout << "WARNING, event Run = " << runNumber
+	     << ", Event = " << eventNumber
+	     <<" is duplicated" << endl
+	     << "We will skip this event." << endl;
+	continue;
+      } //if
+      
       //////////////////////////////////
       // Take What We Need From Event //
       //////////////////////////////////
-     fwlite::Handle< vector< pat::Jet > > jetHandle; //? define the vector
-     jetHandle.getByLabel (eventCont, "selectedLayer1Jets"); //? load all of the (layer 1???) jets for the event into jetHandle
-     assert ( jetHandle.isValid() );//?? ensure that there's at least one jet
+      fwlite::Handle< vector< reco::Vertex > > VtxHandle;
+      VtxHandle.getByLabel (eventCont, "offlinePrimaryVertices");
+      assert ( VtxHandle.isValid() );
+
+      // for patElectrons_cleanPatElectrons_PAT.
+      fwlite::Handle< vector< pat::Electron > > electronHandle;
+      electronHandle.getByLabel (eventCont, "cleanPatElectrons");
+      assert ( electronHandle.isValid() );
+      
+      fwlite::Handle< vector< pat::Jet > > jetHandle; //? define the vector
+      jetHandle.getByLabel (eventCont, "cleanPatJets"); //? load all of the (layer 1???) jets for the event into jetHandle
+      assert ( jetHandle.isValid() );//?? ensure that there's at least one jet
+      
+      fwlite::Handle< vector< pat::Muon > > muonHandle;
+      muonHandle.getByLabel (eventCont, "cleanPatMuons");
+      assert ( muonHandle.isValid() );
+      
+      fwlite::Handle< vector< pat::MET > > METHandle;
+      METHandle.getByLabel (eventCont, "patMETs");
+      assert ( METHandle.isValid() );
+      
+
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////// ***************************************Perform The Selection*************************************** ////////////////
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      //// Vertex Selection:
+      isPrimaryVertex=false;
+      reco::Vertex Vtx=VtxHandle->front();
+      if ( (!Vtx.isFake())&&(Vtx.ndof()>vtx_ndofMin)&&(abs(Vtx.z())<vtx_zMax)&&(Vtx.position().Rho()<vtx_RhoMax) ) {
+	vtxcnt++;
+	isPrimaryVertex=true;
+      }
+      
+      //// Electron Selection:
+      elcnt_Prim=0;
+      elcnt_Loose=0;
+      el_conv=false;
+      vector< pat::Electron > const & electronVec = *electronHandle;
+      if (electronVec.begin() != electronVec.end()) {
+	const vector< pat::Electron >::const_iterator EndelIter       = electronVec.end();
+	for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
+	  el_et=elIter->et();
+	  el_eta=elIter->eta();
+	  el_aetasc=abs(elIter->superCluster()->eta());
+	  
+	  aetaPass=false;
+	  if ( abs(el_eta)<elPrim_aetaMax ) {
+	    aetaPass=true; //noscv
+	  }
+	  if ( (el_aetasc<elPrim_aetascExcludeMax)&&(el_aetasc>elPrim_aetascExcludeMin) ) {
+	    aetaPass=false;
+	  }
+	  el_eid=elIter->electronID("simpleEleId70relIso");
+	  el_RelIso=(elIter->dr03TkSumPt()+elIter->dr03EcalRecHitSumEt()+elIter->dr03HcalTowerSumEt())/el_et;
+	  
+	  /// Apply The Primary Cuts
+	  if ( (el_et>elPrim_etMin)&&
+	       aetaPass&&
+	       (abs(elIter->dB())<elPrim_dBMax)&&
+	       ((el_eid==elPrim_eid1)||(el_eid==elPrim_eid2)||(el_eid==elPrim_eid3)||(el_eid==elPrim_eid4))&&
+	       (el_RelIso<elPrim_RelIsoMax)
+	       ) {
+	    
+	    elcnt_Prim++;
+	    lp4=elIter->p4();
+	    lQ=elIter->charge();
+ 	    lEta=el_eta;
+
+// 	    lPhi=elIter->phi();
+	    
+// 	    lEt=let;
+// 	    laEtasc=aeta_sc;
+	    
+// 	    lcnt_iso++;
+// 	    elcnt_iso++;
+	    
+// 	    lQ=elIter->charge();
+// 	    elEt=let;
+	    ///Electron Conversion
+	    if ( elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits()elPrim_trackerInnerHitsMin>elPrim_trackerInnerHitsMin ) {
+	      el_conv=true;
+	    }	 
+	  }
+	  /// Apply The Loose Cuts
+	  if ( (el_et>elLoose_etMin)&&(abs(el_eta)<elLoose_aetaMax)&&(el_RelIso<elLoose_RelIsoMax) ) {
+	    elcnt_Loose++;	       
+	  }
+
+	}
+      }
+      
+      //// JET Selection:
+      jcnt_tot=0;
+      nBtag=0;
+      jBtag.clear();
+      j_DRel=100;
+      Mjj=-1;
+
+      jp4.clear();
+      jNEntries=0;
+      JEta.clear();
+      JPhi.clear();
+
+      const vector< pat::Jet >::const_iterator kJetEnd = jetHandle->end();
+      for (vector< pat::Jet >::const_iterator jetIter = jetHandle->begin(); ( kJetEnd != jetIter ); ++jetIter ) { 
+	j_pt=jetIter->pt();
+	j_eta=jetIter->eta();
+	if ( elcnt_Prim==1 ){
+	  adphi=abs(El_Phi-jetIter->phi());
+	  //we're on a circle
+	  if ( adphi>pi_ ) {
+	    adphi=2*pi_-adphi;
+	  }
+	  j_DRel=pow((j_eta-el_Eta)*(j_eta-el_Eta)+adphi*adphi,0.5);
+	}
 	
-     fwlite::Handle< vector< pat::Muon > > muonHandle;
-     muonHandle.getByLabel (eventCont, "selectedLayer1Muons");
-     assert ( muonHandle.isValid() );
-     fwlite::Handle< vector< pat::Electron > > electronHandle;
-     electronHandle.getByLabel (eventCont, "selectedLayer1Electrons");
-     assert ( electronHandle.isValid() );
+	/// Apply The Cut:
+	if ( (j_pt>j_ptMin)&&
+	     (abs(j_eta)<j_aetaMax)&&
+	     ((jetIter->emEnergyFraction())>j_emFracMin)&&
+	     ((jetIter->jetID().n90Hits)>j_n90HitsMin)&&
+	     ((jetIter->jetID().fHPD)<j_fHPDMax)&&
+	     (j_DRel>j_DRelMin)
+	     ) {
+	  
+	  jcnt_tot++;
+	  
+	  // store parameters for muon selection
+	  JEta.push_back(j_eta); 
+	  JPhi.push_back(jetIter->phi());
+	  jNEntries++;
+	  
+	  /// b-tagging:
+	  if ( (jetIter->bDiscriminator("simpleSecondaryVertexBJetTags"))>bDiscriminator_min ) {
+	    IsjBtag=true;
+	    nBtag++;
+	  } else {
+	    IsjBtag=false;
+	  }
+	  if ( jcnt_tot==1 ) {
+	    jp4.push_back(jetIter->p4());
+	    if (IsjBtag==true) {
+	      jBtag.push_back(1);
+	    } else {
+	      jBtag.push_back(0);
+	    }
+	  }
+	  /// Compute the invariant mass, when only two jets are present
+	  if ( jcnt_tot==2 ) {
+	    jp4.push_back(jetIter->p4());
+	    if (IsjBtag) {
+	      jBtag.push_back(1);
+	    } else {
+	      jBtag.push_back(0);
+	    }
+	    
+	    Mjj=(jp4[0]+jp4[1]).M();
+	  }
+	} // for Selection Cuts
 
-     fwlite::Handle< vector< pat::MET > > METHandle;
-     METHandle.getByLabel (eventCont, "layer1METs");
-     assert ( METHandle.isValid() );
+      } // for jetIter
+      if ( jcnt_tot!=2 ) {
+	Mjj=-2;
+      }
 
 
-     ////// Perform The Selection
-     LRPresent=false;
+     //// Muon Selection:
+     mucnt_Prim=0;
+     mucnt_Loose=0;
 
-     //// LEPTONS:
-     lcnt_kin=0;
-     lcnt_iso=0;
-
-     /// Electrons:
-     elcnt_kin=0;
-     elcnt_iso=0;
-     vector< pat::Electron > const & electronVec = *electronHandle;
-     if (electronVec.begin() != electronVec.end()) {
-       const vector< pat::Electron >::const_iterator EndelIter       = electronVec.end();
-       for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
-	 let=elIter->et();
-	 leta=elIter->eta();
-
-	 /// Luminous Region Cut
-	 if ( abs(elIter->vz())<Vz0_Max ) {
-	   if ( LRPresent==false ) {
-	     cnt_LR++;
-	     LRPresent=true;
-	   }
-	   
-	   /// Kinematics Cut
-	   if ( (let>l_EtMin)&&(abs(leta)<l_etaMax)&&(abs(elIter->dB())<dB_Max)&&((elIter->electronID("eidRobustTight"))>0.99)&&((elIter->vertexChi2())<lvtxChi2_Max) ) {
-	     lcnt_kin++;
-	     elcnt_kin++;
-	     ///Isolation Cut
-	     lrelIso=(elIter->caloIso()+elIter->trackIso())/let;
-	     if ( lrelIso<l_relIsoMax ) {
-	       lEta=leta;
-	       lPhi=elIter->phi();
-	       
-	       lcnt_iso++;
-	       elcnt_iso++;
-	       lp4=elIter->p4();
-	       lQ=elIter->charge();
-	     }
-	   }
-	 }
-       }
-     }
-
-     /// Muons:
-     muEcalE=100;
-     muHcalE=100;
-
-     mucnt_kin=0;
-     mucnt_iso=0;
      vector< pat::Muon > const & muonVec = *muonHandle;
      if (muonVec.begin() != muonVec.end()) {
        const vector< pat::Muon >::const_iterator EndmuIter       = muonVec.end();
        for ( vector< pat::Muon >::const_iterator muIter = muonVec.begin(); ( (muIter!=EndmuIter) ) ; ++muIter ) {
-	 let=muIter->et();
-	 leta=muIter->eta();
-	 reco::MuonEnergy muonEnergy=muIter->calEnergy();
-	 muEcalE=muonEnergy.em;
-	 muHcalE=muonEnergy.had;
-	 lvtxChi2=muIter->vertexChi2();
-
-	 /// Luminous Region Cut
-	 if ( abs(muIter->vz())<Vz0_Max ) {
-	   if ( LRPresent==false ) {
-	     cnt_LR++;
-	     LRPresent=true;
+	 mu_pt=muIter->pt();
+	 mu_eta=muIter->eta();
+	 mu_phi=muIter->phi();
+	 muDRPass=true;
+	 if ( Curr_jEntries!=0 ) {
+	   for (Int_t jn=0; jn<Curr_jEntries;jn++) {
+	     adphi=abs(JPhi[jn]-mu_phi);
+	     //we're on a circle
+	     if ( adphi>pi_ ) {
+	       adphi=2*pi_-adphi;
+	     }
+	     
+	     muPrim_DRj=pow((JEta[jn]-mu_eta)*(JEta[jn]-mu_eta)+adphi*adphi,0.5);
+	     if ( Rlj<muDRmin ) {
+	       muDRmin=Rlj;
+	       JcntDRmin=jn;
+	     }
+	     if ( muPrim_DRj<muPrim_DRjMax ) {
+	       //i.e. we must be outside DRjMax for every jet
+	       muDRPass=false;
+	     }
 	   }
 	   
-	   ///Kinematics Cut
-	   if ( (let>l_EtMin)&&(abs(leta)<l_etaMax)&&(abs(muIter->dB())<dB_Max)&&((muIter->isGood("All"))>0.99)&&(muEcalE<muEcalE_Max)&&(muHcalE<muHcalE_Max)&&((muIter->vertexChi2())<lvtxChi2_Max) ) {
-	     lcnt_kin++;
-	     mucnt_kin++;
-	     ///Isolation Cut
-	     lrelIso=(muIter->caloIso()+muIter->trackIso())/let;
-	     if ( lrelIso<l_relIsoMax ) {
-	       lEta=leta;
-	       lPhi=muIter->phi();
-	       
-	       lcnt_iso++;
-	       mucnt_iso++;
-	       lp4=muIter->p4();
-	       lQ=muIter->charge();	       
-	     }
+	 }
+	 if ( (muIter->isGlobalMuon())&&(muIter->isTrackerMuon()) ) {
+	   muisGmTm=true;
+	 } else {
+	   muisGmTm=false;
+	 }
+	 muisTightPrompt=false;
+	 if ( muIter->globalTrack().isNonnull() ) {
+	   if ( ((muIter->globalTrack()->normalizedChi2())<muPrim_gtNormChi2Max)&&((muIter->globalTrack()->hitPattern().numberOfValidMuonHits())>muPrim_gtNMuHitsMin) ) {
+	     muisTightPrompt=true;
 	   }
 	 }
+	 if ( muIter->innerTrack().isNonnull() ) {
+	   muPrim_itNHits=muIter->innerTrack()->numberOfValidHits();
+	 } else {
+	   muPrim_itNHits=-1;
+	 }
+	 mu_RelIso=(muIter->trackIso()+muIter->ecalIso()+muIter->hcalIso())/mu_pt;
+
+	 /// Apply The Primary Cuts
+	 if ( muisGmTm&&
+	      (mu_pt>muPrim_ptMin)&&
+	      (abs(mu_eta)<muPrim_aetaMax)&&
+	      muisTightPrompt&&
+	      (muPrim_itNHits>muPrim_itNHitsMin)&&
+	      muDRPass&&
+	      ((muIter->dB())<muPrim_dBMax)&&
+	      (mu_RelIso<muPrim_RelIsoMax)
+	      ) {
+	   mucnt_Prim++;
+ 	   lp4=muIter->p4();
+	   lQ=elIter->charge();
+	   lEta=mu_eta;
+
+// 	   lPhi=muIter->phi();	   
+// 	   lcnt_iso++;
+// 	   mucnt_iso++;
+// 	   lQ=muIter->charge();
+// 	   muPt=lpt;
+	 }
+	 /// Apply The Loose Cuts
+	 if ( (muIter->isGlobalMuon())&&(mu_pt>muLoose_ptMin)&&(abs(mu_eta)<muLoose_aetaMax)&&(mu_RelIso<muLoose_RelIsoMax) ) {
+	   mucnt_Loose++;	       
+	 }
+	 
        }
      }
 
-     //// JETS:
-     Rlj=-1;
-     Mjj=-1;
-     nBtag=0;
-     jp4.clear();
-     jBtag.clear();
-     jcnt_tot=0;
-
-
-     const vector< pat::Jet >::const_iterator kJetEnd = jetHandle->end();
-     
-     for (vector< pat::Jet >::const_iterator jetIter = jetHandle->begin();
-	  ( kJetEnd != jetIter ); 
-	  ++jetIter ) 
-       { 
-   	 jpt=jetIter->pt();
-	 jeta=jetIter->eta();
-	 /// Luminous Region Cut
-	 if ( abs(jetIter->vz())<Vz0_Max ) {
-	   if ( LRPresent==false ) {
-	     cnt_LR++;
-	     LRPresent=true;
-	   }
-
-	   if ( lcnt_iso==1 ){
-	     jphi=jetIter->phi();
-	     Rlj=pow((jeta-lEta)*(jeta-lEta)+(jphi-lPhi)*(jphi-lPhi),0.5);
-	   }
-	   /// Jet Kinematics And Cleaning Cut:
-	   if ( (jpt>j_PtMin)&&(abs(jeta)<j_etaMax)&&((jetIter->emEnergyFraction())>jemFrac_Min) 
-		&&((lcnt_iso!=1)||(Rlj>Rlj_Min)) ) {
-	     jcnt_tot++;
-	     if ( (jetIter->bDiscriminator("simpleSecondaryVertexBJetTags"))>bDiscriminator_min ) {
-	       IsjBtag=true;
-	       nBtag++;
-	     } else {
-	       IsjBtag=false;
-	     }
-	     if ( jcnt_tot==1 ) {
-	       jp4.push_back(jetIter->p4());
-	       if (IsjBtag==true) {
-		 jBtag.push_back(1);
-	       } else {
-		 jBtag.push_back(0);
-	       }
-	     }
-	     if ( jcnt_tot==2 ) {
-	       jp4.push_back(jetIter->p4());
-	       if (IsjBtag==true) {
-		 jBtag.push_back(1);
-	       } else {
-		 jBtag.push_back(0);
-	       }
-	       Mjj=(jp4[0]+jp4[1]).M();
-	     }
-	   }
-	 }
-       } // for jetIter
-     if ( jcnt_tot!=2 ) {
-       Mjj=-2;
-     }
-
-     //// METs:
-     METp4=METHandle->front().p4();
-     METEt=METp4.E();
-     
-     ///Perform the Z veto
+     /// Electron ZVeto (apply only if we have one Primary electron).
      ZVeto=false;
-     //Z veto the muons:
-     if ( (mucnt_iso==1)&&(lcnt_iso==1) ) {
-       vector< pat::Muon > const & muonVec = *muonHandle;
-       if (muonVec.begin() != muonVec.end()) {
-	 const vector< pat::Muon >::const_iterator EndmuIter       = muonVec.end();
-	 for ( vector< pat::Muon >::const_iterator muIter = muonVec.begin(); ( (muIter!=EndmuIter) ) ; ++muIter ) {
-	   let=muIter->et();
-	   reco::MuonEnergy muonEnergy=muIter->calEnergy();
-	   muEcalE=muonEnergy.em;
-	   muHcalE=muonEnergy.had;
-	   //lvtxChi2=muIter->vertexChi2();
-	   lrelIso=(muIter->caloIso()+muIter->trackIso())/let;
-
-	   if ( !((let>l_EtMin)&&(abs(muIter->dB())<dB_Max)&&(muEcalE<muEcalE_Max)&&(muHcalE<muHcalE_Max)&&((muIter->vertexChi2())<lvtxChi2_Max)&&(lrelIso<l_relIsoMax))
-		&&((let>sl_EtMin)&&(abs(muIter->eta())<l_etaMax)&&((muIter->isGood("All"))>0.99)&&(abs(muIter->vz())<Vz0_Max))    ) {
-	     if ( ((muIter->charge() * lQ)<0.0)&&
-		  ((muIter->p4() + lp4).M()>MZ_min)&&
-		  ((muIter->p4() + lp4).M()<MZ_max) ) {
-	       ZVeto=true;
-	     }
-	   }
-	 }
-       }
-     }
-     //Z veto the electrons:
-     if ( (elcnt_iso==1)&&(lcnt_iso==1) ){
+     aetaPass=false;
+     if ( (elcnt_Prim==1)&&(mucnt_Loose==0) ){
        vector< pat::Electron > const & electronVec = *electronHandle;
        if (electronVec.begin() != electronVec.end()) {
 	 const vector< pat::Electron >::const_iterator EndelIter       = electronVec.end();
 	 for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
-	   let=elIter->et();
-	   lrelIso=(elIter->caloIso()+elIter->trackIso())/let;
-
-	   if ( !((let>l_EtMin)&&(abs(elIter->dB())<dB_Max)&&((elIter->electronID("eidRobustTight"))>0.99)&&(lrelIso<l_relIsoMax)&&((elIter->vertexChi2())<lvtxChi2_Max))
-		&&((let>sl_EtMin)&&(abs(leta)<l_etaMax)&&( (elIter->electronID("eidRobustLoose"))>0.99 )&&(abs(elIter->vz())<Vz0_Max)) ) {
-	     //
-	     if ( ((elIter->charge() * lQ)<0.0)&&
-		  ((elIter->p4() + lp4).M()>MZ_min)&&
-		  ((elIter->p4() + lp4).M()<MZ_max) ) {
-	       ZVeto=true;
-	     }
+	   el_et=elIter->et();
+	   el_eta=elIter->eta();
+	   el_aetasc=abs(elIter->superCluster()->eta());
+	   
+	   aetaPass=false;
+	   if ( abs(el_eta)<elPrim_aetaMax ) {
+	     aetaPass=true; //noscv
 	   }
+	   if ( (el_aetasc<elPrim_aetascExcludeMax)&&(el_aetasc>elPrim_aetascExcludeMin) ) {
+	     aetaPass=false;
+	   }
+	   el_eid=elIter->electronID("simpleEleId70relIso");
+	   el_RelIso=(elIter->dr03TkSumPt()+elIter->dr03EcalRecHitSumEt()+elIter->dr03HcalTowerSumEt())/el_et;
+	   
+	   /// Select an electron which is not the Primary one.
+	   if ( ! ((el_et>elPrim_etMin)&&
+		   aetaPass&&
+		   (abs(elIter->dB())<elPrim_dBMax)&&
+		   ((el_eid==elPrim_eid1)||(el_eid==elPrim_eid2)||(el_eid==elPrim_eid3)||(el_eid==elPrim_eid4))&&
+		   (el_RelIso<elPrim_RelIsoMax)
+		   ) && 
+		( (elIter->electronID("eidRobustLoose")>0.99)&&(el_et>elZVeto_etMin)&&(abs(el_eta)<elZVeto_aetaMax)&&(el_RelIso<elZVeto_RelIso) )
+		)
+	     {
+	       if ( 
+		   //((elIter->charge() * lQ)<0.0)&&
+		   ((elIter->p4() + lp4).M()>elZveto_MZmin)&&
+		   ((elIter->p4() + lp4).M()<elZveto_MZmax) ) {
+		 ZVeto=true;
+	       }
+	     }
 	 }
        }
      }
+     
+     //// MET Selection:
+     METp4=METHandle->front().p4();
+     MET_Et=METp4.E();
+     //MET_Et=METHandle->front().et();
 
-   
-     //// scan over the jets
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     /////// ****************************************Record The Results**************************************** ////////////////
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     //// Record the number of events passing the cuts for each jet count
      passAll=0;
      for (Int_t Nj=0; Nj<NJETS;Nj++) {
        if ( (jcnt_tot==Nj)||((Nj==(NJETS-1))&&(jcnt_tot>(NJETS-1))) ) {
 	 PassLp[2][Nj]++;
 	 PassMu[2][Nj]++;
 	 PassEl[2][Nj]++;
-	 
-	 if ( lcnt_kin>0.5 ) {
-	   PassLp[3][Nj]++;
-	   if ( mucnt_kin>0.5) {
-	     PassMu[3][Nj]++;
-	   }
-	   if ( elcnt_kin>0.5) {
-	     PassEl[3][Nj]++;
-	   }
-	 }
 
-	 if ( lcnt_iso==1 ) {
-	   incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
-	   if ( METEt>MET_EtMin ) {
-	     incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
-	     if ( ZVeto==false ) {
-	       incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
-	       if ( ConvVeto==false ) {
-		 incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
-		 if ( abs(lEta)<l_etaMaxBARREL ) {
-		   incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
-		   if ( mucnt_iso==1 ) {
-		   passAll=1;
-		   }
-		   if ( elcnt_iso==1 ) {
+	 //record the electron info
+	 if ( (elcnt_Prim==1)&&isPrimaryVertex ) {
+	   incrementCounter(3,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+	   if ( el_conv==false ) {
+	     incrementCounter(4,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+	     if ( mucnt_Loose==0 ) {
+	       incrementCounter(5,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+	       if ( ZVeto==false ) {
+		 incrementCounter(6,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+		 if ( MET_Et>MET_EtMin ) {
+		   incrementCounter(7,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		   passAll=2;
-		   }
+		   /// Record the Btag info
 		   if ( nBtag==0 ) {
-		     incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+		     incrementCounter(8,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		   } else {
 		     if ( nBtag==1 ) {
-		       incrementCounter(10,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+		       incrementCounter(9,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		     } else {
 		       if ( nBtag==2 ) {
-			 incrementCounter(11,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+			 incrementCounter(10,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		       } else {
-			 incrementCounter(12,Nj,PassEl,PassMu,PassLp,mucnt_iso,elcnt_iso);
+			 incrementCounter(11,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		       }
 		     }
 		   }//BTags
@@ -494,12 +600,45 @@ int main (int argc, char* argv[])
 	       }
 	     }
 	   }
-	 }
-
+	 }//electrons
+	 
+	 //record the muon info
+	 if ( (mucnt_Prim==1)&&isPrimaryVertex ) {
+	   incrementCounter(3,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+	   if ( mucnt_Loose==1 ) {
+	     incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+	     if ( elcnt_Loose==0 ) {
+	       incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+	       //if ( ZVeto==false ) {
+	       incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+	       if ( MET_Et>MET_EtMin ) {
+		 incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+		 passAll=1;
+		 /// Record the Btag info
+		 if ( nBtag==0 ) {
+		   incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+		 } else {
+		   if ( nBtag==1 ) {
+		     incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+		   } else {
+		     if ( nBtag==2 ) {
+		       incrementCounter(10,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+		     } else {
+		       incrementCounter(11,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+		     }
+		   }
+		 }//BTags
+	       }
+	       // }
+	     }
+	   }
+	 }//muons
+	 
        }
      } // for Njets
 
-     ///fill the Ntuple to be used in Matrix Element computations.
+
+     ///Fill the Ntuple to be used in Matrix Element computations (requiring two jets & a lepton passing all of the cuts).
 
      if ( (passAll>0.5)&&(jcnt_tot==2) ) {
        EvtNtuple->lLV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
@@ -515,11 +654,11 @@ int main (int argc, char* argv[])
        EvtNtuple->jBtag.push_back(jBtag[1]);
 
        EvtNtuple->lQ=lQ;
-       if (abs(lEta)<l_etaMaxBARREL) {
+       if (abs(lEta)<etaBarrelMax) {
 	 //barrel
 	 EvtNtuple->ldetComp=0;
        } else {
-	 //endcap (should never happen with the current selection):
+	 //endcap
 	 EvtNtuple->ldetComp=1;
        }
        EvtNtuple->run=runNumber;
@@ -542,10 +681,11 @@ int main (int argc, char* argv[])
      PassLp[0][Nj]=EvtTotCount;
      PassMu[0][Nj]=EvtTotCount;
      PassEl[0][Nj]=EvtTotCount;
-     PassLp[1][Nj]=cnt_LR;
-     PassMu[1][Nj]=cnt_LR;
-     PassEl[1][Nj]=cnt_LR;
+     PassLp[1][Nj]=vtxcnt;
+     PassMu[1][Nj]=vtxcnt;
+     PassEl[1][Nj]=vtxcnt;
    }
+
 
    InitializeLabels(PLabel,CLabel);
    writeIntProcessTable(outtablefile,PassEl,PassMu,PassLp);
@@ -553,13 +693,6 @@ int main (int argc, char* argv[])
 
    outrootfile->Write();
    outrootfile->Close();
-
-
-   ////////////////////////
-   // ////////////////// //
-   // // Clean Up Job // //
-   // ////////////////// //
-   ////////////////////////
 
    return 0;
 

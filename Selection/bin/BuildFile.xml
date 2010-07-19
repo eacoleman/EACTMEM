@@ -1,16 +1,5 @@
 
-<bin name="SyncExerciseSelection_V2El.exe" file="SyncExerciseSelection_V2El.cc">
- <use name="root"/>
- <use name="FWCore/FWLite"/>
- <use name="FWCore/Framework"/>
- <use name="DataFormats/FWLite"/>
- <use name="DataFormats/PatCandidates"/>
- <use name="PhysicsTools/FWLite"/>
- <use name="TAMUWW/MEPATNtuple"/>
-
-</bin>
-
-<bin name="SyncExerciseSelection_V2Mu.exe" file="SyncExerciseSelection_V2Mu.cc">
+<bin name="PerformSelection.exe" file="PerformSelction.cc">
  <use name="root"/>
  <use name="FWCore/FWLite"/>
  <use name="FWCore/Framework"/>

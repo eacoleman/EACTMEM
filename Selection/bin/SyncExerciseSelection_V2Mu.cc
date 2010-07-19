@@ -64,7 +64,7 @@
 #include <fstream>
 
 using namespace std;
-#include <TAMUWW/Tools/GlobalTools.cc>
+#include <TAMUWW/Tools/GlobalTools_SyncExV2.cc>
 
 // ///////////////////// //
 // // Custom Functions// //

@@ -5,7 +5,7 @@ from PhysicsTools.PatAlgos.patTemplate_cfg import *
 from PhysicsTools.PatAlgos.tools.coreTools import *
 from PhysicsTools.PatAlgos.tools.cmsswVersionTools import *
 ## uncomment this line to run on an 35X input sample in 36X
-## run36xOn35xInput(process)
+run36xOn35xInput(process)
 
 #################################################################
 ## Output Module Configuration: must pass either path 'p1' or path 'p2'.
@@ -28,12 +28,12 @@ process.out.fileName = 'WpJ_TestRun.root'
 #Kinematic Filters
 process.MuonsKinCutBasic = cms.EDFilter("CandViewSelector",
   src = cms.InputTag("patMuons"),                              
-  cut = cms.string('pt > 15. & abs(eta) < 2.5'),
+  cut = cms.string('pt > 10. & abs(eta) < 2.5'),
   filter = cms.bool(True)                                
 )
 process.ElectronsKinCutBasic = cms.EDFilter("CandViewSelector",
   src = cms.InputTag("patElectrons"),                              
-  cut = cms.string('pt > 15. & abs(eta) < 2.5'),
+  cut = cms.string('pt > 10. & abs(eta) < 2.5'),
   filter = cms.bool(True)                                
 )
 
@@ -41,23 +41,25 @@ process.ElectronsKinCutBasic = cms.EDFilter("CandViewSelector",
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.MuHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 # Uncomment this to access 8E29 menu and filter on it
-process.MuHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT8E29")
+#process.MuHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT8E29")
+process.MuHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","REDIGI")
 process.MuHLTFilter.HLTPaths = ["HLT_Mu9"]
 # Uncomment this to filter on 1E31 HLT menu
 #process.MuHLTFilter.HLTPaths = ["HLT_Mu9"]
 
 process.ElHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 # Uncomment this to access 8E29 menu and filter on it
-process.ElHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT8E29")
+# process.ElHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT8E29")
+process.ElHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","REDIGI")
 process.ElHLTFilter.HLTPaths = ["HLT_Ele15_LW_L1R"]
 # Uncomment this to filter on 1E31 HLT menu
 #process.ElHLTFilter.HLTPaths = ["HLT_Ele15_LW_L1R"]
 
 #### Additional Modifications ####
-#process.GlobalTag.globaltag = cms.string('START36_V9::All')
+process.GlobalTag.globaltag = cms.string('START36_V9::All')
 
-## Use the absolute 2D impact parameter (extracted by calling electron.dB()) w.r.t. the average beam spot using the electron track or innerTrack (tracker track) of the muon. 
-#process.patElectrons.usePV = cms.bool(False)
+## Use the absolute 2D impact parameter (extracted by calling electron.dB()) w.r.t. the average beam spot using the electron track or innerTrack (tracker track) of the muon.
+process.patElectrons.usePV = cms.bool(False)
 process.patMuons.usePV = cms.bool(False)
 
 ## Implement Simple Cut Based ID for electrons
@@ -121,8 +123,8 @@ process.patMuons.isoDeposits = cms.PSet()
 process.patElectrons.isoDeposits = cms.PSet()
 
 
-process.cleanPatMuons.cut = cms.string('pt> 15. & abs(eta) < 2.5')
-process.cleanPatElectrons.cut = cms.string('pt> 15. & abs(eta) < 2.5')
+process.cleanPatMuons.cut = cms.string('pt> 10. & abs(eta) < 2.5')
+process.cleanPatElectrons.cut = cms.string('pt> 10. & abs(eta) < 2.5')
 process.cleanPatJets.cut = cms.string('pt> 10.')
 
 
@@ -134,7 +136,7 @@ process.cleanPatJets.cut = cms.string('pt> 10.')
 ####THIS IS NORMALLY OVERWRITTEN FROM crab.cfg
 
 #number of events
-process.maxEvents.input = 100
+process.maxEvents.input = 2500
 
 # source
 process.source = cms.Source("PoolSource",

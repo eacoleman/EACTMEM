@@ -7,7 +7,7 @@
 
 const int NPROCESSES=11;
 const int NCUTS=12;
-const int FINALCUT=7;
+const int FINALCUT=6;
 const int NJETS=5;
 
 //Global Variables
@@ -28,33 +28,36 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
   pcsLbl[9]="STopS";
   pcsLbl[10]="STopTW";
 
-  ///Matrix Element Selection Labels
-  cutLbl[0]="c0:HLT+Kin";
-  cutLbl[1]="c1:VtxCut";
-  cutLbl[2]="c2:NJets";
-  cutLbl[3]="c3:PrimaryEl/Mu";
-  cutLbl[4]="c4:!conv/!LooseMu";
-  cutLbl[5]="c5:!LooseMu/!LooseEl";
-  cutLbl[6]="c6:ZVeto/None";
-  cutLbl[7]="c7:METET";
-  cutLbl[8]="BTag0";  
+
+  cutLbl[0]="c0:HLT";
+  cutLbl[1]="c1:Vtx";
+  //cutLbl[2]="c2:ELKin/MuKin";
+  cutLbl[2]="c2:ELKin/MuIso>1";
+  cutLbl[3]="c3:ELIso/MuIso";
+  cutLbl[4]="c4:NotConv/NotLooseMu";
+  cutLbl[5]="c5:NotMu/NotEl";
+  cutLbl[6]="c6:Jets>=NJ";
+  cutLbl[7]="c7:ZVeto/None";
+  //  cutLbl[7]="c7:!Conv";
+  //cutLbl[8]="c8:Barrel";  
+  cutLbl[8]="BTag0";
   cutLbl[9]="BTag1";
   cutLbl[10]="BTag2";
   cutLbl[11]="BTag3+";
 
-//   ///V2 Sync Exercise Labels
-//   cutLbl[0]="c0:HLT";
-//   cutLbl[1]="c1:Vtx";
-//   cutLbl[2]="c2:ELKin/MuIso>1";
-//   cutLbl[3]="c3:ELIso/MuIso";
-//   cutLbl[4]="c4:NotConv/NotLooseMu";
-//   cutLbl[5]="c5:NotMu/NotEl";
-//   cutLbl[6]="c6:Jets>=NJ";
-//   cutLbl[7]="c7:ZVeto/None";
-//   cutLbl[8]="BTag0";
-//   cutLbl[9]="BTag1";
-//   cutLbl[10]="BTag2";
-//   cutLbl[11]="BTag3+";
+//   cutLbl[0]="c0:HLT+Kin";
+//   cutLbl[1]="c1:LREvts";
+//   cutLbl[2]="c2:Jets";
+//   cutLbl[3]="c3:LKin";
+//   cutLbl[4]="c4:LIso";
+//   cutLbl[5]="c5:METET";
+//   cutLbl[6]="c6:ZVeto";
+//   cutLbl[7]="c7:!Conv";
+//   cutLbl[8]="c8:Barrel";  
+//   cutLbl[9]="BTag0";
+//   cutLbl[10]="BTag1";
+//   cutLbl[11]="BTag2";
+//   cutLbl[12]="BTag3+";
 }
 
 void InitializeMatrix(double Mtx[NCUTS][NJETS]) {

@@ -190,7 +190,7 @@ void MakeProcessTable(const char* outTableFileName, const char* inselFileName, c
   outTableFile << "}" << endl;
   outTableFile << "\\begin{tabular}{|l|c|c|c|c|l|}" << endl;
   outTableFile << "\\hline " << endl;
-  outTableFile << " Cut/NJets " ;
+  outTableFile << " Cut (El/Mu) // NJets " ;
   for (Int_t k=0; k<NJETS;k++) { 
     outTableFile << "  &  " << k;
   }
@@ -396,7 +396,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut " ;
+    outTableFile << " Cut El/Mu" ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
@@ -444,7 +444,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut " ;
+    outTableFile << " Cut El/Mu" ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
@@ -493,7 +493,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut " ;
+    outTableFile << " Cut El/Mu" ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
