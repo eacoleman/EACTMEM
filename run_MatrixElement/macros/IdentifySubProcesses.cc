@@ -45,9 +45,11 @@ public:
     return 0;
   }
 
-
-  void Print(){
-    cout<<" "<<initial_state<<" "<<final_state<<" "<<diagram<<" "<<xs<<" "<<err_xs<<" "<<cum_xs<<endl;
+  static void PrintHeader(string sep=" "){
+    cout<<sep<<"*Initial State*"<<sep<<"*Final State*"<<sep<<"*Diagram*"<<sep<<"*XS(fb)*"<<sep<<"*Err XS(fb)*"<<sep<<"*Cum Xs*"<<sep<<endl;
+  }
+  void Print(string sep=" "){
+    cout<<sep<<initial_state<<sep<<final_state<<sep<<diagram<<sep<<xs<<sep<<err_xs<<sep<<cum_xs<<sep<<endl;
   }
 
 };
@@ -206,11 +208,13 @@ void PrintOutDiagrams(string title, vector<madProcess> mp){
     total_xs += mp[d].xs;
 
   //Report all the diagrams
+  string sep= "|";
+  madProcess::PrintHeader(sep);
   double cum_total = 0;
   for (unsigned int d=0;d<mp.size();d++){
     cum_total +=  mp[d].xs;
     mp[d].cum_xs = cum_total/total_xs; 
-    mp[d].Print();
+    mp[d].Print(sep);
   }
 
   // Report the number of diagrams
