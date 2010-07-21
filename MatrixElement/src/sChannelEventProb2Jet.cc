@@ -207,18 +207,4 @@ void sChannelEventProb2Jet::getScale(double& scale1, double& scale2) const
       scale1 = scale2 = std::sqrt(scale);
 }
 
-bool sChannelEventProb2Jet::onSwitch()
-{
-   if (getLoop())
-   {
-      swapJets(0, 1);
-   }
-   return true;
-//   if (getLoop() == 2)
-//   {
-//      getPartonColl()->swapJets(0, 1);
-//      getMeasuredColl()->swapJets(0, 1);
-//   }
-//   return true;   
-}
 

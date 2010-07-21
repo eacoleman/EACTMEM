@@ -15,7 +15,6 @@ class sChannelEventProb2Jet : public EventProb2Jet, public topEventProb
       virtual double matrixElement() const;
       virtual void setQuarkIDs() const;
       virtual void getScale(double& scale1, double& scale2) const;
-      virtual bool onSwitch();
       virtual void setTopMassAndWidth(double mTop);
 
    private:

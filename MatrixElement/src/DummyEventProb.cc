@@ -7,7 +7,7 @@ DummyEventProb::DummyEventProb(std::string name, Integrator& integrator) :
 }//C'tor
 
 //This method is defined here to avoid "undefined reference to `vtable " error. At least one pure virtual 
-//function must be defined out of line (i.e. not inline in the header)
+//function must be defined out-of-line (i.e. not inline in the header)
 bool DummyEventProb::onSwitch() {
   return false;
 }
