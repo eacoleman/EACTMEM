@@ -53,6 +53,7 @@ void PartonColl::swapJets(unsigned index1, unsigned index2)
    std::swap(m_jets.at(index1), m_jets.at(index2));
 }
 
+
 void PartonColl::setMet()
 {
    using PeterFunctions::Math::square;
@@ -159,6 +160,8 @@ std::ostream& operator<<(std::ostream & str , const PartonColl & partons ){
      str<<fj;
 
    }
+   str << "\tquark1="<< partons.getQuark1() << std::endl;
+   str << "\tquark2="<< partons.getQuark2() << std::endl;
 
   return str;
 
