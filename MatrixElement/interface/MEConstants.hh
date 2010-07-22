@@ -2,6 +2,7 @@
 #define MECONSTANTS_HH
 
 #include <cmath>
+#include <iostream>
 
 #include "TMath.h"
 
@@ -9,8 +10,11 @@
 
 namespace MEConstants
 {
+  using std::cout;
+  using std::endl;
+
    // Beam constants
-   const double beamEnergy = 980;
+   const double beamEnergy = 3500;
 
    // Masses and widths
    const double bMass = 4.7;
@@ -54,6 +58,9 @@ namespace MEConstants
    // const double gh   = 1.0; // g*g*series_t/(4.0 * TMath::Pi() * 3 * TMath::Pi() * V 
    const double gh    = 0.00005;
 
+  void PrintAllConstants();
+
 }
+
 
 #endif
