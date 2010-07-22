@@ -26,6 +26,7 @@
 #include "TAMUWW/MatrixElement/interface/WWEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WZEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/HWWEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
 
 #include "TAMUWW/MatrixElement/interface/DummyEventProb.hh"
 #include "TAMUWW/MatrixElement/interface/WHEventProb3Jet.hh"
@@ -275,6 +276,9 @@ int main(int argc, char* argv[]){
 // *************************
   vector<EventProb*> eventProbs2jet;
   vector<EventProb*> eventProbs3jet;
+
+  eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF)); //0
+
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH105GeV, 105)); //1
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
