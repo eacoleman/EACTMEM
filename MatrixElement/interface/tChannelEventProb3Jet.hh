@@ -17,7 +17,7 @@ class tChannelEventProb3Jet : public EventProb3Jet, public topEventProb
                             const TransferFunction& lightTF,
                             const std::string& name);
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
       virtual void makeFortranArray(double array[][4]) const;
       virtual void setTopMassAndWidth(double mTop);
@@ -32,7 +32,7 @@ class tChannelEventProb3JetAlt : public tChannelEventProb3Jet
 
    protected:
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
 };
 
 #endif

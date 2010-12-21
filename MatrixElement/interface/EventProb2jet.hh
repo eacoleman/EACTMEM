@@ -26,6 +26,9 @@ class EventProb2Jet : public EventProb
       virtual void changeVars(const std::vector<double>&);
       virtual double totalTF() const;
       void makeFortranArray(double array[][4]) const;
+      void makeFortranArray_qlvq(double array[][4]) const;
+      void makeFortranArray_qqvl(double array[][4]) const;
+      void makeFortranArray_qlvWq(double array[][4],TLorentzVector) const;
 
       const TransferFunction& getBTF() const {return m_tf;}
 

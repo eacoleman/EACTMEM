@@ -11,7 +11,7 @@ class WggEventProb2Jet : public EventProb2Jet
    protected:
       virtual void changeVars(const std::vector<double>& parameters);
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
 };
 

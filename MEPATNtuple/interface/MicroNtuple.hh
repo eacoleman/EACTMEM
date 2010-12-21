@@ -24,17 +24,19 @@ public:
 
 class ProbsForEPD {
 public:
-  double schan  ;
+  double ww     ;
+  double wz     ;
+  double wjg    ;
+  double zjg    ;
+  double tt     ;
   double tchan  ;
+  double schan  ;
+  double qcd    ;
+
   double tchan2 ;
   double wbb    ;
   double wcc    ;
   double wc     ;
-  double wjg    ;
-  double wgg    ;
-  double tt     ;
-  double ww     ;
-  double wz     ;
   double wh     ;
 
   // This just print all the elements to screen
@@ -85,8 +87,9 @@ public:
   Double_t epd2tagSchan;
   Double_t epd1tagTchan;
   Double_t epd2tagTchan;
-  Double_t epd1tagWZ;
-  Double_t epd2tagWZ;
+  Double_t epd0tagWWandWZ;
+  Double_t epd1tagWWandWZ;
+  Double_t epd2tagWWandWZ;
 
 
   enum {nWHmasses = 11};

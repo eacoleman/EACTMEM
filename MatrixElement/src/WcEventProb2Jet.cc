@@ -114,8 +114,8 @@ double WcEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getQuark1(), 0, -1);
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getParton1(), 0, -1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec3 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getJet(0), 0, -1);
@@ -226,8 +226,8 @@ double WcEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec0 = DHELAS::vxxxxx<2>(partons->getQuark1(), 0, -1);
-      Array1 vec1 = DHELAS::ixxxxx<1>(partons->getQuark2(), 0, 1);
+      Array2 vec0 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
+      Array1 vec1 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, 1);
 //      Array1 vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec3 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, 1);
@@ -280,8 +280,8 @@ double WcEventProb2Jet::matrixElement() const
       }
 
 //      DHELAS::HelVec vec[16];
-//      DHELAS::vxxxxx(partons->getQuark1(), 0, -1, vec[0], kTwo);
-//      DHELAS::ixxxxx(partons->getQuark2(), 0, 1, vec[1], kOne);
+//      DHELAS::vxxxxx(partons->getParton1(), 0, -1, vec[0], kTwo);
+//      DHELAS::ixxxxx(partons->getParton2(), 0, 1, vec[1], kOne);
 //      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[2], kOne);
 //      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[3], kOne);
 //      DHELAS::oxxxxx(partons->getJet(0), 0, 1, vec[4], kOne);
@@ -370,19 +370,19 @@ double WcEventProb2Jet::matrixElement() const
 }
 
 
-void WcEventProb2Jet::setQuarkIDs() const
+void WcEventProb2Jet::setPartonTypes() const
 {
 
    // Try both combinations
    if (getLoop() % 2 == 0)
    {
-     getMeasuredColl()->setProtonType(kStrange);
-     getMeasuredColl()->setAntiprotonType(kGluon);
+     getMeasuredColl()->setParton1Type(kStrange);
+     getMeasuredColl()->setParton2Type(kGluon);
    }
    else
    {
-     getMeasuredColl()->setProtonType(kGluon);
-     getMeasuredColl()->setAntiprotonType(kStrange);
+     getMeasuredColl()->setParton1Type(kGluon);
+     getMeasuredColl()->setParton2Type(kStrange);
    }
 }
 
@@ -448,18 +448,18 @@ void WjgEventProb2Jet::changeVars(const vector<double>& parameters)
 }
 
 
-void WjgEventProb2Jet::setQuarkIDs() const
+void WjgEventProb2Jet::setPartonTypes() const
 {
 
    if (getPartonColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kUp);
+      getMeasuredColl()->setParton2Type(kGluon);
    }
    else
    {
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kUp);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kUp);
    }
 }
 

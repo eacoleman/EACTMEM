@@ -16,17 +16,19 @@ using std::endl;
 // This just print all the elements to screen
 void ProbsForEPD::Show(std::string title){
   cout<<title<<endl;
-  cout<<"\t schan ="<< schan  <<endl;
+  cout<<"\t ww    ="<< ww     <<endl;
+  cout<<"\t wz    ="<< wz     <<endl;
+  cout<<"\t wjg   ="<< wjg    <<endl;
+  cout<<"\t zjg   ="<< zjg    <<endl;
+  cout<<"\t tt    ="<< tt     <<endl;
   cout<<"\t tchan ="<< tchan  <<endl;
+  cout<<"\t schan ="<< schan  <<endl;
+  cout<<"\t qcd   ="<< qcd    <<endl;
+
   cout<<"\t tchan2="<< tchan2 <<endl;
   cout<<"\t wbb   ="<< wbb    <<endl;
   cout<<"\t wcc   ="<< wcc    <<endl;
   cout<<"\t wc    ="<< wc     <<endl;
-  cout<<"\t wjg   ="<< wjg    <<endl;
-  cout<<"\t wgg   ="<< wgg    <<endl;
-  cout<<"\t tt    ="<< tt     <<endl;
-  cout<<"\t ww    ="<< ww     <<endl;
-  cout<<"\t wz    ="<< wz     <<endl;
   cout<<"\t wh    ="<< wh     <<endl;
   
 }//Print
@@ -44,7 +46,8 @@ void ProbsForEPD::Normalize(){
   tot += wcc    ;
   tot += wc     ;
   tot += wjg    ; 
-  tot += wgg    ;
+  tot += zjg    ;
+  tot += qcd    ;
   tot += tt     ; 
   tot += ww     ;
   tot += wz     ;
@@ -58,7 +61,8 @@ void ProbsForEPD::Normalize(){
   wcc    /= tot;
   wc     /= tot;
   wjg    /= tot; 
-  wgg    /= tot;
+  zjg    /= tot;
+  qcd    /= tot;
   tt     /= tot; 
   ww     /= tot;
   wz     /= tot;
@@ -84,8 +88,10 @@ void ProbsForEPD::NormalizeToMax(){
     tot = wcc;
   if (wjg > tot)
     tot = wjg;
-  if (wgg > tot)
-    tot = wgg;
+  if (zjg > tot)
+    tot = zjg;
+  if (qcd > tot)
+    tot = qcd;
   if (tt > tot)
     tot = tt;
   if (ww > tot)
@@ -103,7 +109,8 @@ void ProbsForEPD::NormalizeToMax(){
   wcc    /= tot;
   wc     /= tot;
   wjg    /= tot; 
-  wgg    /= tot;
+  zjg    /= tot;
+  qcd    /= tot;
   tt     /= tot; 
   ww     /= tot;
   wz     /= tot;
@@ -138,7 +145,8 @@ MicroNtuple::MicroNtuple(int ijets) :
 
 MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
 {
-   nJets = rhs.nJets;
+  //   nJets = rhs.nJets;
+  nJets = 2;
 
    knntag = new Double_t[nJets];
    tag = new Int_t[nJets];
@@ -148,7 +156,8 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
 
    for (unsigned i = 0; i < nEventProb; ++i)
    {
-      eventProb[i] = rhs.eventProb[i];
+     eventProb[i] = rhs.eventProb[i];
+     //eventProb[i] = m_tProbStat.tEventProb[i];
    }
 
    for (int i = 0; i < nJets; ++i)
@@ -199,7 +208,8 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 
    for (unsigned i = 0; i < nEventProb; ++i)
    {
-      eventProb[i] = rhs.eventProb[i];
+     eventProb[i] = rhs.eventProb[i];
+     //eventProb[i] = m_tProbStat.tEventProb[i];
    }
 
    for (int i = 0; i < nJets; ++i)
@@ -348,7 +358,7 @@ Double_t MicroNtuple::calcEPD(unsigned ntag, EPDType type,
 
     // Return the wh probability. Interestingly there is not diboson here
     return (probs.schan+probs.tchan+probs.tchan2)/ (probs.schan +  probs.tchan + probs.tchan2 + probs.wbb + 
-						    probs.wcc + probs.wc + probs.wjg + probs.wgg + probs.tt );       
+						    probs.wcc + probs.wc + probs.wjg + probs.zjg + probs.qcd + probs.tt );       
    
    
   }//njets==2
@@ -394,7 +404,7 @@ Double_t MicroNtuple::calcHiggsEPD(unsigned ntag, double mass,
 
    // Return the wh probability
    return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		      probs.wcc + probs.wc + probs.wjg + probs.wgg + probs.tt +
+		      probs.wcc + probs.wc + probs.wjg + probs.zjg + probs.qcd + probs.tt +
 		      probs.ww + probs.wz);      
 
 }// calcHiggsEPD
@@ -568,7 +578,7 @@ Double_t MicroNtuple::calcHiggsMaxProbEPD(unsigned ntag, double mass,
 
    // Return the wh probability. 
    return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		      probs.wcc + probs.wc + probs.wjg + probs.wgg + probs.tt +
+		      probs.wcc + probs.wc + probs.wjg + probs.zjg + probs.qcd + probs.tt +
 		      probs.ww + probs.wz);      
    
 }// calcHiggsMaxProbEPD
@@ -604,18 +614,20 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
 
   ProbsForEPD probs;
  
-  probs.schan  = eventProb[11];
-  probs.tchan  = eventProb[12];
-  probs.tchan2 = eventProb[13];
-  probs.wbb    = eventProb[14];
-  probs.wcc    = eventProb[15];
-  probs.wc     = eventProb[16];
-  probs.wjg    = eventProb[17];
-  probs.wgg    = eventProb[18];
-  probs.tt     = eventProb[19];
-  probs.ww     = eventProb[20];
-  probs.wz     = eventProb[21];
-  probs.wh     = eventProb[indexWH];
+  probs.ww     = eventProb[0];
+  probs.wz     = eventProb[1];
+  probs.wjg    = eventProb[2];
+  probs.zjg    = eventProb[3];
+  probs.tt     = eventProb[4];
+  probs.tchan  = eventProb[5];
+  probs.schan  = eventProb[6];
+  probs.qcd    = eventProb[7];
+
+//   probs.tchan2 = eventProb[13];
+//   probs.wbb    = eventProb[14];
+//   probs.wcc    = eventProb[15];
+//   probs.wc     = eventProb[16];
+//   probs.wh     = eventProb[indexWH];
  
    if (ntag == 0) // this is the EPD with no KIT information
    {
@@ -626,7 +638,8 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
       probs.wcc    *= params[4];
       probs.wc     *= params[5];
       probs.wjg    *= params[6];
-      probs.wgg    *= params[7];
+      probs.zjg    *= params[7];
+      probs.qcd    *= params[7];
       probs.tt     *= params[8];
       probs.ww     *= params[9];
       probs.wz     *= params[10];
@@ -653,7 +666,8 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
       probs.wcc    *= params[4] * (1 - bProb[0]);
       probs.wc     *= params[5] * (1 - bProb[0]);
       probs.wjg    *= params[6] * (1 - bProb[0]);
-      probs.wgg    *= params[7] * (1 - bProb[0]);
+      probs.zjg    *= params[7] * (1 - bProb[0]);
+      probs.qcd    *= params[7] * (1 - bProb[0]);
       probs.tt     *= params[8] * bProb[0];
       probs.ww     *= params[9] * (1 - bProb[0]);
       probs.wz     *= params[10]* (1 - bProb[0]);
@@ -681,7 +695,8 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
       probs.wcc    *= params[4] * (1 - bProb[0]) * (1 - bProb[1]);
       probs.wc     *= params[5] * (1 - bProb[0]) * (1 - bProb[1]);
       probs.wjg    *= params[6] * (1 - bProb[0]) * (1 - bProb[1]);
-      probs.wgg    *= params[7] * (1 - bProb[0]) * (1 - bProb[1]);
+      probs.zjg    *= params[7] * (1 - bProb[0]) * (1 - bProb[1]);
+      probs.qcd    *= params[7] * (1 - bProb[0]) * (1 - bProb[1]);
       probs.tt     *= params[8] * bProb[0] * bProb[1];
       probs.ww     *= params[9] * (1 - bProb[0]) * (1 - bProb[1]);
       probs.wz     *= params[10]* (1 - bProb[0]) * (1 - bProb[1]);
@@ -744,7 +759,8 @@ Double_t MicroNtuple::calcHiggsSuperEPD(unsigned ntag, double mass,
 				     probs.wcc    + probsMax.wcc    + 
 				     probs.wc     + probsMax.wc     + 
 				     probs.wjg    + probsMax.wjg    + 
-				     probs.wgg    + probsMax.wgg    + 
+				     probs.zjg    + probsMax.zjg    + 
+				     probs.qcd    + probsMax.qcd    + 
 				     probs.tt     + probsMax.tt     + 
 				     probs.ww     + probsMax.ww     + 
 				     probs.wz     + probsMax.wz   );      
@@ -779,10 +795,16 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag,
       throw std::runtime_error("ERROR MicroNtuple::calcWZEPD. Invalid tag requested");
    }
 
+   //Relative Weights:
    //Ricardo's optimized numbers for (ww+wz)/(ww+wz+wh+others) with a 100 GeV WH
-   static const double params[2][12] =
-     {{436559, 79818.6, 83189.6, 12905.8, 6.94955e+06, 3.54289e+06, 46012.2, 2.65097e+06, 312.269, 1.02771e+08, 7.65171e+08, 8.79845e+06}, // figOfMerit=1.75023
-      {38607.8, 8.86165e+06, 1.11483e+06, 12522.3, 4.4771e+07, 88213.8, 10117.3, 953.334, 868.76, 2.20512e+08, 2.07888e+08, 4.41401e+06} // figOfMerit=1.60874
+//    static const double params[2][12] =
+//      {{436559, 79818.6, 83189.6, 12905.8, 6.94955e+06, 3.54289e+06, 46012.2, 2.65097e+06, 312.269, 1.02771e+08, 7.65171e+08, 8.79845e+06}, // figOfMerit=1.75023
+//       {38607.8, 8.86165e+06, 1.11483e+06, 12522.3, 4.4771e+07, 88213.8, 10117.3, 953.334, 868.76, 2.20512e+08, 2.07888e+08, 4.41401e+06} // figOfMerit=1.60874
+//      };
+
+   static const double params[2][13] =
+     {{1,1,1,1,1,1,1,1,1,1,1,1,1},
+      {1,1,1,1,1,1,1,1,1,1,1,1,1}
      };
    
    // Get the probabilities for the EPD. indexWH is set to zero and is irrelevant here.
@@ -790,14 +812,15 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag,
    
    // There is less than three events per MC sample in which all the probabilities are zero. 
    // To avoid returning a NaN just return zero for those
-   if (probs.wh + probs.ww == 0) return 0;
+   if (probs.wz + probs.ww == 0) return 0;
 
    // Return the wh probability
    return (probs.wz+probs.ww) / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		      probs.wcc + probs.wc + probs.wjg + probs.wgg + probs.tt +
+		      probs.wcc + probs.wc + probs.wjg + probs.zjg + probs.qcd + probs.tt +
 		      probs.ww + probs.wz);      
       
 }//calcWZEPD 
+
 
 
 //------------------------------------------------------------------------------

@@ -26,9 +26,8 @@ public:
 
 
   //Needed for ME
-  TLorentzVector lLV;
-  vector < TLorentzVector > jLV;
-  TLorentzVector METLV;
+  //TLorentzVector lLV;
+  vector < TLorentzVector > jLV, METLV, lLV;
   vector < int > jBtag;
   int lQ;
   int ldetComp;
@@ -37,8 +36,20 @@ public:
 
   //Additional
   double        Mjj;
+  int           passStd;
   int           passAll;
 
+  double        DRlj1;
+  double        DRlj2;
+  double        Thetalj1pj2;
+
+  double        lTotIso;
+  double        lecalIso;
+  double        lhcalIso;
+  double        ltrkIso;
+
+  double        METEt;
+  double        lPhi;
   ClassDef(EventNtuple, 1)
 
 };

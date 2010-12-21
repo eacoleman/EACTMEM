@@ -165,12 +165,51 @@ void EventProb2Jet::makeFortranArray(double array[][4]) const
 {
    using PeterFunctions::makeArray;
 
-   makeArray(getPartonColl()->getQuark1(), array[0]);
-   makeArray(getPartonColl()->getQuark2(), array[1]);
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
    makeArray(getPartonColl()->getLepton(), array[2]);
    makeArray(getPartonColl()->getNeutrino(), array[3]);
    makeArray(getPartonColl()->getJet(0), array[4]);
    makeArray(getPartonColl()->getJet(1), array[5]);
+}
+
+void EventProb2Jet::makeFortranArray_qqvl(double array[][4]) const
+{
+   using PeterFunctions::makeArray;
+
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
+   makeArray(getPartonColl()->getNeutrino(), array[2]);
+   makeArray(getPartonColl()->getLepton(), array[3]);
+   makeArray(getPartonColl()->getJet(0), array[4]);
+   makeArray(getPartonColl()->getJet(1), array[5]);
+}
+
+//added to for consistency with sChannel & tChannel.
+void EventProb2Jet::makeFortranArray_qlvq(double array[][4]) const
+{
+   using PeterFunctions::makeArray;
+
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
+   makeArray(getPartonColl()->getJet(0), array[2]);
+   makeArray(getPartonColl()->getLepton(), array[3]);
+   makeArray(getPartonColl()->getNeutrino(), array[4]);
+   makeArray(getPartonColl()->getJet(1), array[5]);
+}
+
+//added to for consistency with ttChannel.
+void EventProb2Jet::makeFortranArray_qlvWq(double array[][4],TLorentzVector m_W) const
+{
+   using PeterFunctions::makeArray;
+
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
+   makeArray(getPartonColl()->getJet(0), array[2]);
+   makeArray(getPartonColl()->getLepton(), array[3]);
+   makeArray(getPartonColl()->getNeutrino(), array[4]);
+   makeArray(m_W, array[5]);
+   makeArray(getPartonColl()->getJet(1), array[6]);
 }
 
 // ------------------------------------------------------------------

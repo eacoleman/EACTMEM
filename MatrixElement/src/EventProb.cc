@@ -86,24 +86,24 @@ bool EventProb::incrementLoop()
    if (!onSwitch())
    {
       m_loop = -1;
+      //cout << "OnSwitch set to return false" << endl;
       return false;
    }
 
    if (m_loop == static_cast<int>(m_nLoop))
    {
       m_loop = -1;
+      //cout << " Maximum reached, m_nLoop=" << m_nLoop << endl;
       return false;
    }
-   else
-   {
-      return true;
-   }
+   return true;
+  
 }
 
 void EventProb::prepareForIntegral()
 {
 
-   setQuarkIDs();
+   setPartonTypes();
 
    setupIntegral();
 
@@ -174,7 +174,7 @@ double EventProb::execute(const double parameters[])
    //Compute the energies of the incident partons given the sum of 
    //the Lorentz vectors of all final state partons
    double energy1, energy2;
-   if (!getQuarkEnergies(energy1, energy2))
+   if (!getPartonEnergies(energy1, energy2))
       return 0;
    
    double x1 = energy1 / beamEnergy;
@@ -305,7 +305,7 @@ bool EventProb::isPossible() const
 }
 
 
-bool EventProb::getQuarkEnergies(double& energy1, double& energy2) const
+bool EventProb::getPartonEnergies(double& energy1, double& energy2) const
 {
    using MEConstants::beamEnergy;
 
@@ -359,8 +359,8 @@ double EventProb::pdf(double x1, double x2) const
    if (scale1 < Qlimit || scale2 < Qlimit)
       return 0;
 
-   double quark1E = m_partonColl.getQuark1().E();
-   double quark2E = m_partonColl.getQuark2().E();
+   double quark1E = m_partonColl.getParton1().E();
+   double quark2E = m_partonColl.getParton2().E();
 
    if (quark1E && quark2E)
    {
@@ -446,7 +446,7 @@ double EventProb::matrixElementCorrelated(const vector<double> & trueParams){
   //Compute the energies of the incident partons given the sum of 
   //the Lorentz vectors of all final state partons
   double energy1, energy2;
-  if (!getQuarkEnergies(energy1, energy2)) return 0;
+  if (!getPartonEnergies(energy1, energy2)) return 0;
   getPartonColl()->setQuark1(TLorentzVector(0, 0, energy1, energy1));
   getPartonColl()->setQuark2(TLorentzVector(0, 0, -energy2, energy2));
 
@@ -464,15 +464,13 @@ double EventProb::matrixElementCorrelated(const vector<double> & trueParams){
 
     // set the quark Id's,
     // (i.e. initial partons are supposed to be quarks, gluons, etc)
-    setQuarkIDs();
+    setPartonTypes();
     me_pdf += matrixElement()*pdf(x1,x2);
+    cout << "me_pdf=" << me_pdf << endl;
     counter ++;
-
   } // while permutations
-  
 
   double tf = totalTF();
-  
   /*
   if (debug < 2 ) {
     cout<<" mecorr d="<<debug<<" \tme="<<matrixElement()<<" tf="<<tf
@@ -481,7 +479,6 @@ double EventProb::matrixElementCorrelated(const vector<double> & trueParams){
   }
   debug++
   */
-
   return me_pdf * tf * phaseSpace() / counter;
-  
+
 }// matrixElementCorrelated

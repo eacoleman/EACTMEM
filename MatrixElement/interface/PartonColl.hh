@@ -19,12 +19,12 @@ class PartonColl
 
       TLorentzVector& getLepton() {return m_lepton;} 
       TLorentzVector& getNeutrino() {return m_neutrino;}
-      TLorentzVector& getQuark1() {return m_quark1;}
-      TLorentzVector& getQuark2() {return m_quark2;}
+      TLorentzVector& getParton1() {return m_quark1;}
+      TLorentzVector& getParton2() {return m_quark2;}
       const TLorentzVector& getLepton() const {return m_lepton;} 
       const TLorentzVector& getNeutrino() const {return m_neutrino;}
-      const TLorentzVector& getQuark1() const {return m_quark1;}
-      const TLorentzVector& getQuark2() const {return m_quark2;}
+      const TLorentzVector& getParton1() const {return m_quark1;}
+      const TLorentzVector& getParton2() const {return m_quark2;}
       int getLepCharge() const {return m_lepCharge;}
       int getDetector() const {return m_detector;}
 
@@ -33,8 +33,8 @@ class PartonColl
 
       int getProtonType() const {return m_quark1type;}
       int getAntiprotonType() const {return m_quark2type;}
-      void setProtonType(int input) {m_quark1type = input;}
-      void setAntiprotonType(int input) {m_quark2type = input;}
+      void setParton1Type(int input) {m_quark1type = input;}
+      void setParton2Type(int input) {m_quark2type = input;}
 
 // Jet stuff
       struct Jet

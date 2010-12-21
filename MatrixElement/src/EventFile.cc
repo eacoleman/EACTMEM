@@ -422,8 +422,8 @@ void EventNtupleEventFile::setBranches(PartonColl&)
 void EventNtupleEventFile::fillBranches(PartonColl& partons)
 {
 
-  partons.setLepton(m_ntuple->lLV);
-  partons.setNeutrino(m_ntuple->METLV);
+  partons.setLepton(m_ntuple->lLV[0]);
+  partons.setNeutrino(m_ntuple->METLV[0]);
 
   PartonColl::Jet jet1(m_ntuple->jLV[0], m_ntuple->jBtag[0],
 		       true, 0, false, 0, 0, 0, 0, 0);

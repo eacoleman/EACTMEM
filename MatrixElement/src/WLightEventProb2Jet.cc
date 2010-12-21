@@ -2,7 +2,7 @@
 // Created : 07/20/2010
 // The diagrams can be compared with madgraph using the processes 
 // g u -> e+ ve d g for W+, g d -> e- ve~ u g for W-
-// $Id$
+// $Id: WLightEventProb2Jet.cc,v 1.1 2010/07/22 20:20:16 ilyao Exp $
 
 //  This package libraries
 #include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
@@ -15,7 +15,7 @@
 #include <iostream>
 
 // Set this flag to test the output madgraph would give
-#define MADGRAPH_TEST
+//#define MADGRAPH_TEST
 
 using std::vector;
 using std::cout;
@@ -34,7 +34,7 @@ extern "C" {
 // ------------------------------------------------------------------
 WLightEventProb2Jet::WLightEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-  EventProb2Jet("WLight2Jet", integrator, 3, 4, tf), swapPartonMom(false)
+  EventProb2Jet("WLight2Jet", integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
 
 }
@@ -69,8 +69,7 @@ double WLightEventProb2Jet::matrixElement() const
    using MEConstants::wWidth;
    using MEConstants::zWidth;
 
-
-   MEConstants::PrintAllConstants();
+   //   MEConstants::PrintAllConstants(alphas_process);
 
    const PartonColl* partons = getPartonColl();
 
@@ -78,12 +77,12 @@ double WLightEventProb2Jet::matrixElement() const
 
    doublecomplex factorGWF[2]   = {doublecomplex(MEConstants::gwf, 0),
 				   doublecomplex(0, 0)};
-   doublecomplex factorGG[2]  = {doublecomplex(MEConstants::gg, 0),
-				   doublecomplex(0, 0)};
-   doublecomplex factorSGG[2]    = {doublecomplex(MEConstants::sgg, 0),
-				   doublecomplex(0, 0)};
+   doublecomplex factorGG[2]  = {doublecomplex(MEConstants::GetAdjusted_gg(alphas_process), 0),
+				   doublecomplex(MEConstants::GetAdjusted_gg(alphas_process), 0)};
+   doublecomplex factorSGG[2]    = {doublecomplex(MEConstants::GetAdjusted_sgg(alphas_process), 0),
+   			   doublecomplex(0, 0)};
 
-   // This should equal the number of Feynman diagrams.
+   // This should equal the number of helicity combinations.
    enum {vecSize = 4};
    typedef SimpleArray<doublecomplex, vecSize> OutputType;
    //OutputType output[5000];
@@ -104,11 +103,11 @@ double WLightEventProb2Jet::matrixElement() const
       Array2 vec1;
       Array1 vec2;
       if ( !swapPartonMom ) {
-	vec1 = DHELAS::vxxxxx<2>(partons->getQuark1(), 0, -1);
-        vec2 = DHELAS::ixxxxx<1>(partons->getQuark2(), 0, +1);
+	vec1 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
+        vec2 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, +1);
       } else {
-	vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
-        vec2 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, +1);
+	vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
+        vec2 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, +1);
       }
 
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
@@ -152,18 +151,14 @@ double WLightEventProb2Jet::matrixElement() const
 
       for (unsigned i = 0; i < vecSize; ++i)
       {
- 	doublecomplex temp1 = -output1[i] + output2[i] + output4[i] - output5[i] + output6[i];
- 	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
+ 	doublecomplex temp1 = -output1[i]+ output2[i] + output4[i] - output5[i] + output6[i];
+	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-//      	doublecomplex temp1 = output1[i];
-//   	doublecomplex temp2 = 0;
-        cout << "output1=" << output1[i] << endl;
-	//<< " output2=" << output2[i] << endl; 
 	doublecomplex m1 = ( temp1*16.0 -temp2*2.0)*std::conj(temp1)/3.0;
 	doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
 
 	answer+= (m1+m2).real();
-	cout << "current helicity 'amplitude'" << (m1+m2).real() << " + " << (m1+m2).imag() << "i" << endl;
+	//	cout << "current helicity 'amplitude'" << (m1+m2).real() << " + " << (m1+m2).imag() << "i" << endl;
       }
 
    }
@@ -173,20 +168,20 @@ double WLightEventProb2Jet::matrixElement() const
       static Array1 vec3;
       static double lepE = 0;
       if (lepE != partons->getLepton().E())
-      {
-         vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, +1);
-         lepE = partons->getLepton().E();
-      }
+	{
+	  vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, +1);
+	  lepE = partons->getLepton().E();
+	}
 
       ///See if we've switched the quark and the gluon
       Array2 vec1;
       Array1 vec2;
       if ( !swapPartonMom ) {
-	vec1 = DHELAS::vxxxxx<2>(partons->getQuark1(), 0, -1);
-        vec2 = DHELAS::ixxxxx<1>(partons->getQuark2(), 0, +1);
+	vec1 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
+        vec2 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, +1);
       } else {
-	vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
-        vec2 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, +1);
+	vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
+        vec2 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, +1);
       }
 
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
@@ -234,12 +229,12 @@ double WLightEventProb2Jet::matrixElement() const
       {
 	doublecomplex temp1 = (-output1[i] + output2[i] + output4[i] - output5[i] + output6[i])*-1.0;
 	doublecomplex temp2 = ( output1[i] + output3[i] + output5[i] + output7[i] + output8[i])*-1.0;
-         
+
 	doublecomplex m1 = ( temp1*16.0 -temp2*2.0)*std::conj(temp1)/3.0;
 	doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
 
 	answer+= (m1+m2).real();
-	cout << "current helicity 'amplitude'" << (m1+m2).real() << " + " << (m1+m2).imag() << "i" << endl;
+	//	cout << "current helicity 'amplitude'" << (m1+m2).real() << " + " << (m1+m2).imag() << "i" << endl;
       }
     
 
@@ -271,7 +266,7 @@ double WLightEventProb2Jet::matrixElement() const
   //wpjjaltm_(fortranArray , &mw, &an);
   else
     wmjjm_(fortranArray , &mw, &an);
-  // wmjjaltm_(fortranArray , &mw, &an);
+  //wmjjaltm_(fortranArray , &mw, &an);
   cout << "Madgraph answer= " << an << endl;
    
   // Exit right away
@@ -284,24 +279,24 @@ double WLightEventProb2Jet::matrixElement() const
 }
 
 // ------------------------------------------------------------------
-void WLightEventProb2Jet::setQuarkIDs() const
+void WLightEventProb2Jet::setPartonTypes() const
 {   
   if ( getPartonColl()->getLepCharge() > 0 ) {
     if ( !swapPartonMom ) {
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kUp);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kUp);
     } else {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kUp);
+      getMeasuredColl()->setParton2Type(kGluon);
     }
     
   } else {
     if ( !swapPartonMom ) {
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kDown);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kDown);
     } else {
-      getMeasuredColl()->setProtonType(kDown);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kDown);
+      getMeasuredColl()->setParton2Type(kGluon);
     }
   }
 }
@@ -324,6 +319,8 @@ bool WLightEventProb2Jet::onSwitch()
   
   switch (getLoop()) {
   case 0:
+    //swapPartonMom=true; //when testing alternate functions
+    swapPartonMom=false; 
     break;
   case 1:
     swapJets(0, 1);

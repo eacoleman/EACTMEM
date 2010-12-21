@@ -22,6 +22,7 @@
 #include "TAMUWW/MatrixElement/interface/HiggsEventProb.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
+#include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
 #include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
@@ -59,11 +60,10 @@ void MEJob::loopOverEvents()
 
    // not-so-elegant code to attach tnt to tree if it's a tnt input
    EventFile* myfile = &m_inputFile;
-   if (dynamic_cast<UCLAntEventFile*>(myfile))
+   if (dynamic_cast<EventNtupleEventFile*>(myfile))
    {
-     // FIX and uncomment RE April 21, 2010.
-     //UCLAnt* myntuple = dynamic_cast<UCLAntEventFile*>(myfile)->getPointer();
-     //outputTree->Branch("tnt", "UCLAnt", &myntuple);
+     EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
+     outputTree->Branch("EvtTree","EventNtuple",&myntuple);
    }
 
    PartonColl partons;
@@ -229,6 +229,7 @@ void MEJob::m_doEvent(PartonColl& partons){
    std::cout << "  Input values: \n"
              << "\tLepton= " << partons.getLepton() << " Charge= "
              << partons.getLepCharge() << "\n";
+   std::cout << "\tNeutrino= " << partons.getNeutrino() << "\n";
    for (unsigned ijet = 0; ijet < partons.getNJets(); ++ijet){
       std::cout <<"\tJet  " << ijet << "= " << partons.getJet(ijet)
 		<<" tagged= "<< (partons.getFullJet(ijet).tag ==1 ? "yes" : "no") <<std::endl;      
@@ -318,21 +319,17 @@ void MEJob::m_doEvent(PartonColl& partons){
 
 	 // increment the 'permutations' counter
          ++counter;
-
       }//while permutations
-      
-      
+
       // Stop the watch
       m_benchmark->Stop("event");
       probstat.tRealTime = m_benchmark->GetRealTime("event");
       probstat.tCpuTime  = m_benchmark->GetCpuTime("event");
-
       // Normalize to the number of permutations
       if (counter > 0) {
 	totalProb /= counter;
 	totalErr2 /= counter*counter;
       }
-
       // Fill all the fields of probstat
       probstat.tEventProb    = totalProb;
       probstat.tEventMaxProb = maxProb;

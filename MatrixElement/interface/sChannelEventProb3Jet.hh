@@ -13,7 +13,7 @@ class sChannelEventProb3Jet : public EventProb3Jet, public topEventProb
 
    protected:
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
       virtual void setTopMassAndWidth(double mTop);
 };

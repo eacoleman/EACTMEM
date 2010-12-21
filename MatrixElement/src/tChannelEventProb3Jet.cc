@@ -86,8 +86,8 @@ double tChannelEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1);
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
       Array1 vec2 = DHELAS::oxxxxx<1>(partons->getJet(2), 0, 1);
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
@@ -118,8 +118,8 @@ double tChannelEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getQuark1(), 0, -1);
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getParton1(), 0, -1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
       Array1 vec2 = DHELAS::ixxxxx<1>(partons->getJet(2), 0, -1);
 //      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
@@ -140,8 +140,8 @@ double tChannelEventProb3Jet::matrixElement() const
       }
 
 //      DHELAS::HelVec vec[11];
-//      DHELAS::oxxxxx(partons->getQuark1(), 0, -1, vec[0], kOne);
-//      DHELAS::vxxxxx(partons->getQuark2(), 0, -1, vec[1], kTwo);
+//      DHELAS::oxxxxx(partons->getParton1(), 0, -1, vec[0], kOne);
+//      DHELAS::vxxxxx(partons->getParton2(), 0, -1, vec[1], kTwo);
 //      DHELAS::ixxxxx(partons->getJet(2), 0, -1, vec[2], kOne);
 //      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[3], kOne);
 //      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[4], kOne);
@@ -194,17 +194,17 @@ double tChannelEventProb3Jet::matrixElement() const
 //   return answer + answer2;
 }
 
-void tChannelEventProb3Jet::setQuarkIDs() const
+void tChannelEventProb3Jet::setPartonTypes() const
 {
    if (getMeasuredColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kUp);
+      getMeasuredColl()->setParton2Type(kGluon);
    }
    else
    {
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kUp);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kUp);
    }
 }
 
@@ -233,8 +233,8 @@ void tChannelEventProb3Jet::makeFortranArray(double array[][4]) const
 {
    using PeterFunctions::makeArray;
 
-   makeArray(getPartonColl()->getQuark1(), array[0]);
-   makeArray(getPartonColl()->getQuark2(), array[1]);
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
    makeArray(getPartonColl()->getJet(2), array[2]);
    makeArray(getPartonColl()->getLepton(), array[3]);
    makeArray(getPartonColl()->getNeutrino(), array[4]);
@@ -283,8 +283,8 @@ double tChannelEventProb3JetAlt::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getQuark1(), 0, -1);
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::oxxxxx<1>(partons->getParton1(), 0, -1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
       Array1 vec2 = DHELAS::ixxxxx<1>(partons->getJet(2), 0, -1);
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
@@ -305,8 +305,8 @@ double tChannelEventProb3JetAlt::matrixElement() const
       }
 
 //      DHELAS::HelVec vec[11];
-//      DHELAS::oxxxxx(partons->getQuark1(), 0, -1, vec[0], kOne);
-//      DHELAS::vxxxxx(partons->getQuark2(), 0, -1, vec[1], kTwo);
+//      DHELAS::oxxxxx(partons->getParton1(), 0, -1, vec[0], kOne);
+//      DHELAS::vxxxxx(partons->getParton2(), 0, -1, vec[1], kTwo);
 //      DHELAS::ixxxxx(partons->getJet(2), 0, -1, vec[2], kOne);
 //      DHELAS::ixxxxx(partons->getLepton(), 0, -1, vec[3], kOne);
 //      DHELAS::oxxxxx(partons->getNeutrino(), 0, 1, vec[4], kOne);
@@ -331,8 +331,8 @@ double tChannelEventProb3JetAlt::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1);
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
       Array1 vec2 = DHELAS::oxxxxx<1>(partons->getJet(2), 0, 1);
 //      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
@@ -353,8 +353,8 @@ double tChannelEventProb3JetAlt::matrixElement() const
       }
 
 //      DHELAS::HelVec vec[11];
-//      DHELAS::ixxxxx(partons->getQuark1(), 0, 1, vec[0], kOne);
-//      DHELAS::vxxxxx(partons->getQuark2(), 0, -1, vec[1], kTwo);
+//      DHELAS::ixxxxx(partons->getParton1(), 0, 1, vec[0], kOne);
+//      DHELAS::vxxxxx(partons->getParton2(), 0, -1, vec[1], kTwo);
 //      DHELAS::oxxxxx(partons->getJet(2), 0, 1, vec[2], kOne);
 //      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[3], kOne);
 //      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[4], kOne);
@@ -417,16 +417,16 @@ double tChannelEventProb3JetAlt::matrixElement() const
 }
 
 
-void tChannelEventProb3JetAlt::setQuarkIDs() const
+void tChannelEventProb3JetAlt::setPartonTypes() const
 {
    if (getMeasuredColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kDown);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kDown);
    }
    else
    {
-      getMeasuredColl()->setProtonType(kDown);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kDown);
+      getMeasuredColl()->setParton2Type(kGluon);
    }
 }

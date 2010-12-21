@@ -75,16 +75,18 @@ int main (int argc, char* argv[])
   
   //// Output Files:
   // corresponds to the last string on the command line
+  TString modename;
+  modename=argv[argc-1];
   TString outtablefilename;
-  outtablefilename=argv[argc-1];
+  outtablefilename=argv[argc-2];
   ofstream outtablefile;
   outtablefile.open(outtablefilename,ios::out);
   // corresponds to the next to last string on the command line
   TString outrootfilename;
-  outrootfilename=argv[argc-2];
+  outrootfilename=argv[argc-3];
   TFile * outrootfile = new TFile(outrootfilename, "RECREATE");
   // adjust argc to account for inputing the two character strings above
-  argc=argc-2;
+  argc=argc-3;
   
   // create the tree
   TTree* EvtTree = new TTree("EvtTree", "Output tree for matrix element");
@@ -108,6 +110,8 @@ int main (int argc, char* argv[])
   double j_DRel;
   double j_DRelMin=0.3;
   double pi_=TMath::Pi();
+  double el_Eta=-1;
+  double el_Phi=-1;
   double adphi;
 
   /// Primary Electrons (used in electron selection):
@@ -121,6 +125,10 @@ int main (int argc, char* argv[])
   double elPrim_dBMax=0.02;
   double el_RelIso;
   double elPrim_RelIsoMax=0.1;
+  if ( (modename.Contains("QCD"))||(modename.Contains("qcd")) ) {
+    ///open the isolation requirement for QCD
+    elPrim_RelIsoMax=1.0;
+  }
   int el_eid;
   int elPrim_eid1=1;
   int elPrim_eid2=3;
@@ -141,6 +149,7 @@ int main (int argc, char* argv[])
   double elZVeto_MZMax=106.0;
 	 
   /// Primary Muons (used in muon selection):
+  vector < double > JEta, JPhi;
   double mu_pt;
   double muPrim_ptMin=20.0;
   double mu_eta;
@@ -152,10 +161,13 @@ int main (int argc, char* argv[])
   double muPrim_itNHitsMin=10.5;
   double muPrim_DRj;
   double muPrim_DRjMax=0.3;
-  double muPrim_dB;
   double muPrim_dBMax=0.02;
-  double muPrim_RelIso;
+  double mu_RelIso;
   double muPrim_RelIsoMax=0.05;
+  if ( (modename.Contains("QCD"))||(modename.Contains("qcd")) ) {
+    ///open the isolation requirement for QCD
+    muPrim_RelIsoMax=1.0;
+  }
   bool muisGmTm;
   bool muisTightPrompt;
   bool muDRPass;
@@ -190,20 +202,31 @@ int main (int argc, char* argv[])
   bool el_conv=false;
   int elcnt_Prim=0;
   int elcnt_Loose=0;
-  bool muDRPass=true;
+  bool IsjBtag=false;
+  int jNEntries;
   int mucnt_Prim=0;
   int mucnt_Loose=0;
   bool el_ZVeto=false;
   int jcnt_tot=0;
   int nBtag=0;
   int passAll=0;//=1 for mu, =2 for el if the event passes all of the cuts
+  ///Event Based Markers:
+  int el1Marker, mu1Marker;
+  //  int el2Marker, mu2Marker;
+  int lpCounter;
 
   /// Additional Parameters
+  int passStandard=0;//=1 for mu, =2 for el if the event passes all of the cuts
   vector <math::XYZTLorentzVector> jp4;
-  TLorentzVector jp4LV;
-  math::XYZTLorentzVector lp4;
+  math::XYZTLorentzVector lp4, METp4;
+  TLorentzVector lp4LV, j1p4LV, j2p4LV, METp4LV;
+  TVector3 lp3, jjp3;
+  double Thetalj1pj2, DRlj1, DRlj2;
+  double lTotIso,lecalIso,lhcalIso,ltrkIso;
   double Mjj=-1;
-  int lQ;
+  int lQ=-10;
+  double lEta=-1;
+  vector <int> jBtag;
 
   // Parse the command line arguments
   parser.parseArguments (argc, argv);
@@ -302,58 +325,59 @@ int main (int argc, char* argv[])
       elcnt_Prim=0;
       elcnt_Loose=0;
       el_conv=false;
-      vector< pat::Electron > const & electronVec = *electronHandle;
-      if (electronVec.begin() != electronVec.end()) {
-	const vector< pat::Electron >::const_iterator EndelIter       = electronVec.end();
-	for ( vector< pat::Electron >::const_iterator elIter = electronVec.begin(); ( (elIter!=EndelIter) ) ; ++elIter ) {
-	  el_et=elIter->et();
-	  el_eta=elIter->eta();
-	  el_aetasc=abs(elIter->superCluster()->eta());
-	  
-	  aetaPass=false;
-	  if ( abs(el_eta)<elPrim_aetaMax ) {
-	    aetaPass=true; //noscv
-	  }
-	  if ( (el_aetasc<elPrim_aetascExcludeMax)&&(el_aetasc>elPrim_aetascExcludeMin) ) {
-	    aetaPass=false;
-	  }
-	  el_eid=elIter->electronID("simpleEleId70relIso");
-	  el_RelIso=(elIter->dr03TkSumPt()+elIter->dr03EcalRecHitSumEt()+elIter->dr03HcalTowerSumEt())/el_et;
-	  
-	  /// Apply The Primary Cuts
-	  if ( (el_et>elPrim_etMin)&&
-	       aetaPass&&
-	       (abs(elIter->dB())<elPrim_dBMax)&&
-	       ((el_eid==elPrim_eid1)||(el_eid==elPrim_eid2)||(el_eid==elPrim_eid3)||(el_eid==elPrim_eid4))&&
-	       (el_RelIso<elPrim_RelIsoMax)
-	       ) {
-	    
-	    elcnt_Prim++;
-	    lp4=elIter->p4();
-	    lQ=elIter->charge();
- 	    lEta=el_eta;
-
-// 	    lPhi=elIter->phi();
-	    
-// 	    lEt=let;
-// 	    laEtasc=aeta_sc;
-	    
-// 	    lcnt_iso++;
-// 	    elcnt_iso++;
-	    
-// 	    lQ=elIter->charge();
-// 	    elEt=let;
-	    ///Electron Conversion
-	    if ( elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits()elPrim_trackerInnerHitsMin>elPrim_trackerInnerHitsMin ) {
-	      el_conv=true;
-	    }	 
-	  }
-	  /// Apply The Loose Cuts
-	  if ( (el_et>elLoose_etMin)&&(abs(el_eta)<elLoose_aetaMax)&&(el_RelIso<elLoose_RelIsoMax) ) {
-	    elcnt_Loose++;	       
-	  }
-
+      el1Marker=-1;
+      //      el2Marker=-1;
+      lpCounter=0;
+      
+      //vector< pat::Electron > const & electronVec = *electronHandle;
+      const vector< pat::Electron >::const_iterator elEnd = electronHandle->end();
+      for (vector< pat::Electron >::const_iterator elIter = electronHandle->begin(); ( elEnd != elIter ); ++elIter ) { 	
+	el_et=elIter->et();
+	el_eta=elIter->eta();
+	el_aetasc=abs(elIter->superCluster()->eta());
+	
+	el_aetaPass=false;
+	if ( abs(el_eta)<elPrim_aetaMax ) {
+	  el_aetaPass=true; //noscv
 	}
+	if ( (el_aetasc<elPrim_aetascExcludeMax)&&(el_aetasc>elPrim_aetascExcludeMin) ) {
+	  el_aetaPass=false;
+	}
+	el_eid=elIter->electronID("simpleEleId70relIso");
+	el_RelIso=(elIter->dr03TkSumPt()+elIter->dr03EcalRecHitSumEt()+elIter->dr03HcalTowerSumEt())/el_et;
+	
+	/// Apply The Primary Cuts
+	if ( (el_et>elPrim_etMin)&&
+	     el_aetaPass&&
+	     (abs(elIter->dB())<elPrim_dBMax)&&
+	     ((el_eid==elPrim_eid1)||(el_eid==elPrim_eid2)||(el_eid==elPrim_eid3)||(el_eid==elPrim_eid4))&&
+	     (el_RelIso<elPrim_RelIsoMax)
+	     ) {
+	  if ( el1Marker==-1 ) {
+	    el1Marker=lpCounter;
+	  }
+	  elcnt_Prim++;
+	  lp4=elIter->p4();
+	  lQ=elIter->charge();
+	  lEta=el_eta;
+	  el_Eta=el_eta;
+	  el_Phi=elIter->phi();
+	  lecalIso=(elIter->dr03EcalRecHitSumEt())/el_et;
+	  lhcalIso=(elIter->dr03HcalTowerSumEt())/el_et;
+	  ltrkIso=(elIter->dr03TkSumPt())/el_et;
+	  lTotIso=el_RelIso;
+	  
+	  ///Electron Conversion
+	  if ( elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits()>elPrim_trackerInnerHitsMin ) {
+	    el_conv=true;
+	  }	 
+	}
+	/// Apply The Loose Cuts
+	if ( (el_et>elLoose_etMin)&&(abs(el_eta)<elLoose_aetaMax)&&(el_RelIso<elLoose_RelIsoMax) ) {
+	  elcnt_Loose++;	       
+	}
+	
+	lpCounter++;
       }
       
       //// JET Selection:
@@ -373,7 +397,7 @@ int main (int argc, char* argv[])
 	j_pt=jetIter->pt();
 	j_eta=jetIter->eta();
 	if ( elcnt_Prim==1 ){
-	  adphi=abs(El_Phi-jetIter->phi());
+	  adphi=abs(el_Phi-jetIter->phi());
 	  //we're on a circle
 	  if ( adphi>pi_ ) {
 	    adphi=2*pi_-adphi;
@@ -434,85 +458,84 @@ int main (int argc, char* argv[])
      //// Muon Selection:
      mucnt_Prim=0;
      mucnt_Loose=0;
-
-     vector< pat::Muon > const & muonVec = *muonHandle;
-     if (muonVec.begin() != muonVec.end()) {
-       const vector< pat::Muon >::const_iterator EndmuIter       = muonVec.end();
-       for ( vector< pat::Muon >::const_iterator muIter = muonVec.begin(); ( (muIter!=EndmuIter) ) ; ++muIter ) {
-	 mu_pt=muIter->pt();
-	 mu_eta=muIter->eta();
-	 mu_phi=muIter->phi();
-	 muDRPass=true;
-	 if ( Curr_jEntries!=0 ) {
-	   for (Int_t jn=0; jn<Curr_jEntries;jn++) {
-	     adphi=abs(JPhi[jn]-mu_phi);
-	     //we're on a circle
-	     if ( adphi>pi_ ) {
-	       adphi=2*pi_-adphi;
-	     }
-	     
-	     muPrim_DRj=pow((JEta[jn]-mu_eta)*(JEta[jn]-mu_eta)+adphi*adphi,0.5);
-	     if ( Rlj<muDRmin ) {
-	       muDRmin=Rlj;
-	       JcntDRmin=jn;
-	     }
-	     if ( muPrim_DRj<muPrim_DRjMax ) {
-	       //i.e. we must be outside DRjMax for every jet
-	       muDRPass=false;
-	     }
+     mu1Marker=-1;
+     //      mu2Marker=-1;
+     lpCounter=0;
+     const vector< pat::Muon >::const_iterator muEnd = muonHandle->end();
+     for (vector< pat::Muon >::const_iterator muIter = muonHandle->begin(); ( muEnd != muIter ); ++muIter ) { 
+       mu_pt=muIter->pt();
+       mu_eta=muIter->eta();
+       mu_phi=muIter->phi();
+       muDRPass=true;
+       if ( jNEntries!=0 ) {
+	 for (Int_t jn=0; jn<jNEntries;jn++) {
+	   adphi=abs(JPhi[jn]-mu_phi);
+	   //we're on a circle
+	   if ( adphi>pi_ ) {
+	     adphi=2*pi_-adphi;
 	   }
 	   
-	 }
-	 if ( (muIter->isGlobalMuon())&&(muIter->isTrackerMuon()) ) {
-	   muisGmTm=true;
-	 } else {
-	   muisGmTm=false;
-	 }
-	 muisTightPrompt=false;
-	 if ( muIter->globalTrack().isNonnull() ) {
-	   if ( ((muIter->globalTrack()->normalizedChi2())<muPrim_gtNormChi2Max)&&((muIter->globalTrack()->hitPattern().numberOfValidMuonHits())>muPrim_gtNMuHitsMin) ) {
-	     muisTightPrompt=true;
+	   muPrim_DRj=pow((JEta[jn]-mu_eta)*(JEta[jn]-mu_eta)+adphi*adphi,0.5);
+	   if ( muPrim_DRj<muPrim_DRjMax ) {
+	     //i.e. we must be outside DRjMax for every jet
+	     muDRPass=false;
 	   }
-	 }
-	 if ( muIter->innerTrack().isNonnull() ) {
-	   muPrim_itNHits=muIter->innerTrack()->numberOfValidHits();
-	 } else {
-	   muPrim_itNHits=-1;
-	 }
-	 mu_RelIso=(muIter->trackIso()+muIter->ecalIso()+muIter->hcalIso())/mu_pt;
-
-	 /// Apply The Primary Cuts
-	 if ( muisGmTm&&
-	      (mu_pt>muPrim_ptMin)&&
-	      (abs(mu_eta)<muPrim_aetaMax)&&
-	      muisTightPrompt&&
-	      (muPrim_itNHits>muPrim_itNHitsMin)&&
-	      muDRPass&&
-	      ((muIter->dB())<muPrim_dBMax)&&
-	      (mu_RelIso<muPrim_RelIsoMax)
-	      ) {
-	   mucnt_Prim++;
- 	   lp4=muIter->p4();
-	   lQ=elIter->charge();
-	   lEta=mu_eta;
-
-// 	   lPhi=muIter->phi();	   
-// 	   lcnt_iso++;
-// 	   mucnt_iso++;
-// 	   lQ=muIter->charge();
-// 	   muPt=lpt;
-	 }
-	 /// Apply The Loose Cuts
-	 if ( (muIter->isGlobalMuon())&&(mu_pt>muLoose_ptMin)&&(abs(mu_eta)<muLoose_aetaMax)&&(mu_RelIso<muLoose_RelIsoMax) ) {
-	   mucnt_Loose++;	       
 	 }
 	 
        }
+       if ( (muIter->isGlobalMuon())&&(muIter->isTrackerMuon()) ) {
+	 muisGmTm=true;
+       } else {
+	 muisGmTm=false;
+       }
+       muisTightPrompt=false;
+       if ( muIter->globalTrack().isNonnull() ) {
+	 if ( ((muIter->globalTrack()->normalizedChi2())<muPrim_gtNormChi2Max)&&((muIter->globalTrack()->hitPattern().numberOfValidMuonHits())>muPrim_gtNMuHitsMin) ) {
+	   muisTightPrompt=true;
+	 }
+       }
+       if ( muIter->innerTrack().isNonnull() ) {
+	 muPrim_itNHits=muIter->innerTrack()->numberOfValidHits();
+       } else {
+	 muPrim_itNHits=-1;
+       }
+       mu_RelIso=(muIter->trackIso()+muIter->ecalIso()+muIter->hcalIso())/mu_pt;
+       
+       /// Apply The Primary Cuts
+       if ( muisGmTm&&
+	    (mu_pt>muPrim_ptMin)&&
+	    (abs(mu_eta)<muPrim_aetaMax)&&
+	    muisTightPrompt&&
+	    (muPrim_itNHits>muPrim_itNHitsMin)&&
+	    muDRPass&&
+	    ((muIter->dB())<muPrim_dBMax)&&
+	    (mu_RelIso<muPrim_RelIsoMax)
+	    ) {
+	 if ( mu1Marker==-1 ) {
+	   mu1Marker=lpCounter;
+	 }
+	 mucnt_Prim++;
+	 lp4=muIter->p4();
+	 lQ=muIter->charge();
+	 lEta=mu_eta;
+	 
+	 lecalIso=(muIter->ecalIso())/mu_pt;
+	 lhcalIso=(muIter->hcalIso())/mu_pt;
+	 ltrkIso=(muIter->trackIso())/mu_pt;
+	 lTotIso=mu_RelIso;
+	 
+       }
+       /// Apply The Loose Cuts
+       if ( (muIter->isGlobalMuon())&&(mu_pt>muLoose_ptMin)&&(abs(mu_eta)<muLoose_aetaMax)&&(mu_RelIso<muLoose_RelIsoMax) ) {
+	 mucnt_Loose++;	       
+       }
+       
+       lpCounter++; 
      }
 
      /// Electron ZVeto (apply only if we have one Primary electron).
-     ZVeto=false;
-     aetaPass=false;
+     el_ZVeto=false;
+     lpCounter=0;
      if ( (elcnt_Prim==1)&&(mucnt_Loose==0) ){
        vector< pat::Electron > const & electronVec = *electronHandle;
        if (electronVec.begin() != electronVec.end()) {
@@ -522,33 +545,29 @@ int main (int argc, char* argv[])
 	   el_eta=elIter->eta();
 	   el_aetasc=abs(elIter->superCluster()->eta());
 	   
-	   aetaPass=false;
+	   el_aetaPass=false;
 	   if ( abs(el_eta)<elPrim_aetaMax ) {
-	     aetaPass=true; //noscv
+	     el_aetaPass=true; //noscv
 	   }
 	   if ( (el_aetasc<elPrim_aetascExcludeMax)&&(el_aetasc>elPrim_aetascExcludeMin) ) {
-	     aetaPass=false;
+	     el_aetaPass=false;
 	   }
 	   el_eid=elIter->electronID("simpleEleId70relIso");
 	   el_RelIso=(elIter->dr03TkSumPt()+elIter->dr03EcalRecHitSumEt()+elIter->dr03HcalTowerSumEt())/el_et;
 	   
 	   /// Select an electron which is not the Primary one.
-	   if ( ! ((el_et>elPrim_etMin)&&
-		   aetaPass&&
-		   (abs(elIter->dB())<elPrim_dBMax)&&
-		   ((el_eid==elPrim_eid1)||(el_eid==elPrim_eid2)||(el_eid==elPrim_eid3)||(el_eid==elPrim_eid4))&&
-		   (el_RelIso<elPrim_RelIsoMax)
-		   ) && 
-		( (elIter->electronID("eidRobustLoose")>0.99)&&(el_et>elZVeto_etMin)&&(abs(el_eta)<elZVeto_aetaMax)&&(el_RelIso<elZVeto_RelIso) )
+	   if ( !(lpCounter==el1Marker) && 
+		( (elIter->electronID("eidRobustLoose")>0.99)&&(el_et>elZVeto_etMin)&&(abs(el_eta)<elZVeto_aetaMax)&&(el_RelIso<elZVeto_RelIsoMax) )
 		)
 	     {
 	       if ( 
 		   //((elIter->charge() * lQ)<0.0)&&
-		   ((elIter->p4() + lp4).M()>elZveto_MZmin)&&
-		   ((elIter->p4() + lp4).M()<elZveto_MZmax) ) {
-		 ZVeto=true;
+		   ((elIter->p4() + lp4).M()>elZVeto_MZMin)&&
+		   ((elIter->p4() + lp4).M()<elZVeto_MZMax) ) {
+		 el_ZVeto=true;
 	       }
 	     }
+	   lpCounter++;
 	 }
        }
      }
@@ -563,6 +582,7 @@ int main (int argc, char* argv[])
      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
      //// Record the number of events passing the cuts for each jet count
+     passStandard=0;
      passAll=0;
      for (Int_t Nj=0; Nj<NJETS;Nj++) {
        if ( (jcnt_tot==Nj)||((Nj==(NJETS-1))&&(jcnt_tot>(NJETS-1))) ) {
@@ -571,14 +591,15 @@ int main (int argc, char* argv[])
 	 PassEl[2][Nj]++;
 
 	 //record the electron info
-	 if ( (elcnt_Prim==1)&&isPrimaryVertex ) {
+	 if ( (elcnt_Prim==1)&&(mucnt_Prim==0)&&isPrimaryVertex ) {
 	   incrementCounter(3,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 	   if ( el_conv==false ) {
 	     incrementCounter(4,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 	     if ( mucnt_Loose==0 ) {
 	       incrementCounter(5,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-	       if ( ZVeto==false ) {
+	       if ( el_ZVeto==false ) {
 		 incrementCounter(6,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+		 passStandard=2;
 		 if ( MET_Et>MET_EtMin ) {
 		   incrementCounter(7,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
 		   passAll=2;
@@ -603,7 +624,7 @@ int main (int argc, char* argv[])
 	 }//electrons
 	 
 	 //record the muon info
-	 if ( (mucnt_Prim==1)&&isPrimaryVertex ) {
+	 if ( (mucnt_Prim==1)&&(elcnt_Prim==0)&&isPrimaryVertex ) {
 	   incrementCounter(3,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
 	   if ( mucnt_Loose==1 ) {
 	     incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
@@ -611,6 +632,7 @@ int main (int argc, char* argv[])
 	       incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
 	       //if ( ZVeto==false ) {
 	       incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+	       passStandard=1;
 	       if ( MET_Et>MET_EtMin ) {
 		 incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
 		 passAll=1;
@@ -636,23 +658,42 @@ int main (int argc, char* argv[])
 	 
        }
      } // for Njets
+//      if ( (passStandard>0.5) ) {
+//        cout << "passStd=" << passStandard << ", passAll=" << passAll << endl;
+//        cout << "MET_Et=" << MET_Et << endl;
+//        METp4LV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
+//        cout << "METp4LV.E()=" << METp4LV.E() << ", METp4LV.Et()=" << METp4LV.Et() << endl;
+//      }
 
 
      ///Fill the Ntuple to be used in Matrix Element computations (requiring two jets & a lepton passing all of the cuts).
 
      if ( (passAll>0.5)&&(jcnt_tot==2) ) {
-       EvtNtuple->lLV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
+       EvtNtuple->lLV.clear();
+       lp4LV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
+       lp3.SetXYZ(lp4.Px(),lp4.Py(),lp4.Pz());
+       EvtNtuple->lLV.push_back(lp4LV);
+       //EvtNtuple->lLV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
+
        EvtNtuple->jLV.clear();
-       jp4LV.SetPxPyPzE(jp4[0].Px(),jp4[0].Py(),jp4[0].Pz(),jp4[0].E());
-       EvtNtuple->jLV.push_back(jp4LV);
-       jp4LV.SetPxPyPzE(jp4[1].Px(),jp4[1].Py(),jp4[1].Pz(),jp4[1].E());
-       EvtNtuple->jLV.push_back(jp4LV);
-       EvtNtuple->METLV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
-       
+       j1p4LV.SetPxPyPzE(jp4[0].Px(),jp4[0].Py(),jp4[0].Pz(),jp4[0].E());
+       EvtNtuple->jLV.push_back(j1p4LV);
+       j2p4LV.SetPxPyPzE(jp4[1].Px(),jp4[1].Py(),jp4[1].Pz(),jp4[1].E());
+       EvtNtuple->jLV.push_back(j2p4LV);
+       jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
+
+       EvtNtuple->METLV.clear();
+       METp4LV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
+       EvtNtuple->METLV.push_back(METp4LV);
+
+       EvtNtuple->lPhi=lp4.Phi();
+       EvtNtuple->METEt=METp4LV.Et();
+
+
        EvtNtuple->jBtag.clear();
        EvtNtuple->jBtag.push_back(jBtag[0]);
        EvtNtuple->jBtag.push_back(jBtag[1]);
-
+       //       cout << "2.EvtNtuple->METLV.E()=" << EvtNtuple->METLV.E() << ", EvtNtuple->METEt=" << EvtNtuple->METEt << endl;
        EvtNtuple->lQ=lQ;
        if (abs(lEta)<etaBarrelMax) {
 	 //barrel
@@ -666,11 +707,26 @@ int main (int argc, char* argv[])
        
        
        //Additional Variables
+       EvtNtuple->lTotIso=lTotIso;
+       EvtNtuple->lecalIso=lecalIso;
+       EvtNtuple->lhcalIso=lhcalIso;
+       EvtNtuple->ltrkIso=ltrkIso;
        EvtNtuple->Mjj=Mjj;
+       EvtNtuple->passStd=passStandard;
        EvtNtuple->passAll=passAll;
 
-       //Fill The Tree  
+       //cout << "3.EvtNtuple->METLV.E()=" << EvtNtuple->METLV.E() << ", EvtNtuple->METEt=" << EvtNtuple->METEt << endl;
+       DRlj1=lp4LV.DeltaR(j1p4LV);
+       DRlj2=lp4LV.DeltaR(j2p4LV);
+       //Thetalj1pj2=(lp4.Px()*(jp4[0].Px()+jp4[1].Px())+lp4.Py()*(jp4[0].Py()+jp4[1].Py())+lp4.Pz()*(jp4[0].Pz()+jp4[1].Pz()))/(    ) ;
+       Thetalj1pj2=lp3.Dot(jjp3)/(lp3.Mag()*jjp3.Mag());
+
+       EvtNtuple->DRlj1=DRlj1;
+       EvtNtuple->DRlj2=DRlj2;
+       EvtNtuple->Thetalj1pj2=Thetalj1pj2;
+       //Fill The Tree 
        EvtTree->Fill();
+
      }
      
      EvtTotCount++;

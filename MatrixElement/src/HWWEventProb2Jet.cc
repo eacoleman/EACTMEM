@@ -103,8 +103,8 @@ double HWWEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark1(), 0, -1);
-      Array2 vec2 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
+      Array2 vec2 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(0), 0, -1);
@@ -134,8 +134,8 @@ double HWWEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getQuark1(), 0, -1);
-      Array2 vec2 = DHELAS::vxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
+      Array2 vec2 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
       Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, 1);
@@ -197,10 +197,10 @@ double HWWEventProb2Jet::matrixElement() const
 }
 
 // ------------------------------------------------------------------
-void HWWEventProb2Jet::setQuarkIDs() const
+void HWWEventProb2Jet::setPartonTypes() const
 {   
-      getMeasuredColl()->setProtonType(kGluon);
-      getMeasuredColl()->setAntiprotonType(kGluon);
+      getMeasuredColl()->setParton1Type(kGluon);
+      getMeasuredColl()->setParton2Type(kGluon);
 }
 
 // ------------------------------------------------------------------

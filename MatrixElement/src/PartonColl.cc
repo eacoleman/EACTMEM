@@ -160,8 +160,8 @@ std::ostream& operator<<(std::ostream & str , const PartonColl & partons ){
      str<<fj;
 
    }
-   str << "\tquark1="<< partons.getQuark1() << std::endl;
-   str << "\tquark2="<< partons.getQuark2() << std::endl;
+   str << "\tquark1="<< partons.getParton1() << std::endl;
+   str << "\tquark2="<< partons.getParton2() << std::endl;
 
   return str;
 

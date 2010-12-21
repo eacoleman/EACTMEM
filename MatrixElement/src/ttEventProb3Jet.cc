@@ -118,8 +118,8 @@ double ttEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec0 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1);
-      Array2 vec1 = DHELAS::oxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array2 vec0 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, 1);
+      Array2 vec1 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec3 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array2 vec4 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
@@ -166,8 +166,8 @@ double ttEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec0 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1);
-      Array2 vec1 = DHELAS::oxxxxx<2>(partons->getQuark2(), 0, -1);
+      Array2 vec0 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, 1);
+      Array2 vec1 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec3 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
       Array2 vec4 = DHELAS::ixxxxx<2>(partons->getJet(0), bMass, -1);
@@ -203,8 +203,8 @@ double ttEventProb3Jet::matrixElement() const
          answer += std::norm(output[i]) * 6;
       }
 //      DHELAS::HelVec vec[13];
-//      DHELAS::ixxxxx(partons->getQuark1(), 0, 1, vec[0], kTwo);
-//      DHELAS::oxxxxx(partons->getQuark2(), 0, -1, vec[1], kTwo);
+//      DHELAS::ixxxxx(partons->getParton1(), 0, 1, vec[0], kTwo);
+//      DHELAS::oxxxxx(partons->getParton2(), 0, -1, vec[1], kTwo);
 //      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[2], kOne);
 //      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[3], kOne);
 //      DHELAS::ixxxxx(partons->getJet(0), bMass, -1, vec[4], kTwo);
@@ -260,10 +260,10 @@ double ttEventProb3Jet::phaseSpace() const
    return EventProb::phaseSpace() * m_lostJet.E() * std::sin(m_lostJet.Theta());
 }
 
-void ttEventProb3Jet::setQuarkIDs() const
+void ttEventProb3Jet::setPartonTypes() const
 {
-   getMeasuredColl()->setProtonType(kUp);
-   getMeasuredColl()->setAntiprotonType(kUp);
+   getMeasuredColl()->setParton1Type(kUp);
+   getMeasuredColl()->setParton2Type(kUp);
 }
 
 void ttEventProb3Jet::getScale(double& scale1, double& scale2) const

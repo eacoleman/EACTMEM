@@ -1,3 +1,8 @@
+// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
+// Created : 11/19/2010
+// The diagrams can be compared with madgraph using the processes 
+// u b -> b e+ ve d (b u -> b e+ ve d), d b~ -> b~ e- ve~ u
+
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb2Jet.hh"
 
 #include <iostream>
@@ -10,67 +15,37 @@
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
 
-using std::string;
+//#define MADGRAPH_TEST
 using std::vector;
+using std::cout;
+using std::endl;
+
+#ifdef MADGRAPH_TEST
 
 extern "C"
 {
-   void* mytchanud_(double[][4], double*, const double*, double*);
-   void* mytchanuxdx_(double[][4], double*, const double*, double*);
-   void* mytchandxux_(double[][4], double*, const double*, double*);
-   void* mytchandu_(double[][4], double*, const double*, double*);
+  void* tchanlpm_(double[][4], const double*, double*);// lepQ>0, u b -> b e+ ve d 
+  void* tchanlpaltm_(double[][4], const double*, double*);// b u -> b e+ ve d 
+  void* tchanlmm_(double[][4], const double*, double*);// lepQ<0, d b~ -> b~ e- ve~ u
+  void* tchanlmaltm_(double[][4], const double*, double*);// 
+}
+#endif
+
+// ------------------------------------------------------------------
+tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf) :
+   EventProb2Jet("t-channel", integrator, 3,4, btf), m_lightTF(lighttf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+{
+  // Set the top mass and width
+  setTopMassAndWidth(MEConstants::topMass);
 }
 
-// ------------------------------------------------------------------
-tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator,
-                                             const TransferFunction& btf,
-                                             const TransferFunction& lighttf,
-                                             bool rh) :
-   EventProb2Jet(rh ? "t-channel right-handed" : "t-channel", integrator, 3,
-                 2, btf),
-   m_lightTF(lighttf),
-   m_rh(rh)
-{
-   if (rh)
-   {
-      m_factor[0] = doublecomplex(0, 0);
-      m_factor[1] = doublecomplex(MEConstants::gwf, 0);
-   }
-   else
-   {
-      m_factor[0] = doublecomplex(MEConstants::gwf, 0);
-      m_factor[1] = doublecomplex(0, 0);
-   }
-
-  // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
-
-} // C'tor 
-
-// ------------------------------------------------------------------
-tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator,
-                                             const TransferFunction& btf,
-                                             const TransferFunction& lighttf,
-                                             const string& name, bool rh) :
-   EventProb2Jet(rh ? name + " right-handed" : name, integrator, 3, 2, btf),
-   m_lightTF(lighttf),
-   m_rh(rh)
-{
-   if (rh)
-   {
-      m_factor[0] = doublecomplex(0, 0);
-      m_factor[1] = doublecomplex(MEConstants::gwf, 0);
-   }
-   else
-   {
-      m_factor[0] = doublecomplex(MEConstants::gwf, 0);
-      m_factor[1] = doublecomplex(0, 0);
-   }
-
-  // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
-
-} // Protected C'tor 
+// // ------------------------------------------------------------------
+// tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf, const std::string& name) :
+//   EventProb2Jet("t-channel", integrator, 3, 8, btf), m_lightTF(lighttf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas 
+// {
+//   // Set the top mass and width
+//   setTopMassAndWidth(MEConstants::topMass);
+// } // Protected C'tor 
 
 // ------------------------------------------------------------------
 // This method sets the Top mass and the Top width
@@ -78,7 +53,6 @@ void tChannelEventProb2Jet::setTopMassAndWidth(double mTop) {
 
   // Set the mass
   m_massTop = mTop;
-
   // Use the theoretical Top width for the given mass 
   m_widthTop =  calcTopWidth(mTop);
 
@@ -102,11 +76,15 @@ void tChannelEventProb2Jet::setDynamicBounds()
    setBounds(2, lower, upper);
 }
 
-// ------------------------------------------------------------------
-unsigned tChannelEventProb2Jet::getProbMax() const
-{
-   return getMeasuredColl()->getNBtags() == 1 ? 1 : 2;
-}
+// // ------------------------------------------------------------------
+// unsigned tChannelEventProb2Jet::getProbMax() const
+// {
+
+//   //cout << "calling getProbMax" << endl;
+//   //return getMeasuredColl()->getNBtags() == 1 ? 1 : 2;
+//   cout << "calling getProbMax, getNBtags=" << getMeasuredColl()->getNBtags() << endl;
+//   return getMeasuredColl()->getNBtags();
+// }
 
 // ------------------------------------------------------------------
 void tChannelEventProb2Jet::changeVars(const vector<double>& parameters)
@@ -127,159 +105,154 @@ void tChannelEventProb2Jet::changeVars(const vector<double>& parameters)
 // ------------------------------------------------------------------
 double tChannelEventProb2Jet::matrixElement() const
 {
+
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
    typedef SimpleArray<DHELAS::HelArray, 2> Array2;
+   typedef SimpleArray<DHELAS::HelArray, 4> Array4;
+   typedef SimpleArray<DHELAS::HelArray, 8> Array8;
 
    using MEConstants::bMass;
    using MEConstants::wMass;
    using MEConstants::wWidth;
 
+//    MEConstants::PrintAllConstants(alphas_process);
+//    cout << "tMass = " << m_massTop << endl;
+//    cout << "tWidth = " << m_widthTop << endl;
    const PartonColl* partons = getPartonColl();
 
    double answer = 0;
 
-//   std::cerr << "Lepton charge: " << partons->getLepCharge() << std::endl;
    enum {vecSize = 4};
    typedef SimpleArray<doublecomplex, vecSize> OutputType;
 
-   doublecomplex factor[2] = {doublecomplex(MEConstants::gwf, 0),
-                              doublecomplex(0, 0)};
+   doublecomplex factorGWF[2] = {doublecomplex(MEConstants::gwf, 0),
+				 doublecomplex(0, 0)};
 
    if (partons->getLepCharge() > 0)
    {
       // Calculate the lepton only once per integration
-      static Array1 vec2;
+      static Array1 vec4;
       static double lepE = 0;
       if (lepE != partons->getLepton().E())
       {
-         vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
+         vec4 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
          lepE = partons->getLepton().E();
       }
+      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
 
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1, m_rh);
-      Array2 vec1 = DHELAS::ixxxxx<2>(partons->getQuark2(), bMass, 1);
-//      Array1 vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
-      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
-      Array2 vec4 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
-      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1, m_rh);
+      Array1 vec1;
+      Array2 vec2;
+      if ( !swapPartonMom ) {
+	vec1 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+	vec2 = DHELAS::ixxxxx<2>(partons->getParton2(), bMass, 1);
+      } else {
+	vec1 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, 1);
+	vec2 = DHELAS::ixxxxx<2>(partons->getParton1(), bMass, 1);
+      }
 
-      Array1 vec6 = DHELAS::jioxxx(vec2, vec3, factor, wMass, wWidth);
-      Array2 vec7 = DHELAS::fvoxxx(vec4, vec6, factor, m_massTop, m_widthTop);
-      Array1 vec8 = DHELAS::jioxxx(vec0, vec5, m_factor, wMass, wWidth);
+      Array2 vec3 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
+      Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1);
 
-      OutputType output = DHELAS::iovxxx(vec1, vec7, vec8, m_factor);
+      Array1 vec7 = DHELAS::jioxxx(vec4, vec5, factorGWF, wMass, wWidth);
+      Array2 vec8 = DHELAS::fvoxxx(vec3, vec7, factorGWF, m_massTop, m_widthTop);
+      Array4 vec9 = DHELAS::jioxxx(vec2, vec8, factorGWF, wMass, wWidth);
+
+      OutputType output1 = DHELAS::iovxxx(vec1, vec6, vec9, factorGWF);
 
       for (unsigned i = 0; i < vecSize; ++i)
       {
-         answer += std::norm(-output[i]) * 9;
+	 double temp1 =  std::norm(output1[i]) * 9;
+	 answer+= temp1;
+	 // cout << "i=" << i << " helicity 'amplitude'" << temp1 << " + " << "0" << "i" << endl;
       }
    }
    else
    {
       // Calculate the lepton only once per integration
-      static Array1 vec2;
+      static Array1 vec4;
       static double lepE = 0;
       if (lepE != partons->getLepton().E())
       {
-         vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
+         vec4 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, +1);
          lepE = partons->getLepton().E();
       }
+      Array1 vec5 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
 
-      Array2 vec0 = DHELAS::oxxxxx<2>(partons->getQuark1(), bMass, -1);
-      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getQuark2(), 0, -1, m_rh);
-//      Array1 vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
-      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
-      Array2 vec4 = DHELAS::ixxxxx<2>(partons->getJet(0), bMass, -1);
-      Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(1), 0, -1, m_rh);
+      Array1 vec1;
+      Array2 vec2;
+      if ( !swapPartonMom ) {
+	vec1 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+	vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), bMass, -1);
+      } else {
+	vec1 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, 1);
+	vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), bMass, -1);
+      }
 
-      Array1 vec6 = DHELAS::jioxxx(vec3, vec2, factor, wMass, wWidth);
-      Array2 vec7 = DHELAS::fvixxx(vec4, vec6, factor, m_massTop, m_widthTop);
-      Array1 vec8 = DHELAS::jioxxx(vec5, vec1, m_factor, wMass, wWidth);
+      Array2 vec3 = DHELAS::ixxxxx<2>(partons->getJet(0), bMass, -1);
+      Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1);
 
-      OutputType output = DHELAS::iovxxx(vec7, vec0, vec8, m_factor);
+      Array1 vec7 = DHELAS::jioxxx(vec5, vec4, factorGWF, wMass, wWidth);
+      Array2 vec8 = DHELAS::fvixxx(vec3, vec7, factorGWF, m_massTop, m_widthTop);
+      Array4 vec9 = DHELAS::jioxxx(vec8, vec2, factorGWF, wMass, wWidth);
+
+      OutputType output1 = DHELAS::iovxxx(vec1, vec6, vec9, factorGWF);
 
       for (unsigned i = 0; i < vecSize; ++i)
       {
-         answer += std::norm(-output[i]) * 9;
+	 double temp1 =  std::norm(output1[i]) * 9;
+	 answer+= temp1;
+	 //	 cout << "i=" << i << " helicity 'amplitude'" << temp1 << " + " << "0" << "i" << endl;
       }
-
-//      DHELAS::HelVec vec[9];
-//      DHELAS::oxxxxx(partons->getQuark1(), bMass, -1, vec[0], kTwo);
-//      DHELAS::oxxxxx(partons->getQuark2(), 0, -1, vec[1], kOne);
-//      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[2], kOne);
-//      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[3], kOne);
-//      DHELAS::ixxxxx(partons->getJet(0), bMass, -1, vec[4], kTwo);
-//      DHELAS::ixxxxx(partons->getJet(1), 0, -1, vec[5], kOne);
-//      DHELAS::jioxxx(vec[3], vec[2], factor, wMass, wWidth, vec[6]);
-//      DHELAS::fvixxx(vec[4], vec[6], factor, m_massTop,
-//                     partons->getTopWidth(), vec[7]);
-//      DHELAS::jioxxx(vec[5], vec[1], factor, wMass, wWidth, vec[8]);
-//      DHELAS::iovxxx(vec[7], vec[0], vec[8], factor, output);
    }
 
    answer /= 36;
 
-   return answer;
 
-////   const PartonColl* partons = getPartonColl();
-//
-//   double fortranArray[6][4];
-//   makeFortranArray(fortranArray);
-//
-//   double topMass = m_massTop ;
-////   const double wMass = MEConstants::wMass;
-//
-////   for (int i = 0; i < 6; ++i)
-////      for (int j = 0; j < 4; ++j)
-////      {
-////         std::cerr << "Input " << i << " TLV " << j << ": " << fortranArray[i][j] << std::endl;
-////      }
-//////   exit(1);
-////
-////   std::cerr << "Top mass: " << topMass << std::endl;
-////   std::cerr << "W mass: " << wMass << std::endl;
-//
-//   double answer2;
-//
-//   if (partons->getLepCharge() > 0)
-//   {
-//      mytchanud_(fortranArray, &topMass, &wMass, &answer);
-////      answer2 = 0;
-//      mytchandxux_(fortranArray, &topMass, &wMass, &answer2);
-//   }
-//   else
-//   {
-//      mytchanuxdx_(fortranArray, &topMass, &wMass, &answer);
-//      mytchandu_(fortranArray, &topMass, &wMass, &answer2);
-//   }
-//
-////   static double max = 0;
-////   if (answer > max)
-////   {
-////      std::cout << "New maximum probability: " << answer 
-////                << "   Pz value of: " << partons->getNeutrino().Pz() << std::endl;
-////      max = answer;
-////   }
-//
-////   std::cerr << "t-channel: " << answer << " " << answer2 << std::endl;
-//
-////   exit(1);
-//   return answer + answer2;
+ #ifdef MADGRAPH_TEST
+  // -----------------------------------------------------------
+  // This code reports our answer as well as the madgraph answer
+  // -----------------------------------------------------------
+   
+  // Report our answers
+  cout<<" My answer= "<<answer<<endl;
+
+  // Make a fortran array, format which is needed for the fortran calls
+  double fortranArray[6][4];
+  makeFortranArray_qlvq(fortranArray);
+
+  // Evalute the matrix element according to madgraph
+  double mw  = wMass; // to get rid of the const identifier
+  double an = 0;
+  if (partons->getLepCharge() > 0)
+    tchanlpm_(fortranArray , &mw, &an);
+  //tchanlpaltm_(fortranArray , &mw, &an);
+  else
+    tchanlmm_(fortranArray , &mw, &an);
+  //tchanlmaltm_(fortranArray , &mw, &an);
+
+  cout << "Madgraph answer= " << an << endl;
+   
+  // Exit right away
+  exit(1);  
+
+#endif
+
+  return answer;
+
 }
 
-
 // ------------------------------------------------------------------
-void tChannelEventProb2Jet::setQuarkIDs() const
+void tChannelEventProb2Jet::setPartonTypes() const
 {
    if (getMeasuredColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kBottom);
+      getMeasuredColl()->setParton1Type(kUp);
+      getMeasuredColl()->setParton2Type(kBottom);
    }
    else
    {
-      getMeasuredColl()->setProtonType(kBottom);
-      getMeasuredColl()->setAntiprotonType(kUp);
+      getMeasuredColl()->setParton1Type(kDown);
+      getMeasuredColl()->setParton2Type(kAntiBottom);
    }
 }
 
@@ -318,14 +291,27 @@ double tChannelEventProb2Jet::totalTF() const
 // ------------------------------------------------------------------
 bool tChannelEventProb2Jet::onSwitch()
 {
-   if (getLoop())
-   {
-      if (getMeasuredColl()->getNBtags() == 1)
-         return false;
 
-      swapJets(0, 1);
-   }
-   return true;
+  switch (getLoop()) {
+  case 0:
+    //swapPartonMom=true; //when testing alternate functions
+    swapPartonMom=false; 
+    break;
+  case 1:
+    swapJets(0, 1);
+    break;
+  case 2:
+    swapPartonMom=true;
+    break;
+  case 3:
+    swapJets(0, 1);
+    break;
+  default:
+    return false;
+  }
+
+  return true;
+
 }
 
 // ------------------------------------------------------------------
@@ -336,144 +322,3 @@ void tChannelEventProb2Jet::setupIntegral(){
 }
 
 
-// ------------------------------------------------------------------
-tChannelEventProb2JetAlt::tChannelEventProb2JetAlt(Integrator& integrator,
-                                                   const TransferFunction& btf,
-                                                   const TransferFunction& ltf,
-                                                   bool rh) :
-   tChannelEventProb2Jet(integrator, btf, ltf, "t-channel alternate", rh)
-{ }
-
-// ------------------------------------------------------------------
-double tChannelEventProb2JetAlt::matrixElement() const
-{
-   typedef SimpleArray<DHELAS::HelArray, 1> Array1;
-   typedef SimpleArray<DHELAS::HelArray, 2> Array2;
-
-   using MEConstants::bMass;
-   using MEConstants::wMass;
-   using MEConstants::wWidth;
-
-   const PartonColl* partons = getPartonColl();
-
-   double answer = 0;
-
-//   std::cerr << "Lepton charge: " << partons->getLepCharge() << std::endl;
-   enum {vecSize = 4};
-   typedef SimpleArray<doublecomplex, vecSize> OutputType;
-
-   doublecomplex factor[2] = {doublecomplex(MEConstants::gwf, 0),
-                              doublecomplex(0, 0)};
-
-   if (partons->getLepCharge() > 0)
-   {
-      // Calculate the lepton only once per integration
-      static Array1 vec2;
-      static double lepE = 0;
-      if (lepE != partons->getLepton().E())
-      {
-         vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
-         lepE = partons->getLepton().E();
-      }
-
-      Array2 vec0 = DHELAS::ixxxxx<2>(partons->getQuark1(), bMass, 1);
-      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getQuark2(), 0, -1, m_rh);
-//      Array1 vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
-      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
-      Array2 vec4 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
-      Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(1), 0, -1, m_rh);
-
-      Array1 vec6 = DHELAS::jioxxx(vec2, vec3, factor, wMass, wWidth);
-      Array2 vec7 = DHELAS::fvoxxx(vec4, vec6, factor, m_massTop, m_widthTop);
-
-      Array1 vec8 = DHELAS::jioxxx(vec5, vec1, m_factor, wMass, wWidth);
-
-      OutputType output = DHELAS::iovxxx(vec0, vec7, vec8, m_factor);
-
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
-         answer += std::norm(-output[i]) * 9;
-      }
-
-//      DHELAS::HelVec vec[9];
-//      DHELAS::ixxxxx(partons->getQuark1(), bMass, 1, vec[0], kTwo);
-//      DHELAS::oxxxxx(partons->getQuark2(), 0, -1, vec[1], kOne);
-//      DHELAS::ixxxxx(partons->getLepton(), 0, -1, vec[2], kOne);
-//      DHELAS::oxxxxx(partons->getNeutrino(), 0, 1, vec[3], kOne);
-//      DHELAS::oxxxxx(partons->getJet(0), bMass, 1, vec[4], kTwo);
-//      DHELAS::ixxxxx(partons->getJet(1), 0, -1, vec[5], kOne);
-//      DHELAS::jioxxx(vec[2], vec[3], factor, wMass, wWidth, vec[6]);
-//      DHELAS::fvoxxx(vec[4], vec[6], factor, m_massTop, m_widthTop, vec[7]);
-//      DHELAS::jioxxx(vec[5], vec[1], factor, wMass, wWidth, vec[8]);
-//      DHELAS::iovxxx(vec[0], vec[7], vec[8], factor, output2);
-   }
-   else
-   {
-      // Calculate the lepton only once per integration
-      static Array1 vec2;
-      static double lepE = 0;
-      if (lepE != partons->getLepton().E())
-      {
-         vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
-         lepE = partons->getLepton().E();
-      }
-
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1, m_rh);
-      Array2 vec1 = DHELAS::oxxxxx<2>(partons->getQuark2(), bMass, -1);
-//      Array1 vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
-      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
-      Array2 vec4 = DHELAS::ixxxxx<2>(partons->getJet(0), bMass, -1);
-      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1, m_rh);
-
-      Array1 vec6 = DHELAS::jioxxx(vec3, vec2, factor, wMass, wWidth);
-      Array2 vec7 = DHELAS::fvixxx(vec4, vec6, factor, m_massTop, m_widthTop);
-      Array1 vec8 = DHELAS::jioxxx(vec0, vec5, m_factor, wMass, wWidth);
-
-      OutputType output = DHELAS::iovxxx(vec7, vec1, vec8, m_factor);
-
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
-         answer += std::norm(-output[i]) * 9;
-      }
-
-//      DHELAS::HelVec vec[9];
-//      DHELAS::ixxxxx(partons->getQuark1(), 0, 1, vec[0], kOne);
-//      DHELAS::oxxxxx(partons->getQuark2(), bMass, -1, vec[1], kTwo);
-//      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[2], kOne);
-//      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[3], kOne);
-//      DHELAS::ixxxxx(partons->getJet(0), bMass, -1, vec[4], kTwo);
-//      DHELAS::oxxxxx(partons->getJet(1), 0, 1, vec[5], kOne);
-//      DHELAS::jioxxx(vec[3], vec[2], factor, wMass, wWidth, vec[6]);
-//      DHELAS::fvixxx(vec[4], vec[6], factor, m_massTop, m_widthTop, vec[7]);
-//      DHELAS::jioxxx(vec[0], vec[5], factor, wMass, wWidth, vec[8]);
-//      DHELAS::iovxxx(vec[7], vec[1], vec[8], factor, output2);
-   }
-
-   answer /= 36;
-
-   return answer;
-}
-
-// ------------------------------------------------------------------
-void tChannelEventProb2JetAlt::setQuarkIDs() const
-{
-   if (getMeasuredColl()->getLepCharge() > 0)
-   {
-      getMeasuredColl()->setProtonType(kBottom);
-      getMeasuredColl()->setAntiprotonType(kDown);
-   }
-   else
-   {
-      getMeasuredColl()->setProtonType(kDown);
-      getMeasuredColl()->setAntiprotonType(kBottom);
-   }
-}
-
-
-
-// ------------------------------------------------------------------
-void tChannelEventProb2JetAlt::setupIntegral(){
-
-  std::cout<<"\tTop mass= "<< m_massTop<<" width= "<<m_widthTop<<std::endl;
-
-}

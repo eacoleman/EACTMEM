@@ -22,38 +22,44 @@ using namespace std;
 #include <TAMUWW/Tools/GlobalTools.cc>
 
 
-void ProcessPATSubset(const char* inName, const char* outRootName, const char* outTxtName, int cntStart, int cntEnd) {
-//// Process a subset of PAT files to generate a .txt Selection (sub) file. The PAT files should be of the form inName+cnt+"_1.root" (with cnt=cntStart to cntEnd)
+void ProcessPATSubset(const char* Label, const char* inName, const char* outRootName, const char* outTxtName, int cntStart, int cntEnd, const char * executable) {
+//// Process a subset of PAT files to generate a .txt Selection (sub) file. The PAT files should be of the form inName+cnt+".root" (with cnt=cntStart to cntEnd)
   TString Lstr;
-  char tempC[4];
-  Lstr="/uscms/home/ilyao/MATRIXELEMENT/CMSSW_3_5_4/bin/slc5_ia32_gcc434/PerformSelection.exe inputFiles=";
+  char tempC[6];
+  //Lstr="/uscms/home/ilyao/MATRIXELEMENT/CMSSW_3_5_4/bin/slc5_ia32_gcc434/PerformSelection.exe inputFiles=";
+  Lstr=" inputFiles=";
+  Lstr=executable+Lstr;
 
   for (Int_t i=cntStart; i<(cntEnd+1);i++) {
     Lstr=Lstr+inName;
     sprintf(tempC,"%i",i);
     Lstr=Lstr+tempC;
     if ( i==cntEnd ){
-      Lstr=Lstr+"_1.root";
+      Lstr=Lstr+".root";
     } else {
-      Lstr=Lstr+"_1.root,";
+      Lstr=Lstr+".root,";
     }
   }
   Lstr=Lstr+" \\outputEvery=10000 ";
   Lstr=Lstr+outRootName;
   Lstr=Lstr+" ";
   Lstr=Lstr+outTxtName;
+  Lstr=Lstr+" ";
+  Lstr=Lstr+Label;
+  //cout << "Lstr=" << Lstr << endl;
   system(Lstr);
   
 }
 
-void ProcessPATSet(const char* inPATName, const char* inRootName, const char* inTxtName, const char* outRootName, const char* outTxtName, int NStart, int NEnd, int stepSize) {
-//// Process a set of either PAT files or already processed .txt & .root files to generate a combined .txt (& .root) file for the whole set. The PAT files should be of the form inName+cnt+"_1.root" (with cnt=NStart to NEnd).
+void ProcessPATSet(const char* Label, const char* inPATName, const char* inRootName, const char* inTxtName, const char* outRootName, const char* outTxtName, int NStart, int NEnd, int stepSize, const char * executable) {
+//// Process a set of either PAT files or already processed .txt & .root files to generate a combined .txt (& .root) file for the whole set. The PAT files should be of the form inName+cnt+".root" (with cnt=NStart to NEnd).
 ///  stepSize=-1 will not process the PAT tuples, but will run over the .txt files (provided they exist). stepSize=-2 merges the .root files as well.
+/// executable gives location of the selection excecutable (e.g. /uscms/home/ilyao/MATRIXELEMENT/CMSSW_3_6_3/bin/slc5_ia32_gcc434/PerformSelection.exe )
   int cnt=0;
   if (stepSize<0) {
     cnt=NStart-1;
   }
-  char cntC[4];
+  char cntC[6];
   bool cont=true;
   int Nbeg=NStart;
   int Nfin=0;
@@ -99,7 +105,7 @@ void ProcessPATSet(const char* inPATName, const char* inRootName, const char* in
     pRootName=inRootName+pRootName;
 
     if ( stepSize>0) {
-      ProcessPATSubset(inPATName,pRootName,pTxtName,Nbeg,Nfin);
+      ProcessPATSubset(Label,inPATName,pRootName,pTxtName,Nbeg,Nfin,executable);
     }
 
     InitializeLabels(PLabel,CLabel);
@@ -360,7 +366,8 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
   ofstream outTableFile;
   outTableFile.open(outTableFileName,ios::out);
   InitializeLabels(PLabel,CLabel);
- 
+  InitializePresLabels(ElPresCLabel,MuPresCLabel,LpPresCLabel);
+
   for (Int_t p=0; p<NPROCESSES;p++) {
     readProcessTable(selName[p],EvtTableEl[p],EvtTableMu[p],EvtTableLp[p]);
     computeProcessResults(inXSecFile,p,EvtTableEl[p],EvtTableMu[p],EvtTableLp[p],FracPassEl[p],FracPassMu[p],FracPassLp[p],NExpectedEl[p],NExpectedMu[p],NExpectedLp[p],pEvents[p]);
@@ -372,7 +379,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
   outTableFile << "\\usepackage{fullpage}" << endl;
   outTableFile << "\\addtolength{\\oddsidemargin}{-0.75in}" << endl;
   outTableFile << "\\addtolength{\\textwidth}{5.0in}" << endl;
-  outTableFile << "\\addtolength{\\textheight}{1.2in}" << endl;
+  outTableFile << "\\addtolength{\\textheight}{1.4in}" << endl;
 
   outTableFile << "\\begin{document}" << endl;
   outTableFile << "\\begin{landscape}" << endl;
@@ -396,7 +403,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut El/Mu" ;
+    outTableFile << "Cut/Mode" ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
@@ -405,13 +412,13 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     writeFinSelRow(outTableFile,"InMCEvts",pEvents);
     for (Int_t c=0; c<(FINALCUT+1);c++) {
       storeEvtArray3to1(TempArray,EvtTableEl,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,ElPresCLabel[c],TempArray);
     }
     //add the BTags
     outTableFile << "\\hline " << endl;
     for (Int_t c=(FINALCUT+1); c<NCUTS;c++) {
       storeEvtArray3to1(TempArray,EvtTableEl,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,ElPresCLabel[c],TempArray);
     }
     //add the Summary Information     
     outTableFile << "\\hline "<< endl;
@@ -444,7 +451,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut El/Mu" ;
+    outTableFile << " Cut/Mode " ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
@@ -453,13 +460,13 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     writeFinSelRow(outTableFile,"InMCEvts",pEvents);
     for (Int_t c=0; c<(FINALCUT+1);c++) {
       storeEvtArray3to1(TempArray,EvtTableMu,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,MuPresCLabel[c],TempArray);
     }
     //add the BTags
     outTableFile << "\\hline " << endl;
     for (Int_t c=(FINALCUT+1); c<NCUTS;c++) {
       storeEvtArray3to1(TempArray,EvtTableMu,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,MuPresCLabel[c],TempArray);
     }
     //add the Summary Information     
     outTableFile << "\\hline "<< endl;
@@ -493,7 +500,7 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     }
     outTableFile << "l|}" << endl;
     outTableFile << "\\hline " << endl;
-    outTableFile << " Cut El/Mu" ;
+    outTableFile << " Cut:$e$/$\\mu$  Modes:" ;
     for (Int_t p=0; p<NPROCESSES;p++) { 
       outTableFile << "  &  " << PLabel[p];
     }
@@ -502,13 +509,13 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
     writeFinSelRow(outTableFile,"InMCEvts",pEvents);
     for (Int_t c=0; c<(FINALCUT+1);c++) {
       storeEvtArray3to1(TempArray,EvtTableLp,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,LpPresCLabel[c],TempArray);
     }
     //add the BTags
     outTableFile << "\\hline " << endl;
     for (Int_t c=(FINALCUT+1); c<NCUTS;c++) {
       storeEvtArray3to1(TempArray,EvtTableLp,c,nj);
-      writeFinSelRow(outTableFile,CLabel[c],TempArray);
+      writeFinSelRow(outTableFile,LpPresCLabel[c],TempArray);
     }
     //add the Summary Information     
     outTableFile << "\\hline "<< endl;

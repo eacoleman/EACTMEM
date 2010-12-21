@@ -10,7 +10,7 @@ class WbbEventProb2Jet : public EventProb2Jet
 
    protected:
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
 };
 

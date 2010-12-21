@@ -71,8 +71,8 @@ double sChannelEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1);
-      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getParton2(), 0, -1);
 //      Array1 vec2 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
       Array1 vec3 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array2 vec4 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
@@ -122,8 +122,8 @@ double sChannelEventProb3Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getQuark1(), 0, 1);
-      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getQuark2(), 0, -1);
+      Array1 vec0 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, 1);
+      Array1 vec1 = DHELAS::oxxxxx<1>(partons->getParton2(), 0, -1);
 //      Array1 vec2 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
       Array1 vec3 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
       Array2 vec4 = DHELAS::ixxxxx<2>(partons->getJet(0), bMass, -1);
@@ -167,8 +167,8 @@ double sChannelEventProb3Jet::matrixElement() const
       }
 
 //      DHELAS::HelVec vec[18];
-//      DHELAS::ixxxxx(partons->getQuark1(), 0, 1, vec[0], kOne);
-//      DHELAS::oxxxxx(partons->getQuark2(), 0, -1, vec[1], kOne);
+//      DHELAS::ixxxxx(partons->getParton1(), 0, 1, vec[0], kOne);
+//      DHELAS::oxxxxx(partons->getParton2(), 0, -1, vec[1], kOne);
 //      DHELAS::oxxxxx(partons->getLepton(), 0, 1, vec[2], kOne);
 //      DHELAS::ixxxxx(partons->getNeutrino(), 0, -1, vec[3], kOne);
 //      DHELAS::ixxxxx(partons->getJet(0), bMass, -1, vec[4], kTwo);
@@ -252,17 +252,17 @@ double sChannelEventProb3Jet::matrixElement() const
    return answer;
 }
 
-void sChannelEventProb3Jet::setQuarkIDs() const
+void sChannelEventProb3Jet::setPartonTypes() const
 {
    if (getMeasuredColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kDown);
+      getMeasuredColl()->setParton1Type(kUp);
+      getMeasuredColl()->setParton2Type(kDown);
    }
    else
    {
-      getMeasuredColl()->setProtonType(kDown);
-      getMeasuredColl()->setAntiprotonType(kUp);
+      getMeasuredColl()->setParton1Type(kDown);
+      getMeasuredColl()->setParton2Type(kUp);
    }
 }
 

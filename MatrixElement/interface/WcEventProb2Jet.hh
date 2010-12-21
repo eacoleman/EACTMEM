@@ -18,7 +18,7 @@ class WcEventProb2Jet : public EventProb2Jet
 
       virtual void changeVars(const std::vector<double>& parameters);
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
       virtual double totalTF() const;
       virtual bool onSwitch();
@@ -37,7 +37,7 @@ class WjgEventProb2Jet : public WcEventProb2Jet
 
    protected:
       virtual void changeVars(const std::vector<double>& parameters);
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
 };
 
 #endif

@@ -69,7 +69,7 @@ class EventProb
 
       bool isPossible() const;
 
-      bool getQuarkEnergies(double& energy1, double& energy2) const;
+      bool getPartonEnergies(double& energy1, double& energy2) const;
       virtual void getTotalLV(TLorentzVector& vec) const;
 
       virtual double matrixElement() const = 0;
@@ -77,7 +77,7 @@ class EventProb
       virtual double phaseSpace() const;
 
       double pdf(double x1, double x2) const;
-      virtual void setQuarkIDs() const = 0;
+      virtual void setPartonTypes() const = 0;
       virtual void getScale(double& scale1, double& scale2) const = 0;
 
       virtual double totalTF() const = 0;

@@ -222,8 +222,8 @@ void EventProb3Jet::makeFortranArray(double array[][4]) const
 {
    using PeterFunctions::makeArray;
 
-   makeArray(getPartonColl()->getQuark1(), array[0]);
-   makeArray(getPartonColl()->getQuark2(), array[1]);
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
    makeArray(getPartonColl()->getLepton(), array[2]);
    makeArray(getPartonColl()->getNeutrino(), array[3]);
    makeArray(getPartonColl()->getJet(0), array[4]);

@@ -1,28 +1,50 @@
+// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
+// Created : 10/15/2010
+// The diagrams can be compared with madgraph using the processes 
+// u u~ -> e+ ve u~ d (u~ u -> e+ ve u~ d), u u~ -> e- ve~ u d~ (u~ u -> e- ve~ u d~)
+
+
 #include "TAMUWW/MatrixElement/interface/WWEventProb2Jet.hh"
 
-#include <iostream>
-
-#include <cmath>
-#include <vector>
 
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
 
+//  C++ libraries
+#include <vector>
+#include <iostream>
+#include <cmath>
+
+
+// Set this flag to test the output madgraph would give
+//#define MADGRAPH_TEST
+
 using std::vector;
+using std::cout;
+using std::endl;
 
-extern "C"
-{
-   void* myww_(double[][4], const double*, const double*, double*);
-   void* myww2_(double[][4], const double*, const double*, double*);   
-}
+// #ifdef MADGRAPH_TEST
+// extern "C"
+// {
+//   void* wwlpm_(double[][4], const double*, const double*, double*); // lepQ>0 ( u u~ -> e+ ve u~ d )
+//   void* wwlpaltm_(double[][4], const double*, const double*, double*); // for  u~ u -> e+ ve u~ d  instead
+//   void* wwlmm_(double[][4], const double*, const double*, double*); // lepQ<0 ( u u~ -> e- ve~ u d~)
+//   void* wwlmaltm_(double[][4], const double*, const double*, double*); // for  u~ u -> e- ve~ u d~ instead
+// }
+// #endif
 
+// ------------------------------------------------------------------
 WWEventProb2Jet::WWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-   EventProb2Jet("WW", integrator, 3, 2, tf)
+   EventProb2Jet("WW", integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {}
 
+// ------------------------------------------------------------------
+
+
+// ------------------------------------------------------------------
 void WWEventProb2Jet::changeVars(const vector<double>& parameters)
 {
    TLorentzVector& jet1 = getPartonColl()->getJet(0);
@@ -36,6 +58,7 @@ void WWEventProb2Jet::changeVars(const vector<double>& parameters)
    getPartonColl()->getNeutrino().SetPz(parameters[0]);
 }
 
+// ------------------------------------------------------------------
 double WWEventProb2Jet::matrixElement() const
 {
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
@@ -47,20 +70,15 @@ double WWEventProb2Jet::matrixElement() const
    using MEConstants::wWidth;
    using MEConstants::zWidth;
 
+   //   MEConstants::PrintAllConstants(alphas_process);
+
    const PartonColl* partons = getPartonColl();
 
    double answer = 0;
+   doublecomplex factorGWF[2]   = {doublecomplex(MEConstants::gwf, 0),
+				   doublecomplex(0, 0)};
 
-//   std::cerr << "Lepton charge: " << partons->getLepCharge() << std::endl;
-   doublecomplex factor[2] = {doublecomplex(MEConstants::gwf, 0),
-                              doublecomplex(0, 0)};
-//   std::cerr << "factor[0]: " << factor[0] << std::endl;
-   doublecomplex zFactor[2] = {doublecomplex(MEConstants::gzu1, 0),
-                               doublecomplex(MEConstants::gzu2, 0)};
-   doublecomplex singleZ[2] = {doublecomplex(MEConstants::gwwz, 0),
-                               doublecomplex(0, 0)};
-//   std::cerr << "singleZ: " << singleZ[0] << std::endl;
-   enum {vecSize = 2};
+   enum {vecSize = 4};
    typedef SimpleArray<doublecomplex, vecSize> OutputType;
 
    if (partons->getLepCharge() > 0)
@@ -74,53 +92,46 @@ double WWEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec1 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1); //Convert the fortran routines to c++.
-      Array2 vec2 = DHELAS::oxxxxx<2>(partons->getQuark2(), 0, -1);
-//      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
+      Array2 vec1;
+      Array2 vec2;
+      if ( !swapPartonMom ) {
+	vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
+      } else {
+	vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
+      }
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(0), 0, -1);
       Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1);
 
-      Array1 vec1W, vec2W;
-      vec1W[0] = vec1[0];
-      vec2W[0] = vec2[1];
-      Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factor, wMass, wWidth); //'Same" as the fortran routines.
-      Array1 vec8 = DHELAS::fvixxx(vec1W, vec7, factor, 0, 0);
-      Array1 vec9 = DHELAS::jioxxx(vec8, vec2W, factor, wMass, wWidth);
+      Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factorGWF, wMass, wWidth);
+      Array2 vec8 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
+      Array4 vec9 = DHELAS::jioxxx(vec8, vec2, factorGWF, wMass, wWidth);
 
-      SimpleArray<doublecomplex, 1> output = DHELAS::iovxxx(vec5, vec6, vec9,
-                                                            factor); //output
-      
-      // Rigamarole to reduce unnecessary function calls:
-      // Initial quarks must have same helicities
-      Array1 vec1_0, vec1_1, vec2_0, vec2_1;
-      vec1_0[0] = vec1[0];
-      vec1_1[0] = vec1[1];
-      vec2_0[0] = vec2[0];
-      vec2_1[0] = vec2[1];
-      Array1 vec10_0 = DHELAS::jioxxx(vec1_0, vec2_1, zFactor, zMass, zWidth);
-      Array1 vec10_1 = DHELAS::jioxxx(vec1_1, vec2_0, zFactor, zMass, zWidth);//Not needed
-      Array2 vec10;
-      vec10[0] = vec10_0[0];
-      vec10[1] = vec10_1[0];
+      OutputType output1 = DHELAS::iovxxx(vec5, vec6, vec9, factorGWF);
 
-      Array2 vec11 = DHELAS::jvvxxx(vec7, vec10, singleZ, wMass, wWidth);
+      for (unsigned i = 0; i < vecSize; ++i)
+      {
+ 	doublecomplex temp1 = output1[i];
+	//	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-      OutputType output2 = DHELAS::iovxxx(vec5, vec6, vec11, factor);
+	doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+	//doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+	doublecomplex m2 =0;
 
-//      std::cerr << "output " << output[0] << std::endl;
-//      for (unsigned i = 0; i < 2; ++i)
-//      {
-//         std::cerr << "output2 " << output2[i] << std::endl;
-//      }
+	answer+= (m1+m2).real();
+	//	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+      }
 
-      answer += std::norm(output[0] + output2[0]);
-      answer += std::norm(output2[1]);
+
+
+
    }
    else
    {
       // Calculate the lepton only once per integration
-      static Array1 vec3;
+      static Array1 vec3; //wavefunction
       static double lepE = 0;
       if (lepE != partons->getLepton().E())
       {
@@ -128,101 +139,86 @@ double WWEventProb2Jet::matrixElement() const
          lepE = partons->getLepton().E();
       }
 
-      Array2 vec1 = DHELAS::ixxxxx<2>(partons->getQuark1(), 0, 1);
-      Array2 vec2 = DHELAS::oxxxxx<2>(partons->getQuark2(), 0, -1);
-//      Array1 vec3 = DHELAS::oxxxxx<1>(partons->getLepton(), 0, 1);
+      Array2 vec1;
+      Array2 vec2;
+      if ( !swapPartonMom ) {
+	vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
+      } else {
+	vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
+      }
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
-      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, 1);
+      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, +1);
       Array1 vec6 = DHELAS::ixxxxx<1>(partons->getJet(1), 0, -1);
 
-      Array1 vec1W, vec2W;
-      vec1W[0] = vec1[0];
-      vec2W[0] = vec2[1];
-      Array1 vec7 = DHELAS::jioxxx(vec4, vec3, factor, wMass, wWidth);
-      Array1 vec8 = DHELAS::fvoxxx(vec2W, vec7, factor, 0, 0);
-      Array1 vec9 = DHELAS::jioxxx(vec1W, vec8, factor, wMass, wWidth);
+      Array1 vec7 = DHELAS::jioxxx(vec4, vec3, factorGWF, wMass, wWidth);
+      Array2 vec8 = DHELAS::fvoxxx(vec2, vec7, factorGWF, 0, 0);
+      Array4 vec9 = DHELAS::jioxxx(vec1, vec8, factorGWF, wMass, wWidth);
 
-      SimpleArray<doublecomplex, 1> output = DHELAS::iovxxx(vec6, vec5, vec9,
-                                                            factor);
+      OutputType output1 = DHELAS::iovxxx(vec6, vec5, vec9, factorGWF);
       
-      // Rigamarole to reduce unnecessary function calls:
-      // Initial quarks must have same helicities
-      Array1 vec1_0, vec1_1, vec2_0, vec2_1;
-      vec1_0[0] = vec1[0];
-      vec1_1[0] = vec1[1];
-      vec2_0[0] = vec2[0];
-      vec2_1[0] = vec2[1];
-      Array1 vec10_0 = DHELAS::jioxxx(vec1_0, vec2_1, zFactor, zMass, zWidth);
-      Array1 vec10_1 = DHELAS::jioxxx(vec1_1, vec2_0, zFactor, zMass, zWidth);
-      Array2 vec10;
-      vec10[0] = vec10_0[0];
-      vec10[1] = vec10_1[0];
+      for (unsigned i = 0; i < vecSize; ++i)
+      {
+ 	doublecomplex temp1 = output1[i];
+	//	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-      Array2 vec11 = DHELAS::jvvxxx(vec10, vec7, singleZ, wMass, wWidth);
+	doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+	//doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+	doublecomplex m2 =0;
 
-      OutputType output2 = DHELAS::iovxxx(vec6, vec5, vec11, factor);
+	answer+= (m1+m2).real();
+	//	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+      }
 
-//      std::cerr << "output " << output[0] << std::endl;
-//      for (unsigned i = 0; i < 2; ++i)
-//      {
-//         std::cerr << "output2 " << output2[i] << std::endl;
-//      }
-
-      answer += std::norm(output[0] + output2[0]);
-      answer += std::norm(output2[1]);
    }
 
 
    answer /= 36; //relative weight
 //   std::cerr << "New Answer: " << answer << std::endl;
-   return answer;
-//   const PartonColl* partons = getPartonColl();
-//
-   double fortranArray[6][4];
-   makeFortranArray(fortranArray);
+// #ifdef MADGRAPH_TEST
+//   // -----------------------------------------------------------
+//   // This code reports our answer as well as the madgraph answer
+//   // -----------------------------------------------------------
+//   // Report our answers
+//   cout<<" My answer= "<<answer<<endl;
 
-// KLUDGE
-//   const double wMass = partons->getTopMass();
-//   double zMass = partons->getTopMass();
-//   const double wMass = MEConstants::wMass;
-//   double zMass = MEConstants::zMass;
-
-//   double answer;
-
-//   for (int i = 0; i < 7; ++i)
-//      for (int j = 0; j < 4; ++j)
-//      {
-//         std::cerr << "Input " << i << " TLV " << j << ": " << fortranArray[i][j] << std::endl;
-//      }
-//   exit+(1);
-//
-//   std::cerr << "Top mass: " << topMass << std::endl;
-//   std::cerr << "W mass: " << wMass << std::endl;
+//   // Make a fortran array, format which is needed for the fortran calls
+//   double fortranArray[6][4];
+//   makeFortranArray(fortranArray);
    
-//   std::cerr << "Lepton charge: " << partons->getLepCharge() << std::endl;
+//   // Evalute the matrix element according to madgraph
+//   //double mhiggs = m_massHiggs; // to get rid of the const identifier
+//   double mw  = wMass; // to get rid of the const identifier
+//   double mz = zMass;
+//   double an = 0;
+//   if (partons->getLepCharge() > 0)
+//     //wwlpm_(fortranArray , &mz, &mw, &an);
+//     wwlpaltm_(fortranArray , &mz, &mw, &an);
+//   else
+//     //wwlmm_(fortranArray , &mz, &mw, &an);
+//     wwlmaltm_(fortranArray , &mz, &mw, &an);
+//   cout << "Madgraph answer= " << an << endl;
+   
+//   // Exit right away
+//   exit(1);  
 
-   if (partons->getLepCharge() > 0)
-      myww_(fortranArray, &zMass, &wMass, &answer);
-   else
-      myww2_(fortranArray, &zMass, &wMass, &answer);
+// #endif
 
-   std::cerr << "Old answer: " << answer << std::endl;
-   exit(1);
    return answer;
+
 }
 
-void WWEventProb2Jet::setQuarkIDs() const
+void WWEventProb2Jet::setPartonTypes() const
 {
-   if (getMeasuredColl()->getLepCharge() > 0)
-   {
-      getMeasuredColl()->setProtonType(kUp);
-      getMeasuredColl()->setAntiprotonType(kDown);
-   }
-   else
-   {
-      getMeasuredColl()->setProtonType(kDown);
-      getMeasuredColl()->setAntiprotonType(kUp);
-   }
+
+  if ( !swapPartonMom ) {
+    getMeasuredColl()->setParton1Type(kUp);
+    getMeasuredColl()->setParton2Type(kAntiUp);
+  } else {
+    getMeasuredColl()->setParton1Type(kAntiUp);
+    getMeasuredColl()->setParton2Type(kUp);
+  }
 }
 
 void WWEventProb2Jet::getScale(double& scale1, double& scale2) const
@@ -234,4 +230,27 @@ void WWEventProb2Jet::getScale(double& scale1, double& scale2) const
       scale1 = scale2 = std::sqrt(scale);
 }
 
+bool WWEventProb2Jet::onSwitch()
+{
+  
+  switch (getLoop()) {
+  case 0:
+    //swapPartonMom=true; //when testing alternate functions
+    swapPartonMom=false; 
+    break;
+  case 1:
+    swapJets(0, 1);
+    break;
+  case 2:
+    swapPartonMom=true;
+    break;
+  case 3:
+    swapJets(0, 1);
+    break;
+  default:
+    return false;
+  }
 
+  return true;
+
+}

@@ -30,7 +30,7 @@ class EPDEventProb2Jet : public EventProb2Jet,
       virtual void changeVars(const std::vector<double>& parameters);
       double  computeEPD(const double parameters[]) const;
       virtual double matrixElement() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
       virtual bool onSwitch();
       double evaluateEPDforthisME(EventProb * evtP) const ;

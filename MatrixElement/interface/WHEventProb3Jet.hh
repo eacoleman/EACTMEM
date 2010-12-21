@@ -18,7 +18,7 @@ class WHEventProb3Jet : public EventProb3Jet, public HiggsEventProb
 
    protected:
       virtual double matrixElement() const;
-      virtual void   setQuarkIDs() const;
+      virtual void   setPartonTypes() const;
       virtual void   getScale(double& scale1, double& scale2) const;
 
 

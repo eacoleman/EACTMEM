@@ -13,6 +13,9 @@ const int NJETS=5;
 //Global Variables
 TString PLabel[NPROCESSES];
 TString CLabel[NCUTS];
+TString ElPresCLabel[NCUTS];
+TString MuPresCLabel[NCUTS];
+TString LpPresCLabel[NCUTS];
 
 void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
 {
@@ -55,6 +58,91 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
 //   cutLbl[9]="BTag1";
 //   cutLbl[10]="BTag2";
 //   cutLbl[11]="BTag3+";
+}
+
+
+void InitializePresLabels(TString ElPresLbl[NPROCESSES], TString MuPresLbl[NCUTS], TString LpPresLbl[NCUTS])
+{
+//   ///For Presentation Quality output tables
+//   ElPresLbl[0]="HLT+Kin";
+//   ElPresLbl[1]="VtxCut";
+//   ElPresLbl[2]="NJets";
+//   ElPresLbl[3]="One Isolated-$e$";
+//   ElPresLbl[4]="$\\neg$ $e$ Conversion";
+//   ElPresLbl[5]="$\\neg$ Loose-$\\mu$";
+//   ElPresLbl[6]="$Z$-Veto";
+//   ElPresLbl[7]="$MET_{ET}$";
+//   ElPresLbl[8]="BTag0";  
+//   ElPresLbl[9]="BTag1";
+//   ElPresLbl[10]="BTag2";
+//   ElPresLbl[11]="BTag3+";
+
+//   MuPresLbl[0]="HLT+Kin";
+//   MuPresLbl[1]="VtxCut";
+//   MuPresLbl[2]="NJets";
+//   MuPresLbl[3]="One Isolated-$\\mu$";
+//   MuPresLbl[4]="$\\neg$ Loose-$\\mu$";
+//   MuPresLbl[5]="$\\neg$ Loose-$e$";
+//   MuPresLbl[6]="None";
+//   MuPresLbl[7]="$MET_{ET}$";
+//   MuPresLbl[8]="BTag0";  
+//   MuPresLbl[9]="BTag1";
+//   MuPresLbl[10]="BTag2";
+//   MuPresLbl[11]="BTag3+";
+
+//   LpPresLbl[0]="HLT+Kin";
+//   LpPresLbl[1]="VtxCut";
+//   LpPresLbl[2]="NJets";
+//   LpPresLbl[3]="Tight $e$/$\\mu$";
+//   LpPresLbl[4]="$\\neg$ $e$-conv/Loose-$\\mu$";
+//   LpPresLbl[5]="$\\neg$ Loose $\\mu$/$e$";
+//   LpPresLbl[6]="$Z$-Veto/None";
+//   LpPresLbl[7]="$MET_{ET}$";
+//   LpPresLbl[8]="BTag0";  
+//   LpPresLbl[9]="BTag1";
+//   LpPresLbl[10]="BTag2";
+//   LpPresLbl[11]="BTag3+";
+
+  ///Dileptons
+  ElPresLbl[0]="HLT+Kin";
+  ElPresLbl[1]="VtxCut";
+  ElPresLbl[2]="NJets";
+  ElPresLbl[3]="2Isolated-$e$";
+  ElPresLbl[4]="$\\neg$ $e$ Conversion";
+  ElPresLbl[5]="$\\neg$ Loose-$\\mu$";
+  ElPresLbl[6]="$Z$-Veto";
+  ElPresLbl[7]="$MET_{ET}$";
+  ElPresLbl[8]="BTag0";  
+  ElPresLbl[9]="BTag1";
+  ElPresLbl[10]="BTag2";
+  ElPresLbl[11]="BTag3+";
+
+  MuPresLbl[0]="HLT+Kin";
+  MuPresLbl[1]="VtxCut";
+  MuPresLbl[2]="NJets";
+  MuPresLbl[3]="2Isolated-$\\mu$";
+  MuPresLbl[4]="$\\neg$ Loose-$\\mu$";
+  MuPresLbl[5]="$\\neg$ Loose-$e$";
+  MuPresLbl[6]="$Z$-Veto";
+  MuPresLbl[7]="$MET_{ET}$";
+  MuPresLbl[8]="BTag0";  
+  MuPresLbl[9]="BTag1";
+  MuPresLbl[10]="BTag2";
+  MuPresLbl[11]="BTag3+";
+
+  LpPresLbl[0]="HLT+Kin";
+  LpPresLbl[1]="VtxCut";
+  LpPresLbl[2]="NJets";
+  LpPresLbl[3]="Tight $e$/$\\mu$";
+  LpPresLbl[4]="$\\neg$ $e$-conv/Loose-$\\mu$";
+  LpPresLbl[5]="$\\neg$ Loose $\\mu$/$e$";
+  LpPresLbl[6]="$Z$-Veto";
+  LpPresLbl[7]="$MET_{ET}$";
+  LpPresLbl[8]="BTag0";  
+  LpPresLbl[9]="BTag1";
+  LpPresLbl[10]="BTag2";
+  LpPresLbl[11]="BTag3+";
+
 }
 
 void InitializeMatrix(double Mtx[NCUTS][NJETS]) {
@@ -119,9 +207,9 @@ void writeProcessTable(ofstream& outtablefile, double EvtTableEl[NCUTS][NJETS], 
 //// Writes a .txt table file for the process
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-     outtablefile << "ELECTRONS:  " << setprecision(3) << double(EvtTableEl[8][nj])/double(EvtTableLp[8][nj])*100 << "% of electrons (after cut 8)" << endl;
+     outtablefile << "ELECTRONS:  " << setprecision(5) << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
      writeCutLine(outtablefile,EvtTableEl,nj);
-     outtablefile << "MUONS:  " << setprecision(3) << double(EvtTableMu[8][nj])/double(EvtTableLp[8][nj])*100 << "% of muons (after cut 8)" << endl;
+     outtablefile << "MUONS:  " << setprecision(5) << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
      writeCutLine(outtablefile,EvtTableMu,nj);
      outtablefile << "LEPTONS:  " << EvtTableLp[0][nj] << " Events Total (after cut 0)" << endl;
      writeCutLine(outtablefile,EvtTableLp,nj);
@@ -134,9 +222,9 @@ void writeIntProcessTable(ofstream& outtablefile, int EvtTableEl[NCUTS][NJETS], 
    // loop over the desired jet counts
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-     outtablefile << "ELECTRONS:  " << setprecision(3) << double(EvtTableEl[8][nj])/double(EvtTableLp[8][nj])*100 << "% of electrons (after cut 8)" << endl;
+     outtablefile << "ELECTRONS:  " << setprecision(5) << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
      writeIntCutLine(outtablefile,EvtTableEl,nj);
-     outtablefile << "MUONS:  " << setprecision(3) << double(EvtTableMu[8][nj])/double(EvtTableLp[8][nj])*100 << "% of muons (after cut 8)" << endl;
+     outtablefile << "MUONS:  " << setprecision(5) << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
      writeIntCutLine(outtablefile,EvtTableMu,nj);
      outtablefile << "LEPTONS:  " << EvtTableLp[0][nj] << " Events Total (after cut 0)" << endl;
      writeIntCutLine(outtablefile,EvtTableLp,nj);

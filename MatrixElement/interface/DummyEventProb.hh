@@ -25,7 +25,7 @@ class DummyEventProb : public EventProb
 
       virtual double matrixElement() const { return 0;};
 
-      virtual void setQuarkIDs() const {}
+      virtual void setPartonTypes() const {}
 
       virtual void getScale(double& scale1, double& scale2) const {scale1 = scale2 = 0 ;}
 

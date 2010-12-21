@@ -17,7 +17,7 @@ class ttEventProb3Jet : public EventProb3Jet, public topEventProb
       virtual void getTotalLV(TLorentzVector& vec) const;
       virtual double matrixElement() const;
       virtual double phaseSpace() const;
-      virtual void setQuarkIDs() const;
+      virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
       virtual bool onSwitch();
       virtual void setTopMassAndWidth(double mTop);

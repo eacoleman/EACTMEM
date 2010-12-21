@@ -27,6 +27,8 @@
 #include "TAMUWW/MatrixElement/interface/WZEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/HWWEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/ZLightEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/QCDEventProb2Jet.hh"
 
 #include "TAMUWW/MatrixElement/interface/DummyEventProb.hh"
 #include "TAMUWW/MatrixElement/interface/WHEventProb3Jet.hh"
@@ -141,42 +143,40 @@ int main(int argc, char* argv[]){
   edm::FileInPath NN_TF_diboson_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_diboson.df");
   edm::FileInPath NN_TF_Wjg_light_file("TAMUWW/run_MatrixElement/datafiles/NN_TF_Wjg_light.df");
 
-  //NN TF
-  NN_TF_TransferFunction bTF_WH100GeV(NN_TF_WH100GeV_file.fullPath(), "WH100GeV");
-  NN_TF_TransferFunction bTF_WH105GeV(NN_TF_WH105GeV_file.fullPath(), "WH105GeV");
-  NN_TF_TransferFunction bTF_WH110GeV(NN_TF_WH110GeV_file.fullPath(), "WH110GeV");
-  NN_TF_TransferFunction bTF_WH115GeV(NN_TF_WH115GeV_file.fullPath(), "WH115GeV");
-  NN_TF_TransferFunction bTF_WH120GeV(NN_TF_WH120GeV_file.fullPath(), "WH120GeV");
-  NN_TF_TransferFunction bTF_WH125GeV(NN_TF_WH125GeV_file.fullPath(), "WH125GeV");
-  NN_TF_TransferFunction bTF_WH130GeV(NN_TF_WH130GeV_file.fullPath(), "WH130GeV");
-  NN_TF_TransferFunction bTF_WH135GeV(NN_TF_WH135GeV_file.fullPath(), "WH135GeV");
-  NN_TF_TransferFunction bTF_WH140GeV(NN_TF_WH140GeV_file.fullPath(), "WH140GeV");
-  NN_TF_TransferFunction bTF_WH145GeV(NN_TF_WH145GeV_file.fullPath(), "WH145GeV");
-  NN_TF_TransferFunction bTF_WH150GeV(NN_TF_WH150GeV_file.fullPath(), "WH150GeV");
+//   //NN TF
+//   NN_TF_TransferFunction bTF_WH100GeV(NN_TF_WH100GeV_file.fullPath(), "WH100GeV");
+//   NN_TF_TransferFunction bTF_WH105GeV(NN_TF_WH105GeV_file.fullPath(), "WH105GeV");
+//   NN_TF_TransferFunction bTF_WH110GeV(NN_TF_WH110GeV_file.fullPath(), "WH110GeV");
+//   NN_TF_TransferFunction bTF_WH115GeV(NN_TF_WH115GeV_file.fullPath(), "WH115GeV");
+//   NN_TF_TransferFunction bTF_WH120GeV(NN_TF_WH120GeV_file.fullPath(), "WH120GeV");
+//   NN_TF_TransferFunction bTF_WH125GeV(NN_TF_WH125GeV_file.fullPath(), "WH125GeV");
+//   NN_TF_TransferFunction bTF_WH130GeV(NN_TF_WH130GeV_file.fullPath(), "WH130GeV");
+//   NN_TF_TransferFunction bTF_WH135GeV(NN_TF_WH135GeV_file.fullPath(), "WH135GeV");
+//   NN_TF_TransferFunction bTF_WH140GeV(NN_TF_WH140GeV_file.fullPath(), "WH140GeV");
+//   NN_TF_TransferFunction bTF_WH145GeV(NN_TF_WH145GeV_file.fullPath(), "WH145GeV");
+//   NN_TF_TransferFunction bTF_WH150GeV(NN_TF_WH150GeV_file.fullPath(), "WH150GeV");
   
   
   
-  NN_TF_TransferFunction bTF_WBB(NN_TF_Wbb_file.fullPath(), "WBB");
-  NN_TF_TransferFunction bTF_schan(NN_TF_schan_file.fullPath(), "schan");
-  NN_TF_TransferFunction bTF_ttbar(NN_TF_ttbar_file.fullPath(), "ttbar");
-  NN_TF_TransferFunction bTF_tchan(NN_TF_tchan_file.fullPath(), "tchan");
+//   NN_TF_TransferFunction bTF_WBB(NN_TF_Wbb_file.fullPath(), "WBB");
+//   NN_TF_TransferFunction bTF_schan(NN_TF_schan_file.fullPath(), "schan");
+//   NN_TF_TransferFunction bTF_ttbar(NN_TF_ttbar_file.fullPath(), "ttbar");
+//   NN_TF_TransferFunction bTF_tchan(NN_TF_tchan_file.fullPath(), "tchan");
   
-  //c-jet TF
-  NN_TF_TransferFunction cTF_WCC(NN_TF_WCC_file.fullPath(), "WCC");
-  NN_TF_TransferFunction cTF_WC(NN_TF_WC_file.fullPath(), "Wcg_charm");
+//   //c-jet TF
+//   NN_TF_TransferFunction cTF_WCC(NN_TF_WCC_file.fullPath(), "WCC");
+//   NN_TF_TransferFunction cTF_WC(NN_TF_WC_file.fullPath(), "Wcg_charm");
   
-  //gluon
-  NN_TF_TransferFunction gluonTF_WC(NN_TF_WC_gluon_file.fullPath(), "Wcg_gluon");
-  NN_TF_TransferFunction gluonTF_Wgg(NN_TF_Wgg_file.fullPath(), "Wgg");
-  NN_TF_TransferFunction gluonTF_Wjg(NN_TF_Wjg_gluon_file.fullPath(), "Wjg_gluon");
+//   //gluon
+//   NN_TF_TransferFunction gluonTF_WC(NN_TF_WC_gluon_file.fullPath(), "Wcg_gluon");
+//   NN_TF_TransferFunction gluonTF_Wgg(NN_TF_Wgg_file.fullPath(), "Wgg");
+//   NN_TF_TransferFunction gluonTF_Wjg(NN_TF_Wjg_gluon_file.fullPath(), "Wjg_gluon");
   
-  //light TF
-  NN_TF_TransferFunction lightTF_tchan(NN_TF_tchan_light_file.fullPath(), "tchan_light");
-  NN_TF_TransferFunction lightTF_diboson(NN_TF_diboson_file.fullPath(), "diboson");
-  NN_TF_TransferFunction lightTF_Wjg(NN_TF_Wjg_light_file.fullPath(), "Wjg_light");
+//   //light TF
+//   NN_TF_TransferFunction lightTF_tchan(NN_TF_tchan_light_file.fullPath(), "tchan_light");
+//   NN_TF_TransferFunction lightTF_diboson(NN_TF_diboson_file.fullPath(), "diboson");
+//   NN_TF_TransferFunction lightTF_Wjg(NN_TF_Wjg_light_file.fullPath(), "Wjg_light");
   
-
-
   
   NewerTransferFunction bTF(params, centralEtaBorder, forwardEtaBorder);
   NewerTransferFunction lightTF(lparams, centralEtaBorder, forwardEtaBorder);
@@ -194,7 +194,8 @@ int main(int argc, char* argv[]){
 // **** Input File Type ****
 // *************************
   //RecoRootEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
-  EventNtupleEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
+  //  EventNtupleEventFile inputFile(inputFilename, "EvtTree", nEvents, nSkip, nPrescale, false);
+  EventNtupleEventFile inputFile(inputFilename,treeName, nEvents, nSkip, nPrescale, false);
 
   // MadEventFile inputFile(inputFilename, nEvents, nSkip, nPrescale, false);
 
@@ -277,71 +278,85 @@ int main(int argc, char* argv[]){
   vector<EventProb*> eventProbs2jet;
   vector<EventProb*> eventProbs3jet;
 
-  eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF)); //0
 
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH105GeV, 105)); //1
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH115GeV, 115)); //3
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH120GeV, 120)); //4
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH125GeV, 125)); //5
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH130GeV, 130)); //6
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH135GeV, 135)); //7
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH140GeV, 140)); //8
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH145GeV, 145)); //9
-  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH150GeV, 150)); //10
+  eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
+  //  eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
+//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+  eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
+  eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
+  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, lightTF));
 
-  //s-channel
-  eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //11 
-  eventProbs3jet.push_back(new sChannelEventProb3Jet(divonneInt, bTF, gluonTF)); //11
 
-  //t-channel
-  eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //12
-  eventProbs3jet.push_back(new tChannelEventProb3Jet(divonneInt, bTF, lightTF)); //12
 
-  //t-channel alternate
-  eventProbs2jet.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //13
-  eventProbs3jet.push_back(new tChannelEventProb3JetAlt(divonneInt, bTF, lightTF)); //13
+  // // Simplify the computation for now
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH105GeV, 105)); //1
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH115GeV, 115)); //3
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH120GeV, 120)); //4
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH125GeV, 125)); //5
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH130GeV, 130)); //6
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH135GeV, 135)); //7
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH140GeV, 140)); //8
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH145GeV, 145)); //9
+// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH150GeV, 150)); //10
 
-  //Wbbbar
-  eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //14
-  eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, bTF, gluonTF)); //14
+// //   //s-channel
+// //   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //11 
+// //   eventProbs3jet.push_back(new sChannelEventProb3Jet(divonneInt, bTF, gluonTF)); //11
 
-  //Wcc ME, use same as Wbb ME but with a different TF
-  eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //15
-  eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, cTF_WCC, gluonTF)); //15
+// //   //t-channel
+// //   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //12
+// //   eventProbs3jet.push_back(new tChannelEventProb3Jet(divonneInt, bTF, lightTF)); //12
+
+// // //   //t-channel alternate
+// // //   eventProbs2jet.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //13
+// // //   eventProbs3jet.push_back(new tChannelEventProb3JetAlt(divonneInt, bTF, lightTF)); //13
+
+// //   //Wbbbar
+// //   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //14
+// //   eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, bTF, gluonTF)); //14
+
+// //   //Wcc ME, use same as Wbb ME but with a different TF
+// //   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //15
+// //   eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, cTF_WCC, gluonTF)); //15
   
-  //Wc, use a Dummy class that is never evaluated for the 3 jets events
-  eventProbs2jet.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//16
-  eventProbs3jet.push_back(new DummyEventProb("Dummy WC",rootInt)); //16
+// //   //Wc, use a Dummy class that is never evaluated for the 3 jets events
+// //   eventProbs2jet.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//16
+// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WC",rootInt)); //16
 
-  //Wjg, use a Dummy class that is never evaluated for the 3 jets events
-  eventProbs2jet.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //17
-  eventProbs3jet.push_back(new DummyEventProb("Dummy Wjg",rootInt)); //17
+// //   //Wjg, use a Dummy class that is never evaluated for the 3 jets events
+// //   eventProbs2jet.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //17
+// //   eventProbs3jet.push_back(new DummyEventProb("Dummy Wjg",rootInt)); //17
 
-  //Wgg, use a Dummy class that is never evaluated for the 3 jets events
-  eventProbs2jet.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //18
-  eventProbs3jet.push_back(new DummyEventProb("Dummy Wgg",rootInt)); //18
+// //   //Wgg, use a Dummy class that is never evaluated for the 3 jets events
+// //   eventProbs2jet.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //18
+// //   eventProbs3jet.push_back(new DummyEventProb("Dummy Wgg",rootInt)); //18
 
-  // tt-bar matrix element 2-jet
-  eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //19
-  eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-  eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-  eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+// //   // tt-bar matrix element 2-jet
+// //   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //19
+// //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+// //   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+// //   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
   
-  // tt-bar matrix element 3-jet
-  eventProbs3jet.push_back(new ttEventProb3Jet(divonneInt, bTF, lightTF)); //19
-  eventProbs3jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-  eventProbs3jet.back()->setBounds(4, 0, TMath::TwoPi());
-  eventProbs3jet.back()->setBounds(5, 0, TMath::Pi());
+// //   // tt-bar matrix element 3-jet
+// //   eventProbs3jet.push_back(new ttEventProb3Jet(divonneInt, bTF, lightTF)); //19
+// //   eventProbs3jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+// //   eventProbs3jet.back()->setBounds(4, 0, TMath::TwoPi());
+// //   eventProbs3jet.back()->setBounds(5, 0, TMath::Pi());
   
-  // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
-  eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //20
-  eventProbs3jet.push_back(new DummyEventProb("Dummy WW", rootInt)); //20
+// //   // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
+// //   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //20
+// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WW", rootInt)); //20
 
-  // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
-  eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//21
-  eventProbs3jet.push_back(new DummyEventProb("Dummy WZ", rootInt));//21
+// //   // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
+// //   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//21
+// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WZ", rootInt));//21
  
   
 //   // ********************************************************

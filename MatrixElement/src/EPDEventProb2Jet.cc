@@ -11,20 +11,24 @@
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
-#include "TAMUWW/MatrixElement/interface/sChannelEventProb2Jet.hh"
+//#include "TAMUWW/MatrixElement/interface/sChannelEventProb2Jet.hh"
 // #include "TAMUWW/MatrixElement/interface/SingleTopNtuple/MicroNtuple.hh"
 
 //  C++ libraries
-#include <vector>
 #include <iostream>
+#include <cmath>
+#include <vector>
 
 // Use this flag to check the ME values by themselves 
 // #define CHECKMES
 
+// using std::vector;
+// using std::cout;
+// using std::endl;
+
 using std::vector;
 using std::cout;
 using std::endl;
-
 
 PartonColl EPDEventProb2Jet::m_measuredColl;
 double EPDEventProb2Jet::evtMEProb[MicroNtuple::nEventProb];
@@ -163,7 +167,7 @@ double EPDEventProb2Jet::computeEPD(const double parameters[]) const
 }//computeEPD
 
 // ------------------------------------------------------------------
-void EPDEventProb2Jet::setQuarkIDs() const { 
+void EPDEventProb2Jet::setPartonTypes() const { 
   // needed because this is a pure virtual method 
 }
 
