@@ -22,11 +22,11 @@ int main(int argc, char **argv)
 
   char WpJVarName[]="WpJVar";
   char ZpJVarName[]="ZpJVar";
-  char ZZVarName[]="ZZVar";
+  //  char ZZVarName[]="ZZVar";
   char TTbarVarName[]="TTbarVar";
   char STopTVarName[]="STopTVar";
   char STopSVarName[]="STopSVar";
-  char STopTWVarName[]="STopTWVar";
+  //  char STopTWVarName[]="STopTWVar";
   char QCDHT100to250VarName[]="QCDHT100to250Var";
   char QCDHT250to500VarName[]="QCDHT250to500Var";
 
@@ -69,16 +69,16 @@ int main(int argc, char **argv)
   scale_WpJ=Lumi*scale_WpJ;
   double scale_ZpJ=6.13;
   scale_ZpJ=Lumi*scale_ZpJ;
-  double scale_ZZ=0.028;
-  scale_ZZ=Lumi*scale_ZZ;
+//   double scale_ZZ=0.028;
+//   scale_ZZ=Lumi*scale_ZZ;
   double scale_TTbar=4.75;
   scale_TTbar=Lumi*scale_TTbar;
   double scale_STopT=5.38;
   scale_STopT=Lumi*scale_STopT;
   double scale_STopS=0.49;
   scale_STopS=Lumi*scale_STopS;
-  double scale_STopTW=0.61;
-  scale_STopTW=Lumi*scale_STopTW;
+//   double scale_STopTW=0.61;
+//   scale_STopTW=Lumi*scale_STopTW;
   double scale_QCDHT100to250=8.4;
   scale_QCDHT100to250=Lumi*scale_QCDHT100to250;
   double scale_QCDHT250to500=1.67;
@@ -89,48 +89,48 @@ int main(int argc, char **argv)
 
   TH1F* histWpJ;
   TH1F* histZpJ;
-  TH1F* histZZ;
+  //  TH1F* histZZ;
   TH1F* histTTbar;
   TH1F* histSTopT;
   TH1F* histSTopS;
-  TH1F* histSTopTW;
+  //  TH1F* histSTopTW;
   TH1F* histQCDHT100to250;
   TH1F* histQCDHT250to500;
 
-  TFile *infileWW = (TFile*)new TFile("PATTuples355/Results/NoMETCut/WW_MjjHistFile.root");
+  TFile *infileWW = (TFile*)new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/WW_logEPDRawWWandWZHistFile.root");
   histWW  = (TH1F*)infileWW->Get("EvtHist;1")->Clone("WWcent");
   histWW->Scale(scale_WW);
-  TFile *infileWZ = (TFile*)new TFile("PATTuples355/Results/NoMETCut/WZ_MjjHistFile.root");
+  TFile *infileWZ = (TFile*)new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/WZ_logEPDRawWWandWZHistFile.root");
   histWZ  = (TH1F*)infileWZ->Get("EvtHist;1")->Clone("WZcent");
   histWZ->Scale(scale_WZ);
 
 
-  TFile *infileWpJ = (TFile*) new TFile("PATTuples355/Results/NoMETCut/WpJ_MjjHistFile.root");
+  TFile *infileWpJ = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/WpJ_logEPDRawWWandWZHistFile.root");
   histWpJ  = (TH1F*)infileWpJ->Get("EvtHist;1")->Clone("WpJcent");
   histWpJ->Scale(scale_WpJ);
-  TFile *infileZpJ = (TFile*) new TFile("PATTuples355/Results/NoMETCut/ZpJ_MjjHistFile.root");
+  TFile *infileZpJ = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/ZpJ_logEPDRawWWandWZHistFile.root");
   histZpJ  = (TH1F*)infileZpJ->Get("EvtHist;1")->Clone("ZpJcent");
   histZpJ->Scale(scale_ZpJ);
-  TFile *infileZZ = (TFile*) new TFile("PATTuples355/Results/NoMETCut/ZZ_MjjHistFile.root");
-  histZZ  = (TH1F*)infileZZ->Get("EvtHist;1")->Clone("ZZcent");
-  histZZ->Scale(scale_ZZ);
-  TFile *infileTTbar = (TFile*) new TFile("PATTuples355/Results/NoMETCut/TTbar_MjjHistFile.root");
+//   TFile *infileZZ = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/ZZ_logEPDRawWWandWZHistFile.root");
+//   histZZ  = (TH1F*)infileZZ->Get("EvtHist;1")->Clone("ZZcent");
+//   histZZ->Scale(scale_ZZ);
+  TFile *infileTTbar = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/TTbar_logEPDRawWWandWZHistFile.root");
   histTTbar  = (TH1F*)infileTTbar->Get("EvtHist;1")->Clone("TTbarcent");
   histTTbar->Scale(scale_TTbar);
-  TFile *infileSTopT = (TFile*) new TFile("PATTuples355/Results/NoMETCut/STopT_MjjHistFile.root");
+  TFile *infileSTopT = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/STopT_logEPDRawWWandWZHistFile.root");
   histSTopT  = (TH1F*)infileSTopT->Get("EvtHist;1")->Clone("STopTcent");
   histSTopT->Scale(scale_STopT);
-  TFile *infileSTopS = (TFile*) new TFile("PATTuples355/Results/NoMETCut/STopS_MjjHistFile.root");
+  TFile *infileSTopS = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/STopS_logEPDRawWWandWZHistFile.root");
   histSTopS  = (TH1F*)infileSTopS->Get("EvtHist;1")->Clone("STopScent");
   histSTopS->Scale(scale_STopS);
-  TFile *infileSTopTW = (TFile*) new TFile("PATTuples355/Results/NoMETCut/STopTW_MjjHistFile.root");
-  histSTopTW  = (TH1F*)infileSTopTW->Get("EvtHist;1")->Clone("STopTWcent");
-  histSTopTW->Scale(scale_STopTW);
-  //// Use QCD without an Isolation Cut (in order to get a sufficient event count)
-  TFile *infileQCDHT100to250 = (TFile*) new TFile("PATTuples355/Results/NoMETCut/QCDHT100to250_NoIsoCut_MjjHistFile.root");
+//   TFile *infileSTopTW = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/STopTW_logEPDRawWWandWZHistFile.root");
+//   histSTopTW  = (TH1F*)infileSTopTW->Get("EvtHist;1")->Clone("STopTWcent");
+//   histSTopTW->Scale(scale_STopTW);
+  //// Use QCD without a MET Cut (in order to get a sufficient event count)
+  TFile *infileQCDHT100to250 = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/QCDHT100to250_NoMETCut_logEPDRawWWandWZHistFile.root");
   histQCDHT100to250  = (TH1F*)infileQCDHT100to250->Get("EvtHist;1")->Clone("QCDHT100to250cent");
   histQCDHT100to250->Scale(scale_QCDHT100to250);
-  TFile *infileQCDHT250to500 = (TFile*) new TFile("PATTuples355/Results/NoMETCut/QCDHT250to500_NoIsoCut_MjjHistFile.root");
+  TFile *infileQCDHT250to500 = (TFile*) new TFile("/uscms_data/d2/ilyao/FullPAT_3_5_6/Results/QCDHT250to500_NoMETCut_logEPDRawWWandWZHistFile.root");
   histQCDHT250to500  = (TH1F*)infileQCDHT250to500->Get("EvtHist;1")->Clone("QCDHT250to500cent");
   histQCDHT250to500->Scale(scale_QCDHT250to500);
 
@@ -192,32 +192,32 @@ int main(int argc, char **argv)
   testhyp->add_template(histZpJ,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
-  //-----------------------------------------------------------
-  // "ZZ background"
-  cout << "ZZ bg " << endl;
-  for(i=0;i<15;i++) {
-    nps_low[i] = 0;
-    nps_high[i] = 0;
-    lowsigma[i] = 0;
-    highsigma[i] = 0;
-    lowshape[i] = 0;
-    highshape[i] = 0;
-  }
+//   //-----------------------------------------------------------
+//   // "ZZ background"
+//   cout << "ZZ bg " << endl;
+//   for(i=0;i<15;i++) {
+//     nps_low[i] = 0;
+//     nps_high[i] = 0;
+//     lowsigma[i] = 0;
+//     highsigma[i] = 0;
+//     lowshape[i] = 0;
+//     highshape[i] = 0;
+//   }
   
-  ename[0] = ZZVarName;
-  nps_low[0] = -0.2;
-  nps_high[0] = 0.2;
+//   ename[0] = ZZVarName;
+//   nps_low[0] = -0.2;
+//   nps_high[0] = 0.2;
 
-  sfact = 1;
+//   sfact = 1;
 
-  nullhyp_pe->add_template(histZZ,sfact,1,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp_pe->add_template(histZZ,sfact,1,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  nullhyp->add_template(histZZ,sfact,0,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp->add_template(histZZ,sfact,0,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   nullhyp_pe->add_template(histZZ,sfact,1,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   testhyp_pe->add_template(histZZ,sfact,1,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   nullhyp->add_template(histZZ,sfact,0,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   testhyp->add_template(histZZ,sfact,0,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
 
   //-----------------------------------------------------------
@@ -301,32 +301,32 @@ int main(int argc, char **argv)
   testhyp->add_template(histSTopS,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
-  //-----------------------------------------------------------
-  // "STopTW background"
-  cout << "STopTW bg " << endl;
-  for(i=0;i<15;i++) {
-    nps_low[i] = 0;
-    nps_high[i] = 0;
-    lowsigma[i] = 0;
-    highsigma[i] = 0;
-    lowshape[i] = 0;
-    highshape[i] = 0;
-  }
+//   //-----------------------------------------------------------
+//   // "STopTW background"
+//   cout << "STopTW bg " << endl;
+//   for(i=0;i<15;i++) {
+//     nps_low[i] = 0;
+//     nps_high[i] = 0;
+//     lowsigma[i] = 0;
+//     highsigma[i] = 0;
+//     lowshape[i] = 0;
+//     highshape[i] = 0;
+//   }
   
-  ename[0] = STopTWVarName;
-  nps_low[0] = -0.2;
-  nps_high[0] = 0.2;
+//   ename[0] = STopTWVarName;
+//   nps_low[0] = -0.2;
+//   nps_high[0] = 0.2;
 
-  sfact = 1;
+//   sfact = 1;
 
-  nullhyp_pe->add_template(histSTopTW,sfact,1,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp_pe->add_template(histSTopTW,sfact,1,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  nullhyp->add_template(histSTopTW,sfact,0,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp->add_template(histSTopTW,sfact,0,ename,nps_low,nps_high,
-			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   nullhyp_pe->add_template(histSTopTW,sfact,1,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   testhyp_pe->add_template(histSTopTW,sfact,1,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   nullhyp->add_template(histSTopTW,sfact,0,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
+//   testhyp->add_template(histSTopTW,sfact,0,ename,nps_low,nps_high,
+// 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
   //-----------------------------------------------------------
   // "QCDHT100to250 background"
@@ -444,8 +444,8 @@ int main(int argc, char **argv)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////***** Compute The Limits *****//////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  int npx=200;//number of PE
-  int nPE=10;//number of points per PE
+  int npx=500;//number of PE
+  int nPE=200;//number of points per PE
 
   // get a distribution of chisqure for the different hypotheses
   //??? Is this needed
@@ -490,7 +490,7 @@ int main(int argc, char **argv)
   mymclimit->bayes_interval_begin = 0;
   mymclimit->bayes_interval_end = 20;
   mymclimit->bayes_interval_step = 0.01;
-  //  double bh=0.95;
+  //double bh=0.95;
   double bh=0.99;
   double sflimit;
   double unc;

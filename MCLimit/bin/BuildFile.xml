@@ -1,5 +1,5 @@
 
-<bin name="WWchan_cls.exe" file="WWchan_cls.C">
+<bin name="WWchanEPD_cls.exe" file="WWchanEPD_cls.C">
  <use name="root"/>
  <use name="rootgraphics"/>
  <use name="rootminuit"/>
