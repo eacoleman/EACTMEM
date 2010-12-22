@@ -1,5 +1,7 @@
-#include "TH1.h"
+#include <TH1.h>
 #include <TLegend.h>
+#include <TCanvas.h>
+#include <TMath.h>
 #include <TStyle.h>
 using namespace std;
 

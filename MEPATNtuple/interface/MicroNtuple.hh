@@ -24,6 +24,8 @@ public:
 
 class ProbsForEPD {
 public:
+  ProbsForEPD();
+
   double ww     ;
   double wz     ;
   double wjg    ;

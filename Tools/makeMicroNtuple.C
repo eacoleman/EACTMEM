@@ -336,36 +336,36 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
     microNtuple->epd2tagTchan = microNtuple->calcEPD(2, MicroNtuple::kTchan);
 
     //WWandWZ EPD
-    microNtuple->epd0tagWWandWZ    = microNtuple->calcWZEPD(0, secvtxtag);
-    microNtuple->epd1tagWWandWZ    = microNtuple->calcWZEPD(1, secvtxtag);
-    microNtuple->epd2tagWWandWZ    = microNtuple->calcWZEPD(2, secvtxtag);
+    microNtuple->epd0tagWWandWZ = microNtuple->calcWZEPD(0, secvtxtag);
+    microNtuple->epd1tagWWandWZ = microNtuple->calcWZEPD(1, secvtxtag);
+    microNtuple->epd2tagWWandWZ = microNtuple->calcWZEPD(2, secvtxtag);
 
-    for (unsigned imass = 0; imass < MicroNtuple::nWHmasses; ++imass)
-      {
-	const double masses[MicroNtuple::nWHmasses] = {100, 105, 110, 115, 120, 125, 130,
-						       135, 140, 145, 150};
+//     for (unsigned imass = 0; imass < MicroNtuple::nWHmasses; ++imass)
+//       {
+// 	const double masses[MicroNtuple::nWHmasses] = {100, 105, 110, 115, 120, 125, 130,
+// 						       135, 140, 145, 150};
 
-	// REGULAR EPD
-	microNtuple->epdNoKITWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsEPD(0, masses[imass]);
-	microNtuple->epd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsEPD(1, masses[imass]);
-	microNtuple->epd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsEPD(2, masses[imass]);
+// 	// REGULAR EPD
+// 	microNtuple->epdNoKITWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsEPD(0, masses[imass]);
+// 	microNtuple->epd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsEPD(1, masses[imass]);
+// 	microNtuple->epd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsEPD(2, masses[imass]);
 	 
-	// MAX PROB EPD
-	microNtuple->MPepd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsMaxProbEPD(1,masses[imass]);
-	microNtuple->MPepd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsMaxProbEPD(2,masses[imass]);
+// 	// MAX PROB EPD
+// 	microNtuple->MPepd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsMaxProbEPD(1,masses[imass]);
+// 	microNtuple->MPepd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsMaxProbEPD(2,masses[imass]);
 
-	// SUPER EPD, regular and maxProb all together
-	microNtuple->MAPTIPepd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsSuperEPD(1,masses[imass]);
-	microNtuple->MAPTIPepd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
-	  = microNtuple->calcHiggsSuperEPD(2,masses[imass]);
+// 	// SUPER EPD, regular and maxProb all together
+// 	microNtuple->MAPTIPepd1tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsSuperEPD(1,masses[imass]);
+// 	microNtuple->MAPTIPepd2tagWH[MicroNtuple::getHiggsMassIndex(masses[imass])] 
+// 	  = microNtuple->calcHiggsSuperEPD(2,masses[imass]);
 
-      }// for Higgs masses
+//       }// for Higgs masses
      
     //      std::cerr << "Tag: " << microNtuple->knntag[0] << " " << microNtuple->knntag[1] << " Bprob: "
     //                << microNtuple->bProb[0] << " " << microNtuple->bProb[1] << " " << " EPD: " 
@@ -483,8 +483,8 @@ public:
 // WARNING!!! is the microNtuple as bigger than 2Gs the code crashes
 void createAllMicroNtuples(){
 
-  string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356NoMETCut/bup/";
-  //string basePath="./";
+  string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356/";
+  // string basePath="./";
 
   //Input files for 2-jet bin
   string inputPath=basePath+"";
@@ -496,7 +496,7 @@ void createAllMicroNtuples(){
 
   //Output files
   //string outputPath=inputPath+"MicroNtuples/";
-  string outputPath="/uscms/home/ilyao/nobackup/MEResults/PAT356NoMETCut/";
+  string outputPath="/uscms/home/ilyao/nobackup/MEResults/PAT356/";
   //string outputPath="./";
 
   //Create the list of MicroNtuples

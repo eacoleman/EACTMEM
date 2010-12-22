@@ -283,10 +283,10 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
-  //  eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
-//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+  eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
+  eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+  eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+  eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
   eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, lightTF));

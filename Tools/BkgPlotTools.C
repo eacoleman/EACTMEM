@@ -374,6 +374,10 @@ void Plot_CompareShapes(const char* TitleName, const char* TreeName, const char*
 }
 
 
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+
 // void Plot_TwoBkgTypes(const char* XTitle, const char* VarName, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes1, const char* inModes2, int scalingType, const char* SaveName = 0) 
 // //// Plots variable VarName for the given modes. The size (area) of each histogram is proportional to the number of given event.  
 // /// inAllModes should be of the form "modename[0] infilename[0] evtCount[0] modename[1] infilename[1] evtCount[1] modename[2] ... "
@@ -773,89 +777,92 @@ void Plot_CompareShapes(const char* TitleName, const char* TreeName, const char*
 // }
 
 
-// void Plot_StoreHist(const char* VarName, double VarMin, double VarMax, const char* inmodefile1, const char* mode1_name=0, const char* AddRest, const char* StoreHistFileName )
-// //// Plots variable VarName for two modes, to the same scale (of mode1).  
-// {
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+
+void Plot_StoreHist(const char* TreeName, const char* VarName, double VarMin, double VarMax, const char* inmodefile=0, const char* mode_name=0, const char* AddRest=0, const char* StoreHistFileName=0 )
+//// Plots a histogram (of VarName) to be used by MCLimit.  
+{
      
-//   TFile* f1 = new TFile(inmodefile1);
-//   TTree* EvtTree1 = (TTree*)f1->Get("EvtTree");
+  TFile* f = new TFile(inmodefile);
+  TTree* InTree = (TTree*)f->Get(TreeName);
 
  
-//   TFile * outhistfile;
-//   if ( StoreHistFileName!="") {
-//     outhistfile = new TFile(StoreHistFileName, "RECREATE");
-//   } 
-//   TH1F* EvtHist = new TH1F("EvtHist","EvtHist",25,VarMin,VarMax);
-//   //TTree *EvtTree = new TTree("EvtTree", "EvtTree"); //Temporary for Synchronization.
+  TFile * outhistfile;
+  if ( StoreHistFileName!=0) {
+    outhistfile = new TFile(StoreHistFileName, "RECREATE");
+  } 
+  TH1F* EvtHist = new TH1F("EvtHist","EvtHist",20,VarMin,VarMax);
 
-//   TString input1=">>EvtHist";
-//   input1=VarName+input1;
+  TString input=">>EvtHist";
+  input=VarName+input;
 
-//   // input the ranges & additonal restrictions
-//   char Max_char[30];
-//   sprintf(Max_char,"%.2e",VarMax);
-//   cout << "Max_char=" << Max_char << endl;
-//   char Min_char[30];
-//   sprintf(Min_char,"%.2e",VarMin);
-//   cout << "Min_char=" << Min_char << endl;
+  // input the ranges & additonal restrictions
+  char Max_char[30];
+  sprintf(Max_char,"%.2e",VarMax);
+  cout << "Max_char=" << Max_char << endl;
+  char Min_char[30];
+  sprintf(Min_char,"%.2e",VarMin);
+  cout << "Min_char=" << Min_char << endl;
 
-//   TString Restrictions;
-//   if (AddRest!="") {
-//     Restrictions = AddRest;
-//     Restrictions = ")&&"+Restrictions;
-//   } else {
-//     Restrictions = ")";
-//   }
-
-
-//   Restrictions=Max_char+Restrictions;
-//   Restrictions="<"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions=")&&("+Restrictions;
-//   Restrictions=Min_char+Restrictions;
-//   Restrictions=">"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions="("+Restrictions;
-
-//   cout << "Restrictions=" << Restrictions << endl;
-//   EvtTree1->Draw(input1,Restrictions);
-
-//   double ent1 = EvtHist->GetEntries();
-//   cout << "ent1=" << ent1 << endl;
-
-//   double scale;
-
-//   EvtHist->SetLineWidth(2);
-//   EvtHist->SetLineColor(2);
-//   scale=1/ent1;
-//   EvtHist->Scale(scale);
-//   EvtHist->Draw();
-
-//   lgnd = new TLegend(0.7,0.75,0.90,0.9);
-//   lgnd->AddEntry(EvtHist,mode1_name,"l");
-//   //lgnd->SetHeader("The Legend Title");
-//   gStyle->SetOptStat(0);
-//   EvtHist->SetXTitle(VarName);
-//   EvtHist->SetYTitle("Normalized Events");
-//   TString Title;
-//   Title="-Distribution";
-//   Title=VarName+Title;
-//   Title="  "+Title;
-// //   Title=mode2_name+Title;
-// //   Title=" vs. "+Title;
-//   Title=mode1_name+Title;
-
-//   EvtHist->SetTitle(Title);
-//   lgnd->Draw();
-//   if (StoreHistFileName!="") {
-//    outhistfile->Write();
-//   }
-//   EvtHist->Draw();
-//   lgnd->Draw();
-//   //outhistfile->Close();
+  TString Restrictions;
+  if (AddRest!=0) {
+    Restrictions = AddRest;
+    Restrictions = ")&&"+Restrictions;
+  } else {
+    Restrictions = ")";
+  }
 
 
-// }
+  Restrictions=Max_char+Restrictions;
+  Restrictions="<"+Restrictions;
+  Restrictions=VarName+Restrictions;
+  Restrictions=")&&("+Restrictions;
+  Restrictions=Min_char+Restrictions;
+  Restrictions=">"+Restrictions;
+  Restrictions=VarName+Restrictions;
+  Restrictions="("+Restrictions;
+
+  cout << "Restrictions=" << Restrictions << endl;
+  InTree->Draw(input,Restrictions);
+
+  double ent1 = EvtHist->GetEntries();
+  cout << "ent1=" << ent1 << endl;
+
+  double scale;
+
+  EvtHist->SetLineWidth(2);
+  EvtHist->SetLineColor(2);
+  scale=1/ent1;
+  EvtHist->Scale(scale);
+  EvtHist->Draw();
+
+  TLegend* lgnd = new TLegend(0.7,0.75,0.90,0.9);
+  lgnd->AddEntry(EvtHist,mode_name,"l");
+  //lgnd->SetHeader("The Legend Title");
+  gStyle->SetOptStat(0);
+  EvtHist->SetXTitle(VarName);
+  EvtHist->SetYTitle("Normalized Events");
+  TString Title;
+  Title="-Distribution";
+  Title=VarName+Title;
+  Title="  "+Title;
+//   Title=mode2_name+Title;
+//   Title=" vs. "+Title;
+  Title=mode_name+Title;
+
+  EvtHist->SetTitle(Title);
+  lgnd->Draw();
+  if (StoreHistFileName!=0) {
+   outhistfile->Write();
+  }
+  EvtHist->Draw();
+  lgnd->Draw();
+  //outhistfile->Close();
+
+
+}
 
 
 

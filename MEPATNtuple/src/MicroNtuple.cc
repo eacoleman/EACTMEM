@@ -13,6 +13,26 @@
 using std::cout;
 using std::endl;
 
+ProbsForEPD::ProbsForEPD() 
+{
+
+  schan  = 0;
+  tchan  = 0;
+  tchan2 = 0;
+  wbb    = 0;
+  wcc    = 0;
+  wc     = 0;
+  wjg    = 0; 
+  zjg    = 0;
+  qcd    = 0;
+  tt     = 0; 
+  ww     = 0;
+  wz     = 0;
+  wh     = 0;
+
+}
+
+
 // This just print all the elements to screen
 void ProbsForEPD::Show(std::string title){
   cout<<title<<endl;
@@ -623,11 +643,6 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
   probs.schan  = eventProb[6];
   probs.qcd    = eventProb[7];
 
-//   probs.tchan2 = eventProb[13];
-//   probs.wbb    = eventProb[14];
-//   probs.wcc    = eventProb[15];
-//   probs.wc     = eventProb[16];
-//   probs.wh     = eventProb[indexWH];
  
    if (ntag == 0) // this is the EPD with no KIT information
    {
@@ -771,6 +786,8 @@ Double_t MicroNtuple::calcHiggsSuperEPD(unsigned ntag, double mass,
 //------------------------------------------------------------------------------
 Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag) const
 {
+
+  //cout << "testing -1" << endl;
   if(ntag==0)
     return calcWZEPD(ntag,secvtxtag, eventProb, bProb0, nJets);
   else if(ntag==1)
@@ -809,7 +826,9 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag,
    
    // Get the probabilities for the EPD. indexWH is set to zero and is irrelevant here.
    ProbsForEPD probs = getProbsForEPD(eventProb, params[tagIndex], 0, bProb, ntag);
-   
+   //cout << "testing" << endl;
+   //probs.Show("TEST_TITLE");
+
    // There is less than three events per MC sample in which all the probabilities are zero. 
    // To avoid returning a NaN just return zero for those
    if (probs.wz + probs.ww == 0) return 0;
