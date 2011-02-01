@@ -5,9 +5,11 @@
 
 #include "TAMUWW/MatrixElement/interface/ttEventProb2Jet.hh"
 
+//#include <cassert>
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <math.h>
 
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
@@ -60,17 +62,25 @@ void ttEventProb2Jet::setTopMassAndWidth(double mTop) {
 void ttEventProb2Jet::changeVars(const vector<double>& parameters)
 {
  
-   EventProb2Jet::changeVars(parameters);
+   using MEConstants::wMass;
+
+   TLorentzVector& jet1 = getPartonColl()->getJet(0);
+   TLorentzVector& jet2 = getPartonColl()->getJet(1);
+   jet1.SetRho(parameters[1]);
+   jet1.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[1])));
+   jet2.SetRho(parameters[2]);
+   jet2.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[2])));
+   getPartonColl()->getNeutrino().SetPz(parameters[0]);
 
    double r = parameters[3];
    double phi = parameters[4];
    double theta = parameters[5];
 
    double x = r * cos(phi) * sin(theta);
-   double y = r * sin(phi) * cos(theta);
-   double z = r * sin(theta);
+   double y = r * sin(phi) * sin(theta);
+   double z = r * cos(theta);
 
-   m_W.SetPxPyPzE(x, y, z, r);
+   m_W.SetXYZM(x, y, z, wMass);
 
 }//changeVars
 
@@ -96,6 +106,10 @@ void ttEventProb2Jet::getTotalLV(TLorentzVector& vec) const
 // ------------------------------------------------------------------
 double ttEventProb2Jet::matrixElement() const
 {
+
+  //cout << "calling ttbar ME" << endl;
+  //  cout << "m_W=" << m_W << endl;
+  // cout << "m_W.M()=" << m_W.M() << endl;
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
    typedef SimpleArray<DHELAS::HelArray, 2> Array2;
    typedef SimpleArray<DHELAS::HelArray, 4> Array4;
@@ -253,7 +267,20 @@ double ttEventProb2Jet::matrixElement() const
 
 #endif
 
-   return answer;
+//   int zero = 0;
+//   answer = 1/zero;
+//   //if ( (!std::isfinite(answer)) || isnan(answer)) return 0;
+//   // if (!isfinite(answer)) return 0;
+//   //  if (anwers is weird) return 0;
+//   if (std::fpclassify(answer) !=  FP_NORMAL) return 0;
+  return answer;
+//    assert ( answer>=0 );
+//    //return answer;
+//    //return 1.5;
+//    return (1/0);
+
+
+
 }
 
 double ttEventProb2Jet::phaseSpace() const

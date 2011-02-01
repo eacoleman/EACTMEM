@@ -137,18 +137,19 @@ void EventProb2Jet::setDynamicBounds()
 
 void EventProb2Jet::changeVars(const vector<double>& parameters)
 {
-   TLorentzVector& jet1 = getPartonColl()->getJet(0);
-   TLorentzVector& jet2 = getPartonColl()->getJet(1);
-//   std::cerr << jet2.Px() << " " << jet2.Py() << " " << jet2.Pz() << " " << jet2.E() << std::endl;
-   jet1.SetRho(parameters[1]);
-   jet1.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[1])));
-   jet2.SetRho(parameters[2]);
-   jet2.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[2])));
-//
-   getPartonColl()->getNeutrino().SetPz(parameters[0]);
-// KLUDGE!
-//   getPartonColl()->getNeutrino().SetPz(196 / 5 * (getPartonColl()->getTopMass() - 200) + 980);
-//   std::cerr << "Setting neutrino to " << getPartonColl()->getNeutrino().Pz() << std::endl;
+  std::cout << "ERROR: EventProb2Jet::changeVars is implemented (should be defined in the specific matrix element instead)." << std::endl;
+//    TLorentzVector& jet1 = getPartonColl()->getJet(0);
+//    TLorentzVector& jet2 = getPartonColl()->getJet(1);
+// //   std::cerr << jet2.Px() << " " << jet2.Py() << " " << jet2.Pz() << " " << jet2.E() << std::endl;
+//    jet1.SetRho(parameters[1]);
+//    jet1.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[1])));
+//    jet2.SetRho(parameters[2]);
+//    jet2.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[2])));
+// //
+//    getPartonColl()->getNeutrino().SetPz(parameters[0]);
+// // KLUDGE!
+// //   getPartonColl()->getNeutrino().SetPz(196 / 5 * (getPartonColl()->getTopMass() - 200) + 980);
+// //   std::cerr << "Setting neutrino to " << getPartonColl()->getNeutrino().Pz() << std::endl;
 }
 
 

@@ -483,7 +483,7 @@ public:
 // WARNING!!! is the microNtuple as bigger than 2Gs the code crashes
 void createAllMicroNtuples(){
 
-  string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356/";
+  string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/";
   // string basePath="./";
 
   //Input files for 2-jet bin
@@ -496,33 +496,30 @@ void createAllMicroNtuples(){
 
   //Output files
   //string outputPath=inputPath+"MicroNtuples/";
-  string outputPath="/uscms/home/ilyao/nobackup/MEResults/PAT356/";
+  string outputPath="/uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/";
   //string outputPath="./";
 
   //Create the list of MicroNtuples
   vector<MyStr> listOfMicroNtuples;
 
-  ///testing:
-  //listOfMicroNtuples.push_back(MyStr("MEWWTest*","micro_WWTestEvt",false,false,false));
-
   //// Diboson
-  listOfMicroNtuples.push_back(MyStr("WW100Evt_CondorRun*","micro_WW100Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("WZ100Evt_CondorRun*","micro_WZ100Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WW3300Evt*","micro_WW3300Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WZ2000Evt*","micro_WZ2000Evt",false,false,false));
 
   //// W+jets and Z+jets
-  listOfMicroNtuples.push_back(MyStr("WpJ100Evt_CondorRun*","micro_WpJ100Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("ZpJ100Evt_CondorRun*","micro_ZpJ100Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WpJ35700Evt*","micro_WpJ35700Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("ZpJ2000Evt*","micro_ZpJ2000Evt",false,false,false));
 
   //// ttbar
-  listOfMicroNtuples.push_back(MyStr("TTbar100Evt_CondorRun*","micro_TTbar100Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("TTbar30600Evt*","micro_TTbar30600Evt",false,false,false));
 
   //// Single top
-  listOfMicroNtuples.push_back(MyStr("STopT100Evt_CondorRun*","micro_STopT100Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("STopS100Evt_CondorRun*","micro_STopS100Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT42500Evt*","micro_STopT42500Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopS42500Evt*","micro_STopS42500Evt",false,false,false));
 
   //// QCD
-  listOfMicroNtuples.push_back(MyStr("QCD_HT100to250100Evt_CondorRun*","micro_QCD_HT100to250100Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("QCD_HT250to500100Evt_CondorRun*","micro_QCD_HT250to500100Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("QCD_HT100to250NoIso92Evt*","micro_QCD_HT100to250NoIso92Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("QCD_HT250to500NoIso472Evt*","micro_QCD_HT250to500NoIso472Evt",false,false,false));
 
 
   //

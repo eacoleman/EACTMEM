@@ -5,8 +5,8 @@
 #include <TStyle.h>
 using namespace std;
 
-void DrawLimitBands(double TwoSigLow, double OneSigLow, double Mpv, double OneSigHigh, double TwoSigHigh, double LumiMin, double LumiMax, double LumiEval)
-//// Draw the limit bands by extrapolating the values at LumiEval between LumiMax and LumiMin
+void DrawLimitBands(double TwoSigLow, double OneSigLow, double Mpv, double OneSigHigh, double TwoSigHigh, double LumiMin, double LumiMax, double LumiEval, const char* TitleName, const char* YTitleName, const char* SaveName = 0)
+//// Draw the exclusion limit bands by extrapolating the values at LumiEval between LumiMax and LumiMin
 {
   double Nsteps=500;
   double LumiStep=(LumiMax-LumiMin)/Nsteps;
@@ -43,8 +43,8 @@ void DrawLimitBands(double TwoSigLow, double OneSigLow, double Mpv, double OneSi
   hist_TwoSigHigh->SetFillColor(5);
   hist_OneSigHigh->SetFillColor(3);
   hist_OneSigLow->SetFillColor(5);
-  hist_TwoSigLow->SetFillColor(kGray);
-
+  //hist_TwoSigLow->SetFillColor(kGray);
+  hist_TwoSigLow->SetFillColor(10);
 
   hist_Mpv->SetLineWidth(2);
   hist_Line->SetLineWidth(2);
@@ -60,11 +60,13 @@ void DrawLimitBands(double TwoSigLow, double OneSigLow, double Mpv, double OneSi
   //hist_TwoSigHigh->SetMinimum(TwoSigLow*TMath::Sqrt(LumiEval/LumiMax));
   hist_TwoSigHigh->SetMaximum(Mpv*TMath::Sqrt(LumiEval/LumiMin));
   hist_TwoSigHigh->SetMinimum(0);
-  hist_TwoSigHigh->SetTitle("Exclusion Limits");
+  //hist_TwoSigHigh->SetTitle("Exclusion Limits");
+  hist_TwoSigHigh->SetTitle(TitleName);
   gStyle->SetTitleX(0.33);
   gStyle->SetTitleY(0.96);
   hist_TwoSigHigh->SetXTitle("Luminosity pb^{-1}");
-  hist_TwoSigHigh->SetYTitle("99% CL Signal/SM");
+  hist_TwoSigHigh->SetYTitle(YTitleName);
+  //hist_TwoSigHigh->SetYTitle("99% CL Signal/SM");
   hist_TwoSigHigh->Draw("l");
   hist_OneSigHigh->Draw("lsame");
   hist_Mpv->Draw("lsame");
@@ -78,6 +80,11 @@ void DrawLimitBands(double TwoSigLow, double OneSigLow, double Mpv, double OneSi
   legend->AddEntry(hist_TwoSigHigh,"Expected #pm 2#sigma","f");
   legend->AddEntry(hist_OneSigHigh,"Expected #pm 1#sigma","f");
   legend->Draw();
+
+  /// Save the output
+  if ( SaveName!=0 ) {
+    cnv->SaveAs(SaveName);
+  }
 
 }
 

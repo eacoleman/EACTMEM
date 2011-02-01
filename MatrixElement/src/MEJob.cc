@@ -283,8 +283,17 @@ void MEJob::m_doEvent(PartonColl& partons){
          returnVal[0] = sm_eventProb->execute(foghorn);
          error[0] = prob[0] = 0;
 #else
+	 //	 std::cout << "initiate doIntegral" << std::endl;
          sm_eventProb->getIntegrator().doIntegral(returnVal, error, failPtr,
-                                                  nevalPtr, prob);
+                                                  nevalPtr, prob); //<-Might Fail
+
+	 // if different below 
+//          sm_eventProb->getIntegrator().doIntegral(returnVal, error, &fail,
+//                                                   nevalPtr, prob); //<-Might Fail
+
+// 	 std::cout<<" fail add="<<&fail<<"    failPtr="<<failPtr<<std::endl;
+// 	 std::cout << "complete doIntegral" << std::endl;
+
 #endif
 
 	 //save the number of evaluations

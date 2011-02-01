@@ -116,123 +116,11 @@ void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, doub
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////*********Plot Functions*********///////////////////////////////////////////////
+//////////////////////////***** Primary Plot Functions*****//////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-// void Plot_AllBackgrounds(const char* VarName, double VarMin, double VarMax, const char* AddRest = 0, const char* inAllModes = 0) 
-// //// Plots variable VarName for the given modes. The size (area) of each histogram is proportional to the number of given event.  
-// /// inAllModes should be of the form "modename[0] infilename[0] evtCount[0] modename[1] infilename[1] evtCount[1] modename[2] ... "
-// /// Use AddRest to give additional restrictions
-// {
-//   vector<TString> modename;
-//   vector<TString> infilename;
-//   vector<double> evtcount;
-//   vector<int> color;
-//   int nMode = 0;
-//   readModes(inAllModes,modename,infilename,evtcount,color,nMode);
-
-//   //add the additional restrictions if any.
-//   char Max_char[30];
-//   sprintf(Max_char,"%.2e",VarMax);
-//   cout << "Max_char=" << Max_char << endl;
-//   char Min_char[30];
-//   sprintf(Min_char,"%.2e",VarMin);
-//   cout << "Min_char=" << Min_char << endl;
-
-//   TString Restrictions;
-//   if (AddRest!="") {
-//     Restrictions = AddRest;
-//     Restrictions = ")&&"+Restrictions;
-//   } else {
-//     Restrictions = ")";
-//   }
-//   Restrictions=Max_char+Restrictions;
-//   Restrictions="<"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions=")&&("+Restrictions;
-//   Restrictions=Min_char+Restrictions;
-//   Restrictions=">"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions="("+Restrictions;
-
-//   cout << "Restrictions=" << Restrictions << endl;
-
-//   //create the histograms
-//   TH1F* h[20];
-//   TH1F* ha[20];
-  
-//   TString hname;
-//   TString haname;
-//   int nentries;
-//   double scale;
-//   double entries;
-//   char n_char[30];
-
-//   TString input;
-//   input=")";
-//   input=Max_char+input;
-//   input=","+input;
-//   input=Min_char+input;
-//   input=">>ht(25,"+input;
-//   input=VarName+input;
-//   cout << "input=" << input << endl;
-
-//   for (Int_t n=0; n<nMode; n++) {
-//     sprintf(n_char,"%i",n);
-//     hname="]";
-//     hname = n_char + hname;
-//     haname="ha["+hname;
-//     hname="h["+hname;
-//     h[n]=new TH1F(hname,hname,25,VarMin,VarMax);
-//     ha[n]=new TH1F(haname,haname,25,VarMin,VarMax);
-//     TFile* f = new TFile(infilename[n]);
-//     TTree* EvtTree = (TTree*)f->Get("EvtTree");
-//     EvtTree->Draw(input,Restrictions);
-//     cout << "testing1" << endl;
-//     h[n]=ht;
-//     cout << "testing2" << endl;
-//     entries=h[n]->GetEntries();
-//     cout << modename[n] <<": entries=" << entries << endl;
-//     scale=evtcount[n]/entries;
-//     cout << "scale=" << scale << endl;
-//     h[n]->Scale(scale);
-//     for (Int_t m=0; m<(n+1); m++) {
-//       ha[n]->Add(h[m]);
-//     }
-//     ha[n]->SetFillColor(color[n]);
-    
-//  }
-
-//   cout << "nModes=" << nMode << endl;
-//   int k;
-//   TLegend * legend;
-//   legend = new TLegend(0.70,0.5,0.9,0.9);
-//   for (Int_t n=0; n<nMode; n++) {
-//     k=nMode-n-1;
-//     if ( n==0 ) {
-//       ha[k]->Draw();
-//     } else {
-//       ha[k]->Draw("same");
-//     }
-//     legend->AddEntry(ha[k],modename[k],"f");
-//   }
-//   gStyle->SetOptStat(0);
-//   ha[nMode-1]->SetTitle("Expected Yields per pb^{-1}");
-//   ha[nMode-1]->SetXTitle(VarName);
-//   ha[nMode-1]->SetYTitle("Evts/pb^{-1}");
-
-//   legend->Draw();
-
-// }
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-
-void Plot_ABkg(const char* TreeName, const char* VarName, double VarMin, double VarMax, const char* inmodefile, const char* mode_name=0, const char* AddRest=0)
+void Plot_ABkg(const char* TreeName, const char* VarName, double VarMin, double VarMax, const char* inmodefile, const char* AddRest=0, const char* TitleName = 0, const char* SaveName = 0)
 //// Plots variable VarName for a particular mode.  
 {
      
@@ -240,7 +128,7 @@ void Plot_ABkg(const char* TreeName, const char* VarName, double VarMin, double 
   TTree* InTree = (TTree*)f->Get(TreeName);
 
   TH1D* hist = new TH1D("hist","hist",25,VarMin,VarMax);
-
+  TCanvas *cnv = new TCanvas("cnv","cnv",10,10,900,600);
 
   TString input=">>hist";
   input=VarName+input;
@@ -278,19 +166,29 @@ void Plot_ABkg(const char* TreeName, const char* VarName, double VarMin, double 
   //hist->SetLineColor(2);
   hist->Draw();
 
-  TLegend* lgnd = new TLegend(0.7,0.75,0.90,0.9);
-  lgnd->AddEntry(hist,mode_name,"l");
+//   TLegend* lgnd = new TLegend(0.7,0.75,0.90,0.9);
+//   lgnd->AddEntry(hist,mode_name,"l");
   gStyle->SetOptStat(0);
+  gStyle->SetTitleX(0.3);
+  gStyle->SetTitleY(0.96);
   hist->SetXTitle(VarName);
   hist->SetYTitle("Events");
-  TString Title;
-  Title="-Distribution";
-  Title=VarName+Title;
-  Title="  "+Title;
+  if ( TitleName!=0 ) {
+    hist->SetTitle(TitleName);
+  } else {
+    TString Title;
+    Title="-Distribution";
+    Title=VarName+Title;
+    Title="  "+Title;
+    hist->SetTitle(Title);
+  }
 
-  hist->SetTitle(Title);
-  lgnd->Draw();
+  //lgnd->Draw();
 
+  /// Save the output
+  if ( SaveName!=0 ) {
+    cnv->SaveAs(SaveName);
+  }
 
 }
 
@@ -317,7 +215,6 @@ void Plot_CompareShapes(const char* TitleName, const char* TreeName, const char*
   TH1F* h[20];
 
   TCanvas *cnv = new TCanvas("cnv","cnv",10,10,900,600);
-  //  TLegend *lgnd = new TLegend(0.7,0.75,0.90,0.9);
   TLegend *lgnd;
   if ( nModes<10 ) {
     lgnd = new TLegend(0.7,0.9-0.05*nModes,0.90,0.9);
@@ -364,6 +261,104 @@ void Plot_CompareShapes(const char* TitleName, const char* TreeName, const char*
   h[0]->SetTitle(TitleName);
   h[0]->SetXTitle(VarName);
   h[0]->SetYTitle("Event Count");
+  lgnd->Draw();
+
+  /// Save the output
+  if ( SaveName!=0 ) {
+    cnv->SaveAs(SaveName);
+  }
+
+}
+
+
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+
+void Plot_StackedBackgrounds(const char* TitleName, const char* TreeName, const char* VarName, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, const char* SaveName = 0 )
+//// Similar to Plot_CompareShapes, but plots backgrounds stacked on top of each other.
+//// Plots variable VarName for the given modes. The size (area) of each histogram is proportional to the number of given events. 
+/// inModes should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color[1] modename[2] ... " 
+/// Use AddRest to give additional restrictions
+{
+
+  vector<TString> modenames, infilenames;
+  vector<double> evtcounts;
+  vector<int> colors;
+  int nModes = 0;
+  double maxtemp=0;
+  double max=0;
+  double scale;
+  double entries;
+
+  readModes(inModes,modenames,infilenames,evtcounts,colors,nModes);
+
+  //Create the individual histograms
+  TH1F* h[20];
+
+  TCanvas *cnv = new TCanvas("cnv","cnv",10,10,900,600);
+  TLegend *lgnd;
+  if ( nModes<10 ) {
+    lgnd = new TLegend(0.7,0.9-0.05*nModes,0.90,0.9);
+  } else {
+    lgnd = new TLegend(0.7,0.4,0.90,0.9);
+  }
+
+  fillHistograms(h,TreeName,VarName,VarMin,VarMax,AddRest,nModes,infilenames);
+
+  //Create the accumulated histograms
+  TH1F* ha[20];
+  
+  TString haname;
+  //  int nentries;
+  char n_char[30];
+
+//   TString input;
+//   input=")";
+//   input=Max_char+input;
+//   input=","+input;
+//   input=Min_char+input;
+//   input=">>ht(25,"+input;
+//   input=VarName+input;
+//   cout << "input=" << input << endl;
+
+  for (Int_t n=0; n<nModes; n++) {
+    sprintf(n_char,"%i",n);
+    haname="]";
+    haname = n_char + haname;
+    haname="ha["+haname;
+    ha[n]=new TH1F(haname,haname,25,VarMin,VarMax);
+    entries=h[n]->GetEntries();
+    cout << modenames[n] <<": entries=" << entries << endl;
+    scale=evtcounts[n]/entries;
+    cout << "scale=" << scale << endl;
+    h[n]->Scale(scale);
+    for (Int_t m=0; m<(n+1); m++) {
+      ha[n]->Add(h[m]);
+    }
+    ha[n]->SetFillColor(colors[n]);
+    
+ }
+
+  //  cout << "nModes=" << nMode << endl;
+  int k;
+  for (Int_t n=0; n<nModes; n++) {
+    k=nModes-n-1;
+    if ( n==0 ) {
+      ha[k]->Draw();
+    } else {
+      ha[k]->Draw("same");
+    }
+    lgnd->AddEntry(ha[k],modenames[k],"f");
+  }
+  gStyle->SetOptStat(0);
+  gStyle->SetTitleX(0.13);
+  gStyle->SetTitleY(0.97);
+  //  ha[nModes-1]->SetTitle("Expected Yields per pb^{-1}");
+  ha[nModes-1]->SetTitle(TitleName);
+  ha[nModes-1]->SetXTitle(VarName);
+  ha[nModes-1]->SetYTitle("Evts/pb^{-1}");
+
   lgnd->Draw();
 
   /// Save the output

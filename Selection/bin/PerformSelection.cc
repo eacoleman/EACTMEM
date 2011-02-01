@@ -667,8 +667,11 @@ int main (int argc, char* argv[])
 
 
      ///Fill the Ntuple to be used in Matrix Element computations (requiring two jets & a lepton passing all of the cuts).
+     // Only fill in the elements which pass the MET cut:
+     passStandard=passAll;
 
-     if ( (passAll>0.5)&&(jcnt_tot==2) ) {
+
+     if ( (passStandard>0.5)&&(jcnt_tot==2) ) {
        EvtNtuple->lLV.clear();
        lp4LV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
        lp3.SetXYZ(lp4.Px(),lp4.Py(),lp4.Pz());

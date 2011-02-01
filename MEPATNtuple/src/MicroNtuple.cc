@@ -654,11 +654,11 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const double eventProb[nEventProb],
       probs.wc     *= params[5];
       probs.wjg    *= params[6];
       probs.zjg    *= params[7];
-      probs.qcd    *= params[7];
-      probs.tt     *= params[8];
-      probs.ww     *= params[9];
-      probs.wz     *= params[10];
-      probs.wh     *= params[11];
+      probs.qcd    *= params[8];
+      probs.tt     *= params[9];
+      probs.ww     *= params[10];
+      probs.wz     *= params[11];
+      probs.wh     *= params[12];
    }
    else if (ntag == 1)
    {
@@ -820,10 +820,11 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag,
 //      };
 
    static const double params[2][13] =
-     {{1,1,1,1,1,1,1,1,1,1,1,1,1},
-      {1,1,1,1,1,1,1,1,1,1,1,1,1}
+     {{1.0/(6.53342e-08),1.0/(1.71543e-06),1,1,1,1,1.0/(2.86953e-05),1.0/(7.28967e-07),1.0/(0.00827712),1.0/(0.0100453),1.0/(6.60085e-07),1.0/(8.98321e-08),1},
+      {1.0/(6.53342e-08),1.0/(1.71543e-06),1,1,1,1,1.0/(2.86953e-05),1.0/(7.28967e-07),1.0/(0.00827712),1.0/(0.0100453),1.0/(6.60085e-07),1.0/(8.98321e-08),1}
      };
-   
+
+
    // Get the probabilities for the EPD. indexWH is set to zero and is irrelevant here.
    ProbsForEPD probs = getProbsForEPD(eventProb, params[tagIndex], 0, bProb, ntag);
    //cout << "testing" << endl;
@@ -836,7 +837,13 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, unsigned secvtxtag,
    // Return the wh probability
    return (probs.wz+probs.ww) / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
 		      probs.wcc + probs.wc + probs.wjg + probs.zjg + probs.qcd + probs.tt +
-		      probs.ww + probs.wz);      
+		      probs.ww + probs.wz);    
+   
+
+//    return (probs.wz+probs.ww) / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
+// 		      probs.wcc + probs.wc + probs.wjg + probs.zjg +
+// 		      probs.ww + probs.wz);  
+   
       
 }//calcWZEPD 
 
