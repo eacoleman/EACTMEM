@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id:$
+// $Id: TableRow.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
@@ -15,182 +15,71 @@ using std::endl;
 using std::string;
 using std::vector;
 
-//----------------------------------------------------------------------------
-TableRow::TableRow(){  
-  SetName("defaultTableRow");
-}
+
+ClassImp(TableRow)
+
 
 //----------------------------------------------------------------------------
 TableRow::TableRow(string _rowName) {
   SetName(_rowName.c_str());
 }//C'tor
 
-//----------------------------------------------------------------------------
-TableRow::~TableRow(){} //D'tor
 
 //----------------------------------------------------------------------------
-TableRow & TableRow::operator+=(const TableRow &rhs){
+// Copy constructor
+TableRow::TableRow(const TableRow & rhs) {
 
-  vector<TableCell> table2Entries = rhs.getCellEntries();
+  cellEntries.clear();
 
-  // Check
-  if (table2Entries.size() != cellEntries.size()){
-    cout<<"ERROR  TableRow::operator+= TableRow's have two different number of entries"<<endl
-	<<" Returning without adding."<<endl;
-    return *this;
-  }
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-      cellEntries[it] += table2Entries[it];
-
-  return *this;
-
-}//operator +=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator+(const TableRow &rhs) const{
-
-  TableRow res = *this;
-  res += rhs;
-  return res;
-
-}//operator+
-
-//----------------------------------------------------------------------------
-TableRow & TableRow::operator-=(const TableRow &rhs){
-
-  vector<TableCell> table2Entries = rhs.getCellEntries();
-
-  // Check
-  if (table2Entries.size() != cellEntries.size()){
-    cout<<"ERROR  TableRow::operator+= TableRow's have two different number of entries"<<endl
-	<<" Returning without adding."<<endl;
-    return *this;
-  }
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-      cellEntries[it] -= table2Entries[it];
-
-  return *this;
-
-}//operator -=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator-(const TableRow &rhs) const{
-
-  TableRow res = *this;
-  res -= rhs;
-  return res;
-
-}//operator+-
-
-//----------------------------------------------------------------------------
-TableRow & TableRow::operator*=(double rhs){
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-    cellEntries[it] *= rhs;
-
-  return *this;
-
-}//operator *=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator*(double rhs) const{
-
-  TableRow res = *this;
-  res *= rhs;
-  return res;
-
-}//operator*
-
-//----------------------------------------------------------------------------
-TableRow & TableRow::operator/=(double rhs){
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-    cellEntries[it] /= rhs;
-
-  return *this;
-
-}//operator /=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator/(double rhs) const{
-
-  TableRow res = *this;
-  res /= rhs;
-  return res;
-
-}//operator/
-
-//----------------------------------------------------------------------------
-TableRow & TableRow::operator*=(Value rhs){
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-    cellEntries[it] *= rhs;
-
-  return *this;
-
-}//operator *=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator*(Value rhs) const{
-
-  TableRow res = *this;
-  res *= rhs;
-  return res;
-
-}//operator*
-
-//----------------------------------------------------------------------------
-TableRow & TableRow::operator/=(Value rhs){
-
-  // Loop over all the cuts adding the information of the other table
-  for (int it=0;it<(int)cellEntries.size(); it++)
-    cellEntries[it] /= rhs;
-
-  return *this;
-
-}//operator /=
-
-//----------------------------------------------------------------------------
-TableRow TableRow::operator/(Value rhs) const{
-
-  TableRow res = *this;
-  res /= rhs;
-  return res;
-
-}//operator/
-
-//----------------------------------------------------------------------------
-void TableRow::reset(){
+  // Set the name of this row
+  SetName(rhs.GetName());
   
-  for (unsigned int i=0;i<cellEntries.size();i++)
-    cellEntries[i].reset();
-  
-}//Reset
+  // Get the vector of the new row
+  const vector<TableCell*> rhsCells = rhs.getCellEntries();
+
+  //and clone all the cells
+  for (unsigned int it=0;it<rhsCells.size();it++){
+    TableCell * newCell = (TableCell *) rhsCells[it]->clone();
+    cellEntries.push_back(newCell);
+  }   
+
+}//C'tor
 
 
 //----------------------------------------------------------------------------
-// This adds the information of tableCut2 to this cut
-void TableRow::addTableRow(TableRow tableRow2){
+TableRow::~TableRow(){
+  deleteAllCells();
+} //D'tor
 
-  vector<TableCell> entriesToAdd =  tableRow2.getCellEntries();
+//----------------------------------------------------------------------------
+void TableRow::deleteAllCells(){
 
-  //Check
-  if (getCellEntries().size() != entriesToAdd.size()){
-    cout<<"ERROR  Table::AddTableRow Rows have different number of cells"<<endl
-	<<" Returning without adding."<<endl;
-    return ;
+  for (unsigned int it=0;it<cellEntries.size();it++)
+    delete cellEntries[it];
+
+}
+
+//----------------------------------------------------------------------------
+TableRow & TableRow::operator=(const TableRow & rhs){
+
+  // First delete all entries in this row
+  deleteAllCells();
+
+  // Clear the content of the cellentries
+  cellEntries.clear();
+
+  // Set the name of this row
+  SetName(rhs.GetName());
+
+  // Get the vector of the new row
+  vector<TableCell*> rhsCells = rhs.getCellEntries();
+
+  //and clone all the cells
+  for (unsigned int it=0;it<rhsCells.size();it++){
+    TableCell * newCell = (TableCell *) rhsCells[it]->clone();
+    cellEntries.push_back(newCell);
   }
-  
-  for (int it=0; it < (int) getCellEntries().size(); it++)
-    cellEntries[it] += entriesToAdd[it];
+    
+  return *this;
 
-}//addTableRow
-
-ClassImp(TableRow)
+}//operator=

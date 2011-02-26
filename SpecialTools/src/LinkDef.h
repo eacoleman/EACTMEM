@@ -1,8 +1,12 @@
 #include "TAMUWW/SpecialTools/interface/Value.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
-
+#include "TAMUWW/SpecialTools/interface/TableRow.hh"
+#include "TAMUWW/SpecialTools/interface/TableCell.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 
 #ifdef __CINT__
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -12,4 +16,7 @@
 #pragma link C++ class Table;
 #pragma link C++ class TableRow;
 #pragma link C++ class TableCell;
+#pragma link C++ class TableCellVal;
+#pragma link C++ class TableCellText;
+
 #endif

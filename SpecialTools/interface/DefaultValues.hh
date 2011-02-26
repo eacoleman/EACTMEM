@@ -8,27 +8,41 @@
 #include <string>
 
 //Our libraries
-#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/SpecialTools/interface/Value.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 
 class DefaultValues{
 
   public:
 
-  static std::string getWeightForCategory(DEFS::TagCat tagcat,  DEFS::PhysicsProcessType, int );
+  static std::string getWeightForCategory(DEFS::TagCat tagcat,  
+					  DEFS::PhysicsProcessType, int );
 
-  static Value getNorm(DEFS::PhysicsProcessType, DEFS::TagCat tagcat, DEFS::JetBin, int detector);
+  // Return a table with normalization of process for the given tag category
+  static Table getNormTable(DEFS::TagCat tagcat);
 
-  static std::map < DEFS::PhysicsProcessType , std::string> getMapOfFiles(DEFS::JetBin jetBin);
-  static Table * getM2Table(DEFS::PhysicsProcessType processType, DEFS::TagCat tagcat, int detector);
+  // Return a table with location of files for the given tag category
+  static Table getFileLocationTable(DEFS::TagCat tagcat);
 
-  static std::vector < PhysicsProcess * > getAllProcesses(DEFS::JetBin jetbin, DEFS::TagCat tagcat);
-  static std::vector < PhysicsProcess * > getProcesses(DEFS::JetBin jetbin, DEFS::TagCat tagcat, int HiggsMassIndex);
-  static std::vector < PhysicsProcess * > getProcesses(DEFS::JetBin jetbin, DEFS::TagCat tagcat, DEFS::PhysicsProcessType HiggsType);
-  
-  static PhysicsProcess * getSingleProcess(DEFS::JetBin jetbin, DEFS::TagCat tagcat,  DEFS::PhysicsProcessType processType);
-  
+  // Return a vector of PhysicsProcess's for the requested processName's
+  // Each PhysicsProces has norm obtained from getNormTable, and 
+  // ntuples chained from files in getFileLocationTable
+  // Calls the getSingleProcess recursively
+  static std::vector < PhysicsProcess * > getProcesses(
+						       std::vector<DEFS::PhysicsProcessType> processName,
+						       DEFS::JetBin jetBin, 
+						       DEFS::TagCat tagcat);
+
+  // Return a single PhysicsProces with norm obtained from normTable, and 
+  // ntuples chained from files in fileTable
+  static PhysicsProcess * getSingleProcess(DEFS::PhysicsProcessType process,
+					   DEFS::JetBin jetBin,
+					   Table normTable,
+					   Table fileTable);
+
+
 };
  
 #endif

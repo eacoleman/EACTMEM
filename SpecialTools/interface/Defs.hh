@@ -16,34 +16,27 @@ namespace DEFS{
   enum AnalysisType{
     SingleTopAnalysis,
     HiggsAnalysis,
-    WZAnalysis
+    WWAnalysis
   };
 
+  // A routine that returns the string given the type 
+  std::string getAnalysisTypeString(AnalysisProcessType );
+
+  
   // ---------------------------------------------------------------
   //            ALL ABOUT THE PHYSICSPROCESS TYPES
   // ---------------------------------------------------------------
   enum PhysicsProcessType {WH100, WH105, WH110, WH115, WH120, WH125,
 			   WH130, WH135, WH140, WH145, WH150,
-			   STopS, STopT, Wbb, Wcc, WLight, 
-			   NonW, WW, WZ, ZZ, TopLJ, TopDil, Zjets, Data};
+			   STopS, STopT, Wjets, Wbb, Wcc, WLight, 
+			   QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
 
-
-  // ---------------------------------------------------------------
-  //            ALL ABOUT THE JET TYPES
-  // ---------------------------------------------------------------
-  enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};
 
   // A routine that returns the type given a string 
   PhysicsProcessType getProcessType(std::string str);
 
-  // A routine that returns a string given the type
-  std::string getProcessTypeString(PhysicsProcessType type);
-
-  // A routine that returns a string given the type
-  std::string getJetBinString(JetBin type);
-
-  // A routine that returns a jetBin given
-  JetBin getJetBin(std::string str);
+  // A routine that returns the type given a string 
+  std::string getProcessTypeString(PhysicsProcessType );
 
   // A routine that tells whether this process is Higgs or not
   bool isHiggs(PhysicsProcessType type);
@@ -55,6 +48,16 @@ namespace DEFS{
   PhysicsProcessType getHiggsType(unsigned HiggsMassIndex);
 
 
+  // ---------------------------------------------------------------
+  //            ALL ABOUT THE JET TYPES
+  // ---------------------------------------------------------------
+  enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};
+
+  // A routine that returns a string given the type
+  std::string getJetBinString(JetBin type);
+
+  // A routine that returns a jetBin given
+  JetBin getJetBin(std::string str);
 
 
   // ---------------------------------------------------------------
@@ -78,14 +81,14 @@ namespace DEFS{
     TSVTSV,   // for some reason this is not exactly equal to eq2TSV
     TSVJP5,   // one jet with a tight SVX tag and the other one with a loose JP tag which is not a tight SVX
     TSVNOJP5, // one jet with a tight SVX tag and the other one without a loose JP or tight SVX tag.
-    JP5NOTSV, // one jet with a Loose SVT tag and neither jet is a tight SVX tag.
+    JP5NOTSV // one jet with a Loose SVT tag and neither jet is a tight SVX tag.
    
 
     // For the tagging with Loose in descendant exclusive orthogonal category
     // TSVTSV  //  for some reason this is not exaclty equal to eq2TSV
-    TSVLSV,    // one jet with a tight SVX tag and the other one with a loose SecVTx tag which is not a tight SVX
-    TSVNOLSV,  // one jet with a tight SVX tag and the other one without a loose SVX tag.   
-    LSVNOTSV   // one jet with a Loose SVT tag and neither jet is a tight SVX tag.
+    ///TSVLSV,    // one jet with a tight SVX tag and the other one with a loose SecVTx tag which is not a tight SVX
+    //TSVNOLSV,  // one jet with a tight SVX tag and the other one without a loose SVX tag.   
+    //LSVNOTSV   // one jet with a Loose SVT tag and neither jet is a tight SVX tag.
 
     // In principle we can have four choices, each with 4 exclusive categories in which in a 
     // given column a given line is always orthogonal to all lines above:
@@ -96,6 +99,12 @@ namespace DEFS{
     // cat 3 | JP5NOTSV    | LSVNOTSV  | LSVNOTSV  | JP5NOTSV    
     
   };
+
+  // A routine that returns a string given the type
+  std::string getTagCatString(TagCat type);
+
+  // A routine that returns a jetBin given a string
+  TagCat getTagCat(std::string str);
 
 }
 

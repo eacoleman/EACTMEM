@@ -9,6 +9,22 @@ namespace DEFS {
   using std::string;
   
   //---------------------------------------------------------------------------
+  // A routine that returns the type given a string 
+  string DEFS::getProcessTypeString(PhysicsProcessType type ){
+
+    //the returning string
+    if (type == SingleTopAnalysis)
+      return "Single Top Analysis";
+    else if (type == HiggsAnalysis)
+      return "Higgs Analysis";
+    else if (type == WWAnalysis)
+      return "WW Analysis";
+    
+    return "ERROR DEFS::getProcessTypeString PhysicsProcessType "<<type<<" is unknown"<<endl;    
+    
+  }//getProcessTypeString
+
+  //---------------------------------------------------------------------------
   DEFS::PhysicsProcessType getProcessType(std::string str){
   
     if(str == "WH100")
@@ -41,20 +57,26 @@ namespace DEFS {
       return  DEFS::Wbb;
     if( str == "Wcc/Wc")
       return  DEFS::Wcc;
+    if( str == "Wjets")
+      return  DEFS::Wjets;
     if( str == "Mistags")
       return  DEFS::WLight;
-    if( str == "Non-W")
-      return  DEFS::NonW;
+    if( str == "QCD100")
+      return  DEFS::QCD100;
+    if( str == "QCD250")
+      return  DEFS::QCD250;
     if( str == "WW")
       return  DEFS::WW;
     if( str == "WZ")
       return  DEFS::WZ;
     if( str == "ZZ")
       return  DEFS::ZZ;
-    if( str == "TopLJ")
-      return  DEFS::TopLJ;
-    if( str == "TopDil")
-      return  DEFS::TopDil;
+    if( str == "TTbar")
+      return  DEFS::TTbar;
+    if( str == "TTbarLJ")
+      return  DEFS::TTbarLJ;
+    if( str == "TTbarDil")
+      return  DEFS::TTbarLJ;
     if( str == "Z+jets")
       return  DEFS::Zjets;
     if( str == "data")
@@ -96,24 +118,30 @@ namespace DEFS {
       return string("STopS");
     else if (type == STopT)
       return string("STopT");
+    else if (type == Wjets)
+      return string("Wjets");
     else if (type == Wbb)
       return string("Wbb");
     else if (type == Wcc) 
       return string("Wcc/Wc");
     else if (type == WLight) 
       return string("Mistags");
-    else if (type == NonW)
-      return string("Non-W");
+    else if (type == QCD100)
+      return string("QCD100");
+    else if (type == QCD250)
+      return string("QCD250");
     else if (type == WW)
       return string("WW");
     else if (type == WZ)
       return string("WZ");
     else if (type == ZZ)
       return string("ZZ");
-    else if (type == TopLJ)
-      return string("TopLJ");
-    else if (type == TopDil)
-      return string("TopDil");
+    else if (type == TTbar)
+      return string("TTbar");
+    else if (type == TTbarLJ)
+      return string("TTbarLJ");
+    else if (type == TTbarDil)
+      return string("TTbarDil");
     else if (type == Zjets)
       return string("Z+jets");
     else if (type == Data)
@@ -253,4 +281,37 @@ namespace DEFS {
 
   }//getHiggsType
 
+
+  // A routine that returns a string given the type
+  string getTagCatString(TagCat type){
+
+    if (type == PreTag)  return "PreTag";
+    if (type == eq0TSV)  return "eq0TSV";
+    if (type == eq1TSV)  return "eq1TSV";
+    if (type == eq2TSV)  return "eq2TSV";
+    if (type == ge0TSV)  return "ge0TSV";
+    if (type == ge1TSV)  return "ge1TSV";
+    if (type == ge2TSV)  return "ge2TSV";
+
+   cout <<"ERROR  PhysicsProcess::getTagCatString cannot find the given type"<<endl;
+   return "ERROR";
+
+  }
+  
+  // A routine that returns a jetBin given a string
+  DEFS::TagCat getTagCat(std::string str){
+    
+    if (str == "PreTag")  return PreTag;
+    if (str == "eq0TSV")  return eq0TSV;
+    if (str == "eq1TSV")  return eq1TSV;
+    if (str == "eq2TSV")  return eq2TSV;
+    if (str == "ge0TSV")  return ge0TSV;
+    if (str == "ge1TSV")  return ge1TSV;
+    if (str == "ge2TSV")  return ge2TSV;
+
+    cout<<"ERROR  PhysicsProcess::getTagCatString cannot find the given type"<<endl;
+    return PreTag;
+    
+  }
+  
 }// end of namespace DEFS

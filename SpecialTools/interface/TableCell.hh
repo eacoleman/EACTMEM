@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id:$
+// $Id: TableCell.hh,v 1.1 2011/02/08 21:31:38 eusebi Exp $
 
 #ifndef TABLECELL_DEF
 #define TABLECELL_DEF
@@ -17,7 +17,8 @@
 #include "TNamed.h"
 
 //----------------------------------------------------------------------------
-// The TableCell is the basic unit of a table.
+// The TableCell is an abstract base class which is the basic unit of a table.
+// Derived classes need to implement all pure virtual methods.
 class TableCell : public TNamed{
 
 public:
@@ -25,31 +26,30 @@ public:
   TableCell(std::string);
 
   // reset the information for this cell
-  void reset();
+  virtual void reset() = 0;
 
   // return the information to be displayed for this cell
-  std::string print(TableFormat style);
+  virtual std::string print(TableFormat style) = 0;
 
   // parse the information in str into the cell contents.
-  bool parseFromFile(std::string str, TableFormat style);
+  virtual bool parseFromFile(std::string str, TableFormat style) = 0;
 
-  // explain how to do addition of cells 
-  TableCell & operator+=(const TableCell &rhs) ;
-  TableCell operator+(const TableCell &rhs) const;
-  TableCell & operator-=(const TableCell &rhs) ;
-  TableCell operator-(const TableCell &rhs) const;
-  TableCell & operator*=(double rhs) ;
-  TableCell operator*(double rhs) const;
-  TableCell & operator/=(double rhs) ;
-  TableCell operator/(double rhs) const;
-  TableCell & operator*=(Value rhs) ;
-  TableCell operator*(Value rhs) const;
-  TableCell & operator/=(Value rhs) ;
-  TableCell operator/(Value rhs) const;
+  // create an assignement operator 
+  //virtual TableCell & operator=(const TableCell & rhs) = 0;
 
-  // the value stored in the cell
-  Value val;
+  // explain how to do operation of cells 
+  virtual TableCell & operator+=(const TableCell &rhs) {return *this;}
+  virtual TableCell & operator-=(const TableCell &rhs) {return *this;}
 
+  virtual TableCell & operator*=(const double & rhs) {return *this;}
+  virtual TableCell & operator/=(const double & rhs) {return *this;}
+
+  virtual TableCell & operator*=(const Value & rhs) {return *this;}
+  virtual TableCell & operator/=(const Value & rhs) {return *this;}
+
+  // provide a virtual clone method to all the derived classes.
+  virtual TableCell * clone() const = 0;
+  
  ClassDef (TableCell,1)
 };
 

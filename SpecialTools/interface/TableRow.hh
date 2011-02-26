@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id:$
+// $Id: TableRow.hh,v 1.1 2011/02/08 21:31:38 eusebi Exp $
 
 #ifndef TABLEROW_DEF
 #define TABLEROW_DEF
@@ -24,38 +24,22 @@ class TableRow  : public TNamed {
 
  public:
 
-  TableRow ();
-  TableRow (std::string rowName);
+  //TableRow ();
+  TableRow (const TableRow &);
+  TableRow (std::string rowName ="defaultTableRow");
   ~TableRow();
 
-  // The operator + 
-  TableRow operator+(const TableRow &rhs) const;
-  TableRow & operator+=(const TableRow &rhs);
-  TableRow operator-(const TableRow &rhs) const;
-  TableRow & operator-=(const TableRow &rhs);
-  TableRow operator*(double rhs) const;
-  TableRow & operator*=(double rhs);
-  TableRow operator/(double rhs) const;
-  TableRow & operator/=(double rhs);
-  TableRow operator*(Value rhs) const;
-  TableRow & operator*=(Value rhs);
-  TableRow operator/(Value rhs) const;
-  TableRow & operator/=(Value rhs);
-
   // Set and Get the vector of entries
-  void setCellEntries(std::vector<TableCell> ent){ cellEntries = ent; }
-
-  std::vector<TableCell> getCellEntries() const { return cellEntries;}
-
-  void reset();
-  
-  // Define how to add rows
-  void addTableRow(TableRow);
-
+  void addCellEntries(TableCell* ent){ cellEntries.push_back(ent); }
+  void setCellEntries(std::vector<TableCell*> ent){ cellEntries = ent; }
+  std::vector<TableCell*> getCellEntries() const { return cellEntries;}
+  TableRow & operator=(const TableRow & rhs);
 
  private:
 
-  std::vector<TableCell>   cellEntries; // The entries in each cell of this row 
+  void deleteAllCells();
+
+  std::vector<TableCell*>  cellEntries; // The entries in each cell of this row 
 
   ClassDef (TableRow,1)
 
