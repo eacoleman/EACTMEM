@@ -1,0 +1,35 @@
+# This table holds the absolute location of the files for the different processes.
+# the process BasePath contains the base path to be appended to all the processes
+CellClass=TableCellText
+
+Process |      filepath 
+BasePath|  /uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/
+Data    |
+STopS   |  micro_STopS42500Evt.root 
+STopT   |  micro_STopT42500Evt.root
+TTbar   |  micro_TTbar30600Evt.root
+TTbarLJ |  
+TTbarDil|  
+Wbb     |  
+Wcc     |  
+WLight  |  
+Wjets   | micro_WpJ35700Evt.root
+Zjets   | micro_ZpJ2000Evt.root
+QCD100  | micro_QCD_HT100to250NoIso92Evt.root
+QCD250  | micro_QCD_HT250to500NoIso472Evt.root
+WW      | micro_WW3300Evt.root 
+WZ      | micro_WZ2000Evt.root
+ZZ      |  
+WH100   |  
+WH105   |  
+WH110   |  
+WH115   |  
+WH120   |  
+WH125   |  
+WH130   |  
+WH135   |  
+WH140   |  
+WH145   |  
+WH150   |  
+
+
