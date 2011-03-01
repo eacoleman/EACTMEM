@@ -4,8 +4,7 @@
 <use name="rootgraphics"/>
 <use name="rootrflx"/>
 <use name="rootMinuit"/>
-<use name="TAMUWW/MEPATNtuple"/>
-<use name="TAMUWW/MatrixElement"/>
+<use name="TAMUWW/AuxFunctions"/>
 <export>
    <lib name="1"/>
 </export>

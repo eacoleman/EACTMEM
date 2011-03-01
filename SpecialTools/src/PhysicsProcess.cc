@@ -22,10 +22,8 @@ PhysicsProcess::PhysicsProcess() :
   m_subName("PhysicsSubProcess"),
   m_chainPtr(0),
   m_weight("1"),
-  m_category("0"),
-  m_expectedEvents(1.0),
-  m_errorExpectedEvents(0) {
-  
+  m_categoryFormula("0"){
+ 
   m_procTree = new ProcessTree(0);
  
 }// C'tor
@@ -36,11 +34,8 @@ PhysicsProcess::PhysicsProcess(const PhysicsProcess & pro){
   m_subName  = pro.getSubName();
   m_chainPtr = pro.getChainClone();
   m_weight   = pro.getWeight();
-  m_category = pro.getCategory();
-  m_expectedEvents       = pro.getExpectedEvents();
-  m_errorExpectedEvents  = pro.getErrorExpectedEvents();
-  m_expectedEventsCat      = pro.getMapExpectedEventsCat();
-  m_errorExpectedEventsCat = pro.getMapErrorExpectedEventsCat();
+  m_categoryFormula   = pro.getCategory();
+  m_expectedEventsCat = pro.getMapExpectedEventsCat();
 
   //Careful, this might not be complete. Check the class ProcessTree
   //  m_procTree = new ProcessTree(*pro.getProcessTree());
@@ -53,18 +48,14 @@ PhysicsProcess::PhysicsProcess(const PhysicsProcess & pro){
 
 //---------------------------------------------------------------------------
 PhysicsProcess::PhysicsProcess(PhysicsProcessType type,
-			       TChain * chain, 
-			       double expectedEvents, 
-			       double errorExpectedEvents ){
+			       TChain * chain){
 
   string name = getProcessTypeString(type);
   m_name = name;
   m_subName = name;
   m_chainPtr = chain; 
   m_weight = "1";
-  m_category = "0";
-  m_expectedEvents = expectedEvents;
-  m_errorExpectedEvents = errorExpectedEvents;
+  m_categoryFormula = "0";
 
   m_procTree = new ProcessTree(chain);
   
@@ -73,48 +64,28 @@ PhysicsProcess::PhysicsProcess(PhysicsProcessType type,
 //---------------------------------------------------------------------------
 PhysicsProcess::PhysicsProcess(const string& name, 
 			       const string& subname,
-			       TChain * chain, 
-			       double expectedEvents, 
-			       double errorExpectedEvents ):
+			       TChain * chain):
   m_name(name),
   m_subName(subname),
   m_chainPtr(chain), 
   m_weight("1"),
-  m_category("0"),
-  m_expectedEvents(expectedEvents),
-  m_errorExpectedEvents(errorExpectedEvents) {
+  m_categoryFormula("0"){
 
   m_procTree = new ProcessTree(chain);
 
 }// C'tor
 
 //---------------------------------------------------------------------------
-double PhysicsProcess::getCategoryNorm(int cat){
+Value PhysicsProcess::getCategoryNorm(int cat){
   return  m_expectedEventsCat[cat]; 
 }
 
 
 //---------------------------------------------------------------------------
-void PhysicsProcess::setCategoryNorm(int cat, double norm, double errNorm){
+void PhysicsProcess::setCategoryNorm(int cat, Value norm){
   
+  // Save in the map
   m_expectedEventsCat[cat] = norm;
-  m_errorExpectedEventsCat[cat] = errNorm;
-
-  // Recompute the normalization and its error
-  double total = 0;
-  double errTotal2 = 0;
-
-  //Loop over both maps 
-  for (map<int, double>::iterator it =  m_expectedEventsCat.begin(); 
-       it !=  m_expectedEventsCat.end(); it++){
-    
-    total += it->second;
-    errTotal2 += pow(m_errorExpectedEventsCat[it->first],2);
-
-  }//for
-
-  m_expectedEvents = total;
-  m_errorExpectedEvents = sqrt(errTotal2);
 
 }//setCategoryNorm
 
@@ -137,7 +108,7 @@ void PhysicsProcess::setPrintLevel(int pl){
 void PhysicsProcess::setProjections(vector <string> projs){
 
   // set the projections on the tree
-  unsigned nev = m_procTree->setProjections(projs, m_weight, m_category);
+  unsigned nev = m_procTree->setProjections(projs, m_weight, m_categoryFormula);
 
   cout<<"\tProcess\t"<<getName()<<"\t"<<getSubName()
       <<"\tloaded with "<<nev<<"\tevents"<<endl;
@@ -190,11 +161,13 @@ TH1* PhysicsProcess::makeHist(const string& variable, const TCut& cuts,
 // This  method throws events from the tree in memory. 
 vector < const TreeRow *>  PhysicsProcess::throwPSE(){
 
+  Value norm = getTotalExpectedEvents();
+
   // If the process is Gaussian-Constrained vary the 
   // expected number of events from a gaussian
   double gausNum = m_gaussianConstrained ? 
-                   m_random.Gaus(getExpectedEvents(), getErrorExpectedEvents()) : 
-                   getExpectedEvents();
+                   m_random.Gaus(norm.value, norm.error) : 
+                   norm.value;
   
 
   // Get the PSE's from the tree in memory.
@@ -208,12 +181,14 @@ vector < const TreeRow *>  PhysicsProcess::throwPSE(){
 //This fills the TH1 templates
 void PhysicsProcess::fillTH1Templates(std::vector < TH1* > & templates){ 
 
-  // First  fill the templates with all the entries
+  Value norm = getTotalExpectedEvents();
+
+  // First fill the templates with all the entries
   m_procTree->fillTH1Templates(templates);
 
   // Second normalize them to the expected number of events
   for (unsigned temp = 0; temp < templates.size(); temp++)
-    templates[temp]->Scale(getExpectedEvents()/templates[temp]->Integral());
+    templates[temp]->Scale(norm.value/templates[temp]->Integral());
 
 }//fillTH1Templates
 
@@ -226,7 +201,7 @@ void PhysicsProcess::fillTH1Templates(std::vector < TH1* > & templates, int cate
 
   // Second normalize them to the expected number of events
   for (unsigned temp = 0; temp < templates.size(); temp++)
-    templates[temp]->Scale( m_expectedEventsCat[category]/templates[temp]->Integral());
+    templates[temp]->Scale( m_expectedEventsCat[category].value/templates[temp]->Integral());
 
 }//fillTH1Templates
 
@@ -240,13 +215,33 @@ void PhysicsProcess::fillTH1Templates(std::vector < TH1* > & templates, int cate
 //However the last line is ommited as it is a constant function of par  
 double PhysicsProcess::logGaussianConstraint(double par){
 
-  if (m_constrained)    
-    return  - 0.5 * std::pow( (par - 1.0) / getPercentualError(),2);     
-  else
-    return 0;
+  if (m_constrained){    
+    Value norm = getTotalExpectedEvents();
+    double percentualError = norm.error/norm.value;
+    return  - 0.5 * std::pow( (par - 1.0) / percentualError, 2);     
+  }
+
+  return 0;
   
 }//constraint
   
+
+//---------------------------------------------------------------------------
+Value PhysicsProcess::getTotalExpectedEvents() const{
+
+  Value res; 
+
+  // Loop over all the map's element
+  for (map<int, Value>::const_iterator mapEl = m_expectedEventsCat.begin();
+       mapEl != m_expectedEventsCat.end(); mapEl++) {
+ 
+    res += mapEl->second;
+
+  }//loop
+
+  return res;
+  
+}//getTotalExpectedEvents
 
 
 //---------------------------------------------------------------------------

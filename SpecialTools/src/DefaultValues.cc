@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
@@ -15,18 +16,19 @@ using std::endl;
 
 
 // ----------------------------------------------------------------------------
-// This method returns the table with the event expectation for the tag category
-Table DefaultValues::getNormTable(DEFS::TagCat tagcat){
+// This method returns the table with the event expectation for the evt/tag category
+Table DefaultValues::getNormTable(DEFS::EvtCat evtcat, DEFS::TagCat tagcat){
 
   Table table("NormTable");
   
-  string eventEstimatesFile = "ConfigFiles/Official/EventEstimates_";
+  string eventEstimatesFile = "TAMUWW/ConfigFiles/Official/EventEstimates_";
 
   // add the tag name and the ".txt" at the end
+  eventEstimatesFile += DEFS::getEventCatString(evtcat)+"_";
   eventEstimatesFile += DEFS::getTagCatString(tagcat);
   eventEstimatesFile += ".txt";
 
-  if(table.parseFromFile(eventEstimatesFile))
+  if(!table.parseFromFile(eventEstimatesFile))
     cout<<"ERROR  DefaultValues::getNormTable() cannot parse config file "
 	<<eventEstimatesFile<<endl;
 
@@ -39,17 +41,25 @@ Table DefaultValues::getNormTable(DEFS::TagCat tagcat){
 // and tag category
 Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){ 
 
-  Table table("FileLocationTable");
+  FileLocationTable table("FileLocationTable");
   
-  string fileLocationFile = "ConfigFiles/Official/FileLocation_";
+  string fileLocationFile = "TAMUWW/ConfigFiles/Official/FileLocation_";
   
   // add the tag name and the ".txt" at the end
   fileLocationFile += DEFS::getTagCatString(tagcat);
   fileLocationFile += ".txt";
   
-  if(table.parseFromFile(fileLocationFile))
+  if(!table.parseFromFile(fileLocationFile))
     cout<<"ERROR  DefaultValues::getFileLocationTable() cannot parse config file "
 	<<fileLocationFile<<endl;
+
+  // If the table contains one entry called "BasePath", add that basepath  
+  // to all other entries (except BasePath) in that table.
+  TableCellText * cell = (TableCellText *) table.getCellRowColumn("BasePath","filepath");
+  if (cell){
+    string basepath = cell->text;
+    table.addBasePath(basepath,"BasePath");
+  }
 
   return table;
   
@@ -65,8 +75,10 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
   // The returning vector of processes
   vector<PhysicsProcess*>  proc;
 
-  // get the table with the expected number of events
-  Table normTable  = getNormTable(tagcat);
+  // get the table with the expected number of 
+  map<DEFS::EvtCat, Table> normTable;
+  normTable[DEFS::muon    ] = getNormTable(DEFS::muon    ,tagcat);
+  normTable[DEFS::electron] = getNormTable(DEFS::electron,tagcat);
 
   // get the table with the files location
   Table fileTable = getFileLocationTable(tagcat);
@@ -95,7 +107,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
 // (..., const Table & normTable, const Table & fileTable, ...) 
 PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
 						 DEFS::JetBin jetBin,
-						 Table normTable,
+						 map<DEFS::EvtCat, Table> normTable,
 						 Table fileTable){
 
     // get the process name
@@ -103,19 +115,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   
   // get the name of the jetBin
   string jetBinName = DEFS::getJetBinString(jetBin);
-   
-  // find the cell with the expected number of events for that process
-  TableCellVal * cellNorm = (TableCellVal *) normTable.getCellRowColumn(prName, jetBinName);
-  
-  // make sure we found the cell
-  if (cellNorm == 0){
-    cout<<"ERROR DefaultValues::getProcesses Table "<<normTable.GetName()
-	<<" does not have row "<<prName
-	<<" and column "<<jetBinName<<endl;
-    cout<<" SKIPPING PROCESS "<<prName<<endl;
-    return 0;
-  }
-  
+    
   // find the file location for that process
   TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"filepath");
   
@@ -133,12 +133,37 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   chain  = new TChain("METree");
   chain->Add(cellFile->text.c_str());
   
-  // Create and return the Physics Process
-  return  new PhysicsProcess(prName, 
-			     prName, 
-			     chain, cellNorm->val.value, 
-			     cellNorm->val.error);
+  // Create the PhysicsProcess 
+  PhysicsProcess *  proc =  new PhysicsProcess(prName, prName, chain);
+
+  // Tell it the formula to get the categories from its own data
+  proc->setCategory("h.det");
   
+  // Set the expected number of events for each category
+  // iterating over the map of normTables.
+  for ( map<DEFS::EvtCat, Table>::iterator it = normTable.begin();
+	it != normTable.end(); it++){
+
+    // Get the cell from the table
+    TableCellVal * cellNorm = (TableCellVal *) it->second.getCellRowColumn(prName, jetBinName);
+    
+    // make sure we found the cell
+    if (cellNorm == 0){
+      cout<<"ERROR DefaultValues::getProcesses "
+	  <<" normTable for EvtCat="<<DEFS::getEventCatString(it->first)
+	  <<" does not have row "<<prName
+	  <<" and column "<<jetBinName<<endl;
+      cout<<" SKIPPING PROCESS "<<prName<<endl;
+      return 0;
+    }
+ 
+    proc->setCategoryNorm(it->first, cellNorm->val);
+
+  }//for map of categories
+
+  // and return it.
+  return proc;
+
 }//getSingleProcess
 
 
@@ -170,7 +195,7 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
 
   // For data require 
   if (type == DEFS::Data ){
-    if (tagcat == DEFS::PreTag )    
+    if (tagcat == DEFS::pretag )    
       wei += "*1";
     else if (tagcat == DEFS::eq0TSV)
       wei += "*(h.ntag==0)";
@@ -186,7 +211,7 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
 
     // I have to apply this for the 1 and the 2 tags. Do I need it for the 0 tag ??
     if (type != DEFS::WLight && type != DEFS::NonW)
-      if (tagcat != DEFS::PreTag &&
+      if (tagcat != DEFS::pretag &&
 	  tagcat != DEFS::eq0TSV )
 	wei += "*(h.ntag>0)";
 
@@ -195,7 +220,7 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
     //wei += "*h.wgt*(h.tagProb0*h.passQCD + h.tagProb1*h.passQCD + h.tagProb2*( (h.det==2)*h.passQCD+(h.det!=2) ) )";
 
     //switch on ntags
-    if (tagcat == DEFS::PreTag )      // pretag sample 
+    if (tagcat == DEFS::pretag )      // pretag sample 
       wei += "*(h.wgt*h.passQCD)";
     else if (tagcat == DEFS::eq0TSV )      // untag sample 
       wei += "*(h.tagProb0*h.wgt*h.passQCD)";
@@ -217,3 +242,34 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
   */
 
 }//getWeightForCategory
+
+// ----------------------------------------------------------------------------
+vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
+							 DEFS::TagCat tagcat, 
+							 bool include_data ){
+
+  vector<DEFS::PhysicsProcessType> procs;
+
+
+  procs.push_back(DEFS::STopS   );
+  procs.push_back(DEFS::STopT   );
+  procs.push_back(DEFS::TTbar   );
+  procs.push_back(DEFS::TTbarLJ );
+  procs.push_back(DEFS::TTbarDil); 
+  procs.push_back(DEFS::Wbb     );
+  procs.push_back(DEFS::Wcc     );
+  procs.push_back(DEFS::WLight  );
+  procs.push_back(DEFS::Wjets   ); 
+  procs.push_back(DEFS::Zjets   );
+  procs.push_back(DEFS::QCD100  );
+  procs.push_back(DEFS::QCD250  );
+  procs.push_back(DEFS::WW      );
+  procs.push_back(DEFS::WZ      );
+  procs.push_back(DEFS::ZZ      );
+  
+  if (include_data)
+    procs.push_back(DEFS::Data    );
+
+  return getProcesses(procs, jetBin, tagcat);
+
+}//getProcessesWW

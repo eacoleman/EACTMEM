@@ -1,13 +1,13 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: Table.cc,v 1.2 2011/02/26 19:10:07 eusebi Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 //C++ libraries
 #include <string>
@@ -484,7 +484,7 @@ bool Table::parseFromFile(string filename, string style){
       getline(inputFile, currentLine);
       
       // remove leading and trailing spaces on the line
-      PeterFunctions::trimSpaces(currentLine);
+      AuxFunctions::trimSpaces(currentLine);
 
       lineCounter++;
 
@@ -534,11 +534,11 @@ bool Table::parseLine(string currentLine, int lineCounter,
   static vector<string> colNames; 
  
   // split the line into fields separated by "|"
-  vector<string> fields = PeterFunctions::splitLineIntoWords(currentLine,format.separator);
+  vector<string> fields = AuxFunctions::splitLineIntoWords(currentLine,format.separator);
   
   // remove leading and trailing spaces on all fields
   for (unsigned int ff=0;ff < fields.size(); ff++)
-    PeterFunctions::trimSpaces(fields[ff]);
+    AuxFunctions::trimSpaces(fields[ff]);
   
 
   // If it is the first good line 

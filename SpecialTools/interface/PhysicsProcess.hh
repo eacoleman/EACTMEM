@@ -8,6 +8,7 @@
 #include "TRandom3.h"
 
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
+#include "TAMUWW/SpecialTools/interface/Value.hh"
 #include "TAMUWW/SpecialTools/interface/AxisProjection.hh"
 #include "TAMUWW/SpecialTools/interface/ProcessTree.hh"
 
@@ -27,14 +28,11 @@ public:
 
   // Other C'tors
   PhysicsProcess(DEFS::PhysicsProcessType, 
-		 TChain * chain,
-		 double expectedEvents = 1.0, 
-		 double errorExpectedEvents = 0.0);
+		 TChain * chain);
 
-  PhysicsProcess(const std::string& name, const std::string& subname,
-		 TChain * chain,
-		 double expectedEvents = 1.0, 
-		 double errorExpectedEvents = 0.0);
+  PhysicsProcess(const std::string& name, 
+		 const std::string& subname,
+		 TChain * chain);
   
   // D'tor
   ~PhysicsProcess();
@@ -44,36 +42,21 @@ public:
   inline std::string getSubName() const {return m_subName;}  
 
   // Setter and getter of expected events
-  inline double getExpectedEvents() const  {return m_expectedEvents ;}
-  inline void   setExpectedEvents(double see)  {m_expectedEvents = see;}
+  Value getTotalExpectedEvents() const;
 
-  // Setter and getter of error of expected events
-  inline double getErrorExpectedEvents() const {return m_errorExpectedEvents;}
-  inline void   setErrorExpectedEvents(double seee){m_errorExpectedEvents = seee;}
+  // Set the normalization for a given event category
+  void   setCategoryNorm(int cat, Value);
+  Value  getCategoryNorm(int cat);
 
-  // Set the normalization for a given category
-  void   setCategoryNorm(int, double, double);
-  double getCategoryNorm(int cat);
-
-  std::map<int, double> getMapExpectedEventsCat() const { return m_expectedEventsCat;}
-  std::map<int, double> getMapErrorExpectedEventsCat() const { return m_errorExpectedEventsCat;}
+  std::map<int, Value> getMapExpectedEventsCat() const { return m_expectedEventsCat;}
 
   // Setter and getter of error of weight events
   inline std::string getWeight() const {return m_weight;}
   inline void setWeight(std::string we) {m_weight = we;}
 
   // Setter and getter of error of weight events
-  inline std::string getCategory() const {return m_category;}
-  inline void setCategory(std::string we) {m_category = we;}
-
-  // This returns the total error (events) over to normalization (events)
-  double getPercentualError() const {
-    return m_errorExpectedEvents / m_expectedEvents; 
-  }
-
-  void setGaussianConstraint(bool gc) {  m_gaussianConstrained = gc ;}
-  bool getGaussianConstraint() const { return  m_gaussianConstrained ;}
-  
+  inline std::string getCategory() const {return m_categoryFormula;}
+  inline void setCategory(std::string we) {m_categoryFormula = we;}
 
   // Setter of projections, without and with weights.
   void setProjections(std::vector <std::string> projs);
@@ -92,17 +75,27 @@ public:
 
   // Return the chain pointer
   TChain * getChain() { return m_chainPtr;}
-  TChain * getChainClone() const  { return (TChain *) m_chainPtr->Clone();}
 
+  // Return a clone to the chain pointer, needed for copy c'tor
+  TChain * getChainClone() const { return (TChain*) m_chainPtr->Clone();}
+
+  // Set the print level for debugging purposes
+  void setPrintLevel(int pl);
+
+  // get the ProcessTree pointer
+  ProcessTree* getProcessTree() { return m_procTree;}
+
+  // Determine whether we constrain or not this process in a fit
   void setConstrained() { m_constrained = 1; }
   void setUnconstrained() { m_constrained = 0; }    
   bool isConstrained() const { return m_constrained;}
-  
+
   double logGaussianConstraint(double par);
 
-  void setPrintLevel(int pl);
+    // Set or get a gaussian constraint for fits
+  void setGaussianConstraint(bool gc) {  m_gaussianConstrained = gc ;}
+  bool getGaussianConstraint() const { return  m_gaussianConstrained ;}
 
-  ProcessTree* getProcessTree() { return m_procTree;}
 
 private:
 
@@ -118,18 +111,11 @@ private:
   // The weight to apply to all events
   std::string m_weight;
 
-  // The category an event belongs to
-  std::string m_category;
-
-  // Expected number of events, used in PSE thrower.
-  double m_expectedEvents;
-  
-  // Error on the expected number of events, used in PSE thrower.
-  double m_errorExpectedEvents;
+  // The formula to find out the category an event belongs to
+  std::string m_categoryFormula;
   
   // The expected events per category
-  std::map<int, double> m_expectedEventsCat;
-  std::map<int, double> m_errorExpectedEventsCat;
+  std::map<int, Value> m_expectedEventsCat;
 
   // This is true if we expect a gaussian distribution 
   // with mean=m_expectedEvents and width=m_errorExpectedEvents

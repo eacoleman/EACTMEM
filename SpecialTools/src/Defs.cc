@@ -10,7 +10,7 @@ namespace DEFS {
   
   //---------------------------------------------------------------------------
   // A routine that returns the type given a string 
-  string DEFS::getProcessTypeString(PhysicsProcessType type ){
+  string getAnalysisTypeString(AnalysisType type ){
 
     //the returning string
     if (type == SingleTopAnalysis)
@@ -20,9 +20,11 @@ namespace DEFS {
     else if (type == WWAnalysis)
       return "WW Analysis";
     
-    return "ERROR DEFS::getProcessTypeString PhysicsProcessType "<<type<<" is unknown"<<endl;    
-    
-  }//getProcessTypeString
+    cout<<"ERROR DEFS::getProcessTypeString AnalysisType "<<type<<" is unknown"<<endl;   
+ 
+    return "";
+
+  }//getAnalysisTypeString
 
   //---------------------------------------------------------------------------
   DEFS::PhysicsProcessType getProcessType(std::string str){
@@ -55,11 +57,11 @@ namespace DEFS {
       return  DEFS::STopT;
     if( str == "Wbb")
       return  DEFS::Wbb;
-    if( str == "Wcc/Wc")
+    if( str == "Wcc")
       return  DEFS::Wcc;
     if( str == "Wjets")
       return  DEFS::Wjets;
-    if( str == "Mistags")
+    if( str == "WLight")
       return  DEFS::WLight;
     if( str == "QCD100")
       return  DEFS::QCD100;
@@ -77,7 +79,7 @@ namespace DEFS {
       return  DEFS::TTbarLJ;
     if( str == "TTbarDil")
       return  DEFS::TTbarLJ;
-    if( str == "Z+jets")
+    if( str == "Zjets")
       return  DEFS::Zjets;
     if( str == "data")
       return  DEFS::Data;
@@ -123,9 +125,9 @@ namespace DEFS {
     else if (type == Wbb)
       return string("Wbb");
     else if (type == Wcc) 
-      return string("Wcc/Wc");
+      return string("Wcc");
     else if (type == WLight) 
-      return string("Mistags");
+      return string("WLight");
     else if (type == QCD100)
       return string("QCD100");
     else if (type == QCD250)
@@ -143,7 +145,7 @@ namespace DEFS {
     else if (type == TTbarDil)
       return string("TTbarDil");
     else if (type == Zjets)
-      return string("Z+jets");
+      return string("Zjets");
     else if (type == Data)
       return string("data");
     else     
@@ -154,21 +156,35 @@ namespace DEFS {
   }//getProcessTypeString
 
   //---------------------------------------------------------------------------
+  // A routine that returns the string given the Event Category
+  string getEventCatString(EvtCat type){
+    if (type == electron)
+      return "electron";
+    else if (type == muon)
+      return "muon";
+
+    cout<<"ERROR in DEFS::getEventCatString type="<<type<<" not defined"<<endl;
+
+    return "";
+
+  }//getEventCatString
+
+  //---------------------------------------------------------------------------
   string getJetBinString(JetBin jBin){
 
     //the returning string
     if (jBin == jets0)
-      return string("0-jets");
+      return string("jets0");
     else if (jBin == jet1)
-      return string("1-jet");
+      return string("jet1");
     else if (jBin == jets2)
-      return string("2-jets");
+      return string("jets2");
     else if (jBin == jets3)
-      return string("3-jets");
+      return string("jets3");
     else if (jBin == jets4)
-      return string("4-jets");
+      return string("jets4");
     else if (jBin == jets5)
-      return string("5-jets");
+      return string("jets5");
     else     
       cout<<" ERROR  DEFS::geJetBinString jBin ="<<jBin<<" not found"<<endl;
 
@@ -181,17 +197,17 @@ namespace DEFS {
   JetBin getJetBin(std::string str){
 
 
-    if (str == "0-jets")
+    if (str == "jets0")
       return jets0;
-    else if (str == "1-jet")
+    else if (str == "jet1")
       return jet1;
-    else if (str == "2-jets")
+    else if (str == "jets2")
       return jets2;
-    else if (str == "3-jets")
+    else if (str == "jets3")
       return jets3;
-    else if (str == "4-jets")
+    else if (str == "jets4")
       return jets4;
-    else if (str == "5-jets")
+    else if (str == "jets5")
       return jets5;
 
     cout<<" ERROR  DEFS::getJetBin str ="<<str<<" not found"<<endl;
@@ -285,7 +301,7 @@ namespace DEFS {
   // A routine that returns a string given the type
   string getTagCatString(TagCat type){
 
-    if (type == PreTag)  return "PreTag";
+    if (type == pretag)  return "pretag";
     if (type == eq0TSV)  return "eq0TSV";
     if (type == eq1TSV)  return "eq1TSV";
     if (type == eq2TSV)  return "eq2TSV";
@@ -301,7 +317,7 @@ namespace DEFS {
   // A routine that returns a jetBin given a string
   DEFS::TagCat getTagCat(std::string str){
     
-    if (str == "PreTag")  return PreTag;
+    if (str == "pretag")  return pretag;
     if (str == "eq0TSV")  return eq0TSV;
     if (str == "eq1TSV")  return eq1TSV;
     if (str == "eq2TSV")  return eq2TSV;
@@ -310,7 +326,7 @@ namespace DEFS {
     if (str == "ge2TSV")  return ge2TSV;
 
     cout<<"ERROR  PhysicsProcess::getTagCatString cannot find the given type"<<endl;
-    return PreTag;
+    return pretag;
     
   }
   

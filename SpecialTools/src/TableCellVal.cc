@@ -1,12 +1,12 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCell.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: TableCellVal.cc,v 1.1 2011/02/26 19:11:02 eusebi Exp $
 
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 //C++ libraries
 #include <string>
@@ -47,9 +47,9 @@ bool TableCellVal::parseFromFile(string str, TableFormat format){
 
   vector<string> fields ;
   if (format.style == "LATEX" ) 
-    fields = PeterFunctions::splitLineIntoWords(str,"\\pm");
+    fields = AuxFunctions::splitLineIntoWords(str,"\\pm");
   else
-    fields = PeterFunctions::splitLineIntoWords(str,"+/-");
+    fields = AuxFunctions::splitLineIntoWords(str,"+/-");
   if (fields.size() == 2){
     val.value = std::atof(fields[0].c_str());
     val.error = std::atof(fields[1].c_str());

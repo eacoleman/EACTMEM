@@ -19,9 +19,6 @@
 //ROOT libraries
 #include "TNamed.h"
 
-//BOOST libraries
-//#include <boost/variant.hpp>
-
 //----------------------------------------------------------------------------
 // a Table is just a collection of rows
 class  Table : public TNamed {
@@ -86,7 +83,7 @@ public :
   // get the origin of the table
   std::string getTableOrigin() {return tableOrigin;}
 
- private:
+ protected:
 
   // Create a newCell of type determined by cellClass
   TableCell* createNewCell(std::string cellClass, std::string cellName);

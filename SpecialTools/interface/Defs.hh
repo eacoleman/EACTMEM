@@ -9,7 +9,6 @@
 
 namespace DEFS{
 
-
   // ---------------------------------------------------------------
   //            ALL ABOUT THE ANALYSIS WE WANT TO DO 
   // ---------------------------------------------------------------
@@ -20,7 +19,7 @@ namespace DEFS{
   };
 
   // A routine that returns the string given the type 
-  std::string getAnalysisTypeString(AnalysisProcessType );
+  std::string getAnalysisTypeString(AnalysisType );
 
   
   // ---------------------------------------------------------------
@@ -49,6 +48,14 @@ namespace DEFS{
 
 
   // ---------------------------------------------------------------
+  //            ALL ABOUT THE DIFFERENT EVENT CATEGORIES
+  // ---------------------------------------------------------------
+  enum EvtCat {electron, muon};
+
+  // A routine that returns the string given the EvtType 
+  std::string getEventCatString(EvtCat );
+
+  // ---------------------------------------------------------------
   //            ALL ABOUT THE JET TYPES
   // ---------------------------------------------------------------
   enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};
@@ -69,7 +76,7 @@ namespace DEFS{
   // JP5 = JP < 5%
   enum TagCat {
 
-    PreTag,   // The pretag category
+    pretag,   // The pretag category
     eq0TSV,   // Exactly zero SVX tags, i.e. the untag category.
     eq1TSV,   // Exactly one SVX tag 
     eq2TSV,   // Exactly two SVX tags 
