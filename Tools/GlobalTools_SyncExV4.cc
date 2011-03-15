@@ -48,11 +48,11 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
   ///V4 Sync Exercise Labels
   cutLbl[0]="c0:None/HLT";
   cutLbl[1]="c1:Vtx";
-  cutLbl[2]="c2:ELIso";
+  cutLbl[2]="c2:ELIso/MuIso";
   cutLbl[3]="c3:NotLooseMu";
-  cutLbl[4]="c4:ZVeto";
-  cutLbl[5]="c5:!conv_a";
-  cutLbl[6]="c6:!conv_b";
+  cutLbl[4]="c4:ZVeto/ElVeto";
+  cutLbl[5]="c5:!conv_a/None";
+  cutLbl[6]="c6:!conv_b/None";
   cutLbl[7]="c7:Jets>=NJ";
   cutLbl[8]="BTag0";
   cutLbl[9]="BTag1";

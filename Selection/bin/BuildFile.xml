@@ -1,5 +1,5 @@
 
-<bin name="PerformSelection.exe" file="PerformSelection.cc">
+<bin name="SyncExerciseSelection_V4Mu.exe" file="SyncExerciseSelection_V4Mu.cc">
  <use name="root"/>
  <use name="FWCore/FWLite"/>
  <use name="FWCore/Framework"/>
