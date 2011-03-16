@@ -23,7 +23,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-using PeterFunctions::Math::square;
+using AuxFunctions::Math::square;
 
 #ifdef MADGRAPH_TEST
 extern "C"
@@ -37,7 +37,8 @@ extern "C"
 // ------------------------------------------------------------------
 ttEventProb2Jet::ttEventProb2Jet(Integrator& integrator,
                                  const TransferFunction& tf) :
-   EventProb2Jet("tt-bar", integrator, 6, 2, tf), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::TTbar, integrator, 6, 2, tf), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
 
   // Set the top mass and width
@@ -53,7 +54,10 @@ void ttEventProb2Jet::setTopMassAndWidth(double mTop) {
   m_massTop = mTop;
 
   // Use the theoretical Top width for the given mass 
-  m_widthTop =  calcTopWidth(mTop);
+  m_widthTop =  calcTopWidth(m_massTop);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
 
 }//setTopMassAndWidth
 

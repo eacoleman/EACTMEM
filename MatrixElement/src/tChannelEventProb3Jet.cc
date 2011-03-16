@@ -22,7 +22,7 @@ extern "C"
 tChannelEventProb3Jet::tChannelEventProb3Jet(Integrator& integrator,
                                              const TransferFunction& bTF,
                                              const TransferFunction& lightTF) :
-   EventProb3Jet("t-channel", integrator, 4, 4, bTF, lightTF)
+  EventProb3Jet(DEFS::EP::TopT, integrator, 4, 4, bTF, lightTF)
 {
   // Set the top mass and width
   setTopMassAndWidth(MEConstants::topMass);
@@ -31,8 +31,8 @@ tChannelEventProb3Jet::tChannelEventProb3Jet(Integrator& integrator,
 tChannelEventProb3Jet::tChannelEventProb3Jet(Integrator& integrator,
                                              const TransferFunction& bTF,
                                              const TransferFunction& lightTF,
-                                             const string& name) :
-   EventProb3Jet(name, integrator, 4, 4, bTF, lightTF)
+                                             const DEFS::EP::Type & ept) :
+   EventProb3Jet(ept, integrator, 4, 4, bTF, lightTF)
 {
   // Set the top mass and width
   setTopMassAndWidth(MEConstants::topMass);
@@ -46,7 +46,10 @@ void tChannelEventProb3Jet::setTopMassAndWidth(double mTop) {
   m_massTop = mTop;
 
   // Use the theoretical Top width for the given mass 
-  m_widthTop =  calcTopWidth(mTop);
+  m_widthTop =  calcTopWidth(m_massTop);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
 
 }//setTopMassAndWidth
 
@@ -210,7 +213,7 @@ void tChannelEventProb3Jet::setPartonTypes() const
 
 void tChannelEventProb3Jet::getScale(double& scale1, double& scale2) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 //   scale1 = MEConstants::wMass / 2;
 //   scale2 = MEConstants::wMass / 2 + m_massTop;
    double lightLine = std::sqrt(getPartonColl()->Q2());
@@ -231,7 +234,7 @@ void tChannelEventProb3Jet::getScale(double& scale1, double& scale2) const
 
 void tChannelEventProb3Jet::makeFortranArray(double array[][4]) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);
@@ -245,7 +248,7 @@ void tChannelEventProb3Jet::makeFortranArray(double array[][4]) const
 tChannelEventProb3JetAlt::tChannelEventProb3JetAlt(Integrator& integrator,
                                                    const TransferFunction& bTF,
                                                    const TransferFunction& lTF)
-   : tChannelEventProb3Jet(integrator, bTF, lTF, "t-channel alternate")
+  : tChannelEventProb3Jet(integrator, bTF, lTF, DEFS::EP::TopTAlt)
 {}
 
 double tChannelEventProb3JetAlt::matrixElement() const

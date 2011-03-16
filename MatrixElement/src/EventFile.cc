@@ -21,7 +21,7 @@
 
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 // #include "TAMUWW/MatrixElement/interface/SingleTopNtuple/SingleTopNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
@@ -254,7 +254,7 @@ SmearedMadEventFile::SmearedMadEventFile(string filename, unsigned nEvents,
 
 bool SmearedMadEventFile::m_fillNextEventUnder(PartonColl& partons)
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    if (!MadEventFile::m_fillNextEvent(partons))
       return false;

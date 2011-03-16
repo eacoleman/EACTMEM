@@ -38,7 +38,9 @@ extern "C"
 // ------------------------------------------------------------------
 WZEventProb2Jet::WZEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-  EventProb2Jet("WZ", integrator, 3, 8, tf), swapPartonMom(false), swapQuarkFlavor(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::WZ, integrator, 3, 8, tf), 
+  swapPartonMom(false), swapQuarkFlavor(false), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {}
 
 // ------------------------------------------------------------------

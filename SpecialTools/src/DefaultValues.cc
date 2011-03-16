@@ -82,7 +82,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
 
   // get the table with the files location
   Table fileTable = getFileLocationTable(tagcat);
-  
+
   // Loop over all the process names
   for (unsigned int prn = 0; prn < processName.size(); prn++){
 
@@ -111,7 +111,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
 						 Table fileTable){
 
     // get the process name
-  string prName = DEFS::getProcessTypeString(process);
+  string prName = DEFS::PhysicsProcess::getTypeString(process);
   
   // get the name of the jetBin
   string jetBinName = DEFS::getJetBinString(jetBin);
@@ -248,27 +248,27 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
 							 DEFS::TagCat tagcat, 
 							 bool include_data ){
 
-  vector<DEFS::PhysicsProcessType> procs;
+  vector<DEFS::PhysicsProcess::Type> procs;
 
 
-  procs.push_back(DEFS::STopS   );
-  procs.push_back(DEFS::STopT   );
-  procs.push_back(DEFS::TTbar   );
-  procs.push_back(DEFS::TTbarLJ );
-  procs.push_back(DEFS::TTbarDil); 
-  procs.push_back(DEFS::Wbb     );
-  procs.push_back(DEFS::Wcc     );
-  procs.push_back(DEFS::WLight  );
-  procs.push_back(DEFS::Wjets   ); 
-  procs.push_back(DEFS::Zjets   );
-  procs.push_back(DEFS::QCD100  );
-  procs.push_back(DEFS::QCD250  );
-  procs.push_back(DEFS::WW      );
-  procs.push_back(DEFS::WZ      );
-  procs.push_back(DEFS::ZZ      );
+  procs.push_back(DEFS::PhysicsProcess::STopS   );
+  procs.push_back(DEFS::PhysicsProcess::STopT   );
+  procs.push_back(DEFS::PhysicsProcess::TTbar   );
+  //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
+  //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
+  //procs.push_back(DEFS::PhysicsProcess::Wbb     );
+  //procs.push_back(DEFS::PhysicsProcess::Wcc     );
+  //procs.push_back(DEFS::PhysicsProcess::WLight  );
+  procs.push_back(DEFS::PhysicsProcess::Wjets   ); 
+  procs.push_back(DEFS::PhysicsProcess::Zjets   );
+  procs.push_back(DEFS::PhysicsProcess::QCD100  );
+  procs.push_back(DEFS::PhysicsProcess::QCD250  );
+  procs.push_back(DEFS::PhysicsProcess::WW      );
+  procs.push_back(DEFS::PhysicsProcess::WZ      );
+  //procs.push_back(DEFS::PhysicsProcess::ZZ      );
   
   if (include_data)
-    procs.push_back(DEFS::Data    );
+    procs.push_back(DEFS::PhysicsProcess::Data    );
 
   return getProcesses(procs, jetBin, tagcat);
 

@@ -50,7 +50,7 @@ PhysicsProcess::PhysicsProcess(const PhysicsProcess & pro){
 PhysicsProcess::PhysicsProcess(PhysicsProcessType type,
 			       TChain * chain){
 
-  string name = getProcessTypeString(type);
+  string name = getTypeString(type);
   m_name = name;
   m_subName = name;
   m_chainPtr = chain; 

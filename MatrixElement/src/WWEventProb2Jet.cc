@@ -38,8 +38,12 @@ using std::endl;
 // ------------------------------------------------------------------
 WWEventProb2Jet::WWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-   EventProb2Jet("WW", integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
-{}
+  EventProb2Jet(DEFS::EP::WW, integrator, 3, 4, tf), 
+  swapPartonMom(false), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+{
+
+}
 
 // ------------------------------------------------------------------
 

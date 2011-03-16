@@ -6,7 +6,7 @@
 
 #include "TMath.h"
 
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 namespace MEConstants
 {
@@ -28,7 +28,7 @@ namespace MEConstants
    // Charged Electroweak couplings
    const double sin2w = 0.2312;
    const double gFermi = 1.16639e-5;
-   const double alpha = std::sqrt(2) * gFermi * PeterFunctions::Math::square(wMass) * sin2w / TMath::Pi();
+   const double alpha = std::sqrt(2) * gFermi * AuxFunctions::Math::square(wMass) * sin2w / TMath::Pi();
    const double ee2 = alpha * 4 * TMath::Pi();
    const double ee = std::sqrt(ee2);
    const double gwf = -ee / std::sqrt(2 * sin2w);

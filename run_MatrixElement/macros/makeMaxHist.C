@@ -9,7 +9,7 @@
 #include "TGraphErrors.h"
 #include "TH1.h"
 
-#include "PeterTools/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 using std::cerr;
 using std::endl;
@@ -34,7 +34,7 @@ void makeMaxHist(string rootfile, unsigned nBins)
    while (true)
    {
       string name = "MassProfile0_";
-      name = PeterFunctions::concatString(name, counter++);
+      name = AuxFunctions::concatString(name, counter++);
 
       TGraphErrors* graph = 0;
       file->GetObject(name.c_str(), graph);
@@ -83,7 +83,7 @@ void makeMaxHist(string rootfile, unsigned nBins)
    hist->Draw();
 
    string filename = rootfile;
-   if (PeterFunctions::stringSub(filename, ".root", ".gif"))
+   if (AuxFunctions::stringSub(filename, ".root", ".gif"))
    {
       can->Print(filename.c_str());
    }

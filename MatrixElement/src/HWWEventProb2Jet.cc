@@ -31,7 +31,7 @@ extern "C" {
 HWWEventProb2Jet::HWWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf, 
 				   double higgsMass) :
-   EventProb2Jet("HWW", integrator, 3, 2, tf)
+  EventProb2Jet(DEFS::EP::HWW, integrator, 3, 2, tf)
 {
   setHiggsMassAndWidth(higgsMass);
 }
@@ -45,9 +45,10 @@ void  HWWEventProb2Jet::setHiggsMassAndWidth(double mHiggs) {
 
   // Use the theoretical Higgs width for the given mass 
   // multiplied by a factor of 100
-  m_widthHiggs = 100.0 * calcHiggsWidth(mHiggs);
+  m_widthHiggs = 100.0 * calcHiggsWidth(m_massHiggs);
 
-
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massHiggs);
 
 }//setHiggsMassAndWidth
 

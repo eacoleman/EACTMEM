@@ -39,7 +39,7 @@ WHEventProb3Jet::WHEventProb3Jet(Integrator& integrator,
 				 double higgsMass) :
 
   // base class with 7 variables and up to 4 permutations 
-  EventProb3Jet("WH", integrator, 7, 4, bTF, lightTF){
+  EventProb3Jet(DEFS::EP::WH, integrator, 7, 4, bTF, lightTF){
 
   // set the Higgs mass and width
   setHiggsMassAndWidth(higgsMass);
@@ -60,7 +60,10 @@ void  WHEventProb3Jet::setHiggsMassAndWidth(double mHiggs) {
   // Use the theoretical Higgs width for the given mass 
   // multiplied by a factor of 1000. This is 10 times more than the 2-jet bin
   // to make the integral go faster.
-  m_widthHiggs = 1000.0 * calcHiggsWidth(mHiggs);
+  m_widthHiggs = 1000.0 * calcHiggsWidth(m_massHiggs);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massHiggs);
 
 }//setHiggsMassAndWidth
 

@@ -30,14 +30,14 @@ using std::endl;
 WcEventProb2Jet::WcEventProb2Jet(Integrator& integrator,
                                  const TransferFunction& lighttf,
                                  const TransferFunction& gluontf) :
-  EventProb2Jet("Wc-jet", integrator, 3, 4, lighttf),
+  EventProb2Jet(DEFS::EP::Wc, integrator, 3, 4, lighttf),
   m_gluonTF(gluontf) {}
 
 WcEventProb2Jet::WcEventProb2Jet(Integrator& integrator,
                                  const TransferFunction& lighttf,
                                  const TransferFunction& gluontf,
-                                 const string& name, unsigned iterations) :
-   EventProb2Jet(name, integrator, 3, iterations, lighttf),
+				 DEFS::EP::Type ept, unsigned iterations) :
+   EventProb2Jet(ept, integrator, 3, iterations, lighttf),
    m_gluonTF(gluontf) { }
 
 void WcEventProb2Jet::setDynamicBounds()
@@ -64,7 +64,7 @@ unsigned WcEventProb2Jet::getProbMax() const
 
 void WcEventProb2Jet::changeVars(const vector<double>& parameters)
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    TLorentzVector& jet1 = getPartonColl()->getJet(0);
    TLorentzVector& jet2 = getPartonColl()->getJet(1);
@@ -388,7 +388,7 @@ void WcEventProb2Jet::setPartonTypes() const
 
 void WcEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 //   scale1 = scale2 = MEConstants::wMass;
    double sumPt = getPartonColl()->sumPt();
    scale1 = scale2 = std::sqrt(square(MEConstants::wMass) + square(sumPt));
@@ -426,7 +426,9 @@ bool WcEventProb2Jet::onSwitch()
 WjgEventProb2Jet::WjgEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& lighttf,
                                    const TransferFunction& gluontf) :
-   WcEventProb2Jet(integrator, lighttf, gluontf, "Wg-jet (mistag)", 2)
+
+  // BEFORE USING THIS ME NEED TO CHANGE DEFS::EP::Wc to something else
+  WcEventProb2Jet(integrator, lighttf, gluontf, DEFS::EP::Wc, 2)
 {}
 
 unsigned WjgEventProb2Jet::getProbMax() const

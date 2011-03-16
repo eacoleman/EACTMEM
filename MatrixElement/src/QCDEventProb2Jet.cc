@@ -41,7 +41,7 @@ extern "C"
 // ------------------------------------------------------------------
 QCDEventProb2Jet::QCDEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-  EventProb2Jet("QCD", integrator, 3, 2, tf), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::QCD, integrator, 3, 2, tf), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {}
 
 // ------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 
 namespace DHELAS
 {
@@ -26,7 +26,7 @@ namespace DHELAS
                     bool rh)
    {
       double array[4];
-      PeterFunctions::makeArray(input, array);
+      AuxFunctionsRoot::makeArray(input, array);
 
       SimpleArray<HelArray, 1> output;
 
@@ -44,7 +44,7 @@ namespace DHELAS
                     bool)
    {
       double array[4];
-      PeterFunctions::makeArray(input, array);
+      AuxFunctionsRoot::makeArray(input, array);
 
       SimpleArray<HelArray, 2> output;
 
@@ -63,7 +63,7 @@ namespace DHELAS
                     bool)
    {
       double array[4];
-      PeterFunctions::makeArray(input, array);
+      AuxFunctionsRoot::makeArray(input, array);
 
       SimpleArray<HelArray, 3> output;
 

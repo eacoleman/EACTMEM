@@ -2,7 +2,7 @@
 // Created : 07/20/2010
 // The diagrams can be compared with madgraph using the processes 
 // g u -> e+ ve d g for W+, g d -> e- ve~ u g for W-
-// $Id: WLightEventProb2Jet.cc,v 1.1 2010/07/22 20:20:16 ilyao Exp $
+// $Id: WLightEventProb2Jet.cc,v 1.2 2010/12/21 17:53:16 ilyao Exp $
 
 //  This package libraries
 #include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
@@ -34,7 +34,7 @@ extern "C" {
 // ------------------------------------------------------------------
 WLightEventProb2Jet::WLightEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-  EventProb2Jet("WLight2Jet", integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::WLight, integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
 
 }

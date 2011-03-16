@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
@@ -15,12 +15,12 @@
 using std::string;
 using std::vector;
 
-using PeterFunctions::Math::square;
+using AuxFunctions::Math::square;
 
-EventProb2Jet::EventProb2Jet(string name, Integrator& integrator,
+EventProb2Jet::EventProb2Jet(DEFS::EP::Type ept, Integrator& integrator,
                              unsigned nVars, unsigned nLoop,
                              const TransferFunction& tf) :
-   EventProb(name, integrator, nVars, nLoop),
+   EventProb(ept, integrator, nVars, nLoop),
    m_tf(tf)
 {}
 
@@ -164,7 +164,7 @@ double EventProb2Jet::totalTF() const
 
 void EventProb2Jet::makeFortranArray(double array[][4]) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);
@@ -176,7 +176,7 @@ void EventProb2Jet::makeFortranArray(double array[][4]) const
 
 void EventProb2Jet::makeFortranArray_qqvl(double array[][4]) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);
@@ -189,7 +189,7 @@ void EventProb2Jet::makeFortranArray_qqvl(double array[][4]) const
 //added to for consistency with sChannel & tChannel.
 void EventProb2Jet::makeFortranArray_qlvq(double array[][4]) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);
@@ -202,7 +202,7 @@ void EventProb2Jet::makeFortranArray_qlvq(double array[][4]) const
 //added to for consistency with ttChannel.
 void EventProb2Jet::makeFortranArray_qlvWq(double array[][4],TLorentzVector m_W) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);

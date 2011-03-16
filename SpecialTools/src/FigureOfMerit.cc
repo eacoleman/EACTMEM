@@ -47,11 +47,11 @@ bool FigureOfMerit::checkBackgroundHistogram(TH1* back, double relativeBinErrorL
   // Loop over all bins
   for (int ibin = 1; ibin <= back->GetNbinsX(); ++ibin){
 
-    // If there is no background in this bin return false
+    // If there is no background in this bin...
     if (back->GetBinContent(ibin) == 0){
 
       std::cerr << "ERROR FigureOfMerit::checkBackgroundHistogram bin "<<ibin<<" is not filled."<<endl;
-      return false;
+      //return false;
 
     } 
     // If the background contribution is smaller than three time its error return a warning.
@@ -111,7 +111,8 @@ double FigureOfMerit::usingShapeFromTemplates(TH1* _signal, TH1* _background, do
     
     // Set starting values and step sizes for parameters
     //            (par# , name  start val , step  , min val,  max val, ierflg);
-    minuit->mnparm(    0, "a1",   0.50    , 0.1   ,  0     ,   200   , ierflg);
+    minuit->mnparm(    0, "a1",   0.50    , 0.1   ,  0     ,   200  , 
+ierflg);
     
     // Do the minimization
     arglist[0] = 0.5; // 0.5 for 1 sigma. 2 for 2 sigmas
@@ -157,6 +158,17 @@ void FigureOfMerit::minimizationFunction(Int_t &npar, Double_t *gin, Double_t &f
    //calculate chisquare
    Double_t sum_nll = 0;
    for (int ibin = 1 ; ibin <= signal->GetNbinsX() ; ibin++) {
+
+     // skip bins in which both signal and background are zero
+     if (background->GetBinContent(ibin) == 0 ){
+	if ( signal->GetBinContent(ibin) ==0)
+	   continue;
+        else{
+           cout<<" ERROR FigureOfMerit::minimizationFunction "
+	       <<" at bin="<<ibin<<" background is zero but signal is NOT!"
+               <<" This can give infinite sensitivity!"<<endl;
+        } 
+     }//if
 
      double bin_num  = par[0]*signal->GetBinContent(ibin) * par[0]*signal->GetBinContent(ibin);
      double bin_den  = par[0]*signal->GetBinContent(ibin) + background->GetBinContent(ibin)       

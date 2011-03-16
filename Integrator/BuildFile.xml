@@ -6,6 +6,7 @@
 <use name="TAMUWW/CubaDivonne"/>
 <use name="TAMUWW/CubaSuave"/>
 <use name="TAMUWW/CubaVegas"/>
+<use name="TAMUWW/AuxFunctions"/>
 
 <export>
    <lib name="1"/>

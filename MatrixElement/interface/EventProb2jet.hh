@@ -14,7 +14,7 @@ class TransferFunction;
 class EventProb2Jet : public EventProb
 {
    public:
-      EventProb2Jet(std::string name, Integrator& integrator, unsigned nVars,
+  EventProb2Jet(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
                     unsigned nLoop, const TransferFunction& tf);
       virtual ~EventProb2Jet() {}
 

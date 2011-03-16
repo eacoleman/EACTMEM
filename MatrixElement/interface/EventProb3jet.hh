@@ -11,9 +11,9 @@
 class EventProb3Jet : public EventProb
 {
    public:
-      EventProb3Jet(std::string name, Integrator& integrator, unsigned nVars,
-                    unsigned nLoop, const TransferFunction& bTF,
-                    const TransferFunction& gluonTF);
+  EventProb3Jet(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
+		unsigned nLoop, const TransferFunction& bTF,
+		const TransferFunction& gluonTF);
       virtual ~EventProb3Jet() {}
 
       virtual void getPeaks(VecVecDouble& answer, const double bounds[]) const;

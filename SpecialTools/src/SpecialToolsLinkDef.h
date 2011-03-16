@@ -15,14 +15,14 @@
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
-#pragma link C++ class Value;
-#pragma link C++ class Table;
-#pragma link C++ class ProcessTree;
-#pragma link C++ class PhysicsProcess;
-#pragma link C++ class FileLocationTable;
-#pragma link C++ class TableRow;
-#pragma link C++ class TableCell;
-#pragma link C++ class TableCellVal;
-#pragma link C++ class TableCellText;
+#pragma link C++ class Value+;
+#pragma link C++ class Table+;
+#pragma link C++ class ProcessTree+;
+#pragma link C++ class PhysicsProcess+;
+#pragma link C++ class FileLocationTable+;
+#pragma link C++ class TableRow+;
+#pragma link C++ class TableCell+;
+#pragma link C++ class TableCellVal+;
+#pragma link C++ class TableCellText+;
 
 #endif

@@ -7,133 +7,138 @@
 
 #include "TransferFunction.hh"
 #include "PartonColl.hh"
+#include "EventProbDefs.hh"
 
 class TLorentzVector;
 
 class Integrator;
 
-class EventProb
+class EventProb 
 {
-   public:
-      EventProb(std::string name, Integrator& integrator, unsigned nVars,
-                unsigned nLoop);
-      virtual ~EventProb() {}
+public:
+  EventProb(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
+	    unsigned nLoop);
+  virtual ~EventProb() {}
 
-      virtual double execute(const double parameters[]);
+  virtual double execute(const double parameters[]);
 
-      static void setPartonColl(PartonColl& input)
-      {m_partonColl = input;}
-      static PartonColl* getPartonColl() {return &m_partonColl;}
-      static void setMeasuredColl(PartonColl& input)
-      {m_measuredColl = input;}
-      static PartonColl* getMeasuredColl() {return &m_measuredColl;}
+  static void setPartonColl(PartonColl& input)
+  {m_partonColl = input;}
+  static PartonColl* getPartonColl() {return &m_partonColl;}
+  static void setMeasuredColl(PartonColl& input)
+  {m_measuredColl = input;}
+  static PartonColl* getMeasuredColl() {return &m_measuredColl;}
 
-      void setBounds(unsigned param, double lower, double upper);
+  void setBounds(unsigned param, double lower, double upper);
 
-      std::string getName() const {return m_name;}
-      unsigned getDimension() const {return m_nVars;}
-      Integrator& getIntegrator() {return m_integrator;}
-      const Integrator& getIntegrator() const {return m_integrator;}
+  std::string getName() const {return m_name;}
+  DEFS::EP::Type getEventProbType(){ return m_epType;}
+  void           setEventProbParam(double pa){ m_epParam = pa;}
+  double         getEventProbParam(){ return m_epParam;}
 
-      bool incrementLoop();
-      unsigned getLoopMax() const {return m_nLoop;}
-      virtual unsigned getProbMax() const {return m_nLoop;}
+  unsigned getDimension() const {return m_nVars;}
+  Integrator& getIntegrator() {return m_integrator;}
+  const Integrator& getIntegrator() const {return m_integrator;}
 
-      //Start added by RE
-      virtual double getMaxProbNumber() const {return m_maxProbNumber;}
-      virtual void   resetMaxProbNumber(){ m_maxProbNumber = 0;}
-      // End added by RE
+  bool incrementLoop();
+  unsigned getLoopMax() const {return m_nLoop;}
+  virtual unsigned getProbMax() const {return m_nLoop;}
 
-      typedef std::vector<std::vector<double> > VecVecDouble;
-      virtual void getPeaks(VecVecDouble& answer,
-                            const double bounds[]) const = 0;
+  virtual double getMaxProbNumber() const {return m_maxProbNumber;}
+  virtual void   resetMaxProbNumber(){ m_maxProbNumber = 0;}
 
-      virtual void setDynamicBounds() {}
-      void prepareForIntegral();
+  typedef std::vector<std::vector<double> > VecVecDouble;
+  virtual void getPeaks(VecVecDouble& answer,
+			const double bounds[]) const = 0;
 
-      //Method to be used in the EPDEventProb object.
-      // this the method called when correlating the nuisance parameters
-      virtual double matrixElementCorrelated(const std::vector<double> & trueParams);
-      double getVolume() const { return m_volume; }
+  virtual void setDynamicBounds() {}
+  void prepareForIntegral();
 
-      // This is useful counter to have when debugging  
-      int debug;
+  //Method to be used in the EPDEventProb object.
+  // this the method called when correlating the nuisance parameters
+  virtual double matrixElementCorrelated(const std::vector<double> & trueParams);
+  double getVolume() const { return m_volume; }
 
-   protected:
+  // This is useful counter to have when debugging  
+  int debug;
 
-      virtual void setupIntegral() {}
+protected:
 
-      virtual void changeVars(const std::vector<double>&) = 0;
+  virtual void setupIntegral() {}
 
-      virtual void met();
+  virtual void changeVars(const std::vector<double>&) = 0;
 
-      bool isPossible() const;
+  virtual void met();
 
-      bool getPartonEnergies(double& energy1, double& energy2) const;
-      virtual void getTotalLV(TLorentzVector& vec) const;
+  bool isPossible() const;
 
-      virtual double matrixElement() const = 0;
+  bool getPartonEnergies(double& energy1, double& energy2) const;
+  virtual void getTotalLV(TLorentzVector& vec) const;
 
-      virtual double phaseSpace() const;
+  virtual double matrixElement() const = 0;
 
-      double pdf(double x1, double x2) const;
-      virtual void setPartonTypes() const = 0;
-      virtual void getScale(double& scale1, double& scale2) const = 0;
+  virtual double phaseSpace() const;
 
-      virtual double totalTF() const = 0;
+  double pdf(double x1, double x2) const;
+  virtual void setPartonTypes() const = 0;
+  virtual void getScale(double& scale1, double& scale2) const = 0;
 
-      virtual bool onSwitch() {return true;} // false means stop the loop
+  virtual double totalTF() const = 0;
 
-      int getLoop() const {return m_loop;}
+  virtual bool onSwitch() {return true;} // false means stop the loop
 
-      void swapJets(unsigned jet1, unsigned jet2);
+  int getLoop() const {return m_loop;}
 
-      void adjustBounds(std::vector<double>&) const;
+  void swapJets(unsigned jet1, unsigned jet2);
 
-      enum PDFTypes
-      {
-         kGluon = 0,
-         kUp = 1,
-         kDown = 2,
-         kStrange = 3,
-         kCharm = 4,
-         kBottom = 5,
-         kAntiUp = -1,
-         kAntiDown = -2,
-         kAntiStrange = -3,
-         kAntiCharm = -4,
-         kAntiBottom = -5
-      };
+  void adjustBounds(std::vector<double>&) const;
 
-     // Start of variables for Ricardo's test
+  enum PDFTypes
+    {
+      kGluon = 0,
+      kUp = 1,
+      kDown = 2,
+      kStrange = 3,
+      kCharm = 4,
+      kBottom = 5,
+      kAntiUp = -1,
+      kAntiDown = -2,
+      kAntiStrange = -3,
+      kAntiCharm = -4,
+      kAntiBottom = -5
+    };
 
-     double m_maxProbNumber;
+  // Start of variables for Ricardo's test
 
-     // End of variables for Ricardo's test
+  double m_maxProbNumber;
 
-   private:
-      // Parton level quantities that change during the integration
-      static PartonColl m_partonColl;
+  // End of variables for Ricardo's test
 
-      // the actual measured collection, which does not changes 
-      // during the integration, except for the swapping of the jets
-      static PartonColl m_measuredColl;
+private:
+  // Parton level quantities that change during the integration
+  static PartonColl m_partonColl;
 
-      std::string m_name;
-      Integrator& m_integrator;
-      const unsigned m_nLoop;
-      const unsigned m_nVars;
+  // the actual measured collection, which does not changes 
+  // during the integration, except for the swapping of the jets
+  static PartonColl m_measuredColl;
 
-      int m_loop;
+  DEFS::EP::Type m_epType;
+  double         m_epParam;
+  std::string    m_name;
+  Integrator&    m_integrator;
+  const unsigned m_nLoop;
+  const unsigned m_nVars;
+
+  int m_loop;
 
 
-      // The Bounds type stores the set {a, b - a} for an interval (a, b)
-      typedef std::pair<double, double> Bounds;
-      std::vector<Bounds> m_bounds;
+  // The Bounds type stores the set {a, b - a} for an interval (a, b)
+  typedef std::pair<double, double> Bounds;
+  std::vector<Bounds> m_bounds;
 
-      void m_changeVars(const double parameters[]);
+  void m_changeVars(const double parameters[]);
 
-      float m_volume;
+  float m_volume;
 
 };
 

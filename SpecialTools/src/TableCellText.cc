@@ -1,12 +1,12 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCell.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: TableCellText.cc,v 1.1 2011/02/26 19:11:02 eusebi Exp $
 
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 //C++ libraries
 #include <string>

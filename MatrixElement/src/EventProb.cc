@@ -18,8 +18,8 @@
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/DataFile.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 
 #ifdef BENCHMARK
 #include "TAMUWW/MatrixElement/interface/TStopwatch.h"
@@ -34,7 +34,7 @@ extern "C"
    double ctq6pdf_(int&, double&, double&);
 }
 
-using PeterFunctions::Math::square;
+using AuxFunctions::Math::square;
 using std::cout;
 using std::endl;
 using std::string;
@@ -44,9 +44,10 @@ PartonColl EventProb::m_partonColl;
 PartonColl EventProb::m_measuredColl;
 
 
-EventProb::EventProb(string name, Integrator& integrator, unsigned nVars,
+EventProb::EventProb(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
                      unsigned nLoop) :
-   m_name(name),
+   m_epType(ept),
+   m_epParam(0),
    m_integrator(integrator),
    m_nLoop(nLoop),
    m_nVars(nVars),
@@ -54,6 +55,7 @@ EventProb::EventProb(string name, Integrator& integrator, unsigned nVars,
    m_bounds(nVars),
    m_volume(1)
 {
+  m_name = DEFS::EP::getTypeString(m_epType);
    debug= 0;
    int pdfset = 3;
    setctq6_(pdfset);

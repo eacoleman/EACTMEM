@@ -39,7 +39,7 @@ EPDEventProb2Jet::EPDEventProb2Jet(Integrator & integrator,
 				   vector<EventProb*> evtProbs,
 				   const TransferFunction & tf, 
 				   double topMass, double higgsMass):
-  EventProb2Jet("EPD", integrator, 6, 1, tf),
+  EventProb2Jet(DEFS::EP::CorrEPD, integrator, 6, 1, tf),
   eventProbs(evtProbs)
 {
   setTopMassAndWidth(topMass);

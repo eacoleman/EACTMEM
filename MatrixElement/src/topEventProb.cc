@@ -1,14 +1,14 @@
 #include "TAMUWW/MatrixElement/interface/topEventProb.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 // This method returns the theoretical Top Width, 
 // without any multiplicative scale factor
 double topEventProb::calcTopWidth(double topMass){
 
    using std::atan;
-   using PeterFunctions::Math::cube;
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::cube;
+   using AuxFunctions::Math::square;
    using MEConstants::wMass;
    using MEConstants::wWidth;
 

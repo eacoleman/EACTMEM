@@ -14,7 +14,7 @@ class WcEventProb2Jet : public EventProb2Jet
    protected:
       WcEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf,
                       const TransferFunction& gluontf,
-                      const std::string& name, unsigned iterations);
+                      DEFS::EP::Type type, unsigned iterations);
 
       virtual void changeVars(const std::vector<double>& parameters);
       virtual double matrixElement() const;

@@ -1,3 +1,5 @@
+#include "tdrstyle_mod.C"
+
 void rootlogon()
 {
    gSystem->SetIncludePath(" -I../include/");

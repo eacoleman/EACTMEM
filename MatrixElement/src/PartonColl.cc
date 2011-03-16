@@ -12,7 +12,7 @@
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 
 //needed for overload of operator<< for TLorentzVectors
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh" 
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh" 
 
 using std::vector;
 
@@ -56,7 +56,7 @@ void PartonColl::swapJets(unsigned index1, unsigned index2)
 
 void PartonColl::setMet()
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    double jetPx = 0, jetPy = 0;
    for (vector<Jet>::const_iterator it = m_jets.begin(); it != m_jets.end();
@@ -74,7 +74,7 @@ void PartonColl::setMet()
 
 double PartonColl::getPhaseSpace() const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    double jetP = 1, jetE = 1;
    for (vector<Jet>::const_iterator it = m_jets.begin(); it != m_jets.end();
@@ -129,7 +129,7 @@ void PartonColl::m_sortJets()
 // -- Higher energy jets are third 
 bool PartonColl::Jet::jetSort(const Jet& left, const Jet& right)
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    if (left.tag != right.tag)
       return left.tag > right.tag;

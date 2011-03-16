@@ -17,8 +17,8 @@ extern "C"
 WbbEventProb3Jet::WbbEventProb3Jet(Integrator& integrator,
                                    const TransferFunction& bTF,
                                    const TransferFunction& gluonTF) :
-   EventProb3Jet("Wbb-bar", integrator, 4, 2, bTF, gluonTF)
-//   EventProb3Jet("Wbb-bar", 4, 1, bTF, lightTF)
+  EventProb3Jet(DEFS::EP::Wbb, integrator, 4, 2, bTF, gluonTF)
+
 {}
 
 
@@ -280,7 +280,7 @@ void WbbEventProb3Jet::setPartonTypes() const
 
 void WbbEventProb3Jet::getScale(double& scale1, double& scale2) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 //   scale1 = scale2 = MEConstants::wMass;
    double sumPt = getPartonColl()->sumPt();
    scale1 = scale2 = std::sqrt(square(MEConstants::wMass) + square(sumPt));

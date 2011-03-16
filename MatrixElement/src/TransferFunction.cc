@@ -14,7 +14,7 @@ using namespace std;
 
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/DataFile.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 // #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH100GeV_TF/n_i7_h12_o1.C"
 // #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH105GeV_TF/n_i7_h12_o1.C"
@@ -55,7 +55,7 @@ DoubleGaussian::DoubleGaussian(const string& dataFileName)
    for (unsigned i = 0; i < 10; ++i)
    {
       string param
-         = PeterFunctions::concatString("transfer function parameter ",
+         = AuxFunctions::concatString("transfer function parameter ",
                                         i);
       m_parameters.push_back(data.readFloat(param));
       std::cout<<" "<<param<<"  "<<m_parameters[i]<<std::endl;
@@ -64,7 +64,7 @@ DoubleGaussian::DoubleGaussian(const string& dataFileName)
 
 double DoubleGaussian::operator()(double partonE, double measuredE) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    double difference = measuredE - partonE;
    double p01 = m_parameters[0] + m_parameters[1] * partonE;
@@ -94,7 +94,7 @@ SingleGaussian::SingleGaussian(const string& dataFileName)
    for (unsigned i = 0; i < 4; ++i)
    {
       string param
-         = PeterFunctions::concatString("transfer function parameter ",
+         = AuxFunctions::concatString("transfer function parameter ",
                                         i);
       m_parameters.push_back(data.readFloat(param));
    }
@@ -103,7 +103,7 @@ SingleGaussian::SingleGaussian(const string& dataFileName)
 double SingleGaussian::operator()(double partonE, double measuredE) const
 {
    // Barbara will rewrite this part
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    double difference = measuredE - partonE;
    double p01 = m_parameters[0] + m_parameters[1] * partonE;
@@ -305,7 +305,7 @@ SimpleSmearing::SimpleSmearing(double smear) :
 double SimpleSmearing::getTF(const PartonColl::Jet& partonJet,
                              const PartonColl::Jet& measuredJet) const
 {
-   return std::exp(-.5 * PeterFunctions::Math::square((measuredJet.lv.E()
+   return std::exp(-.5 * AuxFunctions::Math::square((measuredJet.lv.E()
                                                        - partonJet.lv.E()) 
                                                       / partonJet.lv.E()
                                                       / m_smear));  

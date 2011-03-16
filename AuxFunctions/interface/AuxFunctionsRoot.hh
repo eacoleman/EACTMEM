@@ -1,5 +1,5 @@
-#ifndef PETERFUNCTIONSROOT_HH
-#define PETERFUNCTIONSROOT_HH
+#ifndef AUXFUNCTIONSROOT_HH
+#define AUXFUNCTIONSROOT_HH
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@ class TLorentzVector;
 class TText;
 class TTree;
 
-namespace PeterFunctions
+namespace AuxFunctionsRoot
 {
    TTree* openAndGetTree(const TFile* file, const char* treeName);
 

@@ -24,15 +24,19 @@
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 
 using std::endl;
 using std::cout;
+using std::string;
 using std::vector;
+
 
 EventProb* MEJob::sm_eventProb(0);
 
+
+//-----------------------------------------------------------------------------
 MEJob::MEJob(EventFile& inputFile, const std::string& outputFilename) :
    m_inputFile(inputFile),
    m_outputFile(new TFile(outputFilename.c_str(), "RECREATE")),
@@ -41,6 +45,8 @@ MEJob::MEJob(EventFile& inputFile, const std::string& outputFilename) :
    m_useDynamicBounds(false)
 {}
 
+
+//-----------------------------------------------------------------------------
 MEJob::~MEJob()
 {
    delete m_benchmark;
@@ -48,42 +54,49 @@ MEJob::~MEJob()
    delete m_outputFile;
 }
 
+
+//-----------------------------------------------------------------------------
 void MEJob::addEventProb(EventProb& prob, unsigned jetBin)
 {
    m_probs[jetBin].push_back(&prob);
 }
 
+
+//-----------------------------------------------------------------------------
+// This is the main method called when the MEJob is ran over all events.
+// This method sets the basic framework, loop over all events, and calls
+// the method m_doEvent for each event.
 void MEJob::loopOverEvents()
 {
-   TTree* outputTree = new TTree("METree", "Output tree for matrix element");
-   outputTree->Branch("METree", "METree", &m_output);
+  // Set the tree
+  TTree* outputTree = new TTree("METree", "Output tree for matrix element");
+  outputTree->Branch("METree.", "METree", &m_output);
 
-   // not-so-elegant code to attach tnt to tree if it's a tnt input
-   EventFile* myfile = &m_inputFile;
-   if (dynamic_cast<EventNtupleEventFile*>(myfile))
-   {
-     EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
-     outputTree->Branch("EvtTree","EventNtuple",&myntuple);
-   }
-
-   PartonColl partons;
-
-   unsigned counter = 1;
-   while (m_inputFile.fillNextEvent(partons))
-   {
-
-     m_output->clear();
-     std::cout << "  Processing event " << counter++ << " with " << partons.getNJets() << " jets." << std::endl;
-     m_doEvent(partons);
-
-     outputTree->Fill();
-     outputTree->Write("", TObject::kOverwrite);
-   }
-   //   m_outputFile->Write();
+  // not-so-elegant code to attach tnt to tree if it's a tnt input
+  EventFile* myfile = &m_inputFile;
+  if (dynamic_cast<EventNtupleEventFile*>(myfile)){
+    EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
+    outputTree->Branch("EvtTree.","EventNtuple",&myntuple);
+  }
+  
+  PartonColl partons;
+  
+  unsigned counter = 1;
+  while (m_inputFile.fillNextEvent(partons)){
+    
+    m_output->clear();
+    std::cout << "  Processing event " << counter++ << " with " << partons.getNJets() << " jets." << std::endl;
+    m_doEvent(partons);
+    
+    outputTree->Fill();
+    outputTree->Write("", TObject::kOverwrite);
+  }
 
    delete outputTree;
 }
 
+
+//-----------------------------------------------------------------------------
 void MEJob::massScan(float low, float high, unsigned steps, 
 		     std::string process){
 
@@ -210,7 +223,7 @@ void MEJob::m_setHiggsMass(double mass){
 // whose information is passed in the variable parton.
 void MEJob::m_doEvent(PartonColl& partons){
 
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    std::pair<int, int> runEvent = m_inputFile.getRunEvent();
    m_output->setRunEvent(runEvent.first, runEvent.second);
@@ -251,7 +264,10 @@ void MEJob::m_doEvent(PartonColl& partons){
       sm_eventProb->getIntegrator().setNdim(sm_eventProb->getDimension());
       sm_eventProb->getIntegrator().setIntegrand(sm_integrand);
 
+      //Create the probability object and set it's ME creator
       ProbStat probstat(sm_eventProb->getProbMax());
+      probstat.tmeType  = sm_eventProb->getEventProbType();
+      probstat.tmeParam = sm_eventProb->getEventProbParam();
 
       unsigned counter   = 0;
       double   totalProb = 0;

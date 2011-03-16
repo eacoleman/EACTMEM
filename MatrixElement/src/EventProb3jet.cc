@@ -8,15 +8,15 @@
 
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/Integrator/interface/Integrator.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 
 using std::string;
 using std::vector;
 
-using PeterFunctions::Math::square;
+using AuxFunctions::Math::square;
 
 extern "C"
 {
@@ -36,11 +36,11 @@ typedef SimpleArray<DHELAS::HelArray, 1> Array1;
 typedef SimpleArray<DHELAS::HelArray, 2> Array2;
 typedef SimpleArray<DHELAS::HelArray, 4> Array4;
 
-EventProb3Jet::EventProb3Jet(string name, Integrator& integrator, 
+EventProb3Jet::EventProb3Jet(DEFS::EP::Type ept, Integrator& integrator, 
                              unsigned nVars, unsigned nLoop,
                              const TransferFunction& bTF,
                              const TransferFunction& gluonTF) :
-   EventProb(name, integrator, nVars, nLoop),
+   EventProb(ept, integrator, nVars, nLoop),
    m_bTF(bTF),
    m_gluonTF(gluonTF)
 {}
@@ -220,7 +220,7 @@ bool EventProb3Jet::onSwitch()
 
 void EventProb3Jet::makeFortranArray(double array[][4]) const
 {
-   using PeterFunctions::makeArray;
+   using AuxFunctionsRoot::makeArray;
 
    makeArray(getPartonColl()->getParton1(), array[0]);
    makeArray(getPartonColl()->getParton2(), array[1]);

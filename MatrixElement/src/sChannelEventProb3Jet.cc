@@ -17,7 +17,7 @@ extern "C"
 sChannelEventProb3Jet::sChannelEventProb3Jet(Integrator& integrator,
                                              const TransferFunction& bTF,
                                              const TransferFunction& gluonTF) :
-   EventProb3Jet("s-channel", integrator, 4, 4, bTF, gluonTF)
+  EventProb3Jet(DEFS::EP::TopS, integrator, 4, 4, bTF, gluonTF)
 //   EventProb3Jet("s-channel", 4, 1, bTF, lightTF)
 {
   // Set the top mass and width
@@ -33,7 +33,10 @@ void sChannelEventProb3Jet::setTopMassAndWidth(double mTop) {
   m_massTop = mTop;
 
   // Use the theoretical Top width for the given mass 
-  m_widthTop =  calcTopWidth(mTop);
+  m_widthTop =  calcTopWidth(m_massTop);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
 
 }//setTopMassAndWidth
 

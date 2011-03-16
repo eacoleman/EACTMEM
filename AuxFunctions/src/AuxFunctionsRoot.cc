@@ -1,4 +1,4 @@
-#include "TAMUWW/MatrixElement/interface/PeterFunctionsRoot.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
 
 #include <fstream>
 #include <iomanip>
@@ -23,7 +23,7 @@ using std::string;
 using std::vector;
 using std::ostream;
 
-namespace PeterFunctions
+namespace AuxFunctionsRoot
 {
    TTree* openAndGetTree(const TFile* file, const char* treeName)
    {

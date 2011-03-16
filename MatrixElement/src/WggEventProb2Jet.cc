@@ -20,7 +20,7 @@ extern "C"
 
 WggEventProb2Jet::WggEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-   EventProb2Jet("Wgg (mistag)", integrator, 3, 1, tf)
+  EventProb2Jet(DEFS::EP::Wgg, integrator, 3, 1, tf)
 {}
 
 void WggEventProb2Jet::changeVars(const vector<double>& parameters)
@@ -242,7 +242,7 @@ void WggEventProb2Jet::setPartonTypes() const
 
 void WggEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 //   scale1 = scale2 = MEConstants::wMass;
    double sumPt = getPartonColl()->sumPt();
    scale1 = scale2 = std::sqrt(square(MEConstants::wMass) + square(sumPt));

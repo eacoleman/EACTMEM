@@ -20,7 +20,7 @@ extern "C"
 ttEventProb3Jet::ttEventProb3Jet(Integrator& integrator,
                                  const TransferFunction& bTF,
                                  const TransferFunction& lightTF) :
-   EventProb3Jet("tt-bar", integrator, 7, 2, bTF, lightTF)
+   EventProb3Jet(DEFS::EP::TTbar, integrator, 7, 2, bTF, lightTF)
 {
   // Set the top mass and width
   setTopMassAndWidth(MEConstants::topMass);
@@ -36,7 +36,10 @@ void ttEventProb3Jet::setTopMassAndWidth(double mTop) {
   m_massTop = mTop;
 
   // Use the theoretical Top width for the given mass 
-  m_widthTop =  calcTopWidth(mTop);
+  m_widthTop =  calcTopWidth(m_massTop);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
 
 }//setTopMassAndWidth
 
@@ -68,7 +71,7 @@ void ttEventProb3Jet::changeVars(const vector<double>& parameters)
 
 void ttEventProb3Jet::met()
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    getPartonColl()->setMet();
    TLorentzVector& vec = getPartonColl()->getNeutrino();
@@ -237,7 +240,7 @@ double ttEventProb3Jet::matrixElement() const
 
    double fortranArray[8][4];
    makeFortranArray(fortranArray);
-   PeterFunctions::makeArray(m_lostJet, fortranArray[7]);
+   AuxFunctionsRoot::makeArray(m_lostJet, fortranArray[7]);
 
    double topMass = m_massTop;
 //   const double wMass = MEConstants::wMass;

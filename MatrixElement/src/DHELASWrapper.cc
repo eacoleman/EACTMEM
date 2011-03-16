@@ -1,4 +1,4 @@
-#include "TAMUWW/MatrixElement/interface//DHELASWrapper.hh"
+#include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 
 std::ostream& operator<<(std::ostream& stream, const DHELAS::HelArray& rhs)
 {

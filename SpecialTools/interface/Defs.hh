@@ -11,51 +11,57 @@ namespace DEFS{
 
   // ---------------------------------------------------------------
   //            ALL ABOUT THE ANALYSIS WE WANT TO DO 
-  // ---------------------------------------------------------------
-  enum AnalysisType{
-    SingleTopAnalysis,
-    HiggsAnalysis,
-    WWAnalysis
-  };
+  // ---------------------------------------------------------------  
+  namespace Ana {
+    enum Type{
+      SingleTopAnalysis,
+      HiggsAnalysis,
+      WWAnalysis
+    };
+  
+    // A routine that returns the string given the type 
+    std::string getTypeString(Type );
 
-  // A routine that returns the string given the type 
-  std::string getAnalysisTypeString(AnalysisType );
-
+  }// Ana namespace
   
   // ---------------------------------------------------------------
   //            ALL ABOUT THE PHYSICSPROCESS TYPES
   // ---------------------------------------------------------------
-  enum PhysicsProcessType {WH100, WH105, WH110, WH115, WH120, WH125,
+  namespace PhysicsProcess {
+    enum Type {WH100, WH105, WH110, WH115, WH120, WH125,
 			   WH130, WH135, WH140, WH145, WH150,
 			   STopS, STopT, Wjets, Wbb, Wcc, WLight, 
 			   QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
 
 
-  // A routine that returns the type given a string 
-  PhysicsProcessType getProcessType(std::string str);
-
-  // A routine that returns the type given a string 
-  std::string getProcessTypeString(PhysicsProcessType );
-
-  // A routine that tells whether this process is Higgs or not
-  bool isHiggs(PhysicsProcessType type);
-
-  // A routine that give the Higgs Mass Index given the type
-  int getHiggsIndexMass(PhysicsProcessType type);
-
-  // A routine that gives the type given the Higgs Mass index
-  PhysicsProcessType getHiggsType(unsigned HiggsMassIndex);
-
+    // A routine that returns the type given a string 
+    Type getProcessType(std::string str);///
+    
+    // A routine that returns the type given a string 
+    std::string getTypeString(Type );
+    
+    // A routine that tells whether this process is Higgs or not
+    bool isHiggs(Type type);
+    
+    // A routine that give the Higgs Mass Index given the type
+    int getHiggsIndexMass(Type type);
+    
+    // A routine that gives the type given the Higgs Mass index
+    Type getHiggsType(unsigned HiggsMassIndex);
+    
+    
+  }// PhysicsProcess namespace
+  typedef DEFS::PhysicsProcess::Type PhysicsProcessType ;
 
   // ---------------------------------------------------------------
   //            ALL ABOUT THE DIFFERENT EVENT CATEGORIES
   // ---------------------------------------------------------------
   enum EvtCat {electron, muon};
-
-  // A routine that returns the string given the EvtType 
+  
+    // A routine that returns the string given the EvtType 
   std::string getEventCatString(EvtCat );
 
-  // ---------------------------------------------------------------
+  // -----------------------------------------------------------
   //            ALL ABOUT THE JET TYPES
   // ---------------------------------------------------------------
   enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};

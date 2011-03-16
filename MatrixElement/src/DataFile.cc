@@ -1,5 +1,5 @@
 #include "TAMUWW/MatrixElement/interface/DataFile.hh"
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -69,7 +69,7 @@ int InputDataFile::readInt(string name) const
 {
    try
    {
-      return PeterFunctions::checkedMapGet(m_intMap, name);
+      return AuxFunctions::checkedMapGet(m_intMap, name);
    }
    catch (std::runtime_error)
    {
@@ -82,7 +82,7 @@ double InputDataFile::readFloat(string name) const
 {
    try
    {
-      return PeterFunctions::checkedMapGet(m_floatMap, name);
+      return AuxFunctions::checkedMapGet(m_floatMap, name);
    }
    catch (std::runtime_error)
    {
@@ -95,7 +95,7 @@ string InputDataFile::readString(string name) const
 {
    try
    {
-      return PeterFunctions::checkedMapGet(m_stringMap, name);
+      return AuxFunctions::checkedMapGet(m_stringMap, name);
    }
    catch (std::runtime_error)
    {

@@ -33,7 +33,10 @@ extern "C"
 
 // ------------------------------------------------------------------
 tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf) :
-   EventProb2Jet("t-channel", integrator, 3,4, btf), m_lightTF(lighttf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::TopT, integrator, 3,4, btf), 
+  m_lightTF(lighttf), 
+  swapPartonMom(false), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   // Set the top mass and width
   setTopMassAndWidth(MEConstants::topMass);
@@ -54,7 +57,9 @@ void tChannelEventProb2Jet::setTopMassAndWidth(double mTop) {
   // Set the mass
   m_massTop = mTop;
   // Use the theoretical Top width for the given mass 
-  m_widthTop =  calcTopWidth(mTop);
+  m_widthTop =  calcTopWidth(m_massTop);
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
 
 }//setTopMassAndWidth
 
@@ -89,7 +94,7 @@ void tChannelEventProb2Jet::setDynamicBounds()
 // ------------------------------------------------------------------
 void tChannelEventProb2Jet::changeVars(const vector<double>& parameters)
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    TLorentzVector& jet1 = getPartonColl()->getJet(0);
    TLorentzVector& jet2 = getPartonColl()->getJet(1);
@@ -259,7 +264,7 @@ void tChannelEventProb2Jet::setPartonTypes() const
 // ------------------------------------------------------------------
 void tChannelEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 //   scale1 = MEConstants::wMass / 2;
 //   scale2 = MEConstants::wMass / 2 + m_massTop;
    double lightLine = std::sqrt(getPartonColl()->Q2());

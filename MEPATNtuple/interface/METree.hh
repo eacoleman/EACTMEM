@@ -1,10 +1,15 @@
 #ifndef METREE_HH
 #define METREE_HH
 
+#include "TAMUWW/MatrixElement/interface/EventProbDefs.hh"
+
 #include <TObject.h>
 #include <TClonesArray.h>
 
-struct ProbStat : public TObject{
+
+class ProbStat : public TObject{
+
+public:
 
   ProbStat();
   ProbStat(int number);
@@ -12,9 +17,17 @@ struct ProbStat : public TObject{
   const ProbStat& operator=(const ProbStat&);
   ~ProbStat();
 
+  // The Matrix Element whose results are contained here
+  DEFS::EP::Type tmeType;
+
+  // A relevant parameter used in the computation of the ME.
+  // For Higgs (or top) matrix elements this is typically the 
+  // Higgs (top) mass.
+  double tmeParam;
+ 
   //The number of permutation for a given ME probability
   Int_t tN;
-  
+
   Double_t* tNevl;    //[tN]
   Double_t* tRelerr;  //[tN]
   Double_t* tIfail;   //[tN]
@@ -26,7 +39,7 @@ struct ProbStat : public TObject{
   Double_t  tEventErr;
   Double_t  tEventMaxProb; 
   
-  ClassDef(ProbStat, 2)
+  ClassDef(ProbStat, 3)
 
 };
 

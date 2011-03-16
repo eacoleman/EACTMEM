@@ -15,7 +15,7 @@ class tChannelEventProb3Jet : public EventProb3Jet, public topEventProb
       tChannelEventProb3Jet(Integrator& integrator, 
                             const TransferFunction& bTF,
                             const TransferFunction& lightTF,
-                            const std::string& name);
+                            const DEFS::EP::Type & ept);
       virtual double matrixElement() const;
       virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;

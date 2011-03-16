@@ -9,7 +9,7 @@
 //#include <TF1.h>
 #include <TMath.h>
 
-#include "TAMUWW/MatrixElement/interface/PeterFunctions.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 using std::vector;
 
@@ -81,7 +81,7 @@ RootIntegrator::RootIntegrator() :
 void RootIntegrator::doIntegral(double returnVal[], double relerr[],
                                 int* ifail, int* nfnevl, double prob[]) const
 {
-   using PeterFunctions::Math::pow;
+   using AuxFunctions::Math::pow;
 
    Cuba::integrand_t intg = getIntegrand();
    int n = getNdim();

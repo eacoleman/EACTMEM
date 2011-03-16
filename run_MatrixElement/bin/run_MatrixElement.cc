@@ -30,7 +30,6 @@
 #include "TAMUWW/MatrixElement/interface/ZLightEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/QCDEventProb2Jet.hh"
 
-#include "TAMUWW/MatrixElement/interface/DummyEventProb.hh"
 #include "TAMUWW/MatrixElement/interface/WHEventProb3Jet.hh"
 #include "TAMUWW/MatrixElement/interface/sChannelEventProb3Jet.hh"
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb3Jet.hh"
@@ -293,9 +292,10 @@ int main(int argc, char* argv[]){
 
 
 
+
   // // Simplify the computation for now
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH105GeV, 105)); //1
+//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 100)); //0
+// eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 105)); //1
 // //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
 // //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH115GeV, 115)); //3
 // //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH120GeV, 120)); //4

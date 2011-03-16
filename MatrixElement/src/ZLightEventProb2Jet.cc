@@ -46,7 +46,10 @@ extern "C"
 // ------------------------------------------------------------------
 ZLightEventProb2Jet::ZLightEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf) :
-  EventProb2Jet("ZLight", integrator, 3, 8, tf), swapPartonMom(false), swapQuarkFlavor(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  EventProb2Jet(DEFS::EP::ZLight, integrator, 3, 8, tf), 
+  swapPartonMom(false), 
+  swapQuarkFlavor(false), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
 
   int o_output[NOutputP1][NVec];

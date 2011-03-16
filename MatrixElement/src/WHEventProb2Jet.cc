@@ -9,6 +9,7 @@
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 
 using std::vector;
 
@@ -21,7 +22,7 @@ extern "C"
 WHEventProb2Jet::WHEventProb2Jet(Integrator& integrator,
                                  const TransferFunction& tf,
                                  double higgsMass) :
-  EventProb2Jet("WH", integrator, 3, 1, tf){ 
+  EventProb2Jet(DEFS::EP::WH, integrator, 3, 1, tf){ 
   setHiggsMassAndWidth(higgsMass);
 }
 
@@ -34,7 +35,10 @@ void  WHEventProb2Jet::setHiggsMassAndWidth(double mHiggs) {
 
   // Use the theoretical Higgs width for the given mass 
   // multiplied by a factor of 100
-  m_widthHiggs = 100.0 * calcHiggsWidth(mHiggs);
+  m_widthHiggs = 100.0 * calcHiggsWidth(m_massHiggs);
+
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massHiggs);
 
 }//setHiggsMassAndWidth
 
@@ -42,7 +46,7 @@ void  WHEventProb2Jet::setHiggsMassAndWidth(double mHiggs) {
 // ------------------------------------------------------------------
 void WHEventProb2Jet::getPeaks(VecVecDouble& answer, const double bounds[]) const
 {
-   using PeterFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
    PartonColl temp(*getMeasuredColl());
    temp.setMet();
@@ -267,4 +271,22 @@ void WHEventProb2Jet::getScale(double& scale1, double&scale2) const
       scale1 = scale2 = 0;
    else
       scale1 = scale2 = std::sqrt(scale);
+}
+
+// ------------------------------------------------------------------
+// This is the default one for regular ME calculation
+void WHEventProb2Jet::changeVars(const vector<double>& parameters)
+{
+  using AuxFunctions::Math::square;
+  
+  TLorentzVector& jet1 = getPartonColl()->getJet(0);
+  TLorentzVector& jet2 = getPartonColl()->getJet(1);
+  
+  jet1.SetRho(parameters[1]);
+  jet1.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[1])));
+  jet2.SetRho(parameters[2]);
+  jet2.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[2])));
+  
+  getPartonColl()->getNeutrino().SetPz(parameters[0]);
+
 }
