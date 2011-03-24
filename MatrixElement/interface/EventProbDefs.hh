@@ -1,7 +1,7 @@
 // Author: Ricardo Eusebi
 // TAMU, eusebi@physics.tamu.edu
 // Created: March 13, 2011.
-// $Id:$
+// $Id: EventProbDefs.hh,v 1.1 2011/03/16 18:35:46 eusebi Exp $
 
 #ifndef EVENTPROBDEFS_HH
 #define EVENTPROBDEFS_HH
@@ -21,7 +21,7 @@ namespace DEFS {
 
       // Related to Higgs 
       WH      = 100,   
-      HWW     = 101,
+      HWW     = 150,
       
       // Related to single top production
       TopS    = 200,
