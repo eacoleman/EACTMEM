@@ -41,13 +41,13 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
 #### Lepton Candidate Filters ####
 #Kinematic Filters
 process.MuonsKinCutBasic = cms.EDFilter("CandViewSelector",
-  src = cms.InputTag("patMuons"),                              
-  cut = cms.string('pt > 10. & abs(eta) < 2.5'),
+  src = cms.InputTag("patMuonsPFlow"),                              
+  cut = cms.string('pt > 10. & abs(eta) < 5.0'),
   filter = cms.bool(True)                                
 )
 process.ElectronsKinCutBasic = cms.EDFilter("CandViewSelector",
-  src = cms.InputTag("patElectrons"),                              
-  cut = cms.string('et > 15. & abs(eta) < 2.5'),
+  src = cms.InputTag("patElectronsPFlow"),                              
+  cut = cms.string('et > 15. & abs(eta) < 5.0'),
   filter = cms.bool(True)                                
 )
 
@@ -94,34 +94,35 @@ process.load("TAMUWW.CRAB_Launch_Files.simpleEleIdSequence_cff")
 process.patElectronIDs = cms.Sequence(process.simpleEleIdSequence)
 process.makePatElectrons = cms.Sequence(process.patElectronIDs*process.patElectrons)
 
-removeMCMatching(process, ['All'])
+##removeMCMatching(process, ['All'])
+removeMCMatching(process, ['Electrons'])
 
 
-### Add the necessary jet collections ###
-mcjetcorrections=['L2Relative', 'L3Absolute']
-# Add the L1 JPT offset correction for JPT jets
-jptcorrections = ['L1JPTOffset']
-jptcorrections += mcjetcorrections
+#### Add the necessary jet collections ###
+#mcjetcorrections=['L2Relative', 'L3Absolute']
+## Add the L1 JPT offset correction for JPT jets
+#jptcorrections = ['L1JPTOffset']
+#jptcorrections += mcjetcorrections
 
 
-## from PhysicsTools.PatAlgos.tools.jetTools import *
+### from PhysicsTools.PatAlgos.tools.jetTools import *
 
-process.load("RecoJets.JetProducers.ak5PFJets_cfi")
-## addJetCollection(process,cms.InputTag('ak5PFJets'),
-##                  'AK5', 'PF',
-## #                 doJTA        = False,
-##                  doBTagging   = True,
-## #		 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
-##                  jetCorrLabel = ('AK5PF', cms.vstring(mcjetcorrections)),
-## #                jetCorrLabel = ('AK5','PF'),
-## #                 doType1MET   = True,
-##                  doType1MET   = False
-## #                 doL1Cleaning = False,
-## #                 doL1Counters = False,
-## #                 genJetCollection=cms.InputTag("ak5GenJets"),
-## #                 doJetID      = False
-## #                 doJetID      = False
-##                 )
+#process.load("RecoJets.JetProducers.ak5PFJets_cfi")
+#addJetCollection(process,cms.InputTag('ak5PFJets'),
+#                 'AK5', 'PF',
+##                 doJTA        = False,
+#                 doBTagging   = True,
+##		 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+#                 jetCorrLabel = ('AK5PF', cms.vstring(mcjetcorrections)),
+##                jetCorrLabel = ('AK5','PF'),
+##                 doType1MET   = True,
+#                 doType1MET   = False,
+##                 doL1Cleaning = False,
+##                 doL1Counters = False,
+#                 genJetCollection=cms.InputTag("ak5GenJets"),
+#                 doJetID      = False
+##                 doJetID      = False
+#                )
 
 ## # 1. re-cluster ak5 pfjets and pass them to pat (only for pre-36x input):
 ## ## process.load("RecoJets.JetProducers.ak5PFJets_cfi")
@@ -168,20 +169,21 @@ from PhysicsTools.PatAlgos.tools.pfTools import *
 postfix = "PFlow"
 usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= True , postfix=postfix) 
 
+### Look at the vertices and remove the tracks coming from an intersection which is not a primary vertex (i.e. likely to be pileup).
+process.pfPileUpPFlow.Enable = True
 
 ## ##-------------------- Turn-on the FastJet jet area calculation for your favorite algorithm -----------------------
-## #process.patJetsPFlow.doAreaFastjet = True
-## getattr(process,"patJets"+postfix).doAreaFastjet = True
-## #process.ak5PFJets.doAreaFastjet = True
+## process.patJetsPFlow.doAreaFastjet = True
+## #getattr(process,"patJets"+postfix).doAreaFastjet = True
+## process.ak5PFJets.doAreaFastjet = True
 
 ## #.............................................................................................
 ## ##-------------------- User analyzer  --------------------------------
 ## #process.MyAnalyzer  = cms.EDAnalyzer('MyAnalyzer',
 ## #...............................................................................................
-## process.patJetsFlow.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
-## #process.ak5PFJets.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
-## #..
-## .............................................................................................
+## #process.patJetsPFlow.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
+## process.ak5PFJets.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
+
 
 #### Run the pat sequences ##
 
@@ -191,8 +193,8 @@ process.seq1 = cms.Sequence(
 #    process.jetPlusTrackZSPCorJetAntiKt5*
 #    process.ak5PFJets*
     process.patDefaultSequence
-    *process.ElectronsKinCutBasic
     *getattr(process,"patPF2PATSequence"+postfix)
+    *process.ElectronsKinCutBasic
 )
 
 process.seq2 = cms.Sequence(
@@ -201,8 +203,8 @@ process.seq2 = cms.Sequence(
 #    process.jetPlusTrackZSPCorJetAntiKt5*
 #    process.ak5PFJets*
     process.patDefaultSequence
-    *process.MuonsKinCutBasic
     *getattr(process,"patPF2PATSequence"+postfix)
+    *process.MuonsKinCutBasic
 )
 
 process.p1 = cms.Path(process.seq1)
@@ -222,7 +224,7 @@ process.out.outputCommands += ["drop *_offlineBeamSpot_*_*"]
 process.out.outputCommands += ["drop edmTriggerResults_TriggerResults*_*_*"]
 process.out.outputCommands += ["drop *_hltTriggerSummaryAOD_*_*"]
 ###process.out.outputCommands += ["drop recoTracks_generalTracks*_*_*"]
-process.out.outputCommands += ["drop recoGenParticles_genParticles*_*_*"]
+process.out.outputCommands += ["keep recoGenParticles_*_*_*"] #keep
 #process.out.outputCommands += ["drop GenEventInfoProduct_*_*_*"]
 #process.out.outputCommands += ["drop GenRunInfoProduct_*_*_*"]
 
@@ -237,7 +239,7 @@ process.out.outputCommands += ["drop *_selectedPatElectrons_*_*",
                                "drop *_selectedPatPFParticlesPFlow*_*_*",
                                "drop CaloTowers_*_*_*",
 #                               "drop *_selectedPatJetsAK5JPT*_*_*",
-                               "drop *_selectedPatJetsAK5PF_*_*",
+#                               "drop *_selectedPatJetsAK5PF_*_*",
                                "drop *_selectedPatJetsAK5PFPFlow_*_*",
                                "drop recoBaseTagInfosOwned_selectedPatJetsAK5PF_*_*",
                                "drop recoBaseTagInfosOwned_selectedPatJetsAK5PFPFlow_*_*",
@@ -252,11 +254,12 @@ process.out.outputCommands += ["drop *_selectedPatElectrons_*_*",
 process.patMuons.isoDeposits = cms.PSet()
 process.patElectrons.isoDeposits = cms.PSet()
 
+#removeMCMatching(process, ['Electrons'])
 
-process.selectedPatMuons.cut = cms.string('pt> 10. & abs(eta) < 2.5')
-process.selectedPatElectrons.cut = cms.string('pt> 10. & abs(eta) < 2.5')
+process.selectedPatMuonsPFlow.cut = cms.string('pt> 10. & abs(eta) < 5.0')
+process.selectedPatElectronsPFlow.cut = cms.string('pt> 10. & abs(eta) < 5.0')
 #process.selectedPatJetsAK5PF.cut = cms.string('pt> 10. & abs(eta) < 2.5')
-process.selectedPatJetsPFlow.cut = cms.string('pt> 10. & abs(eta) < 2.5')
+process.selectedPatJetsPFlow.cut = cms.string('pt> 10. & abs(eta) < 5.0')
 #process.selectedPatJets.cut = cms.string('pt> 10.')
 
 
@@ -271,11 +274,11 @@ process.maxEvents.input = 100
 # source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-#    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0014/84872812-1F4B-DF11-8A07-00151796C158.root',
-#    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/FEBDE500-4046-DF11-87C6-00151796D9A8.root'
-#    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F8769D5D-4146-DF11-850D-0024E8768099.root',
-#    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F69DC71E-4046-DF11-841A-00151796D88C.root',
-#    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F614C63F-4046-DF11-BA9B-0024E8769B87.root'
+##    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0014/84872812-1F4B-DF11-8A07-00151796C158.root',
+##    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/FEBDE500-4046-DF11-87C6-00151796D9A8.root'
+##    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F8769D5D-4146-DF11-850D-0024E8768099.root',
+##    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F69DC71E-4046-DF11-841A-00151796D88C.root',
+##    '/store/mc/Spring10/WJets-madgraph/GEN-SIM-RECO/START3X_V26_S09-v1/0006/F614C63F-4046-DF11-BA9B-0024E8769B87.root'
 #        '/store/mc/Summer10/WJets_7TeV-madgraph-tauola/GEN-SIM-RECO/START36_V9_S09-v1/0046/FEFE3E46-CB7B-DF11-8488-0018F3D09678.root',
 #        '/store/mc/Summer10/WJets_7TeV-madgraph-tauola/GEN-SIM-RECO/START36_V9_S09-v1/0046/FEA6BEE7-CA7B-DF11-BEB0-00304867BED8.root',
 #        '/store/mc/Summer10/WJets_7TeV-madgraph-tauola/GEN-SIM-RECO/START36_V9_S09-v1/0046/FCE7711D-CB7B-DF11-B469-003048678C26.root',
