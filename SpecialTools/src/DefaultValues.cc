@@ -42,7 +42,8 @@ Table DefaultValues::getNormTable(DEFS::EvtCat evtcat, DEFS::TagCat tagcat){
 Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){ 
 
   FileLocationTable table("FileLocationTable");
-  
+  table.addBasePath();
+
   string fileLocationFile = "TAMUWW/ConfigFiles/Official/FileLocation_";
   
   // add the tag name and the ".txt" at the end
@@ -52,14 +53,6 @@ Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){
   if(!table.parseFromFile(fileLocationFile))
     cout<<"ERROR  DefaultValues::getFileLocationTable() cannot parse config file "
 	<<fileLocationFile<<endl;
-
-  // If the table contains one entry called "BasePath", add that basepath  
-  // to all other entries (except BasePath) in that table.
-  TableCellText * cell = (TableCellText *) table.getCellRowColumn("BasePath","filepath");
-  if (cell){
-    string basepath = cell->text;
-    table.addBasePath(basepath,"BasePath");
-  }
 
   return table;
   

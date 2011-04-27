@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.hh,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: Table.hh,v 1.3 2011/03/01 01:56:46 eusebi Exp $
 
 #ifndef TABLE_DEF
 #define TABLE_DEF
@@ -15,6 +15,8 @@
 //C++ libraries
 #include <string>
 #include <vector>
+#include <ostream>
+#include <fstream>
 
 //ROOT libraries
 #include "TNamed.h"
@@ -51,8 +53,11 @@ public :
   // Reset the contents of the table. Keep the name and structure. 
   void reset();
   
+  //print the table to a file
+  void printToFile(std::string filename, std::string style = "Normal");
+
   // print the Table in different formats
-  void printTable(std::string style = "Normal");
+  void printTable(std::ostream &out,std::string style = "Normal");
   
   // add two tables together
    void addTable(Table &, unsigned int omitFirstRows = 0);
@@ -73,7 +78,7 @@ public :
   void fillWithTest();
 
   // reports true if the file was parsed successfully
-  bool parseFromFile(std::string filename, std::string formatStyle = "Normal");
+  virtual bool parseFromFile(std::string filename, std::string cellClass = "TableCellText", std::string formatStyle = "Normal");
 
   // reports true if the Line was parsed successfully
   bool parseLine(std::string filename, int lineCounter, 

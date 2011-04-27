@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.2 2011/02/26 19:10:07 eusebi Exp $
+// $Id: Table.cc,v 1.3 2011/03/01 01:56:46 eusebi Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -49,6 +49,14 @@ void Table::reset(){
 
 }//reset
 
+//----------------------------------------------------------------------------
+//print the table to a file
+void Table::printToFile(string filename, string style)
+{     
+  ofstream fout(filename.c_str(),std::ios_base::out);
+  printTable(fout,style);
+  fout.close();
+}//printToFile
 
 //----------------------------------------------------------------------------
 //The provided string determines the characters used to print the table. 
@@ -57,7 +65,7 @@ void Table::reset(){
 // style = "Latex" 
 // style = "Tiki"   
 // style = "Twiki" equivalent to Tiki
-void Table::printTable(string style){
+void Table::printTable(ostream &out, string style){
 
   // For neatness find first the max width needed in each column 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,13 +155,12 @@ void Table::printTable(string style){
   oss<<format.end_table<<endl;
 
   //Start from a fresh line
-  cout<<endl;
+  out<<endl;
 
   // Print the string stream to the default output
-  cout<<oss.str()<<endl;
+  out<<oss.str()<<endl;
 
 }//printTable
-
 
 //----------------------------------------------------------------------------
 Table & Table::operator+=(const Table & rhs){
@@ -460,7 +467,7 @@ void Table::fillWithTest(){
 //----------------------------------------------------------------------------
 // reports true if the file was parsed successfully. This method
 // just loops over lines and pass them to parseLine
-bool Table::parseFromFile(string filename, string style){
+bool Table::parseFromFile(string filename, string cellClass, string style){
 
   ifstream inputFile (filename.c_str());
   
@@ -476,8 +483,7 @@ bool Table::parseFromFile(string filename, string style){
     int lineCounter = 0;
     int goodLineCounter = 0;
     string currentLine;
-    string cellClass = "TableCell";
-
+  
     while (inputFile.good()){
 
       // get the next line from the file
@@ -491,12 +497,12 @@ bool Table::parseFromFile(string filename, string style){
       // if this is an empty line or a comment (which starts with a "#" char) 
       // continue with the while loop
       if (currentLine.length() == 0 || currentLine.find_first_of('#') == 0)
-	continue;
+        continue;
 
       // if the line specifies the cell class to be used, then use it
       if (currentLine.find("CellClass=") == 0){
-	cellClass = currentLine.substr(10,(currentLine.length()-10));
-	continue;
+        cellClass = currentLine.substr(10,(currentLine.length()-10));
+        continue;
       }
 
       // For debugging report the cell class type to be used
