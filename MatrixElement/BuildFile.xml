@@ -5,6 +5,7 @@
 <use name="TAMUWW/MEPATNtuple"/>
 <use name="TAMUWW/PDFs"/>
 <use name="TAMUWW/AuxFunctions"/>
+<use name="TAMUWW/SpecialTools"/>
 <export>
    <lib name="1"/>
 </export>
