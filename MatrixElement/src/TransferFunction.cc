@@ -3,10 +3,6 @@
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
 
 #include <iostream>
-using namespace std;
-
-
-
 #include <cmath>
 #include <stdexcept>
 
@@ -15,6 +11,11 @@ using namespace std;
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/DataFile.hh"
 #include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
+
+#include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/TableRow.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/Value.hh"
 
 // #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH100GeV_TF/n_i7_h12_o1.C"
 // #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH105GeV_TF/n_i7_h12_o1.C"
@@ -44,22 +45,105 @@ using namespace std;
 // #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wjg_gluon_TF/n_i7_h12_o1.C"
 // 
 
+using namespace std;
 using std::string;
 using std::vector;
+using std::cout;
 
-DoubleGaussian::DoubleGaussian(const string& dataFileName)
+DoubleGaus::DoubleGaus(const string& dataFileName)
 {
-   InputDataFile data(dataFileName);
-   std::cout<<"***MatrixElement/src/TransferFunction.cc (DoubleGaussian::DoubleGaussian(const string& dataFileName))***"<<std::endl;
-   std::cout<<"Input TFs "<<dataFileName<<std::endl;
-   for (unsigned i = 0; i < 10; ++i)
-   {
-      string param
-         = AuxFunctions::concatString("transfer function parameter ",
-                                        i);
-      m_parameters.push_back(data.readFloat(param));
-      std::cout<<" "<<param<<"  "<<m_parameters[i]<<std::endl;
-   }
+  cout << "DoubleGaus::Reading in transfer function parameters from table." << endl;
+  Table* table = new Table(dataFileName);
+  if(table->parseFromFile(dataFileName,"TableCellVal"))
+    {
+      vector<TableRow> rows = table->getRows();
+      vector<TableCell*> col;
+      TableCellVal * param;
+      for(unsigned int i=0; i<rows.size(); i++)
+        {
+          col = rows[i].getCellEntries();
+          if(col.size()>0)
+            {
+              param = (TableCellVal*) col[0];
+              m_parameters.push_back(param->val.value);
+              m_parErrors.push_back(param->val.error);
+            }
+        }
+    }
+  else
+    {
+      cout << "ERROR::DoubleGaus::Unable to parse the table." << endl;
+    }
+}
+
+double DoubleGaus::operator()(double partonE, double measuredE) const
+{
+  using AuxFunctions::Math::square;
+
+   double difference = measuredE - partonE;
+   double p01 = m_parameters[0] + m_parameters[1] * partonE;
+   double p23 = m_parameters[2] + m_parameters[3] * partonE;
+   double p45 = m_parameters[4] + m_parameters[5] * partonE;
+   double p67 = m_parameters[6] + m_parameters[7] * partonE;
+   double p89 = m_parameters[8] + m_parameters[9] * partonE;
+   double p1011 = m_parameters[10] + m_parameters[11] * partonE;
+
+   double fxy = std::exp(-.5 * square((difference - p23) / p45));
+   fxy += p67 * std::exp(-.5 * square((difference - p89) / p1011));
+   fxy *= p01;
+
+   return fxy;
+}
+
+DoubleGaussian::DoubleGaussian(const string& dataFileName, bool table = true)
+{
+  if(table)
+    {
+      cout << "DoubleGaussian::Reading in transfer function parameters from table." << endl;
+      Table* table = new Table(dataFileName);
+      if(table->parseFromFile(dataFileName,"TableCellVal"))
+        {
+          vector<TableRow> rows = table->getRows();
+          vector<TableCell*> col;
+          TableCellVal * param;
+          for(unsigned int i=0; i<rows.size(); i++)
+            {
+              col = rows[i].getCellEntries();
+              if(col.size()>0)
+                {
+                  param = (TableCellVal*) col[0];
+                  m_parameters.push_back(param->val.value);
+                  m_parErrors.push_back(param->val.error);
+                }
+            }
+        }
+      else
+        {
+          cout << "ERROR::DoubleGaussian::Unable to parse the table." << endl;
+        }
+    }
+  else
+    {
+      InputDataFile data(dataFileName);
+      std::cout<<"***MatrixElement/src/TransferFunction.cc (DoubleGaussian::DoubleGaussian(const string& dataFileName))***"<<std::endl;
+      std::cout<<"Input TFs "<<dataFileName<<std::endl;
+      for (unsigned i = 0; i < 10; ++i)
+        {
+          string param
+            = AuxFunctions::concatString("transfer function parameter ",
+                                         i);
+          m_parameters.push_back(data.readFloat(param));
+          std::cout<<" "<<param<<"  "<<m_parameters[i]<<std::endl;
+        }
+    }
+}
+
+void DoubleGaussian::printParameters(ostream &out) const
+{
+  for(unsigned int i=0; i<m_parameters.size(); i++)
+    {
+      out << "Par" << i << ": " << m_parameters[i] << " +- " << m_parErrors[i] << endl;
+    }
 }
 
 double DoubleGaussian::operator()(double partonE, double measuredE) const
@@ -73,18 +157,15 @@ double DoubleGaussian::operator()(double partonE, double measuredE) const
    double p67 = m_parameters[6] + m_parameters[7] * partonE;
    double p89 = m_parameters[8] + m_parameters[9] * partonE;
 
-//   std::cerr << "Parameters: ";
-//   for (int i = 0; i < 10; ++i)
-//      std::cerr << m_parameters[i] << " ";
-//   std::cerr << std::endl;
+   printParameters(cout);
 
    double fxy = std::exp(-.5 * square((difference - p01) / p23));
    fxy += p45 * std::exp(-.5 * square((difference - p67) / p89));
    fxy /= p23 + p45 * p89;
    fxy /= std::sqrt(TMath::TwoPi());
 
-//   std::cerr << "TF result: " << fxy << std::endl;
-//   exit(1);
+   std::cerr << "TF Value: " << fxy << std::endl;
+
    return fxy;
 }
 

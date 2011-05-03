@@ -3,18 +3,34 @@
 
 #include <string>
 #include <vector>
+#include <ostream>
 
 #include "PartonColl.hh"
+
+class DoubleGaus
+{
+   public:
+      DoubleGaus(const std::string& dataFileName);
+  
+      double operator()(double partonE, double measuredE) const;
+  
+   private:
+      std::vector<double> m_parameters;
+      std::vector<double> m_parErrors;
+};
 
 class DoubleGaussian
 {
    public:
-      DoubleGaussian(const std::string& dataFileName);
+      DoubleGaussian(const std::string& dataFileName, bool table);
+
+      void printParameters(std::ostream &out) const;
 
       double operator()(double partonE, double measuredE) const;
 
    private:
       std::vector<double> m_parameters;
+      std::vector<double> m_parErrors;
 };
 
 class SingleGaussian
