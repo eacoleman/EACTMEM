@@ -157,61 +157,6 @@ class RecoRootEventFile : public RootEventFile
 };
 
 
-class SingleTopNtuple;
-
-class SingleTopNtupleEventFile : public RootEventFile
-{
-   public:
-      SingleTopNtupleEventFile(std::string filename, std::string treename,
-                               int jetLevel, unsigned nEvents = 0,
-                               unsigned nSkip = 0, unsigned nPrescale = 1,
-                               bool doCut = false);
-      virtual ~SingleTopNtupleEventFile();
-
-      void setJetCorrLevel(int level) {m_jetCorrLevel = level;}
-
-      virtual std::pair<int, int> getRunEvent() const;
-
-   protected:
-      virtual bool m_cut(const PartonColl& partons) const;
-      virtual void setBranches(PartonColl& partons);
-      virtual void fillBranches(PartonColl& partons);
-
-   private:
-      SingleTopNtuple* m_ntuple;
-
-      int m_jetCorrLevel;
-};
-
-class UCLAnt;
-
-class UCLAntEventFile : public RootEventFile
-{
-   public:
-      UCLAntEventFile(std::string filename, std::string treename, int jetLevel,
-                      unsigned nEvents = 0, unsigned nSkip = 0,
-                      unsigned nPrescale = 1, bool doCut = false);
-      virtual ~UCLAntEventFile();
-
-      void setJetCorrLevel(int level);
-      
-      virtual std::pair<int, int> getRunEvent() const;
-
-      UCLAnt* getPointer() {return m_ntuple;}
-
-   protected:
-      virtual bool m_cut(const PartonColl& partons) const;
-      virtual void setBranches(PartonColl& partons);
-      virtual void fillBranches(PartonColl& partons);
-      virtual void m_report() const;
-
-   private:
-      UCLAnt* m_ntuple;
-
-      int m_jetCorrLevel;
-};
-
-
 class EventNtuple;
 
 class EventNtupleEventFile : public RootEventFile

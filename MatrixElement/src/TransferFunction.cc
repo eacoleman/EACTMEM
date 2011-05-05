@@ -1,174 +1,29 @@
 
-
+// Our code libraries
 #include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
+#include "TAMUWW/MatrixElement/interface/MEConstants.hh"
+#include "TAMUWW/MatrixElement/interface/DataFile.hh"
+#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh" 
+#include "TAMUWW/SpecialTools/interface/Table.hh" 
+#include "TAMUWW/SpecialTools/interface/TableCellVal.hh" 
 
+
+// C++ libraries
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
 
+// ROOT libraries
 #include "TMath.h"
+#include "TF1.h"
 
-#include "TAMUWW/MatrixElement/interface/MEConstants.hh"
-#include "TAMUWW/MatrixElement/interface/DataFile.hh"
-#include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
-
-#include "TAMUWW/SpecialTools/interface/Table.hh"
-#include "TAMUWW/SpecialTools/interface/TableRow.hh"
-#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
-#include "TAMUWW/SpecialTools/interface/Value.hh"
-
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH100GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH105GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH110GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH115GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH120GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH125GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH130GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH135GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH140GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH145GeV_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WH150GeV_TF/n_i7_h12_o1.C"
-// 
-// 
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WCC_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/WBB_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/schan_TF/n_i7_h12_o1.C"
-// //#include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/ttbar_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/ttbar_TF_improved/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/tchan_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/tchan_light_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wcg_charm_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wcg_gluon_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/diboson_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wgg_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wjg_light_TF/n_i7_h12_o1.C"
-// #include "TAMUWW/MatrixElement/interface/../../build_TFs/neuralnetwork/code/rootsnns_v3.0/results/Wjg_gluon_TF/n_i7_h12_o1.C"
-// 
-
-using namespace std;
+using std::cout;
+using std::endl;
 using std::string;
 using std::vector;
-using std::cout;
 
-DoubleGaus::DoubleGaus(const string& dataFileName)
-{
-  cout << "DoubleGaus::Reading in transfer function parameters from table." << endl;
-  Table* table = new Table(dataFileName);
-  if(table->parseFromFile(dataFileName,"TableCellVal"))
-    {
-      vector<TableRow> rows = table->getRows();
-      vector<TableCell*> col;
-      TableCellVal * param;
-      for(unsigned int i=0; i<rows.size(); i++)
-        {
-          col = rows[i].getCellEntries();
-          if(col.size()>0)
-            {
-              param = (TableCellVal*) col[0];
-              m_parameters.push_back(param->val.value);
-              m_parErrors.push_back(param->val.error);
-            }
-        }
-    }
-  else
-    {
-      cout << "ERROR::DoubleGaus::Unable to parse the table." << endl;
-    }
-}
-
-double DoubleGaus::operator()(double partonE, double measuredE) const
-{
-  using AuxFunctions::Math::square;
-
-   double difference = measuredE - partonE;
-   double p01 = m_parameters[0] + m_parameters[1] * partonE;
-   double p23 = m_parameters[2] + m_parameters[3] * partonE;
-   double p45 = m_parameters[4] + m_parameters[5] * partonE;
-   double p67 = m_parameters[6] + m_parameters[7] * partonE;
-   double p89 = m_parameters[8] + m_parameters[9] * partonE;
-   double p1011 = m_parameters[10] + m_parameters[11] * partonE;
-
-   double fxy = std::exp(-.5 * square((difference - p23) / p45));
-   fxy += p67 * std::exp(-.5 * square((difference - p89) / p1011));
-   fxy *= p01;
-
-   return fxy;
-}
-
-DoubleGaussian::DoubleGaussian(const string& dataFileName, bool table = true)
-{
-  if(table)
-    {
-      cout << "DoubleGaussian::Reading in transfer function parameters from table." << endl;
-      Table* table = new Table(dataFileName);
-      if(table->parseFromFile(dataFileName,"TableCellVal"))
-        {
-          vector<TableRow> rows = table->getRows();
-          vector<TableCell*> col;
-          TableCellVal * param;
-          for(unsigned int i=0; i<rows.size(); i++)
-            {
-              col = rows[i].getCellEntries();
-              if(col.size()>0)
-                {
-                  param = (TableCellVal*) col[0];
-                  m_parameters.push_back(param->val.value);
-                  m_parErrors.push_back(param->val.error);
-                }
-            }
-        }
-      else
-        {
-          cout << "ERROR::DoubleGaussian::Unable to parse the table." << endl;
-        }
-    }
-  else
-    {
-      InputDataFile data(dataFileName);
-      std::cout<<"***MatrixElement/src/TransferFunction.cc (DoubleGaussian::DoubleGaussian(const string& dataFileName))***"<<std::endl;
-      std::cout<<"Input TFs "<<dataFileName<<std::endl;
-      for (unsigned i = 0; i < 10; ++i)
-        {
-          string param
-            = AuxFunctions::concatString("transfer function parameter ",
-                                         i);
-          m_parameters.push_back(data.readFloat(param));
-          std::cout<<" "<<param<<"  "<<m_parameters[i]<<std::endl;
-        }
-    }
-}
-
-void DoubleGaussian::printParameters(ostream &out) const
-{
-  for(unsigned int i=0; i<m_parameters.size(); i++)
-    {
-      out << "Par" << i << ": " << m_parameters[i] << " +- " << m_parErrors[i] << endl;
-    }
-}
-
-double DoubleGaussian::operator()(double partonE, double measuredE) const
-{
-   using AuxFunctions::Math::square;
-
-   double difference = measuredE - partonE;
-   double p01 = m_parameters[0] + m_parameters[1] * partonE;
-   double p23 = m_parameters[2] + m_parameters[3] * partonE;
-   double p45 = m_parameters[4] + m_parameters[5] * partonE;
-   double p67 = m_parameters[6] + m_parameters[7] * partonE;
-   double p89 = m_parameters[8] + m_parameters[9] * partonE;
-
-   printParameters(cout);
-
-   double fxy = std::exp(-.5 * square((difference - p01) / p23));
-   fxy += p45 * std::exp(-.5 * square((difference - p67) / p89));
-   fxy /= p23 + p45 * p89;
-   fxy /= std::sqrt(TMath::TwoPi());
-
-   std::cerr << "TF Value: " << fxy << std::endl;
-
-   return fxy;
-}
-
+// --------------------------------------------------------------------
+// The single gaussian function used by the transfer functions.
 SingleGaussian::SingleGaussian(const string& dataFileName)
 {
    InputDataFile data(dataFileName);
@@ -183,7 +38,7 @@ SingleGaussian::SingleGaussian(const string& dataFileName)
 
 double SingleGaussian::operator()(double partonE, double measuredE) const
 {
-   // Barbara will rewrite this part
+   // 
    using AuxFunctions::Math::square;
 
    double difference = measuredE - partonE;
@@ -197,11 +52,89 @@ double SingleGaussian::operator()(double partonE, double measuredE) const
    return fxy;
 }
 
+// --------------------------------------------------------------------
+// The double gaussian function used by the transfer functions.
+DoubleGaussian::DoubleGaussian(const string& dataFileName, bool table )
+{
+  if(table) {
+    
+    cout << "DoubleGaussian::Reading in transfer function parameters from table." << endl;
+    Table* table = new Table(dataFileName);
+    if(table->parseFromFile(dataFileName,"TableCellVal")){
+      
+      // Copy the first 10 parameters from the table
+      for (int i=0; i<10; i++){
+	string row = AuxFunctions::concatString("Par",i);
+	TableCellVal * param = (TableCellVal *) table->getCellRowColumn(row,"Parameters");
+	if (param){
+	  m_parameters.push_back(param->val.value);
+	  m_parErrors.push_back(param->val.error);
+	}else{
+	  cout << "ERROR::DoubleGaussian::Unable to find row="<<row<<" in table. Exiting now. "<<endl;
+	  exit (1);
+	}
+      }//for 
+      
+    }else{
+      cout << "ERROR::DoubleGaussian::Unable to parse table from file " <<dataFileName<<" Exiting now."<< endl;
+      exit (1);
+    }
 
+  }else{
+    
+    cout << "DoubleGaussian::Reading in transfer function parameters from InputDataFile." << endl;
+    InputDataFile data(dataFileName);
+    cout<<"Input TFs "<<dataFileName<<endl;
+    for (unsigned int i = 0; i < 10; ++i){
+      string param = AuxFunctions::concatString("transfer function parameter ",i);
+      m_parameters.push_back(data.readFloat(param));
+      m_parErrors.push_back(0);
+    }//for
+
+  }
+
+  //Print the parameters
+  for (unsigned int i = 0; i < 10; ++i)
+    cout<<"\t Parameter "<<i<<"\t"<<m_parameters[i]<<" +/- "<< m_parErrors[i]<<endl;
+  
+} // DoubleGaussian
+
+double DoubleGaussian::operator()(double partonE, double measuredE) const
+{
+   using AuxFunctions::Math::square;
+
+   double difference = measuredE - partonE;
+   double p01 = m_parameters[0] + m_parameters[1] * partonE;
+   double p23 = m_parameters[2] + m_parameters[3] * partonE;
+   double p45 = m_parameters[4] + m_parameters[5] * partonE;
+   double p67 = m_parameters[6] + m_parameters[7] * partonE;
+   double p89 = m_parameters[8] + m_parameters[9] * partonE;
+
+   double fxy = std::exp(-.5 * square((difference - p01) / p23));
+   fxy += p45 * std::exp(-.5 * square((difference - p67) / p89));
+   fxy /= p23 + p45 * p89;
+   fxy /= std::sqrt(TMath::TwoPi());
+
+   return fxy;
+}
+
+// --------------------------------------------------------------------
+// This is the core of the TransferFunction abstract class
 TransferFunction::TransferFunction(const string& name) :
    m_name(name)
 {}
 
+// --------------------------------------------------------------------
+// For a given jet energy this method provides the energy of the partons
+// necessary for the transfer function to the be lowPercent and highPercent
+// This method is called before running the ME to determine what the limits
+// of the integration on the parton jet energy should be for each measured jet.
+// For example getBounds(jet, 0.01, 0.03, lowBound, highBound) will return
+// -the parton energy at which the TF is maximum, maxE.
+// -by reference in  lowBound the minimum parton energy such that  
+//       TF(jet,lowBound)/TF(jet,maxE)  > 1% 
+// -by reference in highBound the maximum parton energy such that 
+//       TF(jet,highBound)/TF(jet,maxE) > 3% 
 double TransferFunction::getBounds(const PartonColl::Jet& measuredJet,
                                    float lowPercent, float highPercent,
                                    double& lowBound, double& highBound) const
@@ -210,24 +143,25 @@ double TransferFunction::getBounds(const PartonColl::Jet& measuredJet,
 
    double max = 0., maxE = 0.;
 
+   // Find the maximum value that the TF will take by scanning over all 
+   // possible energy values that the partons could take.
    for (int ienergy = 0; ienergy < beamEnergy; ++ienergy)
    {
       PartonColl::Jet partonJet(measuredJet);
       partonJet.lv.SetE(ienergy);
       partonJet.energy07 = ienergy;
       double value = getTF(partonJet, measuredJet);
-//      std::cerr << ienergy << " " << value << std::endl;
-      if (value > max)
-      {
+      if (value > max){
          max = value;
          maxE = ienergy;
-//         std::cerr << "New max at " << max << std::endl;
       }
    }
 
+   // Find the lower parton energy at which the TF/max is larger than lowPercent.  
+   // As before by scanning over the parton energy from zero to the beam's energy
+   // in bins of 1 GeV.
    lowBound = 0 ;
    highBound = beamEnergy;
-
    for (int ienergy = 0; ienergy < maxE; ++ienergy)
    {
       PartonColl::Jet partonJet(measuredJet);
@@ -243,12 +177,15 @@ double TransferFunction::getBounds(const PartonColl::Jet& measuredJet,
 
    }
 
-   // RE Change the lowbound minimum energy to at least one GeV, using 0 
+   // Change the lowbound minimum energy to at least one GeV, using 0 
    // results in cases of jets with zero energy and momentum, which in 
    // turn results in nan from the ME calculations.
    if (lowBound == 0) 
      lowBound = 1;
 
+   // Find the higher parton energy at which the TF/max is higher than highPercent  
+   // As before by scanning over the parton energy but this time going down from 
+   // the beam's energy to zero energy in bins of 1 GeV.
    for (int ienergy = static_cast<int>(beamEnergy);
         ienergy > maxE; --ienergy)
    {
@@ -267,64 +204,44 @@ double TransferFunction::getBounds(const PartonColl::Jet& measuredJet,
    return maxE;
 }
 
-NullTransferFunction::NullTransferFunction() :
+// --------------------------------------------------------------------
+// The identity transfer function always returns 1.
+IdentityTransferFunction::IdentityTransferFunction() :
    TransferFunction("No transfer function")
 {}
 
-double NullTransferFunction::getTF(const PartonColl::Jet& partonJet,
-                                   const PartonColl::Jet& measuredJet) const
+double IdentityTransferFunction::getTF(const PartonColl::Jet& partonJet,
+				       const PartonColl::Jet& measuredJet) const
 {
    return 1;
-}
+} // IdentityTransferFunction
 
-OldTransferFunction::OldTransferFunction(const string& paramFile) :
-   TransferFunction("Old-style transfer function"),
-   m_params(paramFile)
-{}
 
-double OldTransferFunction::getTF(const PartonColl::Jet& partonJet,
+// --------------------------------------------------------------------
+// The double gaussian transfer function.
+DGTransferFunction::DGTransferFunction(const string& paramFile) :
+  TransferFunction("Double Gaussian transfer function"),
+  m_params(paramFile, true){} // true to use Table to read it
+
+
+double DGTransferFunction::getTF(const PartonColl::Jet& partonJet,
                                   const PartonColl::Jet& measuredJet) const
 {
    return m_params(partonJet.lv.E(), measuredJet.lv.E());
-}
+} 
 
-
-NewTransferFunction::NewTransferFunction(const std::string& paramFileCentral,
-                                         const std::string& paramFileCentralSumE,
-                                         const std::string& paramFileForward,
-                                         float etaSplit) :
-   TransferFunction("New transfer function"),
-   m_centralE(paramFileCentral),
-   m_centralSumE(paramFileCentralSumE),
-   m_forward(paramFileForward),
-   m_etaSplit(etaSplit)
-{}
-
-double NewTransferFunction::getTF(const PartonColl::Jet& partonJet,
-                                  const PartonColl::Jet& measuredJet) const
-{
-   if (std::abs(measuredJet.lv.Eta()) > m_etaSplit)
-   {
-      return m_forward(partonJet.lv.E(), measuredJet.lv.E());
-   }
-   else
-   {
-      return m_centralE(partonJet.lv.E(), measuredJet.lv.E())
-         * m_centralSumE(partonJet.lv.E(), measuredJet.sumE);
-   }
-}
-
-//ALL NN TF
-
-NN_TF_TransferFunction::NN_TF_TransferFunction(const std::string& paramFile_NN_TF,const std::string&  sample) :
+// --------------------------------------------------------------------
+// The Neural Net transfer function takes advantage of the full jet
+// information for the determination of the TF probability.
+NNTransferFunction::NNTransferFunction(const string& paramFile_NN_TF,const string&  sample) :
   TransferFunction("NN transfer function "),
-  m_NN_TF(paramFile_NN_TF),
+  m_NNTF(paramFile_NN_TF),
   m_sample(sample)
 {}
 
 
-double NN_TF_TransferFunction::getTF(const PartonColl::Jet& partonJet,
-				     const PartonColl::Jet& measuredJet) const
+double NNTransferFunction::getTF(const PartonColl::Jet& partonJet,
+				 const PartonColl::Jet& measuredJet) const
 {
   double x[7] = {0.,0.,0.,0.,0.,0.,0.};
   double output = 0.;
@@ -367,31 +284,57 @@ double NN_TF_TransferFunction::getTF(const PartonColl::Jet& partonJet,
 
 
   else {
-    std::cout << "Wrong sample" << std::endl;
+    cout << "Wrong sample" << endl;
     return 0;	
   }
   */
   
-  return m_NN_TF(partonJet.lv.E(), output);
+  return m_NNTF(partonJet.lv.E(), output);
+
+} // NNTransferFunction 
+
+
+
+// --------------------------------------------------------------------
+// The RelWidthTransferFunction utilizes a Gaussian transfer function
+// with a width given by the input "sigma" value.
+// 
+// ** In priciple we could use the formula TF = N * exp(-0.5*(Em-Ep)^2/sigma^2)
+// but this will give a fixed width for all parton jet energies (Ep).
+// 
+// ** Instead, it is better to define this TF to be 
+//     TF = N * exp(-0.5*(Em-Ep)^2/(Ep*sigma)^2)
+// so that the sigma is representative of the *percentage* of energy at 1 sigma.
+// A smear of 0.1 will produce a width of 10%.
+
+// ** For the normalization we should take into account that the gaussian is truncated
+// as there are no measured jets below minEj, which is the min cut requirement on the jets.
+// The proper normalization can be shown to be :
+//      N = 2 / erfc( (Ejmin-Ep) / (sqrt(2)*sigma*Ep) ) 
+// Where erfc(z) = 2/sqrt(pi) int_z^infinite exp(-t^2) dt (see http://mathworld.wolfram.com/Erfc.html ;-))
+// The fact that the cut is usually applied on Pt rather than E does not the change the 
+// fact that the min possible Ej is also be the Pt cut. 
+RelWidthTransferFunction::RelWidthTransferFunction(double sigma) :
+  TransferFunction("Simple smearing"), m_sigma(sigma){
+  
+  // Compute the normalization here
+  m_norm = 2 / TMath::Erfc( -1.0 / (sqrt(2)*m_sigma) );
+  
 }
 
+double RelWidthTransferFunction::getTF(const PartonColl::Jet& partonJet,
+				       const PartonColl::Jet& measuredJet) const {
 
+  return m_norm*std::exp(-.5 * AuxFunctions::Math::square((measuredJet.lv.E()
+							   - partonJet.lv.E()) 
+							  / (measuredJet.lv.E()
+							     * m_sigma         )));  
+  
 
+} // RelWidthTransferFunction
 
-SimpleSmearing::SimpleSmearing(double smear) :
-   TransferFunction("Simple smearing"),
-   m_smear(smear)
-{}
-
-double SimpleSmearing::getTF(const PartonColl::Jet& partonJet,
-                             const PartonColl::Jet& measuredJet) const
-{
-   return std::exp(-.5 * AuxFunctions::Math::square((measuredJet.lv.E()
-                                                       - partonJet.lv.E()) 
-                                                      / partonJet.lv.E()
-                                                      / m_smear));  
-}
-
+// --------------------------------------------------------------------
+// The NewerTransferFunction 
 NewerTransferFunction::NewerTransferFunction(const ParamFiles& files,
                                              float centralEtaBorder,
                                              float forwardEtaBorder) :
@@ -416,8 +359,8 @@ double NewerTransferFunction::getTF(const PartonColl::Jet& partonJet,
   // For debugging purposes
   static int f = 0;
   if (f<1 || f == 330780 || f == 330781) {
-    std::cout<<"  NewerTransferFunction::getTF "<<f<<"   partonJet"<< partonJet<<std::endl;
-    std::cout<<"  NewerTransferFunction::getTF "<<f<<" measuredJet"<< measuredJet<<std::endl; 
+    cout<<"  NewerTransferFunction::getTF "<<f<<"   partonJet"<< partonJet<<endl;
+    cout<<"  NewerTransferFunction::getTF "<<f<<" measuredJet"<< measuredJet<<endl; 
   }
   f++;
   */

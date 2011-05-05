@@ -22,7 +22,6 @@
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
-// #include "TAMUWW/MatrixElement/interface/SingleTopNtuple/SingleTopNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
 #include "TLorentzVector.h"

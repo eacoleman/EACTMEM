@@ -1,38 +1,20 @@
 #ifndef TRANSFERFUNCTION_HH
 #define TRANSFERFUNCTION_HH
 
+// C++ libraries
 #include <string>
 #include <vector>
-#include <ostream>
 
+// This code libraries
 #include "PartonColl.hh"
 
-class DoubleGaus
-{
-   public:
-      DoubleGaus(const std::string& dataFileName);
-  
-      double operator()(double partonE, double measuredE) const;
-  
-   private:
-      std::vector<double> m_parameters;
-      std::vector<double> m_parErrors;
-};
-
-class DoubleGaussian
-{
-   public:
-      DoubleGaussian(const std::string& dataFileName, bool table);
-
-      void printParameters(std::ostream &out) const;
-
-      double operator()(double partonE, double measuredE) const;
-
-   private:
-      std::vector<double> m_parameters;
-      std::vector<double> m_parErrors;
-};
-
+// --------------------------------------------------------------------
+// The transfer functions described in this file could have easily be done
+// by using ROOT's TFormula class. However performance is of key importance
+// for the calculation of the Matrix Element as the TF's are called hundred 
+// of thousands of times per Matrix Element per event per permutation.
+// The implementation used here allows for excellent performance with
+// minimal overhead. Ricardo.
 class SingleGaussian
 {
    public:
@@ -44,6 +26,31 @@ class SingleGaussian
       std::vector<double> m_parameters;
 };
 
+class DoubleGaussian
+{
+   public:
+  DoubleGaussian(const std::string& dataFileName, bool useTable = false);
+
+      double operator()(double partonE, double measuredE) const;
+
+   private:
+       std::vector<double> m_parameters;
+       std::vector<double> m_parErrors;
+};
+
+
+// --------------------------------------------------------------------
+// This is the abstract base class from which every Tranfer function 
+// derives. The pure virtual function getTF(partonJet, measuredjet) 
+// is the core of it. 
+// The TransferFunctions satisfy the normalization condition that 
+// for a given parton energy the integral over all measured energies is one.
+// This stems from P(x)=Int P(y)P(x|y) dy where x is the set of measured
+// quantities, y is the set of parton-level quantities and P(x|y) is the 
+// tranfer function. 
+// It is the user's responsibility to ensure that the integration of the 
+// tranfer function over mesured energies x adds up to exactly 1 for all cases 
+// of parton jet energy y.
 class TransferFunction
 {
    public:
@@ -64,23 +71,26 @@ class TransferFunction
       const std::string m_name;
 };
 
-
-class NullTransferFunction : public TransferFunction
+// --------------------------------------------------------------------
+// The identity transfer function always returns 1.
+class IdentityTransferFunction : public TransferFunction
 {
    public:
-      NullTransferFunction();
-      virtual ~NullTransferFunction() {}
+      IdentityTransferFunction();
+      virtual ~IdentityTransferFunction() {}
 
       virtual double getTF(const PartonColl::Jet& partonJet,
                            const PartonColl::Jet& measuredJet) const;
 };
 
-
-class OldTransferFunction : public TransferFunction
+// --------------------------------------------------------------------
+// The double gaussian transfer function. A single DG for all 
+// jet types in all eta ranges. 
+class DGTransferFunction : public TransferFunction
 {
    public:
-      OldTransferFunction(const std::string& paramFile);
-      virtual ~OldTransferFunction() {}
+      DGTransferFunction(const std::string& paramFile);
+      virtual ~DGTransferFunction() {}
 
       virtual double getTF(const PartonColl::Jet& partonJet,
                            const PartonColl::Jet& measuredJet) const;
@@ -90,52 +100,43 @@ class OldTransferFunction : public TransferFunction
 };
 
 
-class NewTransferFunction : public TransferFunction
+// --------------------------------------------------------------------
+// The Neural Net transfer function takes advantage of the full jet
+// information for the determination of the TF probability.
+class NNTransferFunction : public TransferFunction
 {
    public:
-      NewTransferFunction(const std::string& paramFileCentral,
-                          const std::string& paramFileCentralSumE,
-                          const std::string& paramFileForward, float etaSplit);
-      virtual ~NewTransferFunction() {}
-
-      virtual double getTF(const PartonColl::Jet& partonJet,
-                           const PartonColl::Jet& measuredJet) const;
-
-   private:
-      const DoubleGaussian m_centralE;
-      const SingleGaussian m_centralSumE;
-      const DoubleGaussian m_forward;
-
-      const float m_etaSplit;
-};
-//ALL NN TF
-class NN_TF_TransferFunction : public TransferFunction
-{
-   public:
-      NN_TF_TransferFunction(const std::string& paramFile_NN_TF, const std::string& sample);
-      virtual ~NN_TF_TransferFunction() {}
+      NNTransferFunction(const std::string& paramFile_NN_TF, const std::string& sample);
+      virtual ~NNTransferFunction() {}
 
       virtual double getTF(const PartonColl::Jet& partonJet,
 			   const PartonColl::Jet& measuredJet) const;
 
    private:
-      const DoubleGaussian m_NN_TF;
+      const DoubleGaussian m_NNTF;
       const std::string m_sample;
 };
 
-
-
-class SimpleSmearing : public TransferFunction
+// --------------------------------------------------------------------
+// The RelWidthTransferFunction transfer function provides a 
+// gaussian transfer function with a width relative to the parton energy 
+// of "sigma". For example a value sigma=0.1 means that parton jets
+// of 100 GeV will have a gaussian distribution of measured energies around 100 GeV 
+// with a sigma of 10 Gev. The function is normalized taking into account the
+// minimum cut energy imposed to the measured jet.
+class RelWidthTransferFunction : public TransferFunction
 {
    public:
-      SimpleSmearing(double smear);
-      virtual ~SimpleSmearing() {}
+      RelWidthTransferFunction(double sigma);
+      virtual ~RelWidthTransferFunction() {}
 
       virtual double getTF(const PartonColl::Jet& partonJet,
                            const PartonColl::Jet& measuredJet) const;
 
    private:
-      double m_smear;
+  double m_sigma;
+  double m_norm;
+
 };
 
 class NewerTransferFunction : public TransferFunction
@@ -170,7 +171,6 @@ class NewerTransferFunction : public TransferFunction
       const DoubleGaussian m_middle04;
       const DoubleGaussian m_forward07;
       const DoubleGaussian m_forward04;
-  //const SingleGaussian m_sumecentral;
 
       const float m_centralEtaBorder;
       const float m_forwardEtaBorder;
