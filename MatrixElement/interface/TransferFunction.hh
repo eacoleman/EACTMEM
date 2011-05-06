@@ -34,8 +34,14 @@ class DoubleGaussian
       double operator()(double partonE, double measuredE) const;
 
    private:
+       // the normalization factors for the minEj used in the analysis
+       void computeNormalizationFactors(double minEj);
+       double computeIntegral(double Ep, double minEj);
+
        std::vector<double> m_parameters;
        std::vector<double> m_parErrors;
+       std::vector<double> m_norm;
+  
 };
 
 
@@ -94,6 +100,9 @@ class DGTransferFunction : public TransferFunction
 
       virtual double getTF(const PartonColl::Jet& partonJet,
                            const PartonColl::Jet& measuredJet) const;
+
+  // test 
+  DoubleGaussian getDG(){ return m_params;}
 
    private:
       const DoubleGaussian m_params;
@@ -161,6 +170,9 @@ class NewerTransferFunction : public TransferFunction
 
       virtual double getTF(const PartonColl::Jet& partonJet,
                            const PartonColl::Jet& measuredJet) const;
+
+  // test 
+  DoubleGaussian getDG(){ return m_central04noSLT;}
 
    private:
       const DoubleGaussian m_central07SLT;

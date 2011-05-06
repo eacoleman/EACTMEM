@@ -22,6 +22,9 @@ using std::endl;
 using std::string;
 using std::vector;
 
+
+
+
 // --------------------------------------------------------------------
 // The single gaussian function used by the transfer functions.
 SingleGaussian::SingleGaussian(const string& dataFileName)
@@ -93,11 +96,15 @@ DoubleGaussian::DoubleGaussian(const string& dataFileName, bool table )
 
   }
 
+  // Perform the normalization for Pt cut of 30.
+  computeNormalizationFactors(30);
+
   //Print the parameters
   for (unsigned int i = 0; i < 10; ++i)
     cout<<"\t Parameter "<<i<<"\t"<<m_parameters[i]<<" +/- "<< m_parErrors[i]<<endl;
   
 } // DoubleGaussian
+
 
 double DoubleGaussian::operator()(double partonE, double measuredE) const
 {
@@ -115,8 +122,47 @@ double DoubleGaussian::operator()(double partonE, double measuredE) const
    fxy /= p23 + p45 * p89;
    fxy /= std::sqrt(TMath::TwoPi());
 
-   return fxy;
+   if (partonE < 0 || partonE >= m_norm.size()){
+     cout<<"ERROR DoubleGaussian::operator() called with partonE="<<partonE<<endl;
+     return 0;
+   }
+   return m_norm[(int)partonE] * fxy;
 }
+
+// For the given Ep compute the intergral of the double-gaussian
+// from minEj to the max possible energy.
+double DoubleGaussian::computeIntegral(double Ep, double minEj){
+ 
+  double inte = 0;
+  for (int Ej = minEj; Ej < MEConstants::beamEnergy; Ej++)
+    inte += operator()(Ep,Ej);
+  
+  return inte;
+
+}//computeIntegral
+
+// compute the normalization factors given the minEj cut used in the analysis
+void  DoubleGaussian::computeNormalizationFactors(double minEj){
+
+  // clear the normalization vector
+  m_norm.clear();
+  
+  // Create the norm vector with norm=1
+  for (int Ep = 0; Ep <= MEConstants::beamEnergy;  Ep ++)
+    m_norm.push_back(1);
+
+
+  // Loop over all the parton energies
+  for (unsigned int Ep = 0; Ep <  m_norm.size(); Ep ++){
+						
+    double inte = computeIntegral(0.5+Ep, minEj); // +0.5 to avoid the singularity at zero
+    if (inte == 0) inte = 1;
+    m_norm[Ep] = 1.0/inte;
+    
+  }// for Ep
+
+}// computeNormalizationFactors
+
 
 // --------------------------------------------------------------------
 // This is the core of the TransferFunction abstract class
