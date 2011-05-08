@@ -53,6 +53,7 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, con
   outlauncher << "Should_Transfer_Files = YES" << endl;
   outlauncher << "WhenToTransferOutput = ON_EXIT" << endl;
   outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement, cteq5l.tbl, cteq6l.tbl" << endl;
+  //outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement" << endl;
   outlauncher << "Output = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).stdout" << endl;
   outlauncher << "Error = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).stderr" << endl;
   outlauncher << "Log = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).log" << endl;
@@ -63,9 +64,13 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, con
   /// Make the internal script
   outscript << "#! /bin/csh" << endl;
   outscript << "echo \"Starting\" " << endl;
-  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/CMSSW_3_6_3/src" << endl;
+  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/ME387/src" << endl;
   outscript << "source /uscmst1/prod/sw/cms/cshrc uaf" << endl;
-  outscript << "cmsenv" << endl;
+  // outscript << "source /uscmst1/prod/grid/gLite_SL5.csh" << endl;
+  outscript << "setenv SCRAM_ARCH slc5_ia32_gcc434"<< endl;//only needed for CMSSW_3_X_Y
+  outscript << "pwd" << endl;
+  //  outscript << "cmsenv" << endl;
+  outscript << "eval `scram runtime -csh` " << endl;
   outscript << "cd -" << endl;
   outscript << "echo \"Process=$argv[1]\"" << endl;
   outscript << "echo \"NEvts=$argv[2]\"" << endl;

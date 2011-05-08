@@ -11,13 +11,19 @@ class HWWEventProb2Jet : public EventProb2Jet, public HiggsEventProb
 		       double higgsMass);
 
       virtual void setupIntegral();
-      virtual void setHiggsMassAndWidth(double mHiggs) ;
+      virtual void setHiggsMassAndWidth(double mHiggs);
+      virtual void setGH(double mHiggs, double mTop, double alphas, double v);
 
    protected:
+      virtual bool onSwitch();
       virtual void changeVars(const std::vector<double>& parameters);
       virtual double matrixElement() const;
       virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
+
+   private:
+  //      bool swapPartonMom;
+      double alphas_process;
 
 };
 

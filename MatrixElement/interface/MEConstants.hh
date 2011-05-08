@@ -66,9 +66,8 @@ namespace MEConstants
    const double gwwh = ee2 / sin2w * .5 * v;
    const double ghbot = -bMass / v;
 
-   // const double gh   = 1.0; // g*g*series_t/(4.0 * TMath::Pi() * 3 * TMath::Pi() * V 
-   const double gh    = 0.00005;
-
+  // The coupling is higgs mass dependent
+  //const double gh    = 0.00005;
 
 
 

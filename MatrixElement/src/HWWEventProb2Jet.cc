@@ -1,17 +1,20 @@
-// Author: Ricardo Eusebi, Texas A&M University.
-// Created : 12/3/2009
+// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
+// Created : 03/24/2011
 // The diagrams can be compared with madgraph using the processes 
-// pp > h > l-vl~jj (lepQ<0) and  pp > h > l+vl jj (lepQ>0)
+// g g -> e+ ve u~ d, g g -> e- ve~ u d~ 
+
 
 //  This package libraries
 #include "TAMUWW/MatrixElement/interface/HWWEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
+#include "TAMUWW/MatrixElement/interface/TransferFunction.hh"
 
 //  C++ libraries
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 // Set this flag to test the output madgraph would give
 // #define MADGRAPH_TEST
@@ -20,20 +23,23 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-#ifdef MADGRAPH_TEST
-extern "C" {
-  void* myhww2j_ (double[][4], double*, const double*, double*); // lepQ>0 
-  void* myhww2j2_(double[][4], double*, const double*, double*); // lepQ<0
-}
-#endif
+// #ifdef MADGRAPH_TEST
+// extern "C" {
+//   void* hwwlpm_ (double[][4], double*, const double*, double*); // lepQ>0 
+//   void* hwwlmm_ (double[][4], double*, const double*, double*); // lepQ<0
+// }
+// #endif
 
 // ------------------------------------------------------------------
 HWWEventProb2Jet::HWWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf, 
 				   double higgsMass) :
-  EventProb2Jet(DEFS::EP::HWW, integrator, 3, 2, tf)
+  EventProb2Jet(DEFS::EP::HWW, integrator, 3, 4, tf), 
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   setHiggsMassAndWidth(higgsMass);
+  // Set GH
+  setGH(higgsMass,MEConstants::topMass,alphas_process,MEConstants::v);
 }
 
 // ------------------------------------------------------------------
@@ -51,7 +57,14 @@ void  HWWEventProb2Jet::setHiggsMassAndWidth(double mHiggs) {
   setEventProbParam(m_massHiggs);
 
 }//setHiggsMassAndWidth
-
+// ------------------------------------------------------------------
+// This method sets the effective higgs coupling to two gluons
+void  HWWEventProb2Jet::setGH(double mHiggs, double mTop, double alphas, double v) {
+  double tau = mHiggs*mHiggs/(4*mTop*mTop);
+  double series_t = 1 + tau*7/30 + tau*tau*2/21 + tau*tau*tau*26/525;
+  double sgg = MEConstants::GetAdjusted_sgg(alphas);
+  m_gh = sgg*sgg*series_t/(12.0 * TMath::Pi() * TMath::Pi() * v);
+}//setGH
 // ------------------------------------------------------------------
 void HWWEventProb2Jet::changeVars(const vector<double>& parameters)
 {
@@ -78,16 +91,22 @@ double HWWEventProb2Jet::matrixElement() const
    using MEConstants::wWidth;
    using MEConstants::zWidth;
 
+//    MEConstants::PrintAllConstants(alphas_process);
+//    cout << "temp_gh = " << m_gh << endl;
+//    cout << "hMass = " << m_massHiggs << endl;
+//    cout << "hWidth = " << m_widthHiggs << endl;
+
    const PartonColl* partons = getPartonColl();
 
    double answer = 0;
-
+   
    doublecomplex factorGWF[2]   = {doublecomplex(MEConstants::gwf, 0),
+				   doublecomplex(0, 0)};
+   doublecomplex factorGH[2]    = {doublecomplex(m_gh, 0),
 				   doublecomplex(0, 0)};
    doublecomplex factorGWWH[2]  = {doublecomplex(MEConstants::gwwh, 0),
 				   doublecomplex(0, 0)};
-   doublecomplex factorGH[2]    = {doublecomplex(MEConstants::gh, 0),
-				   doublecomplex(0, 0)};
+
 
    // This should equal the number of Feynman diagrams.
    enum {vecSize = 4};
@@ -107,9 +126,9 @@ double HWWEventProb2Jet::matrixElement() const
       Array2 vec1 = DHELAS::vxxxxx<2>(partons->getParton1(), 0, -1);
       Array2 vec2 = DHELAS::vxxxxx<2>(partons->getParton2(), 0, -1);
 //      Array1 vec3 = DHELAS::ixxxxx<1>(partons->getLepton(), 0, -1);
-      Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
+      Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, +1);
       Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(0), 0, -1);
-      Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1);
+      Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, +1);
 
       Array4 vec7 = DHELAS::hvvhxx(vec1, vec2, factorGH, m_massHiggs, m_widthHiggs);
       Array1 vec8 = DHELAS::jioxxx(vec3, vec4, factorGWF, wMass, wWidth);
@@ -119,8 +138,9 @@ double HWWEventProb2Jet::matrixElement() const
 
       for (unsigned i = 0; i < vecSize; ++i)
       {
-	 // Multiply by variable CF(i,i)
-         answer += std::norm(-output[i]) * 6;
+	doublecomplex m1 = 4*std::norm(output[i]) * 6;
+	answer += m1.real();
+	//cout << "current helicity 'amplitude'" << (m1).real() << " + " << (m1).imag() << "i" << endl;
       }
 
    }
@@ -150,8 +170,9 @@ double HWWEventProb2Jet::matrixElement() const
       
       for (unsigned i = 0; i < vecSize; ++i)
       {
-	 // Multiply by variable CF(i,i)
-         answer += std::norm(-output[i]) * 6;
+	doublecomplex m1 = 4*std::norm(output[i]) * 6;
+	answer += m1.real();
+	//cout << "current helicity 'amplitude'" << (m1).real() << " + " << (m1).imag() << "i" << endl;
       }
 
    }// if charge is neg or pos
@@ -159,39 +180,33 @@ double HWWEventProb2Jet::matrixElement() const
    // divide by variable IDEN
    answer /= 256;
 
-   // For some reason madgraph puts a 2 * 2 extra, in the line
-   //JAMP(   1) =      2*( +AMP(   1))
-   // (which later get squared resulting in an extra factor of 4.
-   // I do the same, just in case.
-   answer *= 4;
-
-#ifdef MADGRAPH_TEST
-  // -----------------------------------------------------------
-  // This code reports our answer as well as the madgraph answer
-  // -----------------------------------------------------------
+// #ifdef MADGRAPH_TEST
+//   // -----------------------------------------------------------
+//   // This code reports our answer as well as the madgraph answer
+//   // -----------------------------------------------------------
+//   // Report our answers
+//   cout<<" My answer= "<<answer<<endl;
+  
+//   // Make a fortran array, format which is needed for the fortran calls
+//   double fortranArray[6][4];
+//   makeFortranArray(fortranArray);
    
-  // Report our answers
-  cout<<" My answer= "<<answer<<endl;
+//   // Evalute the matrix element according to madgraph
+//   double mhiggs = m_massHiggs; 
+//   double whiggs = m_widthHiggs;
+//   double an = 0;
+//   if (partons->getLepCharge() > 0)
+//     hwwlpm_(fortranArray , &mhiggs, &whiggs, &an);
+//   else
+//     hwwlmm_(fortranArray , &mhiggs, &whiggs, &an);
 
-  // Make a fortran array, format which is needed for the fortran calls
-  double fortranArray[6][4];
-  makeFortranArray(fortranArray);
-
-  // Evalute the matrix element according to madgraph
-  double mhiggs = m_massHiggs; // to get rid of the const identifier
-  double mw  = wMass; // to get rid of the const identifier
-  double an = 0;
-  if (partons->getLepCharge() > 0)
-    myhww2j_(fortranArray, &mhiggs, &mw, &an);
-  else
-    myhww2j2_(fortranArray, &mhiggs, &mw, &an);
-
-  cout << "Madgraph answer= " << an << endl;
+//   cout << "Madgraph answer= " << an << endl;
    
-  // Exit right away
-  exit(1);  
+//   // Exit right away
+//   exit(1);  
 
-#endif
+// #endif
+
 
   return answer;
 
@@ -216,12 +231,28 @@ void HWWEventProb2Jet::getScale(double& scale1, double& scale2) const
 
 // ------------------------------------------------------------------
 void HWWEventProb2Jet::setupIntegral() {
-  // ONLY if running a mass scan un-comment the line below
-  // setHiggsMassAndWidth(getMeasuredColl()->getHiggsMass());
-
   // just report it to screen
+  // Set GH
+  setGH(m_massHiggs,MEConstants::topMass,alphas_process,MEConstants::v);
   cout << "\tHiggs mass: " << m_massHiggs
-       <<"  width: "       << m_widthHiggs << endl;
+       <<"  width: "       << m_widthHiggs 
+       <<"  m_gh=  "       << m_gh << endl;
 
 }//setup Integral
 
+bool HWWEventProb2Jet::onSwitch()
+{
+  
+  switch (getLoop()) {
+  case 0:
+    break;
+  case 1:
+    swapJets(0, 1);
+    break;
+  default:
+    return false;
+  }
+  
+  return true;
+
+}

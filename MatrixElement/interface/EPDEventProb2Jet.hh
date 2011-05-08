@@ -1,5 +1,5 @@
-#ifndef HWWEVENTPROB2JET_HH
-#define HWWEVENTPROB2JET_HH
+#ifndef EPDEVENTPROB2JET_HH
+#define EPDEVENTPROB2JET_HH
 
 //This code libraries
 #include "TAMUWW/MatrixElement/interface/EventProb2jet.hh"

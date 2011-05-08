@@ -175,9 +175,22 @@ int main(int argc, char* argv[]){
   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
-  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
 
 
+  ///HWW:
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 120));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 130));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 140));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
+
+  ///WH:
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 115));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 120));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 125));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 130));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
 
 
   // // Simplify the computation for now
