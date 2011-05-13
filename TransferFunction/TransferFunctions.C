@@ -356,29 +356,32 @@ Examples:
 
 string filename_creator(string process,string type,bool debug)
 {
-   /*Sets up the filename of the .ROOT file where the graphs will be stored*/
-   time_t rawtime;
-   struct tm *timeinfo;
-   //Buffer to store the converted c_string
-   char buffer[19];
-   //Get the current time
-   time (&rawtime);
-   //Turn the current time into a local time format and save it in the struct
-   timeinfo = localtime(&rawtime);
-   //Set up the c_string command that will format the filename
-   string filename_date = "%m_%d_%y_%H_%M_%S";
-   strftime(buffer,19, filename_date.c_str(), timeinfo);
-   //Make sure the file is printed to the correct directory
-   string mystring = "TF_" + process;
-   if(debug)
-     {
-       mystring += "_";
-       mystring += buffer;
-     }
-   //Add the formatted filename to the directory name
-   mystring += type;
-   //Return the path/filename of of the root file
-   return mystring;
+  /*Sets up the filename of the .ROOT file where the graphs will be stored*/
+  //Format the initial filename
+  string mystring = "TF_" + process;
+  //If the user wants the date and time appended to the filename
+  if(debug)
+    {
+      time_t rawtime;
+      struct tm *timeinfo;
+      //Buffer to store the converted c_string
+      char buffer[19];
+      //Get the current time
+      time (&rawtime);
+      //Turn the current time into a local time format and save it in the struct
+      timeinfo = localtime(&rawtime);
+      //Set up the c_string command that will format the filename
+      string filename_date = "%m_%d_%y_%H_%M_%S";
+      //Format the date/time buffer
+      strftime(buffer,19, filename_date.c_str(), timeinfo);
+      //Add the date/time buffer to the filename
+      mystring += "_";
+      mystring += buffer;
+    }
+  //Add the formatted filename to the directory name
+  mystring += type;
+  //Return the path/filename of of the root file
+  return mystring;
 }
 
 /*****************************************************************************/
@@ -1725,6 +1728,11 @@ Examples:
 void printKSandChi2(TH2D* hist, TH2D* fitHist)
 {
   TPaveStats *st = (TPaveStats*)hist->FindObject("stats");
+  st->SetFillColor(0);
+  st->SetX1NDC(0.70); //new x start position
+  st->SetX2NDC(0.99); //new x end position
+  st->SetY1NDC(0.01); //new y start position
+  st->SetY2NDC(0.60); //new y end position
   st->SetName("updatedStats");
   st->AddText(Form("KolmogorovTest = %g",hist->KolmogorovTest(fitHist)));
   st->AddText(Form("Chi2Test = %g",fitHist->Chi2Test(hist,"UW")));
@@ -2064,7 +2072,7 @@ Examples:
     OverlayAll1D("B","fitTF1D","TF_TTbarMG_B.txt",1000)
 */
 
-void OverlayAll1D(string flavor, string functionName, string paramFile, double highE)
+void OverlayAll1D(string channel, string functionName, string paramFile, double highE)
 {
   setStyle(false);
   gStyle->SetOptStat("eMRi");
@@ -2086,14 +2094,14 @@ void OverlayAll1D(string flavor, string functionName, string paramFile, double h
  for(unsigned int e=0; e<highE; e+=25)
    {
      can->cd((e/25)+1);
-     string histoName = concatString("TF_Histo1D_",concatString(flavor,concatString("_",concatString(e,concatString("GeV_",concatString(e+25,"GeV"))))));
-     string histoTitle = "Transfer Function (" + flavor + ") in Parton Energy From ";
+     string histoName = concatString("TF_Histo1D_",concatString(channel,concatString("_",concatString(e,concatString("GeV_",concatString(e+25,"GeV"))))));
+     string histoTitle = "Transfer Function (" + channel + ") in Parton Energy From ";
      string fitName = concatString("TF_1D_",e);
      histoTitle = concatString(histoTitle,e) + "GeV to ";
      histoTitle = concatString(histoTitle,e+25) + "GeV";
      string newHistoTitle = concatString(e,concatString(" < Ep < ",e+25));
      hist = (TH1D*)gDirectory->Get(histoName.c_str());
-     fits[e] = new TF1(fitName.c_str(),(*fitFunc),30-(e+12.5),1000,fitPars);
+     fits[e] = new TF1(fitName.c_str(),(*fitFunc),30-(e+25.),1000,fitPars);
      formatForDraw(hist);
      hist->SetTitle(newHistoTitle.c_str());
      fitParams = getFitPars(paramFile).first;
