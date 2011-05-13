@@ -335,7 +335,8 @@ filename_creator::
   of the file with the date and time when the file was created. Using this function, two files created at
   different times, who may otherwise have the same name, will be given unique names. In addition,
   the ability to add a changing file name, instead of a hardcoded pattern, may be added at a later time.
-  Currently, the pattern is TF_<Process Name>_<Date>_<Time>.
+  Currently, the pattern is TF_<Process Name>_<Date>_<Time>.<type> or TF_<Process Name>.<type> is debug is
+  set to false.
 
 Parameters:
   process: This is a string, which will be added to the filename, which specifies what physics process
