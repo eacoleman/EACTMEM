@@ -28,6 +28,7 @@
 #include "TH2F.h"
 #include "TH2D.h"
 #include "TProfile.h"
+#include "TGraphErrors.h"
 #include "TF1.h"
 #include "TF2.h"
 #include "TLegend.h"
@@ -42,6 +43,13 @@
 #include "TMath.h"
 #include "TMinuit.h"
 #include "TString.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
+
+//Root Math Core headers
+#include <Math/SpecFuncMathCore.h>
+#include <Math/PdfFuncMathCore.h>
+#include <Math/ProbFuncMathCore.h>
 
 //Standard library includes
 #include <stdio.h>
@@ -81,11 +89,15 @@ Examples:
 class channel {
 public:
 
-  channel(string _name): name(_name),
-                         numJets(0),
-                         numJetsPart(0),
-                         numJetsAntiPart(0),
-                         numJetsFailDR(0){ }
+  channel(string _name, double _minEta, double _maxEta): name(_name),
+                                                         numJets(0),
+                                                         numJetsPart(0),
+                                                         numJetsAntiPart(0),
+                                                         numJetsFailDR(0),
+                                                         minEta(_minEta),
+                                                         maxEta(_maxEta){ }
+
+  void setEtaCuts(double minEtaCut, double maxEtaCut);
 
   string name;
   vector<int> pdgids;
@@ -94,7 +106,17 @@ public:
   int numJetsPart;
   int numJetsAntiPart;
   int numJetsFailDR;
+  //These are the min and max eta cuts. They are being set by channel so that they are not global,
+  //but they can also be used throughout the program.
+  double minEta;
+  double maxEta;
 };
+
+void channel::setEtaCuts(double minEtaCut, double maxEtaCut)
+{
+  minEta = minEtaCut;
+  maxEta = maxEtaCut;
+}
 
 /*****************************************************************************/
 
@@ -146,23 +168,74 @@ vector<channel> GetListOfChannels()
 {
   vector<channel> channels;
 
+  //Channels with |Eta|<2.4
   //The UDS channel
-  channels.push_back(channel("UDS"));
+  channels.push_back(channel("UDS_00_24",0,2.4));
   channels.back().pdgids.push_back(1);
   channels.back().pdgids.push_back(2);
   channels.back().pdgids.push_back(3);
   
   //The C channel
-  channels.push_back(channel("C"));
+  channels.push_back(channel("C_00_24",0,2.4));
   channels.back().pdgids.push_back(4);
 
   //The B channel
-  channels.push_back(channel("B"));
+  channels.push_back(channel("B_00_24",0,2.4));
   channels.back().pdgids.push_back(5);
 
   //The G channel
-  channels.push_back(channel("G"));
+  channels.push_back(channel("G_00_24",0,2.4));
   channels.back().pdgids.push_back(21);
+
+  //The Tau channel
+  channels.push_back(channel("T_00_24",0,2.4));
+  channels.back().pdgids.push_back(15);
+
+  //Channels with 0<|Eta|<1.3
+  //The UDS channel
+  channels.push_back(channel("UDS_00_13",0,1.3));
+  channels.back().pdgids.push_back(1);
+  channels.back().pdgids.push_back(2);
+  channels.back().pdgids.push_back(3);
+  
+  //The C channel
+  channels.push_back(channel("C_00_13",0,1.3));
+  channels.back().pdgids.push_back(4);
+
+  //The B channel
+  channels.push_back(channel("B_00_13",0,1.3));
+  channels.back().pdgids.push_back(5);
+
+  //The G channel
+  channels.push_back(channel("G_00_13",0,1.3));
+  channels.back().pdgids.push_back(21);
+
+  //The Tau channel
+  channels.push_back(channel("T_00_13",0,1.3));
+  channels.back().pdgids.push_back(15);
+
+  //Channels with 1.3<|Eta|<2.4
+  //The UDS channel
+  channels.push_back(channel("UDS_13_24",1.3,2.4));
+  channels.back().pdgids.push_back(1);
+  channels.back().pdgids.push_back(2);
+  channels.back().pdgids.push_back(3);
+  
+  //The C channel
+  channels.push_back(channel("C_13_24",1.3,2.4));
+  channels.back().pdgids.push_back(4);
+
+  //The B channel
+  channels.push_back(channel("B_13_24",1.3,2.4));
+  channels.back().pdgids.push_back(5);
+
+  //The G channel
+  channels.push_back(channel("G_13_24",1.3,2.4));
+  channels.back().pdgids.push_back(21);
+
+  //The Tau channel
+  channels.push_back(channel("T_13_24",1.3,2.4));
+  channels.back().pdgids.push_back(15);
 
   return channels;
 }
@@ -195,6 +268,26 @@ std::string concatString(const T& obj1, const U& obj2)
    output << obj1 << obj2;
    return output.str();
 }
+
+/*****************************************************************************/
+
+/**
+GetArrLength::
+  This function will print out the size of an array, which unlike when using vectors is a non-trivial
+  task. It is currently not necessary and it does not work as well as I would like.
+
+Parameters:
+  T: The array whose size you want found.
+
+Returns:
+  int: An integer which is the size of the array.
+
+Examples:
+  int arrSize = GetArrLength(arr);
+*/
+
+//template<class T, int size>
+//int GetArrLength(T(&)[size]){return size;}
 
 /*****************************************************************************/
 
@@ -237,47 +330,86 @@ string print_time()
 
 /**
 filename_creator::
-  This function is currently not being used. Its purpose is to generate a filename and path for an output
-  file which follows a specific patter. The reason this function exists, however, is to append the name
-  of the file with the date that the file was created on. Using this function, two files created on
-  different days, who may otherwise have the same name, will be given unique names. This does not protect
-  files which are created on the same day. An implementation of this protection may come later. In addition,
-  the ability to add a changing file name, instead of a hardcoded patter, may be added.
+  The purpose of this function is to generate a filename and path for an output file which follows a specific
+  patter, which is hard coded by the user. The reason this function exists, however, is to append the name
+  of the file with the date and time when the file was created. Using this function, two files created at
+  different times, who may otherwise have the same name, will be given unique names. In addition,
+  the ability to add a changing file name, instead of a hardcoded pattern, may be added at a later time.
+  Currently, the pattern is TF_<Process Name>_<Date>_<Time>.
 
 Parameters:
-  N/A: There are no parameters to this function.
+  process: This is a string, which will be added to the filename, which specifies what physics process
+           the transfer functions are being made for. This parameter could be used to append some other
+           information if necessary.
+
+  type: This specifies the type of file for which this name will be used (ex: .txt or .root)
+  debug: This specifies whether the user wants the date and time appended to the filename.
 
 Returns:
   string: This function returns a properly formated filename and path.
 
 Examples:
-  N/A: This function is currently not being used in this program.
-  Possible Uses: string myfilename = filename_creator();
+  From TransferFunctions:
+    string outputFilename = filename_creator(process,".root");
 */
 
-string filename_creator()
+string filename_creator(string process,string type,bool debug)
 {
    /*Sets up the filename of the .ROOT file where the graphs will be stored*/
    time_t rawtime;
    struct tm *timeinfo;
    //Buffer to store the converted c_string
-   char buffer[35];
+   char buffer[19];
    //Get the current time
    time (&rawtime);
    //Turn the current time into a local time format and save it in the struct
    timeinfo = localtime(&rawtime);
    //Set up the c_string command that will format the filename
-   string filename_template = "%Y-%b-%d-TransferFunctions";
-   filename_template += ".root";
-   strftime(buffer,30, filename_template.c_str(), timeinfo);
-   //Change the first letter of the month to lowercase
-   buffer[3] =  buffer[3] + 32;
+   string filename_date = "%m_%d_%y_%H_%M_%S";
+   strftime(buffer,19, filename_date.c_str(), timeinfo);
    //Make sure the file is printed to the correct directory
-   string mystring = "~aperloff/MatrixElement/CMSSW_3_8_7/src/TAMUWW/TransferFunction/";
+   string mystring = "TF_" + process;
+   if(debug)
+     {
+       mystring += "_";
+       mystring += buffer;
+     }
    //Add the formatted filename to the directory name
-   mystring += buffer;
+   mystring += type;
    //Return the path/filename of of the root file
    return mystring;
+}
+
+/*****************************************************************************/
+
+/**
+setStyle::
+  This function was created so that the same style of histograms could be created no mater what order
+  the functions in this program were run and no matter if root had been closed after setting the style
+  once before.
+
+Parameters:
+  name: Tells the function whether or not the user wants the histogram name printed in the statistics
+        box.
+
+Returns:
+  N/A: This function simply changes the root style for the current root session. There are no returned
+       objects.
+
+Examples:
+  From TransferFunctions:
+    setStyle();
+*/
+
+void setStyle(bool name)
+{
+  gStyle->SetFillColor(0);
+  if(name) gStyle->SetOptStat("neMR");
+  else gStyle->SetOptStat("eMR");
+  gStyle->SetOptFit(2211);
+  gStyle->SetPalette(1);
+  gStyle->SetTitleColor(0,"c");
+  gStyle->SetTitleFillColor(0);
 }
 
 /*****************************************************************************/
@@ -376,7 +508,7 @@ TableRow*  makeBreakRow(vector<string> &cellTitles, int titleWidth=4)
     {
       TableCellText* tableCellText = new TableCellText(cellTitles[i]);
       tableCellText->text = cellString;
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
     }
   //Return the row
   return tableRow;
@@ -404,28 +536,24 @@ Examples:
     tables.push_back(makeTable(gMinuit));
 */
 
-Table* makeTable(TMinuit* gMinuit)
+Table* makeTable(pair<vector<string>,pair<vector<double>,vector<double> > > parameters)
 {
   Table* table = new Table("TF_Par_"+channels[currentChannelIndex].name);
   TableRow* tableRow;
   TableCellVal* tableCellVal;
-  int  i1;
-  double pars[4];
-  TString chnam;
 
-  for(int i=0; i<gMinuit->GetNumPars(); i++)
+  for(unsigned int i=0; i<parameters.first.size(); i++)
     {
-      //Reads out the information from the TMinuit object and places it infomation in the pars array
-      //mnpout provides the user with information concerning the current status of the fit
-      gMinuit->mnpout(i,chnam,pars[0],pars[1],pars[2],pars[3],i1);
-      tableRow = new TableRow(string(chnam));
-
-      tableCellVal = new TableCellVal("Parameters");
-      tableCellVal->val.value = pars[0];
-      tableCellVal->val.error = pars[1];
-      tableRow->addCellEntries(tableCellVal);
+      //cout << "Par" << i << " = " << parameters.second.first[i] << " +- " << parameters.second.second[i] << endl;
+      //cout << "Name: " <<  parameters.first[i] << endl;
+      tableRow = new TableRow(parameters.first[i]);
+      tableCellVal = new TableCellVal("Parameters"); 
+      tableCellVal->val.value = parameters.second.first[i];
+      tableCellVal->val.error = parameters.second.second[i];
+      tableRow->addCellEntry(tableCellVal);
 
       table->addRow((*tableRow));
+
       delete tableRow;
     }
   return table;
@@ -439,7 +567,8 @@ makeNumJetsTable::
   gen parton. It also calculates the total number of jets used. In addition, the table then separates
   the number of jets further in to the number of particle vs. anti-particle gen partons. This information
   is useful for cross-checking that there really are the correct number of events being used from the
-  selected sample.
+  selected sample. The user has the ability to have the number of jets which failed the deltaR cut be
+  printed to the table. This portion of the code, however, must be un-commented.
 
 Parameters:
   N/A: There are no parameters in this function.
@@ -475,7 +604,7 @@ Table* makeNumJetsTable()
       //Used in order to convert integers into strings
       out << channels[i].numJets;
       tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
       //Clears the stringstream
       out.str("");
 
@@ -483,14 +612,14 @@ Table* makeNumJetsTable()
       totalPart += channels[i].numJetsPart;
       out << channels[i].numJetsPart;
       tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
       out.str("");
 
       tableCellText = new TableCellText(cellTitles[2]);
       totalAntiPart += channels[i].numJetsAntiPart;
       out << channels[i].numJetsAntiPart;
       tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
       out.str("");
 
       table->addRow((*tableRow));
@@ -503,15 +632,15 @@ Table* makeNumJetsTable()
   totalJets += channels[0].numJetsFailDR
   out << channels[0].numJetsFailDR;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   out.str("");
   tableCellText = new TableCellText("Particle Parton");
   out << 0;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   tableCellText = new TableCellText("Anti-Particle Parton");
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   table->addRow((*tableRow));
   out.str("");
   delete tableRow;
@@ -525,17 +654,17 @@ Table* makeNumJetsTable()
   tableCellText = new TableCellText(cellTitles[0]);
   out << totalJets;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   out.str("");
   tableCellText = new TableCellText(cellTitles[1]);
   out << totalPart;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   out.str("");
   tableCellText = new TableCellText(cellTitles[2]);
   out << totalAntiPart;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   table->addRow((*tableRow));
   delete tableRow;
  
@@ -591,7 +720,7 @@ Table* makeAllJetsTable()
       total += (*it).second;
       out << (*it).second;
       tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
 
       table->addRow((*tableRow));
       out.str("");
@@ -606,7 +735,7 @@ Table* makeAllJetsTable()
   tableCellText = new TableCellText("Number of Jets");
   out << total;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   
   table->addRow((*tableRow));
   delete tableRow;
@@ -640,18 +769,26 @@ Examples:
     makeEventContentTable(false)->Write();
 */
 
-Table* makeEventContentTable(bool deltaRCut)
+Table* makeEventContentTable(bool deltaRCut, bool etaCut)
 {
   Table* table;
   //Changes the name of the table depending upon whether of not the user wants the event content with or
   //without the deltaR cut included
-  if(deltaRCut)
+  if(deltaRCut && etaCut)
     {
-      table = new Table("EventContentTableWithDeltaRCut");
+      table = new Table("EventContentTable_EatCut_DeltaRCut");
+    }
+  else if(deltaRCut && !etaCut)
+    {
+      table = new Table("EventContentTable_DeltaRCut");
+    }
+  else if(!deltaRCut && etaCut)
+    {
+      table = new Table("EventContentTable_EtaCut");
     }
   else
     {
-      table = new Table("EventContentTable");
+      table = new Table("EventContentTable_Complete");
     }
   TableRow* tableRow;
   TableCellText* tableCellText;
@@ -668,7 +805,7 @@ Table* makeEventContentTable(bool deltaRCut)
       chain->GetEntry(i);
       for(unsigned int j=0; j<ntuple->matchedpdgId.size(); j+=2)
         {
-          if(deltaRCut && ( ntuple->matchedDeltaR[j]>maxDeltaR || ntuple->matchedDeltaR[j+1]>maxDeltaR) )
+          if((deltaRCut && (ntuple->matchedDeltaR[j]>maxDeltaR || ntuple->matchedDeltaR[j+1]>maxDeltaR)) || (etaCut && (abs(ntuple->jLV[j].Eta())>channels[currentChannelIndex].maxEta || abs(ntuple->jLV[j].Eta())<channels[currentChannelIndex].minEta)) )
             {
               continue;
             }
@@ -701,7 +838,7 @@ Table* makeEventContentTable(bool deltaRCut)
       total += (*it).second;
       out << (*it).second;
       tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      tableRow->addCellEntry(tableCellText);
       
       table->addRow((*tableRow));
       out.str("");
@@ -717,8 +854,70 @@ Table* makeEventContentTable(bool deltaRCut)
   tableCellText = new TableCellText("Number of Events");
   out << total;
   tableCellText->text = out.str();
-  tableRow->addCellEntries(tableCellText);
+  tableRow->addCellEntry(tableCellText);
   
+  table->addRow((*tableRow));
+  delete tableRow;
+
+  return table;
+}
+
+/*****************************************************************************/
+
+/**
+makeInputParameterTable::
+  This function makes a table containing all of the parameters used when running the TransferFunctions
+  method. This is so that when looking at an output root file, the user knows what parameters/cuts were
+  used.
+
+Parameters:
+  minos: The boolean which tells the program whether or not to use the minos errors from the unbinned fit.
+  process: This is the physics process that the user specified for file naming purposes.
+  inputFilepath: This is the path to the dataset being run over (after selection).
+  minEta: The minimum eta cut.
+  maxEta: The maximum eta cut.
+
+Returns:
+  Table*: This is the table containing the parameters used to run TransferFunctions.
+
+Examples:
+  From TransferFunctions:
+    makeInputParameterTable(minos,process,inputFilepath,debug)->Write();
+*/
+
+Table* makeInputParameterTable(bool minos, string process, string inputFilepath, bool debug)
+{
+  Table* table = new Table("Program Parameters");
+  TableRow* tableRow;
+  TableCellText* tableCellText;
+
+  tableRow = new TableRow("minos");
+  tableCellText = new TableCellText("Parameter Value");
+  if(minos) tableCellText->text = "true";
+  else tableCellText->text = "false";
+  tableRow->addCellEntry(tableCellText);
+  table->addRow((*tableRow));
+  delete tableRow;
+
+  tableRow = new TableRow("process");
+  tableCellText = new TableCellText("Parameter Value");
+  tableCellText->text = process;
+  tableRow->addCellEntry(tableCellText);
+  table->addRow((*tableRow));
+  delete tableRow;
+
+  tableRow = new TableRow("inputFilepath");
+  tableCellText = new TableCellText("Parameter Value");
+  tableCellText->text = inputFilepath;
+  tableRow->addCellEntry(tableCellText);
+  table->addRow((*tableRow));
+  delete tableRow;
+
+  tableRow = new TableRow("debug");
+  tableCellText = new TableCellText("Parameter Value");
+  if(debug) tableCellText->text = "true";
+  else tableCellText->text = "false";
+  tableRow->addCellEntry(tableCellText);
   table->addRow((*tableRow));
   delete tableRow;
 
@@ -759,15 +958,15 @@ void HistogramsByFlavor(channel &cha, map<string,TH1D*> &histoMap1D, map<string,
   string histoName1D = "TF_Histo1D_" + cha.name;
   string histoName2D = "TF_Histo2D_" + cha.name;
   string histoName2D_2 = histoName2D + "_JEvsPE";
-  histoMap1D[cha.name] = new TH1D(histoName1D.c_str(),histoTitle.c_str(),200,-500,500);
-  histoMap2D[cha.name] = new TH2D(histoName2D.c_str(),histoTitle.c_str(),200,-500,500,100,0,500);
-  histoMap2D[string(cha.name+"_JEvsPE")] = new TH2D(histoName2D_2.c_str(),histoTitle.c_str(),100,0,500,100,0,500);
+  histoMap1D[cha.name] = new TH1D(histoName1D.c_str(),histoTitle.c_str(),400,-1000,1000);
+  histoMap2D[cha.name] = new TH2D(histoName2D.c_str(),histoTitle.c_str(),400,-1000,1000,200,0,1000);
+  histoMap2D[string(cha.name+"_JEvsPE")] = new TH2D(histoName2D_2.c_str(),histoTitle.c_str(),200,0,1000,200,0,1000);
   for (int i = 0; i<nEventNtuple; i++)
     { 
       chain->GetEntry(i);
       for(unsigned int j=0; j<ntuple->matchedGenParticles.size(); j++)
         {
-          if(ntuple->matchedDeltaR[j] < maxDeltaR)
+          if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
             {
               for(unsigned int k=0; k<cha.pdgids.size(); k++)
                 {
@@ -791,7 +990,7 @@ void HistogramsByFlavor(channel &cha, map<string,TH1D*> &histoMap1D, map<string,
                       continue;
                     }
                 }//for(unsigned int l=0; l<channels[currentChannelIndex].pdgid.size(); l++)
-            }//if(ntuple->matchedDeltaR[j] < maxDeltaR)
+            }//if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
           else
             {
               cha.numJetsFailDR++;
@@ -828,14 +1027,13 @@ TH2D* HistogramsNormalizedByPartonEnergy(TH2D* inputHist, string chaName)
 {
   string histoTitle = "Transfer Function (" + chaName + ")";
   string normHistName = "TF_Histo2D_" + chaName + "_JEvsPE_norm";
-  TH2D* outputHist = new TH2D(normHistName.c_str(),histoTitle.c_str(),100,0,500,100,0,500);
+  TH2D* outputHist = new TH2D(normHistName.c_str(),histoTitle.c_str(),200,0,1000,200,0,1000);
   TH1D* projHist;
   for(int i=0; i<=inputHist->GetNbinsY()+1; i++)
     {
       projHist = inputHist->ProjectionX("_px",i,i,"e");
-      projHist->Sumw2();
+      if(i==0) projHist->Sumw2();
       if(projHist->Integral("width") <= 0) continue;
-
       projHist->Scale(1/projHist->Integral("width"));
       for(int j=0; j<=projHist->GetNbinsX()+1; j++)
         {
@@ -911,19 +1109,22 @@ Examples:
 
 void HistogramsByFlavorAndEnergy(channel &cha, map<string,TH1D*> &histoMap1D)
 {
-  for(unsigned int e=0; e<500; e+=25)
+  for(unsigned int e=0; e<1000; e+=25)
     {
       string histoName = concatString("TF_Histo1D_",concatString(cha.name,concatString("_",concatString(e,concatString("GeV_",concatString(e+25,"GeV"))))));
       string histoTitle = "Transfer Function (" + cha.name + ") in Parton Energy From ";
       histoTitle = concatString(histoTitle,e) + "GeV to ";
       histoTitle = concatString(histoTitle,e+25) + "GeV";
-      histoMap1D[histoName] = new TH1D(histoName.c_str(),histoTitle.c_str(),200,-500,500);
+      histoMap1D[histoName] = new TH1D(histoName.c_str(),histoTitle.c_str(),400,-1000,1000);
+      string histoNameJEvsPE = concatString("TF_Histo1D_",concatString(cha.name,concatString("_",concatString("JEvsPE_",concatString(e,concatString("GeV_",concatString(e+25,"GeV")))))));
+      histoMap1D[histoNameJEvsPE] = new TH1D(histoNameJEvsPE.c_str(),histoTitle.c_str(),200,0,1000);
+
       for (int i = 0; i<nEventNtuple; i++)
         { 
           chain->GetEntry(i);
           for(unsigned int j=0; j<ntuple->matchedGenParticles.size(); j++)
             {
-              if(ntuple->matchedDeltaR[j] < maxDeltaR)
+              if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
                 {
                   {
                     for(unsigned int k=0; k<cha.pdgids.size(); k++)
@@ -933,20 +1134,21 @@ void HistogramsByFlavorAndEnergy(channel &cha, map<string,TH1D*> &histoMap1D)
                             if(ntuple->matchedGenParticles[j].E()>e && ntuple->matchedGenParticles[j].E()<=(e+25))
                               {
                                 histoMap1D[histoName]->Fill(ntuple->jLV[j].Energy() - ntuple->matchedGenParticles[j].E());
+                                histoMap1D[histoNameJEvsPE]->Fill(ntuple->jLV[j].Energy());
                               }
                           }//if(abs(ntuple->matchedpdgId[j]) == cha.pdgids[k])
                       }//for(unsigned int l=0; l<channels[currentChannelIndex].pdgid.size(); l++)
-                  }//if(ntuple->matchedDeltaR[j] < maxDeltaR)
+                  }//if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
                 }//for(unsigned int j=0; j<ntuple->matchedGenParticles.Size(); j++)
             }//for (int i = 0; i<nEventNtuple; i++) 
         }//for (int i = 0; i<nEventNtuple; i++)
-    }//for(unsigned int e=0; e<500; e+=25)
+    }//for(unsigned int e=0; e<1000; e+=25)
 }
 
 /*****************************************************************************/
 
 /**
-fitTF2D::
+fitTF1D::
   This is a 1D function used to fit a histogram of E_j -E_p values. E_j - E_p is on the x-axis.
   This is not the unbinned fit, but rather a function used primarily to draw the resulting 
   transfer function once the parameters have been set. It, however, has the same
@@ -964,17 +1166,20 @@ Returns:
 
 Examples:
   From OverlayFunction:
-    TF1* fit = new TF1("TF_1D",(*fitFunc),-500,500,fitPars);
+    TF1* fit = new TF1("TF_1D",(*fitFunc),-1000,1000,fitPars);
 */
 
 double fitTF1D(double *x, double *par)
 {
   double fxy;
-  fxy = exp(-.5*pow(x[0]-(par[0]+par[1]*par[10]),2)/(pow((par[2]+par[3]*par[10]),2))); 
-  fxy = fxy+(par[4]+par[10]*par[5])*exp(-.5*pow(x[0]-(par[6]+par[7]*par[10]),2)/(pow((par[8]+par[9]*par[10]),2)));
-  fxy = fxy/((par[2]+par[3]*par[10])+(par[4]+par[5]*par[10])*(par[8]+par[9]*par[10]));
-  fxy = fxy/(sqrt(2.*TMath::Pi()));
-  return fxy;
+  double par0 = par[0] + par[1]*par[10];
+  double par1 = par[2] + par[3]*par[10];
+  double par2 = par[4] + par[5]*par[10];
+  double par3 = par[6] + par[7]*par[10];
+  double par4 = par[8] + par[9]*par[10];
+  fxy = exp(-.5*pow(x[0]-par0,2)/(pow(par1,2))); 
+  fxy = fxy+par2*exp(-.5*pow(x[0]-par3,2)/(pow(par4,2)));
+  return fxy/((par1*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-par[10])-par0)/(sqrt(2)*par1)))+((par2*par4)*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-par[10])-par3)/((sqrt(2)*par4)))));
 }
 
 /*****************************************************************************/
@@ -982,9 +1187,9 @@ double fitTF1D(double *x, double *par)
 /**
 fitTF2D::
   This is a 2D function used to fit a histogram of E_j -E_p vs E_p values. E_j - E_p is on the x-axis
-  and E_p is on the y-axis. This is not the unbinned fit, but rather a function used primarily to
-  draw the resulting transfer function once the parameters have been set. It, however, has the same
-  form/mathematical equation as the unbinned fit. This function also uses 10 parameters
+  and E_p is on the y-axis. This is the same function used by the unbinned fit. It is, however, also used
+  to draw the resulting transfer function once the parameters have been set. The mathematical functions
+  has the same form/equation as the unbinned fit. This function also uses 10 parameters.
 
 Parameters:
   x: This is the array that stores the variable values of the function. It is not directly user accessible.
@@ -995,17 +1200,92 @@ Returns:
 
 Examples:
   From makeFit:
-    TF2* fit = new TF2(fitName.c_str(),fitTF2D,-500,500,0,500,10);
+    TF2* fit = new TF2(fitName.c_str(),fitTF2D,-1000,1000,0,1000,12);
 */
 
-double fitTF2D(double *x, double *par)
+double fitTF2D(double* x, double *par)
 {
+  double par0 = par[0] + par[1]*x[1];
+  double par1 = par[2] + par[3]*x[1];
+  double par2 = par[4] + par[5]*x[1];
+  double par3 = par[6] + par[7]*x[1];
+  double par4 = par[8] + par[9]*x[1];
+
   double fxy;
-  fxy = exp(-.5*pow(x[0]-(par[0]+par[1]*x[1]),2)/(pow((par[2]+par[3]*x[1]),2))); 
-  fxy = fxy+(par[4]+x[1]*par[5])*exp(-.5*pow(x[0]-(par[6]+par[7]*x[1]),2)/(pow((par[8]+par[9]*x[1]),2)));
-  fxy = fxy/((par[2]+par[3]*x[1])+(par[4]+par[5]*x[1])*(par[8]+par[9]*x[1]));
-  fxy = fxy/(sqrt(2.*TMath::Pi()));  
-  return fxy;
+  fxy = exp(-.5*pow(x[0]-par0,2)/(pow(par1,2))); 
+  fxy = fxy+par2*exp(-.5*pow(x[0]-par3,2)/(pow(par4,2)));
+
+  double N;
+  if(par1==0 || par4==0)
+    {
+      if(par1==0 && par4==0)
+        {
+          if(((30-x[1])-par0)>0 && ((30-x[1])-par3)>0)
+            {
+              N = 0;
+            }
+          else if(((30-x[1])-par0)<0 && ((30-x[1])-par3)<0)
+            {
+              N = ((par1*sqrt(TMath::Pi()/2)*2)+((par2*par4)*sqrt(TMath::Pi()/2)*2));
+            }
+          else if(((30-x[1])-par0)>0 && ((30-x[1])-par3)<0)
+            {
+              N = ((par2*par4)*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par3)/((sqrt(2)*par4))));
+            }
+          else if(((30-x[1])-par0)<0 && ((30-x[1])-par3)>0)
+            {
+              N = (par1*sqrt(TMath::Pi()/2)*2);
+            }
+          else //Erfc(0/0) case
+            {
+              N = 0;
+            }
+        }
+      else if(par1==0)
+        {
+          if(((30-x[1])-par0)>0)
+            {
+              N = ((par2*par4)*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par3)/((sqrt(2)*par4))));
+            }
+          else if(((30-x[1])-par0)<0)
+            {
+              N = ((par1*sqrt(TMath::Pi()/2)*2)+((par2*par4)*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par3)/((sqrt(2)*par4)))));
+            }
+          else //Erfc(0/0) case
+            {
+              N = 0;
+            }
+        }
+      else if(par4==0) 
+        {
+          if(((30-x[1])-par3)>0)
+            {
+              N = ((par1*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par0)/(sqrt(2)*par1))));
+            }
+          else if(((30-x[1])-par3)<0)
+            {
+              N = ((par1*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par0)/(sqrt(2)*par1)))+((par2*par4)*sqrt(TMath::Pi()/2)*2));
+            }
+          else //Erfc(0/0) case
+            {
+              N = 0;
+            }
+        }
+    }
+  else
+    {
+      N = ((par1*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par0)/(sqrt(2)*par1)))+((par2*par4)*sqrt(TMath::Pi()/2)*TMath::Erfc(((30-x[1])-par3)/((sqrt(2)*par4)))));
+    }
+
+
+  if(N!=0 && !TMath::IsNaN(fxy/N))
+    {
+      return (fxy/N);
+    }
+  else
+    {
+      return -1;
+    }  
 }
 
 /*****************************************************************************/
@@ -1024,7 +1304,7 @@ Returns:
 
 Examples:
   From makeJEvsPEFit:
-    TF2* newfit = new TF2(fitName.c_str(),fitTFJEvsPE,0,500,0,500,10);
+    TF2* newfit = new TF2(fitName.c_str(),fitTFJEvsPE,0,1000,0,1000,10);
 */
 
 double fitTFJEvsPE(double* x, double *par)
@@ -1032,6 +1312,42 @@ double fitTFJEvsPE(double* x, double *par)
   return JEvsPEfit->Eval(x[0]-x[1],x[1]);
 }
 
+/*****************************************************************************/
+
+/**
+fitTFLandauGaus::
+  This function was first implemented when the normalization for the current double Gaussian was fit was
+  not yet operational. While this function technically provides a nice fit to our data, it relies heavily
+  on PDFs and is therefore computationally expensive. It also has the added frustration of not being easily
+  normalizable. There are two versions of the code available. The full version assumes that all of the
+  parameters scale linearly with the parton energy. The simplified version does not make this assumption
+  for the parameters of the Landau function nor its normalization.
+
+Parameters:
+  x: This is the array that stores the variable values of the function. It is not directly user accessible.
+  par: This is the array that stores the function parameters. It is not directly user accessible.
+
+Returns:
+  double: This function returns the numberical result of the function once it is evaluated.
+
+Examples:
+  Possible use:
+    TF2* newfit = new TF2(fitName.c_str(),fitTFLandauGaus,0,1000,0,1000,10);
+*/
+
+double fitTFLandauGaus(double* x, double *par)
+{
+  double fxy;
+  //Full
+  //fxy = exp(-.5*pow(x[0]-(par[0]+par[1]*par[9]),2)/(pow((par[2]+par[3]*par[9]),2))); 
+  //fxy = fxy + ((par[4]+par[9]*par[5])*(ROOT::Math::landau_pdf((x[0]-(par[6]+par[7]*par[9]))/par[8])));
+
+  //Simplified
+  fxy = par[0]*exp(-.5*pow(x[0]-(par[1]+par[2]*par[8]),2)/(pow((par[3]+par[4]*par[8]),2))); 
+  fxy = fxy + (par[5]*(ROOT::Math::landau_pdf((x[0]-par[6])/par[7])));
+
+  return fxy;
+}
 /*****************************************************************************/
 
 /**
@@ -1067,10 +1383,15 @@ double (*findFitFunc(string fitFuncName,unsigned int& fitPars))(double*,double*)
       fitPars = 10;
       return &fitTF2D;
     }
-  if(fitFuncName == "fitTFJEvsPE")
+  else if(fitFuncName == "fitTFJEvsPE")
     {
       fitPars = 10;
       return &fitTFJEvsPE;
+    }
+  else if(fitFuncName == "fitTFLandauGaus")
+    {
+      fitPars = 9;
+      return &fitTFLandauGaus;
     }
   else
     {
@@ -1103,20 +1424,16 @@ Examples:
     fits.push_back(makeFit(gMinuit));
 */
 
-TF2* makeFit(TMinuit* gMinuit)
+TF2* makeFit(pair<vector<string>,pair<vector<double>, vector<double> > > parameters)
 {
-  int  i1;
-  double pars[4];
-  TString chnam;
   string fitName = "TF_Fit2D_"+channels[currentChannelIndex].name;
-  TF2* fit = new TF2(fitName.c_str(),fitTF2D,-500,500,0,500,10);
+  TF2* fit = new TF2(fitName.c_str(),fitTF2D,-1000,1000,0,1000,10);
 
-  for(int i=0; i<gMinuit->GetNumPars(); i++)
+  for(unsigned int i=0; i<parameters.first.size(); i++)
     {
-       //mnpout provides the user with information concerning the current status of the fit
-      gMinuit->mnpout(i,chnam,pars[0],pars[1],pars[2],pars[3],i1);
-      fit->SetParameter(i,pars[0]);
-      fit->SetParError(i,pars[1]);      
+      //cout << parameters.first[i] << ": " << parameters.second.first[i] << " +- " << parameters.second.first[i] << endl;
+      fit->SetParameter(i,parameters.second.first[i]);
+      fit->SetParError(i,parameters.second.second[i]);
     }
   return fit;
 }
@@ -1143,7 +1460,7 @@ TF2* makeJEvsPEFit(TF2* fit)
 {
   JEvsPEfit = (TF2*)fit->Clone();
   string fitName = "TF_Fit2D_" + channels[currentChannelIndex].name + "_JEvsPE"; 
-  TF2* newfit = new TF2(fitName.c_str(),fitTFJEvsPE,0,500,0,500,10);
+  TF2* newfit = new TF2(fitName.c_str(),fitTFJEvsPE,0,1000,0,1000,10);
   return newfit;
 }
 
@@ -1417,9 +1734,9 @@ void printKSandChi2(TH2D* hist, TH2D* fitHist)
 
 /**
 formatForDraw::
-  This function is called by OverlayFunction in order to set the drawing options like titles, axis
-  labels, and font size. This function is called when the histograms and functions being drawn are
-  1D.
+  This function is called by OverlayFunction and OverlayAll1D in order to set the drawing options
+  like titles, axis labels, and font size. This function is called when the histograms and functions
+  being drawn are 1D.
 
 Parameters:
   hist: This is the original histogram which will be drawn to the canvas.
@@ -1437,6 +1754,9 @@ Examples:
 void formatForDraw(TH1D* hist)
 {
   hist->GetXaxis()->SetTitle("E_{Jet}-E_{P} [GeV]");
+  hist->GetXaxis()->SetLabelSize(0.04);
+  hist->GetXaxis()->SetTitleSize(0.04);
+  hist->GetXaxis()->SetTitleOffset(1.2);
 }
 
 /*****************************************************************************/
@@ -1600,6 +1920,7 @@ Examples:
 
 void OverlayFunction(string histoName, string functionName, string paramFile, string fitPoints="default", double partonEnergy = 0, bool JEvsPE = false, string fitName = "")
 {
+  setStyle(false);
   gStyle->SetOptStat("eMRi");
   //Figure out which fitting function to use and set the number of fit parameters
   unsigned int fitPars = 0;
@@ -1616,7 +1937,7 @@ void OverlayFunction(string histoName, string functionName, string paramFile, st
           can->Divide(3,1);
           can->cd(1);
           TH2D* hist = (TH2D*)gDirectory->Get(histoName.c_str());
-          TF2* fit = new TF2("TF_2D",(*fitFunc),-500,500,0,500,fitPars);
+          TF2* fit = new TF2("TF_2D",(*fitFunc),-1000,1000,0,1000,fitPars);
           formatForDraw(can, hist, fit, JEvsPE);
           
           fitParams = getFitPars(paramFile).first;
@@ -1658,7 +1979,7 @@ void OverlayFunction(string histoName, string functionName, string paramFile, st
           can->cd();
           TH2D* hist = (TH2D*)gDirectory->Get(histoName.c_str());
           JEvsPEfit = (TF2*)((TF2*)gDirectory->Get(fitName.c_str()))->Clone();
-          TF2* fit = new TF2((fitName+"_binned").c_str(),fitTFJEvsPE,0,500,0,500,10);
+          TF2* fit = new TF2((fitName+"_binned").c_str(),fitTFJEvsPE,0,1000,0,1000,10);
           formatForDraw(can, hist, fit, JEvsPE);
           hist->Draw("lego2");
           hist->Fit(fit);
@@ -1676,8 +1997,10 @@ void OverlayFunction(string histoName, string functionName, string paramFile, st
       TCanvas* can = new TCanvas("can","can",800,800);
       can->cd();
       TH1D* hist = (TH1D*)gDirectory->Get(histoName.c_str());
-      TF1* fit = new TF1("TF_1D",(*fitFunc),-500,500,fitPars);
+      TF1* fit = new TF1("TF_1D",(*fitFunc),30-partonEnergy,1000,fitPars);
       formatForDraw(hist);
+      string newHistTitle = concatString(partonEnergy-12.5,concatString(" < Ep < ",partonEnergy+12.5));
+      hist->SetTitle(newHistTitle.c_str());
 
       fitParams = getFitPars(paramFile).first;
       fitParamErrors = getFitPars(paramFile).second;
@@ -1706,6 +2029,518 @@ void OverlayFunction(string histoName, string functionName, string paramFile, st
 /*****************************************************************************/
 
 /**
+OverlayAll1D::
+  This function was created to draw a range of 1D histograms to a single canvas. The histograms are slices,
+  in parton energy, of the 2D E_j - E_p vs E_p histograms. The slices, which are already stored in a root
+  file, are retrieved and drawn. The parameters of the transfer function for this process and flavor are
+  retrieved and the 1D version of the transfer function is drawn on top of the histogram. A KS test and
+  chi squared analysis are also performed on each histogram.
+
+Parameters:
+  flavor: This parameter specifies the flavor of the 1D histograms that should be drawn. When the function
+          finds the histograms in the loaded root file, it looks for histograms following a specific pattern
+          (currently this function cannot draw all of the JEvsPE histograms). The pattern involved needs the
+          flavor of the parton for which the histograms were created.
+  functionName: This is the name of the fitting function (not the root TF, but the actual function in
+                code) which was used to generate the unbinned fit. The possible functions are the only 
+                realistic function is "fitTF1D". The only other 1D function possible is "fitTFLandauGaus".
+  paramFile: This is the path to the file which contains the output table of parameters for the transfer
+             function that the user is trying to have drawn. In theory, the Table object version of this
+             file is also stored in the root file, but this is a more robust and file independent method
+             of finding the correct fit parameters. The file should contain 10 parameters.
+  highE: This tells the upper range of parton energy with which to plot the histograms. For
+         example, if 500 is specified, then the first histogram will be for partons with an
+         energy of 0 GeV to 25 GeV and the last histogram drawn will be for partons with an
+         energy of 475 GeV to 500 GeV. If 1000 is specified, then the last histogram drawn
+         will be for an energy of 975 GeV to 1000 GeV. This then specifies the number of pads
+         drawn to the canvas.
+
+Returns:
+  N/A: The function graphically outputs a TCanvas* with a histogram and a function drawn.
+
+Examples:
+  From the command line:
+    OverlayAll1D("B","fitTF1D","TF_TTbarMG_B.txt",1000)
+*/
+
+void OverlayAll1D(string flavor, string functionName, string paramFile, double highE)
+{
+  setStyle(false);
+  gStyle->SetOptStat("eMRi");
+  //Figure out which fitting function to use and set the number of fit parameters
+  unsigned int fitPars = 0;
+  double (*fitFunc)(double*, double*) = NULL;
+  fitFunc = findFitFunc(functionName,fitPars);
+  vector<double> fitParams;
+  vector<double> fitParamErrors;
+
+  TH1D* hist;
+  map<int,TF1*> fits;
+  TH1D* fitHist;
+
+  TCanvas* can = new TCanvas("can","can",1600,1000);
+  if(highE == 500) can->Divide(5,4);
+  else can->Divide(8,5);
+  //loop through histograms
+ for(unsigned int e=0; e<highE; e+=25)
+   {
+     can->cd((e/25)+1);
+     string histoName = concatString("TF_Histo1D_",concatString(flavor,concatString("_",concatString(e,concatString("GeV_",concatString(e+25,"GeV"))))));
+     string histoTitle = "Transfer Function (" + flavor + ") in Parton Energy From ";
+     string fitName = concatString("TF_1D_",e);
+     histoTitle = concatString(histoTitle,e) + "GeV to ";
+     histoTitle = concatString(histoTitle,e+25) + "GeV";
+     string newHistoTitle = concatString(e,concatString(" < Ep < ",e+25));
+     hist = (TH1D*)gDirectory->Get(histoName.c_str());
+     fits[e] = new TF1(fitName.c_str(),(*fitFunc),30-(e+12.5),1000,fitPars);
+     formatForDraw(hist);
+     hist->SetTitle(newHistoTitle.c_str());
+     fitParams = getFitPars(paramFile).first;
+     fitParamErrors = getFitPars(paramFile).second;
+     fitParams.push_back(e+12.5);
+     setFitParams(fits[e], fitParams, fitParamErrors);
+     hist->Sumw2();
+     hist->Scale(1/(hist->Integral("width")));
+
+     hist->Draw("HE");
+     fits[e]->SetNpx(hist->GetNbinsX());
+     fits[e]->Draw("sames");
+     fits[e]->SetLineColor(2);
+     can->Update();
+
+     fitHist = (TH1D*)hist->Clone((((string)hist->GetName()) + "_clone").c_str());
+     makeHistFromFunc(fitHist,fits[e]);
+     printKSandChi2(hist,fitHist);
+     can->Modified();
+    }
+}
+
+/*****************************************************************************/
+
+/**
+OverlayDiffTF::
+  This function is meant to overlay transfer functions of different processes, eta ranges, or parton flavors
+  while keeping the parton energy the same. It is a graphical representation of how the transfer functions
+  change with each of these parameters.
+
+Parameters:
+  functionName: This is the name of the function that was used to create these transfer functions using the
+                unbinned fit (at least the 1D version of it). Generally this will be "fitTF1D."
+  paramFiles: This is a vector of the locations of the transfer function parameter files (.txt files) with
+              respect to where this function is being run. This vector must be created within the program
+              or via the command line and fed into this function.
+  partonEnergy: This is the exact parton energy that you want all of the transfer functions to be plotted at.
+
+Returns:
+  N/A: The function graphically outputs a TCanvas* with a histogram and a function drawn.
+
+Examples:
+  From the command line:
+    vector<string> files                                                               
+    files.push_back("../ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_0_24.txt") 
+    files.push_back("../ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_0_13.txt") 
+    files.push_back("../ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_13_24.txt")
+    OverlayDiffTF("fitTF1D",files,50)
+*/
+
+void OverlayDiffTF(string functionName, vector<string> paramFiles, double partonEnergy)
+{
+  setStyle(false);
+  gStyle->SetOptStat(0);
+  //Figure out which fitting function to use and set the number of fit parameters
+  unsigned int fitPars = 0;
+  double (*fitFunc)(double*, double*) = NULL;
+  fitFunc = findFitFunc(functionName,fitPars);
+  vector<vector<double> > fitParams;
+  vector<vector<double> > fitParamErrors;
+  vector<TF1*> fits;
+
+  TCanvas* can = new TCanvas("can","can",800,800);
+  can->cd();
+  TLegend* leg = new TLegend(0.7,0.4,1.0,0.6);
+
+  for(unsigned int i=0; i<paramFiles.size(); i++)
+    {
+      size_t pos1 = paramFiles[i].find("TF_");
+      size_t pos2 = paramFiles[i].find(".txt");
+      size_t length = pos2-pos1;
+      string fitName = paramFiles[i].substr(pos1,length);
+      fits.push_back(new TF1(fitName.c_str(),(*fitFunc),30-partonEnergy,1000,fitPars));
+
+      fitParams.push_back(getFitPars(paramFiles[i]).first);
+      fitParamErrors.push_back(getFitPars(paramFiles[i]).second);
+      fitParams.back().push_back(partonEnergy);
+
+      setFitParams(fits.back(), fitParams[i], fitParamErrors[i]);
+      if(i==0)
+        {
+          string canTitle = concatString("Ep = ",partonEnergy);
+          fits.back()->Draw();
+          fits.back()->SetTitle(canTitle.c_str());
+        }
+      else
+        {
+          fits.back()->Draw("sames");
+          fits.back()->SetLineColor(i+1);
+        }
+      fits.back()->SetNpx(10000);
+      fits.back()->GetXaxis()->SetTitle("E_{Jet}-E_{P} [GeV]");
+      fits.back()->GetXaxis()->SetLabelSize(0.04);
+      fits.back()->GetXaxis()->SetTitleSize(0.04);
+      fits.back()->GetXaxis()->SetTitleOffset(1.2);
+      leg->AddEntry(fits[i],fitName.c_str(),"l");
+    }
+  leg->SetFillColor(0);
+  leg->Draw();
+}
+
+/*****************************************************************************/
+
+/**
+MakeGraphErrors::
+  This function is designed to take a vector of similar TF1s and the number of parameters for each and
+  then plot these fits as a function of parton energy with each parameters associated error. This function
+  is specialized to work with the fitLandauGaus function below, but may be adapted for other uses.
+
+Parameters:
+  fits: This is a vector of TF1s that stores the root functions which have supposedly already been fit.
+  fitPars: This is the number of fit parameters in each TF1. This is so the function knows how many
+           different parameters it must plot.
+
+Returns:
+  vector<TGraphErrors*>: This function returns a vector of TGraphErrors pointers which can later be drawn.
+
+Examples:
+  From fitLandauGaus:
+    vector<TGraphErrors*> graphs = MakeGraphErrors(fits,fitPars);
+*/
+
+vector<TGraphErrors*> MakeGraphErrors(vector<TF1*> fits,unsigned int fitPars)
+{
+  //Create the returning vector of Graphs
+  vector< TGraphErrors*> graphs;
+
+  //Do a basic check before proceeding
+  if (fits.size()==0) 
+    return graphs;
+
+  for (unsigned int gg = 0; gg < fitPars; gg++){
+    graphs.push_back(new TGraphErrors());
+    stringstream ss;
+    ss <<" Param"<<gg;
+    graphs.back()->SetName(ss.str().c_str());
+  }
+  //Add an extra one for chi2/ndf
+  graphs.push_back(new TGraphErrors());
+  graphs.back()->SetName("Chi2/Ndf");
+    
+  //Loop over all the results
+  for (unsigned int ff = 0; ff < fits.size(); ff++)
+    {
+      //Get the Ep value
+      double Ep = 12.5+25*ff;
+      //cout << "Looping over point " << ff <<  " with mean parton energy of " << Ep  << endl; 
+
+      // Loop over the parameters
+      for (unsigned int gg = 0; gg < fitPars; gg++)
+        {
+          //cout << "Looping over parameter " << gg << endl;
+          int N = graphs[gg]->GetN();
+
+          if(!TMath::IsNaN(fits[ff]->GetParameter(gg)))
+            {
+              graphs[gg]->SetPoint(N,Ep,fits[ff]->GetParameter(gg));// Parameter(gg));
+              if(!TMath::IsNaN(fits[ff]->GetParError(gg)))
+                {
+                  graphs[gg]->SetPointError(N,0,fits[ff]->GetParError(gg));//ParError(gg));
+                }
+            }
+        } //loop over parameters
+      
+      // The chi2/ndf plot
+      if(!TMath::IsNaN(fits[ff]->GetChisquare()/fits[ff]->GetNDF()))
+        {
+          graphs[fitPars]->SetPoint(graphs[fitPars]->GetN(),Ep,fits[ff]->GetChisquare()/fits[ff]->GetNDF());
+          graphs[fitPars]->SetPointError(graphs[fitPars]->GetN()-1,0,0);
+        }
+      
+    } //for all fits
+  
+  return graphs;
+  
+}//MakeGraphErrors
+
+/*****************************************************************************/
+
+/**
+fitLandauGaus::
+  This function is designed to fit a Landau+Gaussian function to slices in parton energy of the E_j vs E_p
+  histograms. This function overlays these fits and then draws the dependence of each parameter on E_p.
+  There are currently two options available to the user which are hard coded into the program (one is
+  currently commented out). Either they can use the user defined fitTFLandauGaus function or a combination
+  of predefined root functions (a Gaussian function and a Landau function).
+
+Parameters:
+  cha: This is the name of the channel that the user would like analyzed.
+  drawFits: This allows the user to choose whether or not to print the 40 hitogram (in parton energy) and
+            their associated fits.
+  drawParameters: This allows the user to choose whether or not to print the graphs of the fit parameters.
+
+Returns:
+  N/A: There are no returned objects from this function. However, several canvases will be drawn to the
+       screen.
+
+Examples:
+  fitLandauGaus("B")
+*/
+
+void fitLandauGaus(string cha, bool drawFits, bool drawParameters)
+{
+  //Set the root style
+  setStyle(false);
+  //Figure out which fitting function to use and set the number of fit parameters
+  unsigned int fitPars = 0;
+  double (*fitFunc)(double*, double*) = NULL;
+  fitFunc = findFitFunc("fitTFLandauGaus",fitPars);
+
+  //Storage elements for the histograms and fits in memory
+  vector<TH2D*> hists;
+  vector<TF1*> fits;
+
+  //Canvas for the histograms
+  TCanvas* can1;
+  TCanvas* can2;
+  if(drawFits)
+    {
+      can1 = new TCanvas("can1","can",1200,900);
+      can2 = new TCanvas("can2","can",1200,900);
+      can1->Divide(5,4);
+      can2->Divide(5,4);
+    }
+
+  cout << endl << "fitLandauGaus::Start retrieving histograms, making the fits, and fitting the histograms." << endl << "Start time: " << print_time() << endl;
+  //Loop over the different slices in parton energy
+  for(unsigned int e=0; e<1000; e+=25)
+    {
+      //Get and draw each histogram
+      string histoNameJEvsPE = concatString("TF_Histo1D_",concatString(cha,concatString("_",concatString("JEvsPE_",concatString(e,concatString("GeV_",concatString(e+25,"GeV")))))));
+      hists.push_back((TH2D*)gDirectory->Get(histoNameJEvsPE.c_str()));
+      if(drawFits)
+        {
+          if(e<500) can1->cd((e/25)+1);
+          else can2->cd(((e-500)/25)+1);
+          hists.back()->Draw("HE");
+          hists.back()->GetXaxis()->SetTitle("E_{Jet} [GeV]");
+        }
+      
+      if((TH2D*)gDirectory->Get(histoNameJEvsPE.c_str()))
+        {
+          //Make the fit function and fit it
+          string fitName = concatString("TF_Fit1D_LanGaus_",concatString(cha,concatString("_",concatString(e,concatString("GeV_",concatString(e+25,"GeV"))))));
+          /*
+          TF1* fit = new TF1(fitName.c_str(),(*fitFunc),30,1000,fitPars);
+          fit->SetParameter(6,hists.back()->GetMean());
+          fit->SetParameter(7,hists.back()->GetRMS());
+          fit->FixParameter(9,12.5+e);
+          */
+          TF1* fit = new TF1(fitName.c_str(),"gaus(0)+landau(3)",30,1000);
+          fit->SetParameters(hists.back()->GetEntries()/hists.back()->GetRMS(),
+                             hists.back()->GetMean(),
+                             hists.back()->GetRMS(),
+                             hists.back()->GetEntries()/hists.back()->GetRMS(),
+                             hists.back()->GetMean(),
+                             hists.back()->GetRMS());
+          fits.push_back(fit);
+          if(drawFits) hists.back()->Fit(fits.back(),"S+MR");
+          else hists.back()->Fit(fits.back(),"S+MRN");
+        }
+      else
+        {
+          cout << "fitLandauGaus::Unable to retrieve the histogram: " << histoNameJEvsPE << endl << "The function will now terminate." << endl;
+          return;
+        }
+    }
+  cout << "End time: " << print_time() << endl;
+
+  if(drawParameters)
+    {	
+      cout << endl << "fitLandauGaus::Start making the parameter graphs." << endl << "Start time: " << print_time() << endl;
+      //Create the vector of GraphErrors out of the fit parameters and their Chi2/NDF
+      //vector<TGraphErrors*> graphs = MakeGraphErrors(fits,fitPars);
+      vector<TGraphErrors*> graphs = MakeGraphErrors(fits,6);
+      cout << "End time: " << print_time() << endl;
+      
+      cout << endl << "fitLandauGaus::Start drawing the parameter graphs." << endl << "Start time: " << print_time() << endl;
+      //Display the fit parameter GraphErrors and Chi2/NDF	
+      for (unsigned int gg = 0; gg < graphs.size(); gg++)
+        {
+          new TCanvas(graphs[gg]->GetName());
+          graphs[gg]->Draw("AL");
+        }
+      cout << "End time: " << print_time() << endl;
+    }
+
+}
+
+/*****************************************************************************/
+
+/**
+makeNormalizationHist::
+  This function is no longer in use. However, it is kept here as part of the code in case it is ever
+  needed. The purpose of this function was to plot how the normalization of the transfer functions
+  changed with parton energy, assuming the normalization was linear in parton energy. We now know
+  that the normalization is not linear with respect to the parton energy. The data points are the 
+  value of the normalization "line" evaluated at a given parton energy divided by the integral of
+  the transfer function for a given E_p range.
+
+Parameters:
+  parameters: This object contains the values of the transfer function parameters and their errors as
+              well as the parameter names. Because this is such a complicated object, this function
+              is not meant to be used through the command line, but is rather an internal function.
+
+Returns:
+  TProfile*: This function will return a profile histogram of the normalization as a function of the
+             parton energy.
+
+Examples:
+  From TransferFunctions:
+    normHists.push_back(makeNormalizationHist(parameters));
+*/
+
+TProfile* makeNormalizationHist(pair<vector<string>,pair<vector<double>, vector<double> > > parameters)
+{
+  double integral = 0;
+  string histTitle = "Normalization Hist (" + channels[currentChannelIndex].name + ")";
+  string histName = "TF_NormHist_" + channels[currentChannelIndex].name;
+  TProfile* hist = new TProfile(histName.c_str(),histTitle.c_str(),200,0,1000);
+
+  TF2* fx = makeFit(parameters);
+  TF1* fy = new TF1("normTerm","pol1",0,1000);
+  fy->FixParameter(0,parameters.second.first[0]);
+  fy->FixParameter(1,parameters.second.first[1]);
+
+  //Loop over the E_p bins
+  for(unsigned int i=1; i<=200; i++)
+    {
+      integral = fx->Integral(30,1000,(i-1)*5,i*5);
+      if(integral!=0) hist->Fill((i-0.5)*5,fy->Eval((i-0.5)*5)/integral);
+    }//for(unsigned int i=1; i<=200; i++)
+
+  return hist;
+}
+
+/*****************************************************************************/
+
+/**
+getMinosParameters::
+  This function will retrieve and store the parameters, their names, and their errors, taken from the
+  Minuit2Minimizer after the fitting process. This function was put in place to take care of all of the
+  parameter shuffling in one spot without having to deal with pointers. This version of the function
+  is specific to when the user would like to use the minos errors.
+
+Parameters:
+  gMinuit: This object is what fits the data and initially stores the parameters. Since the only way to
+           retrieve these parameters is by using const double* arrays, this converts the output into
+           a marginally better container.
+
+Returns:
+  pair<vector<string>, pair<vector<double>,vector<double> > >: This object stores the parameter values,
+                                                               their names, and their errors.
+
+Examples:
+  From TransferFunctions:
+    if(minos) parameters = getMinosParameters(Minimize(returnBool));
+*/
+
+pair<vector<string>, pair<vector<double>,vector<double> > > getMinosParameters(ROOT::Minuit2::Minuit2Minimizer* gMinuit)
+{
+  const double* pars = gMinuit->X();
+  vector<double> parameters;
+  vector<double> minosErrors;
+  vector<string> parameterNames;
+  double errLow = 0;
+  double errUp = 0;
+
+  for(unsigned int i=0; i<gMinuit->NDim(); i++)
+    {
+      parameters.push_back((double)pars[i]);
+      parameterNames.push_back(gMinuit->VariableName(i));
+      if(gMinuit->GetMinosError(i,errLow,errUp))
+        {
+          if(abs(errLow) == abs(errUp) && !TMath::IsNaN(errLow) && !TMath::IsNaN(errUp))
+            {
+              minosErrors.push_back(abs(errUp));
+            }
+          else if(abs(errLow) < abs(errUp) && !TMath::IsNaN(errLow) && !TMath::IsNaN(errUp))
+            {
+              minosErrors.push_back(abs(errUp));
+            }
+          else if(abs(errLow) > abs(errUp) && !TMath::IsNaN(errLow) && !TMath::IsNaN(errUp))
+            {
+              minosErrors.push_back(abs(errLow));
+            }
+          else
+            {
+              minosErrors.push_back(0);
+            }
+        }
+      else
+        {
+          minosErrors.push_back(0);
+        }
+    }
+  return make_pair(parameterNames,make_pair(parameters,minosErrors));
+}
+
+/*****************************************************************************/
+
+/**
+getParameters::
+  This function will retrieve and store the parameters, their names, and their errors, taken from the
+  Minuit2Minimizer after the fitting process. This function was put in place to take care of all of the
+  parameter shuffling in one spot without having to deal with pointers.
+
+Parameters:
+  gMinuit: This object is what fits the data and initially stores the parameters. Since the only way to
+           retrieve these parameters is by using const double* arrays, this converts the output into
+           a marginally better container.
+
+Returns:
+  pair<vector<string>, pair<vector<double>,vector<double> > >: This object stores the parameter values,
+                                                               their names, and their errors.
+
+Examples:
+  From TransferFunctions:
+    else parameters = getParameters(Minimize(returnBool));
+*/
+
+pair<vector<string>, pair<vector<double>,vector<double> > > getParameters(ROOT::Minuit2::Minuit2Minimizer* gMinuit)
+{
+  const double* pars = gMinuit->X();
+  const double* errs = gMinuit->Errors();
+  vector<double> parameters;
+  vector<double> errors;
+  vector<string> parameterNames;
+
+  for(unsigned int i=0; i<gMinuit->NDim(); i++)
+    {
+      parameters.push_back((double)pars[i]);
+      if(TMath::IsNaN(errs[i]))
+        {
+          errors.push_back(0);
+        }
+      else
+        {
+          errors.push_back((double)errs[i]);
+        }
+      parameterNames.push_back(gMinuit->VariableName(i));
+    }
+  return make_pair(parameterNames,make_pair(parameters,errors));
+}
+
+/*****************************************************************************/
+
+/**
 fcn::
   This is the function that is being fit by minuit to the 2D histogram of E_j - E_p vs. E_p.
   The function, being 2-dimensional, is a function of x[1] = E_j - E_p and y = E_p. It has
@@ -1713,47 +2548,46 @@ fcn::
   this is an unbinned fit, there are no histograms involved. Instead, the functional takes each
   point in x and y (the energy for every jet with its associated genParton), performs a deltaR
   cut on the jets, and makes sure that this process is being done for the specific channel
-  requested by the TransferFunctions function. All the while, fcn is performing a log-likelyhood
+  requested by the TransferFunctions function. All the while, fcn is performing a log-likelihood
   analysis for minuit. Most of the parameters for this function of used internally by minuit
   and do not need to be specified by the user. The function being fit is a normalized double
-  Gaussian.
+  Gaussian. In fact, however, this is not where the calculation of the function value occurs.
+  Instead, this function calles fitTF2D. This method would be more appropriately called the log-
+  likelihood function. Its purpose is really to simply return the likelihood of the chosen
+  parameters being correct.
 
 Parameters:
-  f: Stores the running sum of the negative log of the value of the function (a positive value
-     since the value of the normalized double Gaussian should be less than one). This value is
-     only ever read internally by minuit and does not need to be returned explicitly by the user.
   par: This is an array of parameter values. Each time minuit calles this function, it sets the
        values in par to be slightly different in an attempt to determin which values give the
        best fit.
 
 Returns:
-  N/A: There are no returns for this function and all of the paramters are handled and returned
-       internally by minuit.
+  double: This function returns the sum of the negative logs of the funtion values. The goal is to
+          maximize the sum by minimizing the value of fxy.
 
 Examples:
   N/A: This function is never called explicitly by the user. It is set as the fit function in the
        Minimize function using the line:
-         gMinuit->SetFCN(fcn);
-       Internal parameter names:
-         void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+         ROOT::Math::Functor f(&fcn,10);
 */
 
-void fcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t)
+double fcn(const double *par)
 { 
   chain->SetBranchAddress("EvtNtuple", &ntuple);
-  f=0.; 
   double sum=0.; 
   double x,y;
   double de;
   double fxy;
   double ly;
   int h = 0;
+  int neg_counter = 0;
+  TF2 fit("fit",fitTF2D,-1000,1000,0,1000,10);
   for (int i = 0; i<nEventNtuple; i++)
     { 
       chain->GetEntry(i);
       for(unsigned int j=0; j<ntuple->matchedGenParticles.size(); j++)
         {
-          if(ntuple->matchedDeltaR[j] < maxDeltaR)
+          if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
             {
               h++;
               for(unsigned int k=0; k<channels[currentChannelIndex].pdgids.size(); k++)
@@ -1766,30 +2600,49 @@ void fcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t)
                       de = x-y;
                       ly = y;
                       
-                      fxy = exp(-.5*pow(de-(par[0]+par[1]*ly),2)/(pow((par[2]+par[3]*ly),2))); 
-                      fxy = fxy+(par[4]+ly*par[5])*exp(-.5*pow(de-(par[6]+par[7]*ly),2)/(pow((par[8]+par[9]*ly),2)));
-                      fxy = fxy/((par[2]+par[3]*ly)+(par[4]+par[5]*ly)*(par[8]+par[9]*ly));
-                      fxy = fxy/(sqrt(2.*3.141592654));    
-                      
-                      if(fxy<0){
-                        cout<<"**********************"<<fxy<<"  "<<h<<endl;
-                        cout<<"---------------------"<<sum<<"  "<<endl;
-                        cout<<par[0]<<"  "<<par[1]<<"  "<<par[2]<<"  "<<par[3]<<"  "<<par[4]<<endl;
-                        cout<<par[5]<<"  "<<par[6]<<"  "<<par[7]<<"  "<<par[8]<<"  "<<par[9]<<endl;
+                      fit.FixParameter(0,par[0]);
+                      fit.FixParameter(1,par[1]);
+                      fit.FixParameter(2,par[2]);
+                      fit.FixParameter(3,par[3]);
+                      fit.FixParameter(4,par[4]);
+                      fit.FixParameter(5,par[5]);
+                      fit.FixParameter(6,par[6]);
+                      fit.FixParameter(7,par[7]);
+                      fit.FixParameter(8,par[8]);
+                      fit.FixParameter(9,par[9]);
+                      fxy = fit.Eval(de,ly);
+
+                      if(fxy<=0 || TMath::IsNaN(fxy) || TMath::IsNaN(log(fxy)))
+                      {
+                         neg_counter++;
+                         cout<<"**********************"<<fxy<<"  "<<h<<endl;
+                         cout<<"---------------------"<<sum<<"  "<<endl;
+                         cout<<par[0]<<"  "<<par[1]<<"  "<<par[2]<<"  "<<par[3]<<"  "<<par[4]<<endl;
+                         cout<<par[5]<<"  "<<par[6]<<"  "<<par[7]<<"  "<<par[8]<<"  "<<par[9]<<endl;
                       }
-                      
-                      sum = sum - log(fxy);
+                      else
+                        {
+                          if(fxy>pow(10.0,307))
+                            {
+                              cout << endl << "fxy = " << fxy << endl << "Jet Energy (x) = " << x << "\tParton Energy (y) = " << ly << "\tde = " << de << endl;
+                              cout<<par[0]<<"  "<<par[1]<<"  "<<par[2]<<"  "<<par[3]<<"  "<<par[4]<<endl;
+                              cout<<par[5]<<"  "<<par[6]<<"  "<<par[7]<<"  "<<par[8]<<"  "<<par[9]<<endl<<endl;
+                            }
+                          sum -= log(fxy);
+                        }
                     }
                   else
                     {
                       continue;
                     }
-                }//for(unsigned int l=0; l<channels[currentChannelIndex].pdgid.size(); l++)
-            }//if(ntuple->matchedDeltaR[j] < maxDeltaR)
+                }//for(unsigned int k=0; k<channels[currentChannelIndex].pdgid.size(); k++)
+            }//if((ntuple->matchedDeltaR[j] < maxDeltaR) && (abs(ntuple->jLV[j].Eta()) >= channels[currentChannelIndex].minEta) && (abs(ntuple->jLV[j].Eta()) <= channels[currentChannelIndex].maxEta))
         }//for(unsigned int j=0; j<ntuple->matchedGenParticles.Size(); j++)
     }//for (int i = 0; i<nEventNtuple; i++)
   
-  f = sum;  
+  if(neg_counter > 0) cout << "Times when fxy< 0: " << neg_counter << endl;
+
+  return sum;
 }
 
 /*****************************************************************************/
@@ -1814,48 +2667,56 @@ Examples:
     TMinuit * gMinuit = Minimize(minos);
 */
 
-//Minimization
-TMinuit* Minimize(bool minos)
+ROOT::Minuit2::Minuit2Minimizer* Minimize(bool &returnBool)
 {
-  int ierflg = 0;
-  //char chnam[100];
-  TString chnam;
-  
-  TMinuit *gMinuit = new TMinuit(10);       //initialize TMinuit 10 is the maximun number of parameters used by Minuit
-  gMinuit->mninit(5,6,7);                   //It initializes some constants
-  gMinuit->SetFCN(fcn);                     //fcn store as a pointer, SetFCN used to define it.
+  //Set up the Minuit2Minimizer object
+  ROOT::Minuit2::Minuit2Minimizer* gMinuit = new ROOT::Minuit2::Minuit2Minimizer(ROOT::Minuit2::kMigrad);
+  gMinuit->SetPrintLevel(3);
+  gMinuit->SetStrategy(2);
+  gMinuit->SetMaxFunctionCalls(5000);
+  gMinuit->SetMaxIterations(5000);
+  gMinuit->SetTolerance(0.1);
+  gMinuit->SetErrorDef(0.5);
+  gMinuit->SetValidError(true);
 
-  //double parameter[10]={18.854,-0.243698,3.5811,0.197366,0,0.012156,18.5608,-0.1316,8.68633, 0.031137};
-  double parameter[10]={2.02305, -0.0567438, 6.01594e-08, 0.149738, 0.0266924, 0.0001515859, 33.6103, -0.105295, 19.9699, 0.21974};
 
-  double a0 = 3.;
-  gMinuit->mnexcm("SET PRI", &a0,1, ierflg);  
-  
-  gMinuit->mnparm(0, "Par0", parameter[0], .001, 0.,0.,ierflg);   
-  gMinuit->mnparm(1, "Par1", parameter[1], .001, 0.,0.,ierflg);   //Implements one parameter definition
-  gMinuit->mnparm(2, "Par2", parameter[2], .001, 0.,100.,ierflg);   //p[0] starting value, .001 starting step size 0, 0 no limits
-  gMinuit->mnparm(3, "Par3", parameter[3], .001, 0.,100.,ierflg); 
-  gMinuit->mnparm(4, "Par4", parameter[4], .001, 0.,10.,ierflg); //These 2 parameters need to be bound so Minuit won't use
-  gMinuit->mnparm(5, "Par5", parameter[5], .001, 0.,10.,ierflg); // negative values. lowlimit 0., upperlimit 10.
-  gMinuit->mnparm(6, "Par6", parameter[6], .001, 0.,0.,ierflg);
-  gMinuit->mnparm(7, "Par7", parameter[7], .001, 0.,0.,ierflg);
-  gMinuit->mnparm(8, "Par8", parameter[8], .001, 0.,100.,ierflg);
-  gMinuit->mnparm(9, "Par9", parameter[9], .001, 0.,100.,ierflg);
+  //Set up the parameters and parameter step sizes
+  //Correct set of initial parameteres for basic normalization.
+  double parameter[10] = {0.,0.,20.,0.002,0.1,0.01,0.,0.,100.,0.1};
+  //parameters from minuit
+  //double parameter[10]={2.02305, -0.0567438, 6.01594e-08, 0.149738, 0.0266924, 0.0001515859, 33.6103, -0.105295, 19.9699, 0.21974};
+  double step[10] = {0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};
+
+  //Set the function being used to find the maximum log-liklihood
+  ROOT::Math::Functor f(&fcn,10); 
+  gMinuit->SetFunction(f);
+
+  // Set the free variables to be minimized!  
+  gMinuit->SetVariable(0, "Par0", parameter[0], step[0]);
+  gMinuit->SetVariable(1, "Par1", parameter[1], step[1]);
+  gMinuit->SetLowerLimitedVariable(2, "Par2", parameter[2], step[2], 0.);
+  gMinuit->SetLowerLimitedVariable(3, "Par3", parameter[3], step[3], 0.);
+  gMinuit->SetLowerLimitedVariable(4, "Par4", parameter[4], step[4], 0.);
+  gMinuit->SetLowerLimitedVariable(5, "Par5", parameter[5], step[5], 0.);
+  gMinuit->SetVariable(6, "Par6", parameter[6], step[6]);
+  gMinuit->SetVariable(7, "Par7", parameter[7], step[7]);
+  gMinuit->SetLowerLimitedVariable(8, "Par8", parameter[8], step[8], 0.);
+  gMinuit->SetLowerLimitedVariable(9, "Par9", parameter[9], step[9], 0.);
  
-
-  double a1 = .5;
-  gMinuit->mnexcm("SET ERR", &a1 ,1, ierflg);    
-
-  double a2 = 1000; //number of iterations
-  gMinuit->mnexcm("MIGRAD", &a2 ,1, ierflg);
-  if(minos)
+  //Perform the minimization
+  if(gMinuit->Minimize())
     {
-      gMinuit->mnexcm("MINOS", &a2,1, ierflg);   // add another minimization comand.
-      // It is slower but more precise
+      cout << "Minimize::Minimization successful!" << endl << "Status = " << gMinuit->Status() << endl << "NCalls = " << gMinuit->NCalls() << endl << "EDM = " << gMinuit->Edm() << endl;
+      gMinuit->PrintResults();
+      returnBool = true;
+    }
+  else
+    {
+      cout << "Minimize::Minimization failed!" << endl << "Status = " << gMinuit->Status() << endl << "NCalls = " << gMinuit->NCalls() << endl << "EDM = " << gMinuit->Edm() << endl;
+      gMinuit->PrintResults();
+      returnBool = false;
     }
 
-  cout << "flag = " << ierflg << endl;
- 
   return gMinuit;
 }
 
@@ -1901,9 +2762,11 @@ Examples:
     TransferFunctions(false,"TTbarMG","/uscms_data/d1/ilyao/Stage2SkimResults_3_8_7/MC/TTbarMG_outfileAll.root")
     TransferFunctions(true,"TTbarMG","/uscms_data/d1/ilyao/Stage2SkimResults_3_8_7/MC/TTbarMG_outfileAll.root")
     (The second one takes a lot longer due to the presence of the minos=true parameter)
+    TransferFunctions(false,"TTbarMG","/uscms/home/aperloff/MatrixElement/CMSSW_3_8_7/src/TAMUWW/Selection/bin/TTBarTest_status3/SelectionTest_outfile.root")
+    (For a shorter fun time)
 */
 
-void TransferFunctions (bool minos = false, string process = "unknown" , string inputFilepath = "") 
+void TransferFunctions (bool minos = false, string process = "unknown" , string inputFilepath = "", bool debug = false) 
 {
   //Print some initial output messages.
   cout << endl << "*****************************************************************************" << endl;
@@ -1918,12 +2781,7 @@ void TransferFunctions (bool minos = false, string process = "unknown" , string 
 
   //Set the style parameters for the root canvases
   cout << "TransferFunctions::Setting the default root style options." << endl;
-  //gStyle->SetFillColor(0);
-  gStyle->SetOptStat("neMR");
-  gStyle->SetOptFit(2211);
-  gStyle->SetPalette(1);
-  gStyle->SetTitleColor(0,"c");
-  gStyle->SetTitleFillColor(0);
+  setStyle(true);
 
   channels = GetListOfChannels();
 
@@ -1942,33 +2800,50 @@ void TransferFunctions (bool minos = false, string process = "unknown" , string 
   //Creates the storage elements for the output tbales, functions, and histograms
   vector<Table*> tables;
   vector<TF2*> fits;
+  vector<TH1D*> normHists;
   map<string,TH1D*> histoMap1D;
   map<string,TH2D*> histoMap2D;
 
+  //Tells the user is the fitting minimization was successful
+  bool returnBool = false;
+
   //Creates the output root file
-  string outputFilename = "TF_" + process + ".root";
+  string outputFilename = filename_creator(process,".root",debug);
   TFile* file = TFile::Open(outputFilename.c_str(),"RECREATE");
 
   //Loop over all channels
   for (unsigned int i=0;i<channels.size(); i++)
     {
-      cout << endl << "TransferFunctions::Start fitting the recoJets and genParticles by their pdgId." << endl << "Start time: " << print_time() << endl;
       //Set the current channel that the program is working on. This is a global variable that all function can use
+      cout << endl << "TransferFunctions::Setting the current channel to " << channels[i].name << "." << endl << "Start time: " << print_time() << endl;
       currentChannelIndex=i;
+      cout << "End time: " << print_time() << endl;
+
       //Analyze this channel and perform the minimization
-      TMinuit * gMinuit = Minimize(minos);
+      cout << endl << "TransferFunctions::Start fitting the recoJets and genParticles by their pdgId." << endl;
+      cout << "TransferFunctions::Performing the minimization and retrieving of the fit parameters." << endl << "Start time: " << print_time() << endl;
+      //ROOT::Minuit2::Minuit2Minimizer* gMinuit = Minimize(returnBool);
+      pair<vector<string>, pair<vector<double>,vector<double> > > parameters;
+      if(minos) parameters = getMinosParameters(Minimize(returnBool));
+      else parameters = getParameters(Minimize(returnBool));
+      if(!returnBool)
+      {
+        cout << "TransferFunctions::This channel will be skipped." << endl;
+        cout << "End time: " << print_time() << endl;
+        continue;
+      }
       cout << "End time: " << print_time() << endl;
       
-      cout << endl << "TransferFunctions::Make and print the transfer function table for the " << channels[currentChannelIndex].name << " channel." << endl << "Start time: " << print_time() << endl;
+      cout << endl << "TransferFunctions::Make and print the transfer function table for the " << channels[i].name << " channel." << endl << "Start time: " << print_time() << endl;
       //Call a function that produces a Table out of the gMinuit
-      tables.push_back(makeTable(gMinuit));
-      //print the table to the console
+      tables.push_back(makeTable(parameters));
+      //Print the table to the console
       tables.back()->printTable(cout);
-      //print the table to a file
-      string ofname = "TF_" + process + "_" + channels[i].name + ".txt"; 
+      //Print the table to a file
+      string ofname = filename_creator(string(process + "_" + channels[i].name),".txt",debug);
       tables.back()->printToFile(ofname);
       //Call a function that makes a fit out of the gMinuit
-      fits.push_back(makeFit(gMinuit));
+      fits.push_back(makeFit(parameters));
       fits.push_back(makeJEvsPEFit(fits.back()));
       cout << "End time: " << print_time() << endl;    
 
@@ -1979,6 +2854,7 @@ void TransferFunctions (bool minos = false, string process = "unknown" , string 
       HistogramsByFlavor(channels[i],histoMap1D,histoMap2D);
       HistogramsByFlavorAndEnergy(channels[i],histoMap1D);
       HistogramsNormalizedByPartonEnergy(channels[i],histoMap2D);
+      //normHists.push_back(makeNormalizationHist(parameters)); 
       cout << "End time: " << print_time() << endl;
 
   }//for (unsigned int i=0;i<channels.size(); i++)
@@ -1991,14 +2867,22 @@ void TransferFunctions (bool minos = false, string process = "unknown" , string 
     }
   makeNumJetsTable()->Write();
   makeAllJetsTable()->Write();
-  makeEventContentTable(true)->Write();
-  makeEventContentTable(false)->Write();
+  makeEventContentTable(true,true)->Write();
+  makeEventContentTable(true,false)->Write();
+  makeEventContentTable(false,true)->Write();
+  makeEventContentTable(false,false)->Write();
+  makeInputParameterTable(minos,process,inputFilepath,debug)->Write();
   cout<< "\tTables saved" << endl;
   for(unsigned int i=0; i<fits.size(); i++)
     {
        fits[i]->Write();
     }
   cout<< "\tFits saved" << endl;
+  for(unsigned int i=0; i<normHists.size(); i++)
+    {
+       normHists[i]->Write();
+    }
+  cout<< "\tNormalization histograms saved" << endl;
   for(map<string,TH1D*>::iterator it = histoMap1D.begin() ; it != histoMap1D.end(); it++)
     {
       (*it).second->Write();
@@ -2020,8 +2904,8 @@ void TransferFunctions (bool minos = false, string process = "unknown" , string 
 /**
 runAllTF::
   This function automates the process of running many samples through the TransferFunctions macro/function.
-  This assumes that a Table of sample locations, as well as the associated samples/datasets, has already
-  been created.
+  This assumes that a FileLocationTable of sample locations, as well as the associated samples/datasets, has
+  already been created.
 
 Parameters:
   minos: This boolean is passed onto the TransferFunctions function. Tells the program's Minuit algorithm
@@ -2043,14 +2927,13 @@ Examples:
     runAllTF(true,"/uscms/home/aperloff/MatrixElement/CMSSW_3_8_7/src/TAMUWW/ConfigFiles/Official/MEInputFileLocation.txt")
 */
 
-void runAllTF(bool minos, string MEInputFileLocation = "/uscms/home/aperloff/MatrixElement/CMSSW_3_8_7/src/TAMUWW/ConfigFiles/Official/MEInputFileLocation.txt")
+void runAllTF(bool minos, string MEInputFileLocation = "/uscms/home/aperloff/MatrixElement/CMSSW_3_8_7/src/TAMUWW/ConfigFiles/Official/MEInputFileLocation.txt", bool debug = false)
 {
   //Print some initial output messages.
   cout << endl << endl << "*****************************************************************************" << endl;
   cout << endl << "runAllTF::Program started at " <<  print_time() << endl;
 
   FileLocationTable* table = new FileLocationTable("MEInputFileLocation");
-  //Table* table = new Table("MEInputFileLocation");
   table->parseFromFile(MEInputFileLocation);
   table->addBasePath();
   vector<TableRow> rows = table->getRows();
@@ -2065,8 +2948,9 @@ void runAllTF(bool minos, string MEInputFileLocation = "/uscms/home/aperloff/Mat
       cell = (TableCellText*) row[0];
       if(cell)
         {
-          cout << "runAllTF::running TransferFunctions(" << minos << "," << process << "," << cell->text << ")" << endl;
-          TransferFunctions(minos,process,cell->text);
+          if(debug) cout << "runAllTF::running TransferFunctions(" << minos << "," << process << "," << cell->text << "," << "true" << ")" << endl;
+          else cout << "runAllTF::running TransferFunctions(" << minos << "," << process << "," << cell->text << "," << "false" << ")" << endl;
+          TransferFunctions(minos,process,cell->text,debug);
         }
     }
   cout << "runAllTF::End of Program" << endl << endl;
