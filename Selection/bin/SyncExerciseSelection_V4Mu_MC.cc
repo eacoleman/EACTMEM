@@ -138,7 +138,8 @@ int main (int argc, char* argv[])
 
   /// Jets (apply after the Primary Electrons but before the Primary Muons):
   double j_pt;
-  double j_ptMin=30.0;
+  //double j_ptMin=30.0;
+  double j_ptMin=25.0;
   double j_eta;
   double j_aetaMax=2.4;
   double j_DRel;
@@ -229,7 +230,7 @@ int main (int argc, char* argv[])
   double elZVeto_HoEMaxEE=7.0e-02;
 	 
   /// Primary Muons (used in muon selection):
-  vector < double > JEta, JPhi;
+  vector < double > JEta, JPhi, JEta_temp, JPhi_temp;
   double mu_pt;
   double muPrim_ptMin=20.0;
   double mu_eta;
@@ -587,7 +588,7 @@ int main (int argc, char* argv[])
       assert ( muonHandle.isValid() );
       
       fwlite::Handle< vector< pat::MET > > METHandle;
-      METHandle.getByLabel (eventCont, "patMETsPF");
+      METHandle.getByLabel (eventCont, "patMETsPFlow");
       assert ( METHandle.isValid() );
 
 
@@ -872,7 +873,75 @@ int main (int argc, char* argv[])
      mu1Marker=-1;
      //      mu2Marker=-1;
      lpCounter=0;
+
+     ///Remove the Jets which are probably muons (i.e. DR<0.1), or more precisely keep the jets which aren't.
      const vector< pat::Muon >::const_iterator muEnd = muonHandle->end();
+     for (vector< pat::Muon >::const_iterator muIter = muonHandle->begin(); ( muEnd != muIter ); ++muIter ) { 
+       mu_pt=muIter->pt();
+       mu_eta=muIter->eta();
+       mu_phi=muIter->phi();
+       mu_RelIso=(muIter->trackIso()+muIter->ecalIso()+muIter->hcalIso())/mu_pt;
+
+       if ( (muIter->isGlobalMuon())&&(muIter->isTrackerMuon()) ) {
+	 muisGmTm=true;
+       } else {
+	 muisGmTm=false;
+       }
+       muisTightPrompt=false;
+       if ( muIter->globalTrack().isNonnull() ) {
+	 if ( ((muIter->globalTrack()->normalizedChi2())<muPrim_gtNormChi2Max)&&((muIter->globalTrack()->hitPattern().numberOfValidMuonHits())>muPrim_gtNMuHitsMin) ) {
+	   muisTightPrompt=true;
+	 }
+       }
+       if ( muIter->innerTrack().isNonnull() ) {
+	 muPrim_itNHits=muIter->innerTrack()->numberOfValidHits();
+       } else {
+	 muPrim_itNHits=-1;
+       }
+       
+       mu_vtxPass=false;
+       if ( abs(Vtx.z() - muIter->vertex().z())<1 ) {
+	 mu_vtxPass=true;
+       }
+
+       /// Apply The Primary Cuts
+       if ( muisGmTm&&
+	    (mu_pt>muPrim_ptMin)&&
+	    (abs(mu_eta)<muPrim_aetaMax)&&
+	    (mu_RelIso<muPrim_RelIsoMax)&&
+	    muisTightPrompt&&
+	    (muPrim_itNHits>muPrim_itNHitsMin)&&
+	    //	    muDRPass&&
+	    ((muIter->dB())<muPrim_dBMax)&&
+	    mu_vtxPass&&
+	    (muIter->innerTrack()->hitPattern().pixelLayersWithMeasurement()>0.5)&&
+	    (muIter->numberOfMatches()>1)
+	    ) {
+	 if ( jNEntries!=0 ) {
+	   JEta_temp.clear();
+	   JPhi_temp.clear();
+	   jcnt_tot=0;
+	   for (Int_t jn=0; jn<jNEntries;jn++) {
+	     adphi=abs(JPhi[jn]-mu_phi);
+	     //we're on a circle
+	     if ( adphi>pi_ ) {
+	       adphi=2*pi_-adphi;
+	     }
+	     muPrim_DRj=pow((JEta[jn]-mu_eta)*(JEta[jn]-mu_eta)+adphi*adphi,0.5);
+	     if ( muPrim_DRj>0.1 ) {
+	       JEta_temp.push_back(JEta[jn]);
+	       JPhi_temp.push_back(JPhi[jn]);
+	       jcnt_tot++;
+	     }
+	   }
+	   JEta=JEta_temp;
+	   JPhi=JPhi_temp;
+	   jNEntries=jcnt_tot;
+	 }
+       }
+     }
+
+     ///Apply the muon selection
      for (vector< pat::Muon >::const_iterator muIter = muonHandle->begin(); ( muEnd != muIter ); ++muIter ) { 
        mu_pt=muIter->pt();
        mu_eta=muIter->eta();
@@ -894,7 +963,6 @@ int main (int argc, char* argv[])
 	     muDRPass=false;
 	   }
 	 }
-	 
        }
        if ( (muIter->isGlobalMuon())&&(muIter->isTrackerMuon()) ) {
 	 muisGmTm=true;
@@ -931,6 +999,7 @@ int main (int argc, char* argv[])
 	    (muIter->innerTrack()->hitPattern().pixelLayersWithMeasurement()>0.5)&&
 	    (muIter->numberOfMatches()>1)
 	    ) {
+
 	 if ( mu1Marker==-1 ) {
 	   mu1Marker=lpCounter;
 	 }
@@ -952,6 +1021,8 @@ int main (int argc, char* argv[])
        
        lpCounter++; 
      }
+
+
 
      /// Electron ZVeto (apply only if we have one Primary electron).
      el_ZVeto=false;

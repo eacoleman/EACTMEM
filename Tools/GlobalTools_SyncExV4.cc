@@ -194,6 +194,8 @@ void writeIntCutLine(ofstream& outtablefile, int Evt[NCUTS][NJETS], int nJ) {
 void readCutLine(const char* linein, double Evt[NCUTS][NJETS], TString *token, int& nJ) {
 //// Takes linein, extracts the number of events passing each successive cut and records the count (for the nth cut) in Evt[n][nJ].
   istrstream str(linein);
+  //cout << "Reading the cut line (char):  " << linein << endl;
+  //cout << "Reading the cut line (str):  " << str << endl;
   TString cut[NCUTS];
   //input the number of Jets
   str >> nJ >> token[0] >> token[1];
@@ -201,15 +203,16 @@ void readCutLine(const char* linein, double Evt[NCUTS][NJETS], TString *token, i
   for (Int_t nc=0; nc<NCUTS;nc++) {
     str >> cut[nc] >> Evt[nc][nJ];
   }
+  //  cout << "nJ=" << nJ << endl;
 }
 
 void writeProcessTable(ofstream& outtablefile, double EvtTableEl[NCUTS][NJETS], double EvtTableMu[NCUTS][NJETS], double EvtTableLp[NCUTS][NJETS]) {
 //// Writes a .txt table file for the process
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-     outtablefile << "ELECTRONS:  " << setprecision(5) << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
+     outtablefile << "ELECTRONS:  "  << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
      writeCutLine(outtablefile,EvtTableEl,nj);
-     outtablefile << "MUONS:  " << setprecision(5) << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
+     outtablefile << "MUONS:  "  << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
      writeCutLine(outtablefile,EvtTableMu,nj);
      outtablefile << "LEPTONS:  " << EvtTableLp[0][nj] << " Events Total (after cut 0)" << endl;
      writeCutLine(outtablefile,EvtTableLp,nj);
@@ -222,9 +225,9 @@ void writeIntProcessTable(ofstream& outtablefile, int EvtTableEl[NCUTS][NJETS], 
    // loop over the desired jet counts
    for (Int_t nj=0; nj<NJETS;nj++) {
      outtablefile << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-     outtablefile << "ELECTRONS:  " << setprecision(5) << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
+     outtablefile << "ELECTRONS:  "  << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")" << endl;
      writeIntCutLine(outtablefile,EvtTableEl,nj);
-     outtablefile << "MUONS:  " << setprecision(5) << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
+     outtablefile << "MUONS:  "  << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")" << endl;
      writeIntCutLine(outtablefile,EvtTableMu,nj);
      outtablefile << "LEPTONS:  " << EvtTableLp[0][nj] << " Events Total (after cut 0)" << endl;
      writeIntCutLine(outtablefile,EvtTableLp,nj);
@@ -239,14 +242,15 @@ void readProcessTable(const char* selFileName, double EvtTableEl[NCUTS][NJETS], 
   int nJ;
   ifstream selFile;
   selFile.open(selFileName);
-  //selFile.getline(linein,300);
-  
+  cout << "selFileName=" << selFileName << endl;
+
   // loop over the desired jet counts
   for (Int_t nj=0; nj<NJETS;nj++) {
     selFile.getline(linein,300);
     //read in the electrons
     selFile.getline(linein,300);
     selFile.getline(linein,300);
+    //cout << "Read the electron line" << linein << endl;
     readCutLine(linein,EvtTableEl,token,nJ);
     if ( nJ!=nj ) {
       cout << "Error - Electrons: nJ=" << nJ << ",while nj=" << nj << endl;

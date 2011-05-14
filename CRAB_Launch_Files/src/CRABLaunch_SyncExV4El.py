@@ -1,4 +1,5 @@
-###Run with 3_8_1_patch2
+###Runs with 3.5.6
+###~7.5 K per event
 import FWCore.ParameterSet.Config as cms
 
 ## Define the process
@@ -64,8 +65,8 @@ process.ElectronsKinCutBasic = cms.EDFilter("CandViewSelector",
 ## #### Additional Modifications ####
 ## #process.GlobalTag.globaltag = cms.string('START36_V9::All')
 ## #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = cms.string('START38_V14::All')
-#process.GlobalTag.globaltag = cms.string('START38_V12::All')
+#process.GlobalTag.globaltag = cms.string('START38_V14::All')
+process.GlobalTag.globaltag = cms.string('START38_V12::All')
 
 ## Use the absolute 2D impact parameter (extracted by calling electron.dB()) w.r.t. the average beam spot using the electron track or innerTrack (tracker track) of the muon.
 process.patElectrons.usePV = cms.bool(False)
@@ -124,31 +125,26 @@ from PhysicsTools.PatAlgos.tools.jetTools import *
 process.load("RecoJets.JetProducers.ak5PFJets_cfi")
 addJetCollection(process,cms.InputTag('ak5PFJets'),
                  'AK5', 'PF',
-#                 doJTA        = False,
-                 doBTagging   = True,
-		 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
-#                jetCorrLabel = ('AK5','PF'),
-#                 doType1MET   = True,
-                 doType1MET   = False
-#                 doL1Cleaning = False,
-#                 doL1Counters = False,
-#                 genJetCollection=cms.InputTag("ak5GenJets"),
-#                 doJetID      = False
-#                 doJetID      = False
+                 doJTA        = False,
+                 doBTagging   = False,
+                 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+                 doType1MET   = True,
+                 doL1Cleaning = False,
+                 doL1Counters = False,
+                 genJetCollection=cms.InputTag("ak5GenJets"),
+                 doJetID      = False
                 )
 
-# 1. re-cluster ak5 pfjets and pass them to pat (only for pre-36x input):
-## process.load("RecoJets.JetProducers.ak5PFJets_cfi")
+## # 1. re-cluster ak5 pfjets and pass them to pat (only for pre-36x input):
+## ###process.load("RecoJets.JetProducers.ak5PFJets_cfi")
 ## addJetCollection(process, cms.InputTag('ak5PFJets::Test'), 'AK5', 'PF', jetCorrLabel=('AK5','PF'), doType1MET=False, doJetID = False)
-## # make sure to run process.ak5PFJets before PAT, for example:
-## process.patDefaultSequence = cms.Sequence(process.ak5PFJets * process.patDefaultSequence)
+# make sure to run process.ak5PFJets before PAT, for example:
+
+#process.patDefaultSequence = cms.Sequence(process.ak5PFJets * process.patDefaultSequence)
 
 # 2. add jet plus tracks (only for pre-36x input):
 process.load("RecoJets.Configuration.RecoJPTJets_cff")
-addJetCollection(process, cms.InputTag('JetPlusTrackZSPCorJetAntiKt5'), 'AK5', 'JPT', doBTagging   = True,
-                 jetCorrLabel = ('AK5JPT', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
-#                 jetCorrLabel = ('AK5','JPT'),
-                 doType1MET=False )
+addJetCollection(process, cms.InputTag('JetPlusTrackZSPCorJetAntiKt5'), 'AK5', 'JPT', jetCorrLabel = ('AK5JPT', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])), doType1MET=True )
 #run process.jetPlusTrackZSPCorJetAntiKt5 somewhere before PAT, e.g.,
 #process.patDefaultSequence = cms.Sequence(process.jetPlusTrackZSPCorJetAntiKt5 * process.patDefaultSequence)
 
@@ -161,11 +157,11 @@ addTcMET(process, 'TC')
 
 #### Run the pat sequences ##
 process.p1 = cms.Path(
-    process.jetPlusTrackZSPCorJetAntiKt5*
-    process.ak5PFJets*
-    process.patDefaultSequence
-    #  *process.MuonsKinCutBasic
-    #  *process.MuHLTFilter  
+  process.ak5PFJets*
+  process.jetPlusTrackZSPCorJetAntiKt5*
+  process.patDefaultSequence
+#  *process.MuonsKinCutBasic
+#  *process.MuHLTFilter  
 )
 
 ## process.p2 = cms.Path(
@@ -178,17 +174,17 @@ process.p1 = cms.Path(
 from PhysicsTools.PatAlgos.patEventContent_cff import *
 process.out.outputCommands += ['keep *_selectedPat*_*_*','drop *_cleanPat*_*_*']
 process.out.outputCommands += patExtraAodEventContent
-process.out.outputCommands += ["drop *_towerMaker_*_*"]
-process.out.outputCommands += ["drop l1extraParticles_*_*_*"]
-process.out.outputCommands += ["drop *_selectedPatTaus*_*_*"]
-process.out.outputCommands += ["drop *_selectedPatPhotons*_*_*"]
-process.out.outputCommands += ["drop *_offlineBeamSpot_*_*"]
-process.out.outputCommands += ["drop edmTriggerResults_TriggerResults*_*_*"]
-process.out.outputCommands += ["drop *_hltTriggerSummaryAOD_*_*"]
-###process.out.outputCommands += ["drop recoTracks_generalTracks*_*_*"]
-process.out.outputCommands += ["drop recoGenParticles_genParticles*_*_*"]
-#process.out.outputCommands += ["drop GenEventInfoProduct_*_*_*"]
-#process.out.outputCommands += ["drop GenRunInfoProduct_*_*_*"]
+## process.out.outputCommands += ["drop *_towerMaker_*_*"]
+## process.out.outputCommands += ["drop l1extraParticles_*_*_*"]
+## process.out.outputCommands += ["drop *_cleanPatTaus*_*_*"]
+## process.out.outputCommands += ["drop *_cleanPatPhotons*_*_*"]
+## process.out.outputCommands += ["drop *_offlineBeamSpot_*_*"]
+## process.out.outputCommands += ["drop edmTriggerResults_TriggerResults*_*_*"]
+## process.out.outputCommands += ["drop *_hltTriggerSummaryAOD_*_*"]
+## ###process.out.outputCommands += ["drop recoTracks_generalTracks*_*_*"]
+## process.out.outputCommands += ["drop recoGenParticles_genParticles*_*_*"]
+## #process.out.outputCommands += ["drop GenEventInfoProduct_*_*_*"]
+## #process.out.outputCommands += ["drop GenRunInfoProduct_*_*_*"]
 
 
 #process.out.outputCommands += ["drop recoGenJets_*_*_*"]

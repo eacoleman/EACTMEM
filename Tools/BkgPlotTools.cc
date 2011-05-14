@@ -105,6 +105,7 @@ void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, doub
     TH1F* htemp = new TH1F("htemp","htemp",25,VarMin,VarMax);
     InTree[n]->Draw(histload_str,Restrictions);
     h[n] = (TH1F*)htemp->Clone();
+    //h[n]->Sumw2();
     h[n]->SetName(hname);
     h[n]->SetTitle(hname);
 //     cout << "htemp Entries = " << htemp->GetEntries() << endl;

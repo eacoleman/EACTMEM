@@ -20,10 +20,10 @@ using namespace std;
 #include <TChain.h>
 
 // User defined variables and functions:
-//#include <TAMUWW/Tools/GlobalTools_SyncExV4.cc>
-#include <TAMUWW/Tools/GlobalTools.cc>
+#include <TAMUWW/Tools/GlobalTools_SyncExV4.cc>
+//#include <TAMUWW/Tools/GlobalTools.cc>
 
-void ProcessPATSubset(const char* Label, const char* inName, const char* outRootName, const char* outTxtName, int cntStart, int cntEnd, const char * executable) {
+void ProcessPATSubset_SyncExV4(const char* Label, const char* inName, const char* outRootName, const char* outTxtName, int cntStart, int cntEnd, const char * executable) {
 //// Process a subset of PAT files to generate a .txt Selection (sub) file. The PAT files should be of the form inName+cnt+".root" (with cnt=cntStart to cntEnd)
   TString Lstr;
   char tempC[6];
@@ -52,7 +52,7 @@ void ProcessPATSubset(const char* Label, const char* inName, const char* outRoot
   
 }
 
-void ProcessPATSet(const char* Label, const char* inPATName, const char* inRootName, const char* inTxtName, const char* outRootName, const char* outTxtName, int NStart, int NEnd, int stepSize, const char * executable) {
+void ProcessPATSet_SyncExV4(const char* Label, const char* inPATName, const char* inRootName, const char* inTxtName, const char* outRootName, const char* outTxtName, int NStart, int NEnd, int stepSize, const char * executable) {
 //// Process a set of either PAT files or already processed .txt & .root files to generate a combined .txt (& .root) file for the whole set. The PAT files should be of the form inName+cnt+".root" (with cnt=NStart to NEnd).
 ///  stepSize=-1 will not process the PAT tuples, but will run over the .txt files (provided they exist). stepSize=-2 merges the .root files as well.
 /// executable gives location of the selection excecutable (e.g. /uscms/home/ilyao/MATRIXELEMENT/CMSSW_3_6_3/bin/slc5_ia32_gcc434/PerformSelection.exe )
@@ -106,7 +106,7 @@ void ProcessPATSet(const char* Label, const char* inPATName, const char* inRootN
     pRootName=inRootName+pRootName;
 
     if ( stepSize>0) {
-      ProcessPATSubset(Label,inPATName,pRootName,pTxtName,Nbeg,Nfin,executable);
+      ProcessPATSubset_SyncExV4(Label,inPATName,pRootName,pTxtName,Nbeg,Nfin,executable);
     }
 
     InitializeLabels(PLabel,CLabel);
@@ -130,7 +130,7 @@ void ProcessPATSet(const char* Label, const char* inPATName, const char* inRootN
 }
 
 
-void ProcessSkims()
+void ProcessSkims_SyncExV4()
 {
 
 }
@@ -143,7 +143,7 @@ void ProcessSkims()
 //////  Make a Table for a single process:
 //////////////////////////////////////////////////////
 
-void writeJetRow(ofstream& outTableFile, TString Label, double Row[NJETS]) {
+void writeJetRow_SyncExV4(ofstream& outTableFile, TString Label, double Row[NJETS]) {
   outTableFile << Label ;
   for (Int_t k=0; k<NJETS;k++) { 
    outTableFile << "  &  " << Row[k];
@@ -152,7 +152,7 @@ void writeJetRow(ofstream& outTableFile, TString Label, double Row[NJETS]) {
 }
 
 
-void MakeProcessTable(const char* outTableFileName, const char* inselFileName, const char* inXSecFile, int processNumber)
+void MakeProcessTable_SyncExV4(const char* outTableFileName, const char* inselFileName, const char* inXSecFile, int processNumber)
 //// Produce the selection table given the XSections and selection results for the relevant processes.
 /// Use processNumber to read in the relevant information.
 
@@ -204,19 +204,19 @@ void MakeProcessTable(const char* outTableFileName, const char* inselFileName, c
   outTableFile << "+" << "  \\\\ "<< endl;
   outTableFile << "\\hline "<< endl;
   for (Int_t j=0; j<(FINALCUT+1);j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableEl[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableEl[j]);
   }
   
   //add the BTags
   outTableFile << "\\hline " << endl;
   for (Int_t j=(FINALCUT+1); j<NCUTS;j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableEl[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableEl[j]);
   }
   
   //add the Process Results
   outTableFile << "\\hline "<< endl;
-  writeJetRow(outTableFile, "FracPass", FracPassEl);
-  writeJetRow(outTableFile, " $Evts/pb^-1$ ", NExpectedEl);
+  writeJetRow_SyncExV4(outTableFile, "FracPass", FracPassEl);
+  writeJetRow_SyncExV4(outTableFile, " $Evts/pb^-1$ ", NExpectedEl);
   outTableFile << "\\hline " << endl;
   // close the table
   outTableFile << "\\hline " << endl;
@@ -241,19 +241,19 @@ void MakeProcessTable(const char* outTableFileName, const char* inselFileName, c
   outTableFile << "+" << "  \\\\ "<< endl;
   outTableFile << "\\hline "<< endl;
   for (Int_t j=0; j<(FINALCUT+1);j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableMu[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableMu[j]);
   }
   
   //add the BTags
   outTableFile << "\\hline " << endl;
   for (Int_t j=(FINALCUT+1); j<NCUTS;j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableMu[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableMu[j]);
   }
   
   //add the Process Results
   outTableFile << "\\hline "<< endl;
-  writeJetRow(outTableFile, "FracPass", FracPassMu);
-  writeJetRow(outTableFile, " $Evts/pb^-1$ ", NExpectedMu);
+  writeJetRow_SyncExV4(outTableFile, "FracPass", FracPassMu);
+  writeJetRow_SyncExV4(outTableFile, " $Evts/pb^-1$ ", NExpectedMu);
   outTableFile << "\\hline " << endl;
   // close the table
   outTableFile << "\\hline " << endl;
@@ -278,19 +278,19 @@ void MakeProcessTable(const char* outTableFileName, const char* inselFileName, c
   outTableFile << "+" << "  \\\\ "<< endl;
   outTableFile << "\\hline "<< endl;
   for (Int_t j=0; j<(FINALCUT+1);j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableLp[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableLp[j]);
   }
   
   //add the BTags
   outTableFile << "\\hline " << endl;
   for (Int_t j=(FINALCUT+1); j<NCUTS;j++) {
-    writeJetRow(outTableFile, CLabel[j],EvtTableLp[j]);
+    writeJetRow_SyncExV4(outTableFile, CLabel[j],EvtTableLp[j]);
   }
   
   //add the Process Results
   outTableFile << "\\hline "<< endl;
-  writeJetRow(outTableFile, "FracPass", FracPassLp);
-  writeJetRow(outTableFile, " $Evts/pb^-1$ ", NExpectedLp);
+  writeJetRow_SyncExV4(outTableFile, "FracPass", FracPassLp);
+  writeJetRow_SyncExV4(outTableFile, " $Evts/pb^-1$ ", NExpectedLp);
   outTableFile << "\\hline " << endl;
   // close the table
   outTableFile << "\\hline " << endl;
@@ -332,7 +332,7 @@ void storeEvtArray2to1(double EvtArray[NPROCESSES], double Mtx[NPROCESSES][NJETS
   }
 }
 
-void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, const char* TTbar_insel, const char* WpJ_insel, const char* ZpJ_insel, const char* WW_insel, const char* WZ_insel, const char* QCDHT100to250_insel, const char* QCDHT250to500_insel, const char* STopT_insel, const char* STopS_insel, const char* STopTW_insel) {
+void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, const char* TTbar_insel, const char* WpJ_insel, const char* ZpJ_insel, const char* WW_insel, const char* WZ_insel, const char* ZZ_insel, const char* QCDHT100to250_insel, const char* QCDHT250to500_insel, const char* STopT_insel, const char* STopS_insel, const char* STopTW_insel) {
 //// Produce the selection table given the XSections and selection results for the relevant processes.
 //// NJets=number of final state jets (which pass the cuts).
 // Get the input files for each process:
@@ -342,12 +342,12 @@ void MakeSelectionTable(const char* inXSecFile, const char* outTableFileName, co
   selName[2]=ZpJ_insel;
   selName[3]=WW_insel;
   selName[4]=WZ_insel;
-  //selName[5]=ZZ_insel;
-  selName[5]=QCDHT100to250_insel;
-  selName[6]=QCDHT250to500_insel;
-  selName[7]=STopT_insel;
-  selName[8]=STopS_insel;
-  selName[9]=STopTW_insel;
+  selName[5]=ZZ_insel;
+  selName[6]=QCDHT100to250_insel;
+  selName[7]=QCDHT250to500_insel;
+  selName[8]=STopT_insel;
+  selName[9]=STopS_insel;
+  selName[10]=STopTW_insel;
 
   //Combined Tables
   double EvtTableEl[NPROCESSES][NCUTS][NJETS];

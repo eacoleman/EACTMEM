@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //// A Common Set of variables and functions.
 
-const int NPROCESSES=11;
+const int NPROCESSES=10;
 const int NCUTS=12;
 const int FINALCUT=7;
 const int NJETS=5;
@@ -24,40 +24,41 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
   pcsLbl[2]="ZpJ";
   pcsLbl[3]="WW";
   pcsLbl[4]="WZ";
-  pcsLbl[5]="ZZ";
-  pcsLbl[6]="QCDHT100to250";
-  pcsLbl[7]="QCDHT250to500";
-  pcsLbl[8]="STopT";
-  pcsLbl[9]="STopS";
-  pcsLbl[10]="STopTW";
+  //pcsLbl[5]="ZZ";
+  pcsLbl[5]="QCDHT100to250";
+  pcsLbl[6]="QCDHT250to500";
+  pcsLbl[7]="STopT";
+  pcsLbl[8]="STopS";
+  pcsLbl[9]="STopTW";
 
-//   ///Matrix Element Selection Labels
-//   cutLbl[0]="c0:HLT+Kin";
-//   cutLbl[1]="c1:VtxCut";
-//   cutLbl[2]="c2:NJets";
-//   cutLbl[3]="c3:PrimaryEl/Mu";
-//   cutLbl[4]="c4:!conv/!LooseMu";
-//   cutLbl[5]="c5:!LooseMu/!LooseEl";
-//   cutLbl[6]="c6:ZVeto/None";
-//   cutLbl[7]="c7:METET";
-//   cutLbl[8]="BTag0";  
+  ///Matrix Element Selection Labels
+  cutLbl[0]="c0:HLT+Kin";
+  cutLbl[1]="c1:VtxCut";
+  cutLbl[2]="c2:NJets";
+  cutLbl[3]="c3:PrimaryEl/Mu";
+  cutLbl[4]="c4:!LooseMu";
+  cutLbl[5]="c5:ZVeto/ElVeto";
+  cutLbl[6]="c6:!conv/None";
+  cutLbl[7]="c7:METET";
+  cutLbl[8]="BTag0";  
+  cutLbl[9]="BTag1";
+  cutLbl[10]="BTag2";
+  cutLbl[11]="BTag3+";
+
+//   ///V4 Sync Exercise Labels
+//   cutLbl[0]="c0:None/HLT";
+//   cutLbl[1]="c1:Vtx";
+//   cutLbl[2]="c2:ELIso/MuIso";
+//   cutLbl[3]="c3:NotLooseMu";
+//   cutLbl[4]="c4:ZVeto/ElVeto";
+//   cutLbl[5]="c5:!conv_a/None";
+//   cutLbl[6]="c6:!conv_b/None";
+//   cutLbl[7]="c7:Jets>=NJ";
+//   cutLbl[8]="BTag0";
 //   cutLbl[9]="BTag1";
 //   cutLbl[10]="BTag2";
 //   cutLbl[11]="BTag3+";
 
-  ///V4 Sync Exercise Labels
-  cutLbl[0]="c0:None/HLT";
-  cutLbl[1]="c1:Vtx";
-  cutLbl[2]="c2:ELIso";
-  cutLbl[3]="c3:NotLooseMu";
-  cutLbl[4]="c4:ZVeto";
-  cutLbl[5]="c5:!conv_a";
-  cutLbl[6]="c6:!conv_b";
-  cutLbl[7]="c7:Jets>=NJ";
-  cutLbl[8]="BTag0";
-  cutLbl[9]="BTag1";
-  cutLbl[10]="BTag2";
-  cutLbl[11]="BTag3+";
 }
 
 
@@ -194,6 +195,8 @@ void writeIntCutLine(ofstream& outtablefile, int Evt[NCUTS][NJETS], int nJ) {
 void readCutLine(const char* linein, double Evt[NCUTS][NJETS], TString *token, int& nJ) {
 //// Takes linein, extracts the number of events passing each successive cut and records the count (for the nth cut) in Evt[n][nJ].
   istrstream str(linein);
+//   cout << "Reading the cut line (char):  " << linein << endl;
+//   cout << "Reading the cut line (str):  " << str << endl;
   TString cut[NCUTS];
   //input the number of Jets
   str >> nJ >> token[0] >> token[1];
@@ -201,6 +204,7 @@ void readCutLine(const char* linein, double Evt[NCUTS][NJETS], TString *token, i
   for (Int_t nc=0; nc<NCUTS;nc++) {
     str >> cut[nc] >> Evt[nc][nJ];
   }
+  //  cout << "nJ=" << nJ << endl;
 }
 
 void writeProcessTable(ofstream& outtablefile, double EvtTableEl[NCUTS][NJETS], double EvtTableMu[NCUTS][NJETS], double EvtTableLp[NCUTS][NJETS]) {
@@ -239,14 +243,15 @@ void readProcessTable(const char* selFileName, double EvtTableEl[NCUTS][NJETS], 
   int nJ;
   ifstream selFile;
   selFile.open(selFileName);
-  //selFile.getline(linein,300);
-  
+  cout << "selFileName=" << selFileName << endl;
+
   // loop over the desired jet counts
   for (Int_t nj=0; nj<NJETS;nj++) {
     selFile.getline(linein,300);
     //read in the electrons
     selFile.getline(linein,300);
     selFile.getline(linein,300);
+    //cout << "Read the electron line" << linein << endl;
     readCutLine(linein,EvtTableEl,token,nJ);
     if ( nJ!=nj ) {
       cout << "Error - Electrons: nJ=" << nJ << ",while nj=" << nj << endl;

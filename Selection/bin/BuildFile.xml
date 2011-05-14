@@ -1,5 +1,4 @@
-
-<bin name="SyncExerciseSelection_V4Mu.exe" file="SyncExerciseSelection_V4Mu.cc">
+<bin name="PerformSelection.exe" file="PerformSelection.cc">
  <use name="root"/>
  <use name="FWCore/FWLite"/>
  <use name="FWCore/Framework"/>
@@ -10,14 +9,3 @@
 
 </bin>
 
-
-<bin name="PerformDileptonSelection_EWKCuts.exe" file="PerformDileptonSelection_EWKCuts.cc">
- <use name="root"/>
- <use name="FWCore/FWLite"/>
- <use name="FWCore/Framework"/>
- <use name="DataFormats/FWLite"/>
- <use name="DataFormats/PatCandidates"/>
- <use name="PhysicsTools/FWLite"/>
- <use name="TAMUWW/MEPATNtuple"/>
-
-</bin>

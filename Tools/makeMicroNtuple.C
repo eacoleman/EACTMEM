@@ -70,15 +70,22 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
   METree* meNtuple = new METree();
 
   //  chain.SetBranchAddress("EvtTree", &eventNtuple);
-  chain.SetBranchAddress("METree", &meNtuple);
+  //cout << "t1" << endl;
+  chain.SetBranchAddress("METree.", &meNtuple);
+  //cout << "t2" << endl;
 
   MicroNtuple* microNtuple = new MicroNtuple(nJets);
 
 
   TFile outputFile(output.c_str(), "RECREATE");
   //   TTree outputTree("mnt", "Micro-ntuples for discriminant");
+  //cout << "t2.5" << endl;
   TTree* outputTree = chain.CloneTree(0);
+  //cout << "t2.6" << endl;
   outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
+
+  //cout << "t3" << endl;
+
 
   //   TFile histFile("KaNN_templates_final_nnBtagSys.root", "READ");
 //   TFile histFile("KaNN_templates_final.root", "READ");
@@ -100,6 +107,8 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
 
   unsigned nentries = static_cast<unsigned>(chain.GetEntries());
 
+  //cout << "t4" << endl;
+
   if (nentries == 0)
     {
       std::cerr << "\tNo entries found!  Aborting.\n";
@@ -109,6 +118,8 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
   std::cout << "\tOriginal chain has " << nentries << " entries" << std::endl;
 
   std::set<Signature> sigSet;
+
+  //cout << "t5" << endl;
 
   int not_taggable_events =0 ;
   //Loop over all the events
@@ -129,6 +140,8 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
 	microNtuple->eventMaxProb[i] = meNtuple->getProbStat(i)->tEventMaxProb;
 	
       }
+
+  //cout << "t6" << endl;
 
 //     unsigned nTaggable = 0;
 //     for (unsigned i = 0; i < nJets; ++i)
@@ -335,6 +348,8 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets, bool doLight
     microNtuple->epd1tagTchan = microNtuple->calcEPD(1, MicroNtuple::kTchan);
     microNtuple->epd2tagTchan = microNtuple->calcEPD(2, MicroNtuple::kTchan);
 
+    //cout << "t7" << endl;
+
     //WWandWZ EPD
     microNtuple->epd0tagWWandWZ = microNtuple->calcWZEPD(0, secvtxtag);
     microNtuple->epd1tagWWandWZ = microNtuple->calcWZEPD(1, secvtxtag);
@@ -427,8 +442,9 @@ void makeMicroNtuple(vector<string> locations, string output, unsigned nJets, bo
     return;
   }
 
+  //cout << "s1" << endl;
   makeMicroNtuple(chain, output, nJets, doLight, doNonW, doUntag);
-
+  //cout << "s2" << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -483,7 +499,8 @@ public:
 // WARNING!!! is the microNtuple as bigger than 2Gs the code crashes
 void createAllMicroNtuples(){
 
-  string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/";
+  string basePath="/uscms/home/ilyao/nobackup/MEResults/387PF2PAT/";
+  //string basePath="/uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/";
   // string basePath="./";
 
   //Input files for 2-jet bin
@@ -496,30 +513,70 @@ void createAllMicroNtuples(){
 
   //Output files
   //string outputPath=inputPath+"MicroNtuples/";
-  string outputPath="/uscms/home/ilyao/nobackup/MEResults/PAT356FullScan/";
+  string outputPath="/uscms/home/ilyao/nobackup/MEResults/387PF2PAT/microNtuples/";
   //string outputPath="./";
 
   //Create the list of MicroNtuples
   vector<MyStr> listOfMicroNtuples;
 
   //// Diboson
-  listOfMicroNtuples.push_back(MyStr("WW3300Evt*","micro_WW3300Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("WZ2000Evt*","micro_WZ2000Evt",false,false,false));
+  //  listOfMicroNtuples.push_back(MyStr("WW3300Evt*","micro_WW3300Evt",false,false,false));
 
-  //// W+jets and Z+jets
-  listOfMicroNtuples.push_back(MyStr("WpJ35700Evt*","micro_WpJ35700Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("ZpJ2000Evt*","micro_ZpJ2000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WW2200Evt*","micro_WW2200Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WZ1500Evt*","micro_WZ1500Evt",false,false,false));
 
-  //// ttbar
-  listOfMicroNtuples.push_back(MyStr("TTbar30600Evt*","micro_TTbar30600Evt",false,false,false));
+//   //// W+jets and Z+jets
+//   listOfMicroNtuples.push_back(MyStr("WpJ26000Evt*","micro_WpJ24000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("ZpJ680Evt*","micro_ZpJ680Evt",false,false,false));
+
+//   //// ttbar
+//   listOfMicroNtuples.push_back(MyStr("TTbar12000Evt*","micro_TTbar12000Evt",false,false,false));
 
   //// Single top
-  listOfMicroNtuples.push_back(MyStr("STopT42500Evt*","micro_STopT42500Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("STopS42500Evt*","micro_STopS42500Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT12000Evt*","micro_STopT24000Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopS12000Evt*","micro_STopS24000Evt",false,false,false));
 
   //// QCD
-  listOfMicroNtuples.push_back(MyStr("QCD_HT100to250NoIso92Evt*","micro_QCD_HT100to250NoIso92Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("QCD_HT250to500NoIso472Evt*","micro_QCD_HT250to500NoIso472Evt",false,false,false));
+//    listOfMicroNtuples.push_back(MyStr("QCDElData400Evt*","micro_QCDElData400Evt",false,false,false));
+//    listOfMicroNtuples.push_back(MyStr("QCDMuData7600Evt*","micro_QCDMuData7600Evt",false,false,false));
+//  listOfMicroNtuples.push_back(MyStr("QCDOnlyElData85Evt*","micro_QCDOnlyElData85Evt",false,false,false));
+
+
+  //// Data
+  //  listOfMicroNtuples.push_back(MyStr("DataEl1900Evt*","micro_DataEl1900Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("DataMu2300Evt*","micro_DataMu2300Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("Data*","micro_DataEl1900AndMu2300Evt",false,false,false));
+
+
+//   //// Higgs 
+//   listOfMicroNtuples.push_back(MyStr("HWWMH120_600Evt*","micro_HWWMH120_600Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("HWWMH130_800Evt*","micro_HWWMH130_800Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("HWWMH140_1100Evt*","micro_HWWMH140_1100Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("HWWMH150_1600Evt*","micro_HWWMH150_1600Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("HWWMH160_2700Evt*","micro_HWWMH160_2700Evt",false,false,false));
+
+//   listOfMicroNtuples.push_back(MyStr("WHMH115_3000Evt*","micro_WHMH115_3000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WHMH120_3000Evt*","micro_WHMH120_3000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WHMH125_3000Evt*","micro_WHMH125_3000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WHMH130_3000Evt*","micro_WHMH130_3000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WHMH135_3000Evt*","micro_WHMH135_3000Evt",false,false,false));
+
+
+
+//   //// W+jets and Z+jets
+//   listOfMicroNtuples.push_back(MyStr("WpJ35700Evt*","micro_WpJ35700Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("ZpJ2000Evt*","micro_ZpJ2000Evt",false,false,false));
+
+//   //// ttbar
+//   listOfMicroNtuples.push_back(MyStr("TTbar30600Evt*","micro_TTbar30600Evt",false,false,false));
+
+//   //// Single top
+//   listOfMicroNtuples.push_back(MyStr("STopT42500Evt*","micro_STopT42500Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopS42500Evt*","micro_STopS42500Evt",false,false,false));
+
+//   //// QCD
+//   listOfMicroNtuples.push_back(MyStr("QCD_HT100to250NoIso92Evt*","micro_QCD_HT100to250NoIso92Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("QCD_HT250to500NoIso472Evt*","micro_QCD_HT250to500NoIso472Evt",false,false,false));
 
 
   //

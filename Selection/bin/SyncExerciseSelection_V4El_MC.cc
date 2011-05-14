@@ -358,28 +358,42 @@ int main (int argc, char* argv[])
       VtxHandle.getByLabel (eventCont, "offlinePrimaryVertices");
       assert ( VtxHandle.isValid() );
 
-      fwlite::Handle< vector< pat::Electron > > electronHandle;
-      electronHandle.getByLabel (eventCont, "selectedPatElectrons");
-      assert ( electronHandle.isValid() );
+//       fwlite::Handle< vector< pat::Electron > > electronHandle;
+//       electronHandle.getByLabel (eventCont, "selectedPatElectrons");
+//       assert ( electronHandle.isValid() );
       
       fwlite::Handle< vector< pat::Jet > > caloJetHandle;
       caloJetHandle.getByLabel (eventCont, "selectedPatJets");
       assert ( caloJetHandle.isValid() );
       
-      fwlite::Handle< vector< pat::Jet > > pfJetHandle;
-      pfJetHandle.getByLabel (eventCont, "selectedPatJetsAK5PF");
-      assert ( pfJetHandle.isValid() );
-
-//       fwlite::Handle< vector< reco::PFJet > > pfJetHandle;
+//       fwlite::Handle< vector< pat::Jet > > pfJetHandle;
 //       pfJetHandle.getByLabel (eventCont, "selectedPatJetsAK5PF");
 //       assert ( pfJetHandle.isValid() );
 
-      fwlite::Handle< vector< pat::Muon > > muonHandle;
-      muonHandle.getByLabel (eventCont, "selectedPatMuons");
-      assert ( muonHandle.isValid() );
+//       fwlite::Handle< vector< pat::Jet > > pfJetHandle;
+//       pfJetHandle.getByLabel (eventCont, "selectedPatJetsAK5PF");
+//       assert ( pfJetHandle.isValid() );
+
+//       fwlite::Handle< vector< pat::Muon > > muonHandle;
+//       muonHandle.getByLabel (eventCont, "selectedPatMuons");
+//       assert ( muonHandle.isValid() );
       
+      ////Use PFlow objects:
+      fwlite::Handle< vector< pat::Electron > > electronHandle;
+      electronHandle.getByLabel (eventCont, "selectedPatElectronsPFlow");
+      assert ( electronHandle.isValid() );
+
+      fwlite::Handle< vector< pat::Jet > > pfJetHandle;
+      pfJetHandle.getByLabel (eventCont, "selectedPatJetsPFlow");
+      assert ( pfJetHandle.isValid() );
+
+      fwlite::Handle< vector< pat::Muon > > muonHandle;
+      muonHandle.getByLabel (eventCont, "selectedPatMuonsPFlow");
+      assert ( muonHandle.isValid() );
+
+
       fwlite::Handle< vector< pat::MET > > METHandle;
-      METHandle.getByLabel (eventCont, "patMETsPF");
+      METHandle.getByLabel (eventCont, "patMETsPFlow");
       assert ( METHandle.isValid() );
       
 

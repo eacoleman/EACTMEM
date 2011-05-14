@@ -1,7 +1,7 @@
 ////Crosssections (pb) : Taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSections
-TTbar = 154.5  WpJ = 28049.0  ZpJ = 2907.0  WW = 43.0  WZ = 18.2  ZZ = 5.9  QCDHT100to250 = 7000000.0  QCDHT250to500 = 171000.0  STopT = 63.2  STopS = 4.6  STopTW = 10.6
+TTbar = 154.5  WpJ = 28049.0  ZpJ = 2907.0  WW = 43.0  WZ = 18.2  QCDHT100to250 = 7000000.0  QCDHT250to500 = 171000.0  STopT = 63.2  STopS = 4.6  STopTW = 10.6
 ////Event Counts (in thouthands) for the MC that *WE* use
-TTbar = 1000  WpJ = 10000  ZpJ = 1000  WW = 100  WZ = 100  ZZ = 100  QCDHT100to250 = 10000  QCDHT250to500 = 4500  STopT = 500  STopS = 400  STopTW = 450
+TTbar = 1000  WpJ = 10000  ZpJ = 1000  WW = 100  WZ = 100  QCDHT100to250 = 10000  QCDHT250to500 = 4500  STopT = 500  STopS = 400  STopTW = 450
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

@@ -4,4 +4,4 @@
 #### Created by Osipenkov, Ilya : ilyao@fnal.gov
 #################################################################################################
 from CRABLaunch_Any_V4MC import *
-process.out.fileName = 'WpJMG.root'
+process.out.fileName = 'WHMH125.root'

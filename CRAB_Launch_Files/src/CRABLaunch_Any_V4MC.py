@@ -10,7 +10,7 @@ from PhysicsTools.PatAlgos.tools.cmsswVersionTools import *
 ## uncomment this line to run on an 35X input sample in 36X
 #run36xOn35xInput(process)
 run36xOn35xInput(process,
-                               genJets = "ak5GenJets")
+                                genJets = "ak5GenJets")
 
 #################################################################
 ## Output Module Configuration: must pass either path 'p1' or path 'p2'.
@@ -98,69 +98,42 @@ process.makePatElectrons = cms.Sequence(process.patElectronIDs*process.patElectr
 removeMCMatching(process, ['Electrons'])
 
 
-#### Add the necessary jet collections ###
-#mcjetcorrections=['L2Relative', 'L3Absolute']
-## Add the L1 JPT offset correction for JPT jets
-#jptcorrections = ['L1JPTOffset']
-#jptcorrections += mcjetcorrections
+## #### Add the necessary jet collections ###
+## mcjetcorrections=['L2Relative', 'L3Absolute']
+## ## Add the L1 JPT offset correction for JPT jets
+## jptcorrections = ['L1JPTOffset']
+## jptcorrections += mcjetcorrections
 
 
-### from PhysicsTools.PatAlgos.tools.jetTools import *
+## from PhysicsTools.PatAlgos.tools.jetTools import *
 
-#process.load("RecoJets.JetProducers.ak5PFJets_cfi")
-#addJetCollection(process,cms.InputTag('ak5PFJets'),
-#                 'AK5', 'PF',
-##                 doJTA        = False,
-#                 doBTagging   = True,
-##		 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
-#                 jetCorrLabel = ('AK5PF', cms.vstring(mcjetcorrections)),
-##                jetCorrLabel = ('AK5','PF'),
-##                 doType1MET   = True,
-#                 doType1MET   = False,
-##                 doL1Cleaning = False,
-##                 doL1Counters = False,
-#                 genJetCollection=cms.InputTag("ak5GenJets"),
-#                 doJetID      = False
-##                 doJetID      = False
-#                )
+## process.load("RecoJets.JetProducers.ak5PFJets_cfi")
+## addJetCollection(process,cms.InputTag('ak5PFJets'),
+##                  'AK5', 'PF',
+## #                 doJTA        = False,
+##                  doBTagging   = True,
+## #		 jetCorrLabel = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+##                  jetCorrLabel = ('AK5PF', cms.vstring(mcjetcorrections)),
+## #                jetCorrLabel = ('AK5','PF'),
+## #                 doType1MET   = True,
+##                  doType1MET   = False,
+## #                 doL1Cleaning = False,
+## #                 doL1Counters = False,
+##                  genJetCollection=cms.InputTag("ak5GenJets"),
+##                  doJetID      = False
+##                 )
 
-## # 1. re-cluster ak5 pfjets and pass them to pat (only for pre-36x input):
-## ## process.load("RecoJets.JetProducers.ak5PFJets_cfi")
-## ## addJetCollection(process, cms.InputTag('ak5PFJets::Test'), 'AK5', 'PF', jetCorrLabel=('AK5','PF'), doType1MET=False, doJetID = False)
-## ## # make sure to run process.ak5PFJets before PAT, for example:
-## ## process.patDefaultSequence = cms.Sequence(process.ak5PFJets * process.patDefaultSequence)
-
-## # 2. add jet plus tracks (only for pre-36x input):
-## process.load("RecoJets.Configuration.RecoJPTJets_cff")
-## addJetCollection(process, cms.InputTag('JetPlusTrackZSPCorJetAntiKt5'), 'AK5', 'JPT', doBTagging   = True,
-## #                 jetCorrLabel = ('AK5JPT', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
-##                   jetCorrLabel = ('AK5JPT', cms.vstring(jptcorrections)),
-## #                 jetCorrLabel = ('AK5','JPT'),
-##                  doType1MET=False )
-## #run process.jetPlusTrackZSPCorJetAntiKt5 somewhere before PAT, e.g.,
-## #process.patDefaultSequence = cms.Sequence(process.jetPlusTrackZSPCorJetAntiKt5 * process.patDefaultSequence)
-
-
-## # 3. add tcMet and pfmet tp PAT:
-## #from PhysicsTools.PatAlgos.tools.metTools import *
-## #addPfMET(process, 'PF')
-## #addTcMET(process, 'TC')
-  
-
-
-## ####Configuration for L1FastJet (https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections).####
-## ##-------------------- Import the JEC services -----------------------
-## process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
-## ##-------------------- Disable the CondDB for the L1FastJet (until they are included in a new global tag) -------
-## #process.ak5PFL1Fastjet.useCondDB = False
-## ##-------------------- Import the Jet RECO modules -----------------------
-## process.load('RecoJets.Configuration.RecoPFJets_cff')
-## ##-------------------- Turn-on the FastJet density calculation -----------------------
-## process.kt6PFJets.doRhoFastjet = True
-
-## ##-------------------- Include in the path the jet reconstruction  --------------------------------
-## process.patDefaultSequence = cms.Sequence(process.kt6PFJets * process.patDefaultSequence)
-## #)
+####Configuration for L1FastJet (https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections).####
+##-------------------- Import the JEC services -----------------------
+process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
+##-------------------- Disable the CondDB for the L1FastJet (until they are included in a new global tag) -------
+#process.ak5PFL1Fastjet.useCondDB = False
+##-------------------- Import the Jet RECO modules -----------------------
+process.load('RecoJets.Configuration.RecoPFJets_cff')
+##-------------------- Turn-on the FastJet density calculation -----------------------
+process.kt6PFJets.doRhoFastjet = True
+##-------------------- Include in the path the jet reconstruction  --------------------------------
+process.patDefaultSequence = cms.Sequence(process.kt6PFJets * process.patDefaultSequence)
 
 
 ####For PF2PAT####
@@ -172,21 +145,15 @@ usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= True , postfix=postfix
 ### Look at the vertices and remove the tracks coming from an intersection which is not a primary vertex (i.e. likely to be pileup).
 process.pfPileUpPFlow.Enable = True
 
-## ##-------------------- Turn-on the FastJet jet area calculation for your favorite algorithm -----------------------
-## process.patJetsPFlow.doAreaFastjet = True
-## #getattr(process,"patJets"+postfix).doAreaFastjet = True
-## process.ak5PFJets.doAreaFastjet = True
+##-------------------- Turn-on the FastJet jet area calculation for your favorite algorithm -----------------------
+#process.ak5PFJets.doAreaFastjet = True
+process.pfJetsPFlow.doAreaFastjet = True
+#getattr(process,"patJets"+postfix).doAreaFastjet = True
 
-## #.............................................................................................
-## ##-------------------- User analyzer  --------------------------------
-## #process.MyAnalyzer  = cms.EDAnalyzer('MyAnalyzer',
-## #...............................................................................................
-## #process.patJetsPFlow.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
-## process.ak5PFJets.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
+process.pfJetsPFlow.JetCorrectionService = cms.string('ak5PFL1FastL2L3Residual')
 
 
-#### Run the pat sequences ##
-
+#### Run the pat sequences ####
 
 process.seq1 = cms.Sequence(
     process.primaryVertexFilter*
@@ -208,7 +175,6 @@ process.seq2 = cms.Sequence(
 )
 
 process.p1 = cms.Path(process.seq1)
-
 process.p2 = cms.Path(process.seq2)
 
 
@@ -227,7 +193,6 @@ process.out.outputCommands += ["drop *_hltTriggerSummaryAOD_*_*"]
 process.out.outputCommands += ["keep recoGenParticles_*_*_*"] #keep
 #process.out.outputCommands += ["drop GenEventInfoProduct_*_*_*"]
 #process.out.outputCommands += ["drop GenRunInfoProduct_*_*_*"]
-
 
 process.out.outputCommands += ["drop recoGenJets_*_*_*"]
 process.out.outputCommands += ["drop recoPFCandidates_*_*_*"]
@@ -295,4 +260,5 @@ process.source = cms.Source("PoolSource",
 )
 
 #process.p = cms.Path( process.patDefaultSequence)
+
 
