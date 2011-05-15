@@ -2,7 +2,12 @@
 #define MICRONTUPLE_HH
 
 #include "TObject.h"
-#include "string"
+
+#include <string>
+#include <map>
+
+#include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
+#include "TAMUWW/MatrixElement/interface/EventProbDefs.hh"
 
 class DumbClassToTrickRoot : public TObject
 {
@@ -22,49 +27,23 @@ public:
 
 };
 
-class ProbsForEPD {
-public:
-  ProbsForEPD();
-
-  double ww     ;
-  double wz     ;
-  double wjg    ;
-  double zjg    ;
-  double tt     ;
-  double tchan  ;
-  double schan  ;
-  double qcd    ;
-
-  double tchan2 ;
-  double wbb    ;
-  double wcc    ;
-  double wc     ;
-  double wh     ;
-
-  // This just print all the elements to screen
-  void Show(std::string);
-
-  // This divides each member to the sum of all members
-  void Normalize();
-
-  // This divides each member by the maximum member
-  void NormalizeToMax();
-
-};
 
 class MicroNtuple : public TObject
 {
 public:
 
 
-  MicroNtuple(); // I HATE ROOT!
+  MicroNtuple(); 
   MicroNtuple(int nJets);
   MicroNtuple(const MicroNtuple&);
   MicroNtuple& operator=(const MicroNtuple&);
   ~MicroNtuple();
       
-  //enum {nEventProb = 21};
-  enum {nEventProb = 22};
+  enum {nEventProb = 18};
+
+  // ===================================
+  //  Member Variables
+  // ===================================
 
   Int_t nJets;
   Double_t eventProb[nEventProb];
@@ -114,70 +93,91 @@ public:
 
   DumbClassToTrickRoot h;
 
+  // Create a map that contains the index of eventProb to be used for a
+  // given DEFS::EP::Type and parameter type. This map is static and 
+  // could be filled on demand calling fillIndexMap(). 
+  // int index = map[DEFS::EP::WH][120]; //should be 13
+  // int index = m[DEFS::EP::WZ][0] // should be 1
+  typedef std::map<double, int> indexMap1;
+  typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
+  static indexMap2 indexMap;
+
+  // The static method that fills the map
+  static void fillIndexMap();
+
+
   enum EPDType {kSchan = 0, kTchan = 1, kCombined = 2};
 
+  // ===================================
+  //  Members Methods
+  // ===================================
+
   // void fillBProb();
-  static Double_t getKNNTagProb(double);
-  Double_t calcEPD(unsigned ntag, EPDType type = kCombined) const;
-  static Double_t calcEPD(unsigned ntag, EPDType type,
-			  const double eventProb[nEventProb],
-			  const double bProb[], Int_t arraySize);
+  static Double_t getKNNTagProb(double); 
 
-  // Get the coefficients neeed to calculate the EPD
-  static const double * getSingleTopEPDCoefficients (unsigned ntag, EPDType type);
+  // This method functions as a map which maps from the eventProbs to the ProbsForEPD.
+  // If you don't care about the higgs mass set it to zero. It returns the raw meProbs.
+  static ProbsForEPD getEventProbs(double mhiggs, const double evtProbs[nEventProb]) ;
 
-  // Translate from mass to index
-  static unsigned getHiggsMassIndex(double mass);
-
-  // Get the coefficients neeed to calculate the EPD
-  static const double * getHiggsEPDCoefficients(int indexWH, unsigned tagIndex, int nJets);
-
-  // Get the coefficients neeed to calculate the EPD with maxProb
-  static const double * getHiggsEPDMaxProbCoefficients(int indexWH, unsigned ntag);
+  // This method just calls the above method with evtProbs as a parameter
+  ProbsForEPD getEventProbs(double mhiggs) const;
 
   // Get the probabilities for each process
-  static ProbsForEPD getProbsForEPD(const double eventProb[nEventProb], 
-				    const double * params,
-				    //const vector<double> & params,
-				    unsigned int indexWH,
+  static ProbsForEPD getProbsForEPD(const ProbsForEPD & meProbs, 
+				    const ProbsForEPD & coeffs,
 				    const double bProb[], unsigned ntag);
   
+  
 
-  //This one is the regular EPD 
-  Double_t calcHiggsEPD(unsigned ntag, double mass) const;
-  static Double_t calcHiggsEPD(unsigned ntag,  double mass,
-			       const double eventProb[nEventProb], 
-			       const double bProb[], Int_t arraySize);
+  // ===================================
+  //  Methods for the particular analyses
+  // ===================================
 
-  // This one is MaxProb EPD
-  Double_t calcHiggsMaxProbEPD(unsigned ntag, double mass) const;
-  static Double_t calcHiggsMaxProbEPD(unsigned ntag,  double mass,
-			       const double eventProb[nEventProb], 
-			       const double bProb[], Int_t arraySize);
-
-  //This one is EPD + Max Prob EPD
-  Double_t calcHiggsSuperEPD(unsigned ntag, double mass) const;
-  static Double_t calcHiggsSuperEPD(unsigned ntag,  double mass,
-				    const double eventProb[nEventProb], 
-				    const double bProb[], Int_t arraySize);
-
-  Double_t calcWZEPD(unsigned ntag, unsigned secvtxtag) const;
-  static Double_t calcWZEPD(unsigned ntag,  unsigned secvtxtag,
-			    const double eventProb[nEventProb], 
+  // Methods for the WH 
+  static unsigned getWHMassIndex(double mass); // Translate from mass to index
+  static const ProbsForEPD getWHEPDCoefficients(int indexWH, unsigned tagIndex, int nJets); //  WH coefficients 
+  Double_t calcWHEPD(unsigned ntag, double mass) const;
+  static Double_t calcWHEPD(unsigned ntag,  double mass,
+			    const ProbsForEPD & meProbs, 
 			    const double bProb[], Int_t arraySize);
 
+  // Methods for the H->WW 
+  static unsigned getHWWMassIndex(double mass); // Translate from mass to index
+  static const ProbsForEPD getHWWEPDCoefficients(int indexWH, unsigned tagIndex, int nJets); //  H->WW coefficients 
+  Double_t calcHWWEPD(unsigned ntag, double mass) const;
+  static Double_t calcHWWEPD(unsigned ntag,  double mass,
+			     const ProbsForEPD & meProbs, 
+			     const double bProb[], Int_t arraySize);
 
+
+  // Methods for the WZ+WW 
+  static const ProbsForEPD getWZEPDCoefficients(unsigned tagIndex, int nJets); // WZ+WW coefficients
+  Double_t calcWZEPD(unsigned ntag) const;
+  static Double_t calcWZEPD(unsigned ntag, 
+			    const ProbsForEPD & meProbs, 
+			    const double bProb[], Int_t arraySize);
+
+  // Methods for the SingleTop
+  static const ProbsForEPD getSingleTopEPDCoefficients (unsigned ntag, EPDType type);
+  Double_t calcSingleTopEPD(unsigned ntag, EPDType type = kCombined) const;
+  static Double_t calcSingleTopEPD(unsigned ntag, EPDType type,
+				   const ProbsForEPD & meProbs,
+				   const double bProb[], Int_t arraySize);
+
+
+  // ===================================
+  //  Other methods
+  // ===================================
   static Double_t eventDump(const DumbClassToTrickRoot* h, double epd,
 			    int ALPTtype, double lepPt);
 
   static Double_t triggerTO(double detector, double etalep, double metraw,
 			    double etlep);
 
-  Bool_t cutEvents() const;
 
   void clear();
 
-  ClassDef(MicroNtuple, 7)
+  ClassDef(MicroNtuple, 8)
 
 };
 

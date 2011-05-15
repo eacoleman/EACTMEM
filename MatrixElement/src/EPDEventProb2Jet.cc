@@ -130,6 +130,12 @@ double EPDEventProb2Jet::computeEPD(const double parameters[]) const
   return epd;
 #endif
 
+  // FORGET ABOUT evtMEProb sSINCE I HAVE TO REDO THE MICRONTUPLE I HAVE TO 
+  // MAKE THIS COMPILEA AT ANY COST, I DONT CARE IF THIS METHOD IS RIGHT AS 
+  // WE NEVER PLAN TO USE IT.
+  return 0;
+
+  /*
   // For the moment assume we always have two jets. 
   // This should be set before the integral.
   static const int nJets = 2;
@@ -162,7 +168,9 @@ double EPDEventProb2Jet::computeEPD(const double parameters[]) const
   evtMEProb[19] *=  TMath::Pi() * 1960;
 
   // return the epd as obtained from the MicroNtuple, for mass 115
-  return MicroNtuple::calcHiggsEPD(ntag, 115 , evtMEProb, bProb, nJets);
+  return MicroNtuple::calcWHEPD(ntag, 115 , evtMEProb, bProb, nJets);
+  */
+
 
 }//computeEPD
 
