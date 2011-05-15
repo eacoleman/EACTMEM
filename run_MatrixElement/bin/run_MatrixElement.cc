@@ -3,19 +3,22 @@
 //// WW CrossSection Measurement using Matrix Element 
 //// Modified by Osipenkov, Ilya : ilyao@fnal.gov
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+// C++ libraris
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
 
+// CMSSW libraries
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 
+// This code libraries
 #include "TAMUWW/Integrator/interface/CubaIntegrator.hh"
 #include "TAMUWW/Integrator/interface/RootIntegrator.hh"
 #include "TAMUWW/MatrixElement/interface/EventFile.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/MEJob.hh"
-
 #include "TAMUWW/MatrixElement/interface/sChannelEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/ttEventProb2Jet.hh"
@@ -29,7 +32,6 @@
 #include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/ZLightEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/QCDEventProb2Jet.hh"
-
 #include "TAMUWW/MatrixElement/interface/WHEventProb3Jet.hh"
 #include "TAMUWW/MatrixElement/interface/sChannelEventProb3Jet.hh"
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb3Jet.hh"
@@ -69,9 +71,9 @@ int main(int argc, char* argv[]){
 // ****************************
 
   // NEW TF's
-  edm::FileInPath tf_ttbar_uds_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_UDS.txt");
-  edm::FileInPath tf_ttbar_g_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_G.txt");
-  edm::FileInPath tf_ttbar_b_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B.txt");
+  edm::FileInPath tf_ttbar_uds_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_UDS_00_24.txt");
+  edm::FileInPath tf_ttbar_g_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_G_00_24.txt");
+  edm::FileInPath tf_ttbar_b_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_00_24.txt");
  
   // The double-gaussian transfer functions
   DGTransferFunction bTF    ( tf_ttbar_b_file.fullPath());
@@ -193,162 +195,6 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
 
 
-  // // Simplify the computation for now
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 100)); //0
-// eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 105)); //1
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH110GeV, 110)); //2
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH115GeV, 115)); //3
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH120GeV, 120)); //4
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH125GeV, 125)); //5
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH130GeV, 130)); //6
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH135GeV, 135)); //7
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH140GeV, 140)); //8
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH145GeV, 145)); //9
-// //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF_WH150GeV, 150)); //10
-
-// //   //s-channel
-// //   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //11 
-// //   eventProbs3jet.push_back(new sChannelEventProb3Jet(divonneInt, bTF, gluonTF)); //11
-
-// //   //t-channel
-// //   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //12
-// //   eventProbs3jet.push_back(new tChannelEventProb3Jet(divonneInt, bTF, lightTF)); //12
-
-// // //   //t-channel alternate
-// // //   eventProbs2jet.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //13
-// // //   eventProbs3jet.push_back(new tChannelEventProb3JetAlt(divonneInt, bTF, lightTF)); //13
-
-// //   //Wbbbar
-// //   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //14
-// //   eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, bTF, gluonTF)); //14
-
-// //   //Wcc ME, use same as Wbb ME but with a different TF
-// //   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //15
-// //   eventProbs3jet.push_back(new WbbEventProb3Jet(divonneInt, cTF_WCC, gluonTF)); //15
-  
-// //   //Wc, use a Dummy class that is never evaluated for the 3 jets events
-// //   eventProbs2jet.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//16
-// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WC",rootInt)); //16
-
-// //   //Wjg, use a Dummy class that is never evaluated for the 3 jets events
-// //   eventProbs2jet.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //17
-// //   eventProbs3jet.push_back(new DummyEventProb("Dummy Wjg",rootInt)); //17
-
-// //   //Wgg, use a Dummy class that is never evaluated for the 3 jets events
-// //   eventProbs2jet.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //18
-// //   eventProbs3jet.push_back(new DummyEventProb("Dummy Wgg",rootInt)); //18
-
-// //   // tt-bar matrix element 2-jet
-// //   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //19
-// //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-// //   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-// //   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-  
-// //   // tt-bar matrix element 3-jet
-// //   eventProbs3jet.push_back(new ttEventProb3Jet(divonneInt, bTF, lightTF)); //19
-// //   eventProbs3jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-// //   eventProbs3jet.back()->setBounds(4, 0, TMath::TwoPi());
-// //   eventProbs3jet.back()->setBounds(5, 0, TMath::Pi());
-  
-// //   // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
-// //   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //20
-// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WW", rootInt)); //20
-
-// //   // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
-// //   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//21
-// //   eventProbs3jet.push_back(new DummyEventProb("Dummy WZ", rootInt));//21
- 
-  
-//   // ********************************************************
-//   // The following are the ME's for Ricardo's correlated EPD
-//   // ********************************************************
-//   vector<EventProb*> evtPrb2jetCEPD;
-
-//   if (1){
-
-//     //WH matrix elements
-//     evtPrb2jetCEPD.push_back(new WHEventProb2Jet(rootInt, bTF_WH100GeV, 100)); //0
-     
-//     //s-channel
-//     evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(rootInt, bTF_schan)); //1 
-    
-//     //t-channel
-//     evtPrb2jetCEPD.push_back(new tChannelEventProb2Jet(rootInt, bTF_tchan, lightTF_tchan)); //2
-    
-//     //t-channel alternate
-//     evtPrb2jetCEPD.push_back(new tChannelEventProb2JetAlt(rootInt, bTF_tchan, lightTF_tchan)); //3
-    
-//     //Wbbbar
-//     evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  bTF_WBB)); //4
-    
-//     //Wcc ME, use same as Wbb ME but with a different TF
-//     evtPrb2jetCEPD.push_back(new WbbEventProb2Jet(rootInt,  cTF_WCC)); //5
-    
-//     //Wc, use a Dummy class that is never evaluated for the 3 jets events
-//     evtPrb2jetCEPD.push_back(new WcEventProb2Jet(divonneInt, cTF_WC, gluonTF_WC));//6
-    
-//     //Wjg, use a Dummy class that is never evaluated for the 3 jets events
-//     evtPrb2jetCEPD.push_back(new WjgEventProb2Jet(divonneInt, lightTF_Wjg,gluonTF_Wjg)); //7
-    
-//     //Wgg, use a Dummy class that is never evaluated for the 3 jets events
-//     evtPrb2jetCEPD.push_back(new WggEventProb2Jet(divonneInt, gluonTF_Wgg)); //8
-    
-//     // tt-bar matrix element 2-jet
-//     evtPrb2jetCEPD.push_back(new ttEventProb2Jet(divonneInt, bTF_ttbar)); //9
-//     evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//     evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
-//     evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
-    
-//     // Diboson WW, use a Dummy class that is never evaluated for the 3 jets events
-//     evtPrb2jetCEPD.push_back(new WWEventProb2Jet(rootInt, lightTF_diboson)); //10
-    
-//     // Diboson WZ, use a Dummy class that is never evaluated for the 3 jets events
-//     evtPrb2jetCEPD.push_back(new WZEventProb2Jet(rootInt, lightTF_diboson));//11
-    
-//   }else { // DEBUG
-//     //evtPrb2jetCEPD.push_back(new sChannelEventProb2Jet(divonneInt, bTF));
-//     // In principle there is no need to set the bounds here as 
-//     // long as it is done in the EPDEventProb2Jet  object below
-//     evtPrb2jetCEPD.push_back(new ttEventProb2Jet(rootInt, bTF)); //18
-//     evtPrb2jetCEPD.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//     evtPrb2jetCEPD.back()->setBounds(4, 0, TMath::TwoPi());
-//     evtPrb2jetCEPD.back()->setBounds(5, 0, TMath::Pi());
-
-//     if (0){
-//       //eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF)); //11
-
-//       eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF)); //18
-//       eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//       eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//       eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-//     }
-    
-//  }
-
-//   divonneInt.setEpsilon(.01, 0);
-//   divonneInt.setNeval(10000, 1000000);
-
-//   rootInt.setEpsilon(.10, 0);
-//   rootInt.setNeval(10000, 100000);
-
-//   //For each of the 11 Higgs masses
-//   for (int mh=100; mh <101; mh += 5){
-
-//     //Finnaly put the vector into the new EPD class, and the new EPD into the 
-//     // MEJob vector 
-//     eventProbs2jet.push_back(new EPDEventProb2Jet(divonneInt, evtPrb2jetCEPD,
-// 						  bTF, 175, mh)); 
-//     eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//     eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//     eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-//   }
-
-//   // ********************************************************
-//   // END of ME's for Ricardo's correlated EPD
-//   // ********************************************************
-
-
-
   // ***************************
   // **** Loading into MEJob
   // ***************************
@@ -405,6 +251,6 @@ int main(int argc, char* argv[]){
    return 0;
 
 
-}
+}//main
 
 
