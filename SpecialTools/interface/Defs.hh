@@ -29,9 +29,9 @@ namespace DEFS{
   // ---------------------------------------------------------------
   namespace PhysicsProcess {
     enum Type {WH100, WH105, WH110, WH115, WH120, WH125,
-			   WH130, WH135, WH140, WH145, WH150,
-			   STopS, STopT, Wjets, Wbb, Wcc, WLight, 
-			   QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
+	       WH130, WH135, WH140, WH145, WH150,
+	       STopS, STopT, Wjets, Wbb, Wcc, WLight, 
+	       QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
 
 
     // A routine that returns the type given a string 
