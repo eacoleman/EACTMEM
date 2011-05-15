@@ -41,18 +41,22 @@ Table DefaultValues::getNormTable(DEFS::EvtCat evtcat, DEFS::TagCat tagcat){
 // and tag category
 Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){ 
 
-  FileLocationTable table("FileLocationTable");
-  table.addBasePath();
-
+  // The location of the table with the file locations
   string fileLocationFile = "TAMUWW/ConfigFiles/Official/FileLocation_";
   
   // add the tag name and the ".txt" at the end
   fileLocationFile += DEFS::getTagCatString(tagcat);
   fileLocationFile += ".txt";
-  
+
+  // Create the table and parse the contents of the file
+  FileLocationTable table("FileLocationTable");  
   if(!table.parseFromFile(fileLocationFile))
     cout<<"ERROR  DefaultValues::getFileLocationTable() cannot parse config file "
 	<<fileLocationFile<<endl;
+
+
+  // make sure you add the basepath to the table
+  table.addBasePath();
 
   return table;
   
@@ -110,13 +114,13 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   string jetBinName = DEFS::getJetBinString(jetBin);
     
   // find the file location for that process
-  TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"filepath");
+  TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath");
   
   // make sure we found the cell
   if (cellFile == 0){
     cout<<"ERROR DefaultValues::getProcesses Table "<<fileTable.GetName()
 	<<" does not have row "<<prName
-	<<" and column filepath"<<endl;
+	<<" and column FilePath"<<endl;
     cout<<" SKIPPING PROCESS "<<prName<<endl;
     return 0;
   }
