@@ -16,6 +16,9 @@
 //#include <math>
 using std::vector;
 
+///Headers for Transfer Function generation
+#include "DataFormats/Math/interface/deltaR.h"
+#include <utility>
 
 class EventNtuple : public TObject
 {
@@ -28,6 +31,9 @@ public:
   //Needed for ME
   //TLorentzVector lLV;
   vector < TLorentzVector > jLV, METLV, lLV;
+  vector < TLorentzVector > matchedGenParticles;
+  vector < int > matchedpdgId;
+  vector < double > matchedDeltaR;
   vector < int > jBtag;
   int lQ;
   int ldetComp;
