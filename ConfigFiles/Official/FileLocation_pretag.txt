@@ -15,6 +15,7 @@ Wcc     |
 WLight  |  
 Wjets   | micro_WpJ24000Evt.root
 Zjets   | micro_ZpJ680Evt.root
+QCD     | micro_QCDElData400Evt.root
 QCD100  | micro_QCDElData400Evt.root
 QCD250  | micro_QCDElData400Evt.root
 WW      | micro_WW2200Evt.root
@@ -23,13 +24,27 @@ ZZ      |
 WH100   |
 WH105   |  
 WH110   |  
-WH115   |  
-WH120   |  
-WH125   |  
-WH130   |  
-WH135   |  
+WH115   | micro_WHMH115_3000Evt.root
+WH120   | micro_WHMH120_3000Evt.root 
+WH125   | micro_WHMH125_3000Evt.root 
+WH130   | micro_WHMH130_3000Evt.root 
+WH135   | micro_WHMH135_3000Evt.root 
 WH140   |  
 WH145   |  
 WH150   |  
+HWW110  | 
+HWW115  | 
+HWW120  | micro_HWWMH120_600Evt.root
+HWW125  | 
+HWW130  | micro_HWWMH130_600Evt.root
+HWW135  |
+HWW140  | micro_HWWMH140_600Evt.root
+HWW145  | 
+HWW150  | micro_HWWMH150_600Evt.root
+HWW155  | 
+HWW160  | micro_HWWMH620_600Evt.root
+HWW165  |
+HWW170  | 
+
 
 
