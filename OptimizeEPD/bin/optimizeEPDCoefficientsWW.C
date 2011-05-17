@@ -254,6 +254,11 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
   delete signalHisto;
   delete allBackHisto;
 
+
+  // Print the normEPDcoeffs
+  cout<<"normalized constructor would be:"<<endl
+      <<"\t" <<bestEPDcoeffs.getStringConstructor()<<endl;
+
   // return the coefficients.
   return bestEPDcoeffs * normEPDcoeffs;
 
