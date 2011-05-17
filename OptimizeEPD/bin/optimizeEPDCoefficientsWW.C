@@ -114,7 +114,6 @@ double createHistoAndGetFOM( vector<PhysicsProcessForOpt*> processes,
 
       //get this process' name
       string thisProcName =  processes[p]->getName();
-      //cout<<" asdfas thisProcName="<<thisProcName <<endl;
 
       // put the WW or WX processes into the signal histogram
       if (thisProcName.find("WW") == 0 || thisProcName.find("WZ") == 0){
@@ -148,7 +147,7 @@ double createHistoAndGetFOM( vector<PhysicsProcessForOpt*> processes,
 ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes, 
 			       DEFS::TagCat tagcat, double & bestFigOfMerit){
 
-  // The returning set
+  // The returning set starts with all ones.
   ProbsForEPD bestEPDcoeffs(1);
 
   // The set use for trial and error
@@ -192,12 +191,12 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
   // Define the parameters of the run 
   double maxPower = 1;// 1 is the default
   double factor   = 2;
-  int maxIter     = 1000;//2000;// 1000 is default
+  int maxIter     = 2000;// 1000 is default
 
   // Flag to indicate if at least one fom was sucessfuly computed
   bool foundAtLeastOneFigureOfMerit = false; 
 
-  // Create a file to store the best histograms
+  // Create a file to store the best histograms. 
   TFile bhf("optimizeEPD_templates.root","RECREATE");
 
   // Perform the iterations
@@ -215,7 +214,6 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
       modifyEPDCoefficients(EPDcoeffs, maxPower, factor);
 
     // Calculate the figure of merit for this processes and EPDcoeffs'
-    // and plot only if iter==0
     double figOfMerit = createHistoAndGetFOM(processes, EPDcoeffs * normEPDcoeffs,
 					     tagcat, mhiggs,
 					     signalHisto,  allBackHisto);
@@ -230,10 +228,13 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
       bestEPDcoeffs = EPDcoeffs;
       
       // Save these histos to file
-      stringstream ss;
-      ss<<allBackHisto->GetName()<<"_iter"<<iter;
-      allBackHisto->Write(ss.str().c_str());
-      signalHisto->Write(ss.str().c_str());      
+      stringstream ssB;
+      ssB<<allBackHisto->GetName()<<"_iter"<<iter;
+      allBackHisto->Write(ssB.str().c_str());
+      stringstream ssS;
+      ssS<<signalHisto->GetName()<<"_iter"<<iter;
+      signalHisto->SetLineColor(2);
+      signalHisto->Write(ssS.str().c_str());      
 
     }// if best fom
 
@@ -246,9 +247,14 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
  
   }//for 
 
-  //cloe the file
+  // Close the file3
   bhf.Close();
 
+  // clean up
+  delete signalHisto;
+  delete allBackHisto;
+
+  // return the coefficients.
   return bestEPDcoeffs * normEPDcoeffs;
 
     
@@ -277,6 +283,7 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS:
 	<<"\tpercentualError="
 	<<processes[p]->getTotalExpectedEvents().error/processes[p]->getTotalExpectedEvents().value
 	<<endl;
+    
   }// for
 
  
@@ -342,6 +349,7 @@ void optimizeEPDCoefficientsWW(){
   // The rest just create and print the optimized 
   //     coefficients to the output file
   // - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Create the outfile; no need to close it as it will be destructed automatically.
   ofstream outFile("EPDCoefficients.txt");
 
   // Print Instructions
@@ -349,7 +357,7 @@ void optimizeEPDCoefficientsWW(){
   outFile << endl << endl << endl;
   outFile << coeffs0.getStringConstructor()<<" // DEFS::TagCat="<<DEFS::pretag<<" figOfMerit="<<figOfMerit0<<endl;
   
-  // Close the file
+  // close the outFile
   outFile.close();
 
 }// optimizeEPDCoefficientsWW

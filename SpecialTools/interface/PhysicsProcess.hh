@@ -59,7 +59,7 @@ public:
   inline void setCategory(std::string we) {m_categoryFormula = we;}
 
   // Setter of projections, without and with weights.
-  void setProjections(std::vector <std::string> projs);
+  unsigned int setProjections(std::vector <std::string> projs);
 
   // This fill the given templates with the info from the Tree
   void fillTH1Templates(std::vector < TH1* > & vec);

@@ -118,7 +118,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   
   // make sure we found the cell
   if (cellFile == 0){
-    cout<<"ERROR DefaultValues::getProcesses Table "<<fileTable.GetName()
+    cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
 	<<" does not have row "<<prName
 	<<" and column FilePath"<<endl;
     cout<<" SKIPPING PROCESS "<<prName<<endl;
@@ -134,7 +134,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   PhysicsProcess *  proc =  new PhysicsProcess(prName, prName, chain);
 
   // Tell it the formula to get the categories from its own data
-  proc->setCategory("h.det");
+  proc->setCategory("EvtTree.passStd");//"h.det");
   
   // Set the expected number of events for each category
   // iterating over the map of normTables.
@@ -146,8 +146,8 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
     
     // make sure we found the cell
     if (cellNorm == 0){
-      cout<<"ERROR DefaultValues::getProcesses "
-	  <<" normTable for EvtCat="<<DEFS::getEventCatString(it->first)
+      cout<<"ERROR DefaultValues::getSingleProcess normalization Table " <<it->second.getTableOrigin()
+	  <<" for EvtCat="<<DEFS::getEventCatString(it->first)
 	  <<" does not have row "<<prName
 	  <<" and column "<<jetBinName<<endl;
       cout<<" SKIPPING PROCESS "<<prName<<endl;
@@ -258,8 +258,8 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
   procs.push_back(DEFS::PhysicsProcess::Wjets   ); 
   procs.push_back(DEFS::PhysicsProcess::Zjets   );
-  procs.push_back(DEFS::PhysicsProcess::QCD100  );
-  procs.push_back(DEFS::PhysicsProcess::QCD250  );
+  procs.push_back(DEFS::PhysicsProcess::QCD  );
+  //procs.push_back(DEFS::PhysicsProcess::QCD250  );
   procs.push_back(DEFS::PhysicsProcess::WW      );
   procs.push_back(DEFS::PhysicsProcess::WZ      );
   //procs.push_back(DEFS::PhysicsProcess::ZZ      );

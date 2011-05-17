@@ -105,13 +105,11 @@ void PhysicsProcess::setPrintLevel(int pl){
 }// setPrintLevel
 
 //---------------------------------------------------------------------------
-void PhysicsProcess::setProjections(vector <string> projs){
+// Return the number of loaded events
+unsigned int PhysicsProcess::setProjections(vector <string> projs){
 
   // set the projections on the tree
-  unsigned nev = m_procTree->setProjections(projs, m_weight, m_categoryFormula);
-
-  cout<<"\tProcess\t"<<getName()<<"\t"<<getSubName()
-      <<"\tloaded with "<<nev<<"\tevents"<<endl;
+  return m_procTree->setProjections(projs, m_weight, m_categoryFormula);
 
 }// setProjections
 

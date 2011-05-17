@@ -150,8 +150,6 @@ ProcessTree::~ProcessTree(){
 unsigned ProcessTree::setProjections(vector < string > projections, string weight,
 				     string category){
 
-  cout<<" SetProjections with weight="<<weight<<endl;
-
   //first delete all the formulas we have if already existing
   if (m_formulaWeight) delete m_formulaWeight;
   if (m_formulaCategory) delete m_formulaCategory;

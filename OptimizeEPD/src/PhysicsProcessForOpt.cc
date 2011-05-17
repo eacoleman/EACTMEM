@@ -48,15 +48,17 @@ void PhysicsProcessForOpt::setProjectionsForOpt(){
   }
   
   // --second the last six are needed to calculate bProb[0] and bProb[1]
-  projs.push_back("mnt.bProb0[0]"); 
-  projs.push_back("mnt.bProb0[1]"); 
-  projs.push_back("mnt.bProb1[0]"); 
-  projs.push_back("mnt.bProb1[1]"); 
-  projs.push_back("mnt.bProb2[0]"); 
-  projs.push_back("mnt.bProb2[1]"); 
+  projs.push_back("mnt.bProb[0]"); 
+  projs.push_back("mnt.bProb[1]"); 
 
   // Put the projections into memory
-  setProjections(projs);  
+  unsigned int nev = setProjections(projs);  
+
+  // Report
+  cout<<"\tProcess\t"<<getName()<<"\t"<<getSubName()
+      <<"\tloaded with "<<nev<<"\tevents"<<endl;
+  cout<<"\t weight="<<getWeight()<<endl;
+  
 
 }//setProjections
 
@@ -78,9 +80,9 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
     tag=2;
 
 
-  //Create the histograms for each category
-  TH1 * histo_cat[6];
-  for (int hdet=0;hdet<=5;hdet++){
+  //Create the histograms for each detector category
+  TH1 * histo_cat[DEFS::nEvtCat];
+  for (unsigned int hdet = 0 ; hdet < DEFS::nEvtCat; hdet++){
     histo_cat[hdet] = (TH1*) histo->Clone();
     //histo_cat[hdet] -> Sumw2();
   }
@@ -98,13 +100,13 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
     std::vector<TreeRow> rows = subS->second->getVectorOfRows();
       
     // Loop over all the subsample rows
-    for (unsigned ro = 0; ro < rows.size(); ro ++){
+    for (unsigned int ro = 0; ro < rows.size(); ro ++){
   
       // Get the useful information
       int    columns =  rows[ro].data.size();
       double bProb[2];
-      bProb[0] = rows[ro].data[columns- 2 - 2*(2-tag)]; // 0T: -6 , 1T: -4, 2T: -2 
-      bProb[1] = rows[ro].data[columns- 1 - 2*(2-tag)]; //     -5       -3      -1
+      bProb[0] = rows[ro].data[columns- 2];//  - 2*(2-tag)]; // 0T: -6 , 1T: -4, 2T: -2 
+      bProb[1] = rows[ro].data[columns- 1];// - 2*(2-tag)]; //     -5       -3      -1
 
       for (int cc = 0; cc < columns - 6; cc++) // minus 6 because the last six are bProbs
 	evtProb[cc] = rows[ro].data[cc];
@@ -113,28 +115,40 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
       ProbsForEPD meProbs = MicroNtuple::getEventProbs(mhiggs, evtProb);
 
       // Get the probabilities for the EPD
-      ProbsForEPD probs = MicroNtuple::getProbsForEPD(meProbs, coeffs, bProb, tag);
+      ProbsForEPD probs = MicroNtuple::getProbsForEPD(meProbs, coeffs, bProb, tagcat);
       
       // Return the WW+WZ probability
       double epd = (probs.wz+probs.ww) / (probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
 					  probs.wc + probs.qcd + probs.tt +
 					  probs.ww + probs.wz);    
 
-
-      // fill the histogram
-      histo_cat[rows[ro].category]->Fill(epd,rows[ro].weight);
+      // Do a basic check to make sure the category is within bounds. Otherwise complain heavily.
+      if ( rows[ro].category < 0 || rows[ro].category >= (int)  DEFS::nEvtCat) {
+	cout<<"ERROR PhysicsProcessForOpt::fillNormEPDHisto (process "<<getName()
+	    <<") found category="<< rows[ro].category
+	    <<" which is not in the range [0,DEFS::nEvtCat="<< DEFS::nEvtCat<<") defined at SpecialTools/interface/Defs.hh"<<endl;
+	cout<<"\t SKIPPING EVENT"<<endl;
+      }
+      else 
+	// fill the histogram
+	histo_cat[rows[ro].category]->Fill(epd,rows[ro].weight);
        
     }//for rows   
     
   }//for subsamples
  
-  // Second normalize the histo to the expected number of events
-  for (int hdet=0;hdet<=5;hdet++){
+  // Loop over the categories, 
+  for (unsigned int hdet = 0; hdet < DEFS::nEvtCat; hdet++){
+
+    // normalize the histo to the expected number of events, and add to the total
     if (histo_cat[hdet]->Integral() > 0){
       histo_cat[hdet]->Scale(getCategoryNorm(hdet).value/histo_cat[hdet]->Integral());
       histo->Add(histo_cat[hdet]);
     }
+
+    // remove the histo
     delete histo_cat[hdet];
-  }  
+
+  }//for categories
 
 }//fillNormEPDHisto
