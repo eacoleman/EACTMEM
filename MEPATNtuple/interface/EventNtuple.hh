@@ -56,7 +56,7 @@ public:
 
   double        METEt;
   double        lPhi;
-  ClassDef(EventNtuple, 2)
+  ClassDef(EventNtuple, 3)
 
 };
 
