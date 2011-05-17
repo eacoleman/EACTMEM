@@ -17,7 +17,6 @@
 using std::vector;
 
 ///Headers for Transfer Function generation
-#include "DataFormats/Math/interface/deltaR.h"
 #include <utility>
 
 class EventNtuple : public TObject
