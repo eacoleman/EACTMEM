@@ -2957,8 +2957,16 @@ void runAllTF(bool minos, string MEInputFileLocation = "/uscms/home/aperloff/Mat
       cell = (TableCellText*) row[0];
       if(cell)
         {
-          if(debug) cout << "runAllTF::running TransferFunctions(" << minos << "," << process << "," << cell->text << "," << "true" << ")" << endl;
-          else cout << "runAllTF::running TransferFunctions(" << minos << "," << process << "," << cell->text << "," << "false" << ")" << endl;
+          if(debug)
+          {
+             if(minos) cout << "runAllTF::running TransferFunctions(" << "true," << process << "," << cell->text << "," << "true" << ")" << endl;
+             else cout << "runAllTF::running TransferFunctions(" << "false," << process << "," << cell->text << "," << "true" << ")" << endl;
+          }
+          else
+          {
+             if(minos) cout << "runAllTF::running TransferFunctions(" << "true," << process << "," << cell->text << "," << "false" << ")" << endl;
+             else cout << "runAllTF::running TransferFunctions(" << "false," << process << "," << cell->text << "," << "false" << ")" << endl;
+          }
           TransferFunctions(minos,process,cell->text,debug);
         }
     }
