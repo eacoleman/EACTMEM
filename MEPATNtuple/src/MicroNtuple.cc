@@ -1,5 +1,4 @@
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
-#include "TAMUWW/MEPATNtuple/interface/TopLepType.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -18,119 +17,53 @@ MicroNtuple::indexMap2 MicroNtuple::indexMap;
 
 MicroNtuple::MicroNtuple()
 {
-   nJets = 2;
-
-   knntag = new Double_t[nJets];
-   tag = new Int_t[nJets];
-   bProb0 = new Double_t[nJets];
-   bProb1 = new Double_t[nJets];
-   bProb2 = new Double_t[nJets];
-
-   clear();
-   fillIndexMap();
+  MicroNtuple(2);
 }
 
-MicroNtuple::MicroNtuple(int ijets) :
-   nJets(ijets)
+MicroNtuple::MicroNtuple(int ijets) : nJets(ijets)
 {
-   knntag = new Double_t[ijets];
-   tag = new Int_t[ijets];
-   bProb0 = new Double_t[ijets];
-   bProb1 = new Double_t[ijets];
-   bProb2 = new Double_t[ijets];
-
+   bProb = new Double_t[ijets];
    clear();
    fillIndexMap();
 }
 
 MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
 {
-  //   nJets = rhs.nJets;
-  nJets = 2;
+  nJets = rhs.nJets;
 
-   knntag = new Double_t[nJets];
-   tag = new Int_t[nJets];
-   bProb0 = new Double_t[nJets]; //[ntag][nJets]
-   bProb1 = new Double_t[nJets]; //[ntag][nJets]
-   bProb2 = new Double_t[nJets]; //[ntag][nJets]
+  bProb = new Double_t[nJets]; //[ntag][nJets]
+  
+  for (unsigned i = 0; i < nEventProb; ++i)
+    eventProb[i] = rhs.eventProb[i];
+    
+  
+  for (int i = 0; i < nJets; ++i)
+    bProb[i] = rhs.bProb[i];
 
-   for (unsigned i = 0; i < nEventProb; ++i)
-   {
-     eventProb[i] = rhs.eventProb[i];
-     //eventProb[i] = m_tProbStat.tEventProb[i];
-   }
-
-   for (int i = 0; i < nJets; ++i)
-   {
-      knntag[i] = rhs.knntag[i];
-      tag[i] = rhs.tag[i];
-      bProb0[i] = rhs.bProb0[i];
-      bProb1[i] = rhs.bProb1[i];
-      bProb2[i] = rhs.bProb2[i];
-      
-   }
-   nTagExt            = rhs.nTagExt;
-   nTagExtLooseSV     = rhs.nTagExtLooseSV;
-   tagProbExt0        = rhs.tagProbExt0;
-   tagProbExt1        = rhs.tagProbExt1;
-   tagProbExt2        = rhs.tagProbExt2;
-   tagProbExtLooseSV0 = rhs.tagProbExtLooseSV0;
-   tagProbExtLooseSV1 = rhs.tagProbExtLooseSV1;
-   tagProbExtLooseSV2 = rhs.tagProbExtLooseSV2;
-
-
-   weight = rhs.weight;
-   epd1tag = rhs.epd1tag;
-   epd2tag = rhs.epd2tag;
-   epd1tagSchan = rhs.epd1tagSchan;
-   epd2tagSchan = rhs.epd2tagSchan;
-   epd1tagTchan = rhs.epd1tagTchan;
-   epd2tagTchan = rhs.epd2tagTchan;
-
-   h = rhs.h;
-   indexMap = rhs.indexMap;
+  weight = rhs.weight;
+  epd1tag = rhs.epd1tag;
+  epd2tag = rhs.epd2tag;
+  epd1tagSchan = rhs.epd1tagSchan;
+  epd2tagSchan = rhs.epd2tagSchan;
+  epd1tagTchan = rhs.epd1tagTchan;
+  epd2tagTchan = rhs.epd2tagTchan;
+  
+  indexMap = rhs.indexMap;
 }
 
 MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 {
    nJets = rhs.nJets;
 
-   delete [] knntag;
-   delete [] tag;
-   delete [] bProb0;
-   delete [] bProb1;
-   delete [] bProb2;
-
-   knntag = new Double_t[nJets];
-   tag = new Int_t[nJets];
-   bProb0 = new Double_t[nJets];
-   bProb1 = new Double_t[nJets];
-   bProb2 = new Double_t[nJets];
+   delete [] bProb;
+   bProb = new Double_t[nJets];
 
    for (unsigned i = 0; i < nEventProb; ++i)
-   {
      eventProb[i] = rhs.eventProb[i];
-     //eventProb[i] = m_tProbStat.tEventProb[i];
-   }
 
    for (int i = 0; i < nJets; ++i)
-   {
-      knntag[i] = rhs.knntag[i];
-      tag[i] = rhs.tag[i];
-      bProb0[i] = rhs.bProb0[i];
-      bProb1[i] = rhs.bProb1[i];
-      bProb2[i] = rhs.bProb2[i];
-      
-   }
+     bProb[i] = rhs.bProb[i];   
 
-   nTagExt            = rhs.nTagExt;
-   nTagExtLooseSV     = rhs.nTagExtLooseSV;
-   tagProbExt0        = rhs.tagProbExt0;
-   tagProbExt1        = rhs.tagProbExt1;
-   tagProbExt2        = rhs.tagProbExt2;
-   tagProbExtLooseSV0 = rhs.tagProbExtLooseSV0;
-   tagProbExtLooseSV1 = rhs.tagProbExtLooseSV1;
-   tagProbExtLooseSV2 = rhs.tagProbExtLooseSV2;
    weight = rhs.weight;
    epd1tag = rhs.epd1tag;
    epd2tag = rhs.epd2tag;
@@ -138,9 +71,7 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
    epd2tagSchan = rhs.epd2tagSchan;
    epd1tagTchan = rhs.epd1tagTchan;
    epd2tagTchan = rhs.epd2tagTchan;
-
-   h = rhs.h;
-
+   
    indexMap = rhs.indexMap;
 
    return *this;
@@ -148,59 +79,35 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 
 MicroNtuple::~MicroNtuple()
 {
-   delete [] knntag;
-   delete [] tag;
-   delete [] bProb0;
-   delete [] bProb1;
-   delete [] bProb2;
+  // I don't understand ROOT. Technically I should be able to 
+  // delete bProb right here, however the destructor of MicroNtuple 
+  // seems to be called by ROOT when using TTreeFormula even though
+  // the constructor was never called. Another ROOT mistery...
+  //if (bProb)
+  //delete [] bProb;
 }
 
 
 
 void MicroNtuple::clear()
 {
-   for (unsigned i = 0; i < nEventProb; ++i)
-   {
-      eventProb[i] = 0;
-   }
+  for (unsigned i = 0; i < nEventProb; ++i)
+    eventProb[i] = 0;
+  
 
-   delete [] knntag;
-   delete [] tag;
-   delete [] bProb0;
-   delete [] bProb1;
-   delete [] bProb2;
-
-   knntag = new Double_t[nJets];
-   tag = new Int_t[nJets];
-   bProb0 = new Double_t[nJets];
-   bProb1 = new Double_t[nJets];
-   bProb2 = new Double_t[nJets];
-
-   
-   bProb0[0] = 0.;
-   bProb0[1] = 0.;
-   bProb1[0] = 0.;
-   bProb1[1] = 0.;
-   bProb2[0] = 0.;
-   bProb2[1] = 0.;
-
-   nTagExt            = 0;
-   nTagExtLooseSV     = 0;
-   tagProbExt0        = 0;
-   tagProbExt1        = 0;
-   tagProbExt2        = 0;
-   tagProbExtLooseSV0 = 0;
-   tagProbExtLooseSV1 = 0;
-   tagProbExtLooseSV2 = 0;
-   weight = 0;
-   epd1tag = 0;
-   epd2tag = 0;
-   epd1tagSchan = 0;
-   epd2tagSchan = 0;
-   epd1tagTchan = 0;
-   epd2tagTchan = 0;
-
-   h.clear();
+  delete [] bProb;
+  bProb = new Double_t[nJets];
+  for (int i = 0; i < nJets; ++i)
+    bProb[i] = 0.;   
+  
+  weight  = 0;
+  epd1tag = 0;
+  epd2tag = 0;
+  epd1tagSchan = 0;
+  epd2tagSchan = 0;
+  epd1tagTchan = 0;
+  epd2tagTchan = 0;
+  
 }
 
 
@@ -218,7 +125,7 @@ void MicroNtuple::fillIndexMap(){
   indexMap[DEFS::EP::QCD   ].insert ( make_pair (0,7));	
   
   // Map the HWW ME's
-  indexMap.insert (make_pair (DEFS::EP::HWW, indexMap1 ()));
+  indexMap.insert (make_pair (DEFS::EP::WH, indexMap1 ()));
   indexMap[DEFS::EP::WH].insert ( make_pair (115, 8));
   indexMap[DEFS::EP::WH].insert ( make_pair (120, 9));
   indexMap[DEFS::EP::WH].insert ( make_pair (125, 10));
@@ -226,7 +133,7 @@ void MicroNtuple::fillIndexMap(){
   indexMap[DEFS::EP::WH].insert ( make_pair (135, 12));	
   
   // Map the WH ME's
-  indexMap.insert (make_pair (DEFS::EP::WH, indexMap1 ()));
+  indexMap.insert (make_pair (DEFS::EP::HWW, indexMap1 ()));
   indexMap[DEFS::EP::HWW].insert ( make_pair (120, 13));
   indexMap[DEFS::EP::HWW].insert ( make_pair (130, 14));
   indexMap[DEFS::EP::HWW].insert ( make_pair (140, 15));
@@ -275,18 +182,12 @@ ProbsForEPD MicroNtuple::getEventProbs(double mhiggs) const {
 }
 
 
-Double_t MicroNtuple::getKNNTagProb(double knn)
-{
-   double tagProb = .5 * (1 + knn);
-   double corrTag = 1 / (1 + (1 / tagProb - 1) * 1.5477);   
-   return (corrTag >= 0 && corrTag <= 1) ? corrTag : 0;
-}
 
 //------------------------------------------------------------------------------
 // This is the core of the code where all the parameters are mixed to obtain the EPD
 ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs, 
 					const ProbsForEPD & coeffs,
-					const double bProb[], unsigned ntag){
+					const double bProb[], DEFS::TagCat tagcat){
 
 
   // The returning probabilities
@@ -298,54 +199,33 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs,
   // Multiply each by their correspondent parameters
   probs *= coeffs;
 
-  // Depending on the number of tags multiply by the bProbs
-  if (ntag == 1){
-    
-    if (bProb[0] < 0){
-      cout<<" ERROR MicroNtuple::getProbsForEPD has ntag==1 and bProb0<0. Exiting..."<<endl;
-      exit(1);
-    }
-    
-    probs.wh     *= bProb[0]; 
-    probs.hww    *= bProb[0]; 
-    probs.schan  *= bProb[0]; 
-    probs.tchan  *= bProb[0]; 
-    probs.tchan2 *= bProb[0]; 
-    probs.tt     *= bProb[0];
-    probs.wlight *= 1 - bProb[0]; 
-    probs.zlight *= 1 - bProb[0];
-    probs.wbb    *= bProb[0]; 
-    probs.wc     *= 1 - bProb[0]; 
-    probs.wgg    *= 1 - bProb[0]; 
-    probs.ww     *= 1 - bProb[0]; 
-    probs.wz     *= 1 - bProb[0]; 
-    probs.zz     *= 1 - bProb[0]; 
-    probs.qcd    *= 1 - bProb[0];
+  // for the pretag category, in which we don't care about tags at all
+  // just return as we have it 
+  if (tagcat == DEFS::pretag) 
+    return probs;
 
-  }else if (ntag == 2){
-
-    if (bProb[0] < 0 || bProb[1] < 0){
-      cout<<" ERROR MicroNtuple::getProbsForEPD has ntag==2 and (bProb[0]<0 || bProb[1]<0) Exiting."<<endl;
-      exit(1);
-    }
-
-    probs.wh     *= bProb[0] * bProb[1];
-    probs.hww    *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.schan  *= bProb[0] * bProb[1];
-    probs.tchan  *= bProb[0] * (1 - bProb[1]);
-    probs.tchan2 *= bProb[0] * (1 - bProb[1]);
-    probs.tt     *= bProb[0] * bProb[1];
-    probs.wlight *= (1 - bProb[0]) * (1 - bProb[1]); 
-    probs.zlight *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.wbb    *=  bProb[0] * bProb[1];
-    probs.wc     *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.wgg    *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.ww     *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.wz     *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.zz     *= (1 - bProb[0]) * (1 - bProb[1]);
-    probs.qcd    *= (1 - bProb[0]) * (1 - bProb[1]);
-    
-  }
+  // Otherwise for the tagged categories do this: 
+  // If bProb[i] represents the probability that jet i is a b-jet 
+  // Then for processes in which the number of actual b-quarks at 
+  // tree level is:
+  //   0 => multiply by (1 - bProb[0]) * (1 - bProb[1]);
+  //   1 => multiply by bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
+  //   2 => multiply by bProb[0] * bProb[1];
+  probs.wh     *=      bProb[0]  *  bProb[1];
+  probs.hww    *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.schan  *=      bProb[0]  *  bProb[1];
+  probs.tchan  *=  bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
+  probs.tchan2 *=  bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
+  probs.tt     *=       bProb[0] * bProb[1];
+  probs.wlight *= (1 - bProb[0]) * (1 - bProb[1]); 
+  probs.zlight *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.wbb    *=       bProb[0] * bProb[1];
+  probs.wc     *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.wgg    *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.ww     *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.wz     *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.zz     *= (1 - bProb[0]) * (1 - bProb[1]);
+  probs.qcd    *= (1 - bProb[0]) * (1 - bProb[1]);
 
   return probs;
 
@@ -358,109 +238,68 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs,
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::calcWHEPD(unsigned ntag, double mass) const
+Double_t MicroNtuple::calcWHEPD(DEFS::TagCat tagcat, double mhiggs) const
 {
 
   // Get the meProbs
-  ProbsForEPD meProbs = getEventProbs(0);
-
-  if(ntag==0)
-    return calcWHEPD(ntag, mass, meProbs, bProb0, nJets);
-  else if(ntag==1)
-    return calcWHEPD(ntag, mass, meProbs, bProb1, nJets);
-
-  return calcWHEPD(ntag, mass, meProbs, bProb2, nJets);
+  ProbsForEPD meProbs = getEventProbs(mhiggs);
+  return calcWHEPD(tagcat, mhiggs, meProbs, bProb, nJets);
   
 }//calcWHEPD
 
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::calcWHEPD(unsigned ntag, double mass,
+Double_t MicroNtuple::calcWHEPD(DEFS::TagCat tagcat, double mass,
 				const ProbsForEPD & meProbs,
 				const double bProb[], Int_t nJets){
 
-   
-   // Translate mass to WH index
-   unsigned indexWH  = getWHMassIndex(mass);
+  // Get the Higgs Coefficients
+  ProbsForEPD coeffs = getWHEPDCoefficients(mass, tagcat, nJets);  
   
-   // Get the Higgs Coefficients
-   ProbsForEPD coeffs = getWHEPDCoefficients(indexWH, ntag, nJets);  
-
-   // Get the probabilities for the EPD
-   ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, ntag);
-
-   // There is less than three events per MC sample in which all the 
-   // probabilities are zero.  To avoid returning a NaN just 
-   // return zero for those
-   if (probs.wh == 0) return 0;
-
-   // Return the wh probability
-   return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		      probs.wc + probs.qcd + probs.tt +
-		      probs.ww + probs.wz);      
+  // Get the probabilities for the EPD
+  ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
+  
+  // There is less than three events per MC sample in which all the 
+  // probabilities are zero.  To avoid returning a NaN just 
+  // return zero for those
+  if (probs.wh == 0) return 0;
+  
+  // Return the wh probability
+  return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
+		     probs.wc + probs.qcd + probs.tt +
+		     probs.ww + probs.wz);      
 
 }// calcWHEPD
 
-//------------------------------------------------------------------------------
-unsigned int MicroNtuple::getWHMassIndex(double mass){
-
-  if (mass == 100)
-      return 0;
-   else if (mass == 105)
-      return 1;
-   else if (mass == 110)
-      return 2;
-   else if (mass == 115)
-      return 3;
-   else if (mass == 120)
-      return 4;
-   else if (mass == 125)
-      return 5;
-   else if (mass == 130)
-      return 6;
-   else if (mass == 135)
-      return 7;
-   else if (mass == 140)
-      return 8;
-   else if (mass == 145)
-      return 9;
-   else if (mass == 150)
-      return 10;
-
-  //fail with error
-  throw std::runtime_error("MicroNtuple::getWHMassIndex wrong mass requested");
-  return 0;
-
-}//getWHMassIndex
 
 //------------------------------------------------------------------------------
-const ProbsForEPD MicroNtuple::getWHEPDCoefficients(int indexWH, unsigned ntag, int nJets){
+const ProbsForEPD MicroNtuple::getWHEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets){
 
   // The returning object
   ProbsForEPD coeffs;
 
-  if (ntag == 0) {
+  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
   
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     
-  }else if (ntag == 1){
+  }else if (tagcat ==  DEFS::eq1TSV){
 
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
-  } else if (ntag == 2){
+  } else if (tagcat == DEFS::eq2TSV){
 
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
   } else
     throw std::runtime_error("ERROR MicroNtuple::getWHEPDCoefficients. Invalid tag requested");
@@ -476,35 +315,35 @@ const ProbsForEPD MicroNtuple::getWHEPDCoefficients(int indexWH, unsigned ntag, 
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::calcHWWEPD(unsigned ntag, double mass) const
+Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mhiggs) const
 {
 
   // Get the meProbs
-  ProbsForEPD meProbs = getEventProbs(0);
-
-  if(ntag==0)
-    return calcWHEPD(ntag, mass, meProbs, bProb0, nJets);
-  else if(ntag==1)
-    return calcWHEPD(ntag, mass, meProbs, bProb1, nJets);
-
-  return calcWHEPD(ntag, mass, meProbs, bProb2, nJets);
+  ProbsForEPD meProbs = getEventProbs(mhiggs);
+  return calcWHEPD(tagcat, mhiggs, meProbs, bProb, nJets);
   
 }//calcWHEPD
 
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::calcHWWEPD(unsigned ntag, double mass,
+Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mass,
 				const ProbsForEPD & meProbs,
 				const double bProb[], Int_t nJets){
 
    
    // Translate mass to WH index
-   unsigned indexWH  = getHWWMassIndex(mass);
+   //unsigned indexWH  = getHWWMassIndex(mass);
+  
+  cout<<" \t\t SFSG 1.1"<<endl;
   
    // Get the Higgs Coefficients
-   ProbsForEPD coeffs = getHWWEPDCoefficients(indexWH, ntag, nJets);  
+   ProbsForEPD coeffs = getHWWEPDCoefficients(mass, tagcat, nJets);  
+
+   cout<<" \t\t SFSG 1.2"<<endl;
 
    // Get the probabilities for the EPD
-   ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, ntag);
+   ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
+
+  cout<<" \t\t SFSG 1.3"<<endl;
 
    // There is less than three events per MC sample in which all the 
    // probabilities are zero.  To avoid returning a NaN just 
@@ -519,70 +358,38 @@ Double_t MicroNtuple::calcHWWEPD(unsigned ntag, double mass,
 }// calcHWWEPD
 
 //------------------------------------------------------------------------------
-unsigned int MicroNtuple::getHWWMassIndex(double mass){
-
-  if (mass == 100)
-      return 0;
-   else if (mass == 105)
-      return 1;
-   else if (mass == 110)
-      return 2;
-   else if (mass == 115)
-      return 3;
-   else if (mass == 120)
-      return 4;
-   else if (mass == 125)
-      return 5;
-   else if (mass == 130)
-      return 6;
-   else if (mass == 135)
-      return 7;
-   else if (mass == 140)
-      return 8;
-   else if (mass == 145)
-      return 9;
-   else if (mass == 150)
-      return 10;
-
-  //fail with error
-  throw std::runtime_error("MicroNtuple::getHWWMassIndex wrong mass requested");
-  return 0;
-
-}//getHWWMassIndex
-
-//------------------------------------------------------------------------------
-const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(int indexWH, unsigned ntag, int nJets){
+const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets){
 
   // The returning object
   ProbsForEPD coeffs;
 
-  if (ntag == 0) {
+  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
   
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    
-  }else if (ntag == 1){
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+ 
+  }else if (tagcat ==  DEFS::eq1TSV){   
 
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
-  } else if (ntag == 2){
+  } else if (tagcat == DEFS::eq2TSV){
 
-    if (indexWH == 0) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 1) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 2) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 3) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (indexWH == 4) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
   } else
     throw std::runtime_error("ERROR MicroNtuple::getWHEPDCoefficients. Invalid tag requested");
-
+    
   return coeffs;
 
 }//getHWWEPDCoefficients
@@ -591,32 +398,26 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(int indexWH, unsigned ntag,
 //------------------------------------------------------------------------------
 //-----------------------------  THE WZ METHODS      ---------------------------
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::calcWZEPD(unsigned ntag) const
+Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat) const
 {
 
   // Get the meProbs
   ProbsForEPD meProbs = getEventProbs(0);
-
-  if(ntag==0)
-    return calcWZEPD(ntag, meProbs, bProb0, nJets);
-  else if(ntag==1)
-    return calcWZEPD(ntag, meProbs, bProb1, nJets);
-
-  return calcWZEPD(ntag, meProbs, bProb2, nJets);
+  return calcWZEPD(tagcat, meProbs, bProb, nJets);
   
 }
 
 //------------------------------------------------------------------------------
 // Without Higgs
-Double_t MicroNtuple::calcWZEPD(unsigned ntag, const ProbsForEPD & meProbs,
+Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat, const ProbsForEPD & meProbs,
 				const double bProb[], Int_t nJets){
 
   
   // Get the WZ Coefficients.
-  ProbsForEPD coeffs = getWZEPDCoefficients(ntag, nJets);  
+  ProbsForEPD coeffs = getWZEPDCoefficients(tagcat, nJets);  
   
   // Get the probabilities for the EPD
-  ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, ntag);
+  ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
 
   // Return the wh probability
   return (probs.wz+probs.ww) / (probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
@@ -626,17 +427,18 @@ Double_t MicroNtuple::calcWZEPD(unsigned ntag, const ProbsForEPD & meProbs,
 }//calcWZEPD 
 
 //------------------------------------------------------------------------------
-const ProbsForEPD MicroNtuple::getWZEPDCoefficients(unsigned ntag, int nJets){
+const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJets){
 
   // The returning object
   ProbsForEPD coeffs;
 
-  if (ntag == 0) 
+  if(tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV)
+    return ProbsForEPD(2.85714e+09,2e+10,4.23586e+08,1.41375e+08,0,30.055,4000,
+		       357143,0,0,0,6.46134e+06,1.79165e+06,0,0.486261);// DEFS::TagCat=0 figOfMerit=0.136779
+  else if (tagcat == DEFS::eq1TSV)
     return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-  else if (ntag == 1)
-    return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-  else if (ntag != 2)
-    throw std::runtime_error("ERROR MicroNtuple::getWHEPDCoefficients. Invalid tag requested");
+  else if (tagcat != DEFS::eq2TSV)
+    throw std::runtime_error("ERROR MicroNtuple::getWZEPDCoefficients. Invalid tag requested");
 
 
   // the two tag case
@@ -650,24 +452,18 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(unsigned ntag, int nJets){
 //-----------------------------  THE SingleTop METHODS      --------------------
 //------------------------------------------------------------------------------
 
-Double_t MicroNtuple::calcSingleTopEPD(unsigned ntag, EPDType type) const {
+Double_t MicroNtuple::calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type) const {
 
   // Get the meProbs
   ProbsForEPD meProbs = getEventProbs(0);
-  
-  if(ntag==0)
-    return calcSingleTopEPD(ntag, type, meProbs, bProb0, nJets);
-  else if(ntag==1)
-    return calcSingleTopEPD(ntag, type, meProbs, bProb1, nJets);
- 
-  return calcSingleTopEPD(ntag, type, meProbs, bProb2, nJets);
+  return calcSingleTopEPD(tagcat, type, meProbs, bProb, nJets);
   
 } // calcSingleTopEPD
 
 
 
 //------------------------------------------------------------------------------
-const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (unsigned ntag, EPDType type){
+const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (DEFS::TagCat tagcat, EPDType type){
   
   static const ProbsForEPD params1tag[3] = {ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
 					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
@@ -677,8 +473,10 @@ const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (unsigned ntag, EPDTy
 					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
 					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0)};
 
-  if (ntag==1)
+  if (tagcat == DEFS::eq1TSV)
     return params1tag[type];
+  else if (tagcat != DEFS::eq2TSV)
+    throw std::runtime_error("ERROR MicroNtuple::getSingleTopEPDCoefficients. Invalid tag requested");
 
   return  params2tag[type];
 
@@ -686,17 +484,17 @@ const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (unsigned ntag, EPDTy
 
 //------------------------------------------------------------------------------
 //EPD for SingleTop.
-Double_t MicroNtuple::calcSingleTopEPD(unsigned ntag, EPDType type,
+Double_t MicroNtuple::calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type,
 				       const ProbsForEPD & meProbs,
 				       const double bProb[], Int_t nJets){
  
   if (nJets == 2){
 
     // Get the Higgs Coefficients
-    const ProbsForEPD coeffs = getSingleTopEPDCoefficients(ntag,type);  
+    const ProbsForEPD coeffs = getSingleTopEPDCoefficients(tagcat,type);  
     
     // Get the probabilities for the EPD. the indexWH is set to zero and it's irrelevant here 
-    ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, ntag);
+    ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
     
     // There is less than three events per MC sample in which all the probabilities are zero. 
     // To avoid returning a NaN just return zero for those
@@ -719,140 +517,10 @@ Double_t MicroNtuple::calcSingleTopEPD(unsigned ntag, EPDType type,
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-Double_t MicroNtuple::eventDump(const DumbClassToTrickRoot* h, double epd,
-                                int ALPtype, double lepPt)
-{
-   std::cout << "Run " << h->run << " Event " << h->event << " " << h->ntag
-             << " tags  Alpgentype " << ALPtype << " Detector " << h->det 
-             << " LeptonPt: " << lepPt << " EPD: " << epd << std::endl;
-
-   return h->run + h->event;
-}
-
-
 Double_t MicroNtuple::triggerTO(double detector, double etalep, double metraw,
                                 double etlep)
 {
-   if (detector != TopLepType::TPHX)
-      return 1;
-
-   using std::abs;
-
-   static TF1 turnOnMETL3("turnOnMETL3", "1/(1.+TMath::Exp(-[2]*(x-[1])))", 0, 
-                         500);
-  
-   static TF1 turnOnPEML2("turnOnPEML2", "1/(1.+TMath::Exp(-[2]*(x-[1])))", 0, 
-                         500);
-    
-   static TF1 turnOnPEML3("turnOnPEML3", "1/(1.+TMath::Exp(-[2]*(x-[1])))", 0, 
-                         500);
-
-   double weight = 0.;
-
-   const int Ntrigger = 3; //L1_MET15_L3, L2_PEM20, L3_PEM20
-  
-   const int Nperiods = 2; //0d+0h and 0i..mj
-   const double periodweight[Nperiods] = {.316, .684};
-
-   double alpha[Nperiods][Ntrigger];
-   double beta[Nperiods][Ntrigger];
-  
-   //L1_MET15_L3
-
-   alpha[0][0] = 14.79;
-   beta[0][0] = 0.37;
-
-   alpha[1][0] = 14.00;
-   beta[1][0] = 0.37;
-
-   //L3_PEM20
-
-   alpha[0][2] = 19.44;
-   beta[0][2] = 1.99;
-
-   alpha[1][2] = 20.91;
-   beta[1][2] = 1.66;
-
-   //L2_PEM20, eta dependend
-
-   //0h
-   if (abs(etalep) < 1.52)
-   {
-      alpha[0][1] = 20.15;
-      beta[0][1] = 0.4772;
-   }
-   if (abs(etalep) >= 1.52 && abs(etalep) < 2.11)
-   {
-      alpha[0][1] = 20.85;
-      beta[0][1] = 0.4237;
-   }
-   if (abs(etalep) >= 2.11 && abs(etalep) < 2.61)
-   {
-      alpha[0][1] = 22.96;
-      beta[0][1] = 0.415;
-   }
-   if (abs(etalep) >= 2.61)
-   {
-      alpha[0][1] = 29.09;
-      beta[0][1] = 0.2842;
-   }
-
-   //0i
-   if (abs(etalep) < 1.52)
-   {
-      alpha[1][1] = 22.03;
-      beta[1][1] = 0.5684;
-   }
-   if (abs(etalep) >= 1.52 && abs(etalep) < 2.11)
-   {
-      alpha[1][1] = 21.64;
-      beta[1][1] = 0.4601;
-   }
-   if (abs(etalep) >= 2.11 && abs(etalep) < 2.61)
-   {
-      alpha[1][1] = 23.57;
-      beta[1][1] = 0.4407;
-   }
-   if (abs(etalep) >= 2.61)
-   {
-      alpha[1][1] = 29.61;
-      beta[1][1] = 0.5717;
-   }
-
-   //averaging over periods
-   for(int i=0; i< Nperiods; i++)
-   {
-      turnOnMETL3.SetParameter(1,alpha[i][0]);
-      turnOnMETL3.SetParameter(2,beta[i][0]);
-                   
-      turnOnPEML2.SetParameter(1,alpha[i][1]);
-      turnOnPEML2.SetParameter(2,beta[i][1]);
-                   
-      turnOnPEML3.SetParameter(1,alpha[i][2]);
-      turnOnPEML3.SetParameter(2,beta[i][2]);
-
-      weight += periodweight[i] * turnOnMETL3.Eval(metraw)
-         * turnOnPEML2.Eval(etlep) * turnOnPEML3.Eval(etlep);
-   }
-
-   return weight;
-}
-
-
-DumbClassToTrickRoot::DumbClassToTrickRoot()
-{
-   clear();
-}
-
-void DumbClassToTrickRoot::clear()
-{
-   tagProb1 = 0;
-   tagProb2 = 0;
-   det = 0;   
-   ntag = 0;
-   run = 0;
-   event = 0;
+  return 1;
 }
 
 ClassImp(MicroNtuple)
-   ClassImp(DumbClassToTrickRoot)
