@@ -28,11 +28,13 @@ namespace DEFS{
   //            ALL ABOUT THE PHYSICSPROCESS TYPES
   // ---------------------------------------------------------------
   namespace PhysicsProcess {
-    enum Type {WH100, WH105, WH110, WH115, WH120, WH125,
-	       WH130, WH135, WH140, WH145, WH150,
+    enum Type {WH100 , WH105 , WH110 , WH115 , WH120 , WH125,
+	       WH130 , WH135 , WH140 , WH145 , WH150 ,
+	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
+	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
 	       STopS, STopT, Wjets, Wbb, Wcc, WLight, 
-	       QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
-
+	       QCD, QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
+ 
 
     // A routine that returns the type given a string 
     Type getProcessType(std::string str);///
@@ -56,8 +58,12 @@ namespace DEFS{
   // ---------------------------------------------------------------
   //            ALL ABOUT THE DIFFERENT EVENT CATEGORIES
   // ---------------------------------------------------------------
-  enum EvtCat {electron, muon};
-  
+  // Under no condition set the value of the category, otherwise nEvtCat 
+  // will not be working on some classes like PhysicsProcessForOpt
+  // In addition, make sure that all the categories that data/MC has are here
+  enum EvtCat {none,  muon, electron};
+  static const unsigned int nEvtCat = 3; 
+
     // A routine that returns the string given the EvtType 
   std::string getEventCatString(EvtCat );
 

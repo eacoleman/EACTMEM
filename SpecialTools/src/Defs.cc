@@ -57,6 +57,36 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::WH145;
       if( str == "WH150")
 	return  DEFS::PhysicsProcess::WH150;
+
+
+      if(str == "HWW110")
+	return  DEFS::PhysicsProcess::HWW110;
+      if(str == "HWW115")
+	return  DEFS::PhysicsProcess::HWW115;
+      if(str == "HWW120")
+	return  DEFS::PhysicsProcess::HWW120;
+      if(str == "HWW125")
+	return  DEFS::PhysicsProcess::HWW125;
+      if(str == "HWW130")
+	return  DEFS::PhysicsProcess::HWW130;
+      if(str == "HWW135")
+	return  DEFS::PhysicsProcess::HWW135;
+      if(str == "HWW140")
+	return  DEFS::PhysicsProcess::HWW140;
+      if(str == "HWW145")
+	return  DEFS::PhysicsProcess::HWW145;
+      if(str == "HWW150")
+	return  DEFS::PhysicsProcess::HWW150;
+      if(str == "HWW155")
+	return  DEFS::PhysicsProcess::HWW155;
+      if(str == "HWW160")
+	return  DEFS::PhysicsProcess::HWW160;
+      if(str == "HWW165")
+	return  DEFS::PhysicsProcess::HWW165;
+      if(str == "HWW170")
+	return  DEFS::PhysicsProcess::HWW170;
+
+
       if( str == "STopS")
 	return  DEFS::PhysicsProcess::STopS;
       if( str == "STopT")
@@ -69,6 +99,8 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::Wjets;
       if( str == "WLight")
 	return  DEFS::PhysicsProcess::WLight;
+      if( str == "QCD")
+	return  DEFS::PhysicsProcess::QCD;
       if( str == "QCD100")
 	return  DEFS::PhysicsProcess::QCD100;
       if( str == "QCD250")
@@ -122,6 +154,34 @@ namespace DEFS {
 	return string("WH145");
       else if (type == WH150)
 	return string("WH150");
+
+      else if (type == HWW110)
+	return string("HWW110");
+      else if (type == HWW115)
+	return string("HWW115");
+      else if (type == HWW120)
+	return string("HWW120");
+      else if (type == HWW125)
+	return string("HWW125");
+      else if (type == HWW130)
+	return string("HWW130");
+      else if (type == HWW135)
+	return string("HWW135");
+      else if (type == HWW140)
+	return string("HWW140");
+      else if (type == HWW145)
+	return string("HWW145");
+      else if (type == HWW150)
+	return string("HWW150");
+      else if (type == HWW155)
+	return string("HWW155");
+      else if (type == HWW160)
+	return string("HWW160");
+      else if (type == HWW165)
+	return string("HWW165");
+      else if (type == HWW170)
+	return string("HWW170");
+
       else if (type == STopS)
 	return string("STopS");
       else if (type == STopT)
@@ -134,6 +194,8 @@ namespace DEFS {
 	return string("Wcc");
       else if (type == WLight) 
 	return string("WLight");
+      else if (type == QCD)
+	return string("QCD");
       else if (type == QCD100)
 	return string("QCD100");
       else if (type == QCD250)
