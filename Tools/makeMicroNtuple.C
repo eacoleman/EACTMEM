@@ -248,38 +248,38 @@ void createAllMicroNtuples(){
 
   //Output files
   //string outputPath=inputPath+"MicroNtuples/";
-  string outputPath ="/uscms/home/eusebi/workarea/CMSSW_3_8_7/src/";
+  string outputPath ="/uscms/home/ilyao/nobackup/MEResults/387PF2PAT/microNtuples/";
 
   //Create the list of MicroNtuples
   vector<MyStr> listOfMicroNtuples;
 
   //// Diboson
-  //  listOfMicroNtuples.push_back(MyStr("WW3300Evt*","micro_WW3300Evt",false,false,false));
-
-//   listOfMicroNtuples.push_back(MyStr("WW2200Evt*","micro_WW2200Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ1500Evt*","micro_WZ1500Evt",false,false,false));
+  //  listOfMicroNtuples.push_back(MyStr("WW2200Evt*","micro_WW2200Evt",false,false,false));
+  //listOfMicroNtuples.push_back(MyStr("WZ1500Evt*","micro_WZ1500Evt",false,false,false));
 
 //   //// W+jets and Z+jets
-//   listOfMicroNtuples.push_back(MyStr("WpJ26000Evt*","micro_WpJ24000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WpJ24000Evt*","micro_WpJ24000Evt",false,false,false));
 //   listOfMicroNtuples.push_back(MyStr("ZpJ680Evt*","micro_ZpJ680Evt",false,false,false));
 
 //   //// ttbar
-//   listOfMicroNtuples.push_back(MyStr("TTbar12000Evt*","micro_TTbar12000Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("TTbar24000Evt*","micro_TTbar24000Evt",false,false,false));
 
   //// Single top
-  listOfMicroNtuples.push_back(MyStr("STopT12000Evt*","micro_STopT24000Evt",false,false,false));
-  //listOfMicroNtuples.push_back(MyStr("STopS12000Evt*","micro_STopS24000Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT24000Evt*","micro_STopT24000Evt",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopS24000Evt*","micro_STopS24000Evt",false,false,false));
 
-  //// QCD
-//    listOfMicroNtuples.push_back(MyStr("QCDElData400Evt*","micro_QCDElData400Evt",false,false,false));
-//    listOfMicroNtuples.push_back(MyStr("QCDMuData7600Evt*","micro_QCDMuData7600Evt",false,false,false));
-//  listOfMicroNtuples.push_back(MyStr("QCDOnlyElData85Evt*","micro_QCDOnlyElData85Evt",false,false,false));
+//   //// QCD
+//   listOfMicroNtuples.push_back(MyStr("QCDElData400Evt*","micro_QCDElData400Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("QCDMuData7600Evt*","micro_QCDMuData7600Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("QCDOnlyElData85Evt*","micro_QCDOnlyElData85Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("QCDOnlyMuPFlowLoose7520Evt","micro_QCDOnlyMuPFlowLoose7520Evt",false,false,false));
 
+//   listOfMicroNtuples.push_back(MyStr("QCDOnly*","micro_QCDOnlyElplusOnlyMu",false,false,false));
 
-  //// Data
-  //  listOfMicroNtuples.push_back(MyStr("DataEl1900Evt*","micro_DataEl1900Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("DataMu2300Evt*","micro_DataMu2300Evt",false,false,false));
-  //listOfMicroNtuples.push_back(MyStr("Data*","micro_DataEl1900AndMu2300Evt",false,false,false));
+//   //// Data
+//   listOfMicroNtuples.push_back(MyStr("DataEl1900Evt*","micro_DataEl1900Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("DataMu2300Evt*","micro_DataMu2300Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("Data*","micro_DataEl1900AndMu2300Evt",false,false,false));
 
 
 //   //// Higgs 
