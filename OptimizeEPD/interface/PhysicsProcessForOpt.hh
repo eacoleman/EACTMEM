@@ -15,7 +15,7 @@ class PhysicsProcessForOpt : public PhysicsProcess {
 public:  
   
   // Default C'tors
-  PhysicsProcessForOpt(PhysicsProcess );
+  PhysicsProcessForOpt(const PhysicsProcess & );
 
   void setProjectionsForOpt();
 
@@ -24,8 +24,6 @@ public:
 			double mhiggs, 
 			const ProbsForEPD & meProbs);
   
-  // The map of indices
-  MicroNtuple::indexMap2 indexMap;
 
 };//class PhysicsProcessForOpt
 

@@ -22,15 +22,11 @@ using std::string;
 
 //------------------------------------------------------------------------------
 // C'tor
-PhysicsProcessForOpt::PhysicsProcessForOpt(PhysicsProcess pp): PhysicsProcess(pp){
+PhysicsProcessForOpt::PhysicsProcessForOpt(const PhysicsProcess & pp): PhysicsProcess(pp){
 
   // Set the projections needed for the optimization
   setProjectionsForOpt();
   
-  // Fill the static map in MicroNtuple and get it
-  MicroNtuple::fillIndexMap();
-  indexMap = MicroNtuple::indexMap;
-
 }//C'tor
 
 //------------------------------------------------------------------------------
@@ -38,18 +34,19 @@ void PhysicsProcessForOpt::setProjectionsForOpt(){
 
   // The vector of projections
   vector<string> projs;
+
   // --first add all the eventProbs
   for (unsigned int nn = 0; nn < MicroNtuple::nEventProb; nn++){
 
     std::stringstream ss;
-    //ss<<"METree.m_tProbStat["<<nn<<"].tEventProb";
     ss<<"eventProb["<<nn<<"]";
-    projs.push_back(ss.str());
+    projs.push_back(ss.str());  
   }
   
-  // --second the last six are needed to calculate bProb[0] and bProb[1]
-  projs.push_back("mnt.bProb[0]"); 
-  projs.push_back("mnt.bProb[1]"); 
+  // --second the last two are needed to calculate bProb[0] and bProb[1]
+  projs.push_back("EvtTree.jBtag[0]"); 
+  //projs.push_back("mnt.bProb[0]"); 
+  //projs.push_back("bProb[1]"); 
 
   // Put the projections into memory
   unsigned int nev = setProjections(projs);  
