@@ -161,13 +161,13 @@ void FigureOfMerit::minimizationFunction(Int_t &npar, Double_t *gin, Double_t &f
 
      // skip bins in which both signal and background are zero
      if (background->GetBinContent(ibin) == 0 ){
-	if ( signal->GetBinContent(ibin) ==0)
-	   continue;
-        else{
-           cout<<" ERROR FigureOfMerit::minimizationFunction "
-	       <<" at bin="<<ibin<<" background is zero but signal is NOT!"
-               <<" This can give infinite sensitivity!"<<endl;
-        } 
+       if ( signal->GetBinContent(ibin) ==0)
+         continue;
+       else{
+         cout<<" ERROR FigureOfMerit::minimizationFunction "
+             <<" at bin="<<ibin<<" background is zero but signal is NOT!"
+             <<" This can give infinite sensitivity!"<<endl;
+       } 
      }//if
 
      double bin_num  = par[0]*signal->GetBinContent(ibin) * par[0]*signal->GetBinContent(ibin);
@@ -192,7 +192,7 @@ void FigureOfMerit::minimizationFunction(Int_t &npar, Double_t *gin, Double_t &f
 // The sensitivity is set to zero if any given bin does not have a background 
 // contribution, or  if that contribution is smaller than 3 times the error 
 // on that contribution
-double FigureOfMerit::usingChi2(TH1* signal, TH1* background){
+double FigureOfMerit::usingChi2(TH1* signal, TH1* background, double relativeBinErrorLimit){
 
   // Check that the number of bins is the same
   if (signal->GetNbinsX() != background->GetNbinsX()){
@@ -201,7 +201,7 @@ double FigureOfMerit::usingChi2(TH1* signal, TH1* background){
   }
  
   //Check that this histo passes the basic cuts
-  if (checkBackgroundHistogram(background)){
+  if (checkBackgroundHistogram(background, relativeBinErrorLimit)){
 
     // Get the number of bins
     unsigned int nBins = signal->GetNbinsX();    
@@ -216,7 +216,11 @@ double FigureOfMerit::usingChi2(TH1* signal, TH1* background){
             
       // Compute this bin's sensitivity
       double signal2         = signal->GetBinContent(ibin)*signal->GetBinContent(ibin);
-      double bin_sensitivity = signal2 / ( dataStat2 + mcStat2 );
+      double bin_sensitivity = 0;
+      if((dataStat2+mcStat2)!=0)
+        bin_sensitivity = signal2 / ( dataStat2 + mcStat2 );
+      else
+        bin_sensitivity = 0;
       
       // Add it to the total
       total += bin_sensitivity;

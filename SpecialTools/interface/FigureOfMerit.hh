@@ -15,7 +15,7 @@ public:
   static double usingShapeFromTemplates(TH1* signal, TH1* background, double relativeBinErrorLimit = 3);
 
   // This computes the sqrt[sum_bin S^2/(S+B+deltaS^2+deltaB^2)]
-  static double usingChi2(TH1* signal, TH1* background);
+  static double usingChi2(TH1* signal, TH1* background, double relativeBinErrorLimit = 3);
 
   // This computes the sqrt[sum_bin S^2/B]
   static double usingS2OverB(TH1* signal, TH1* background);
