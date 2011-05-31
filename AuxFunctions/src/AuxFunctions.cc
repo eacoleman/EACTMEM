@@ -57,7 +57,7 @@ vector<string> AuxFunctions::splitLineIntoWords(string line, const string & matc
   vector<string> words;
 
   unsigned int last = 0;
-  unsigned int current;
+  size_t current;
 
   do {
 
