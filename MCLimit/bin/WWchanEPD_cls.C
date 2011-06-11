@@ -13,7 +13,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
 
-  TString dirPath="/uscms_data/d2/ilyao/MEResults/PAT356FullScan/MCLimit/";
+  TString dirPath="/uscms_data/d1/ilyao/MEResults/387PF2PAT/MCLimit/";
   TString inputstr;
   delete gRandom;
   gRandom = (TRandom*) new TRandom3;
@@ -30,8 +30,8 @@ int main(int argc, char **argv)
   char STopTVarName[]="STopTVar";
   char STopSVarName[]="STopSVar";
   //  char STopTWVarName[]="STopTWVar";
-  char QCDHT100to250VarName[]="QCDHT100to250Var";
-  char QCDHT250to500VarName[]="QCDHT250to500Var";
+  char QCDOnlyElDataVarName[]="QCDOnlyElDataVar";
+  char QCDOnlyMuDataVarName[]="QCDOnlyMuDataVar";
 
 
 
@@ -60,32 +60,35 @@ int main(int argc, char **argv)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   cout << "reading histos" << endl;
   ///***Set The Luminosity in pb^-1
-  double Lumi=50;
+  double Lumi=36.1;
   
   ///event counts for 1pb^-1
-  double scale_WW=1.43;
+  double scale_WW=0.998;
   scale_WW=Lumi*scale_WW;
-  double scale_WZ=0.365;
+  double scale_WZ=0.210;
   scale_WZ=Lumi*scale_WZ;
 
-  double scale_WpJ=101;
+  double scale_WpJ=73.5;
   scale_WpJ=Lumi*scale_WpJ;
-  double scale_ZpJ=6.13;
+  double scale_ZpJ=1.99;
   scale_ZpJ=Lumi*scale_ZpJ;
 //   double scale_ZZ=0.028;
 //   scale_ZZ=Lumi*scale_ZZ;
-  double scale_TTbar=4.75;
+  double scale_TTbar=5.76;
   scale_TTbar=Lumi*scale_TTbar;
-  double scale_STopT=5.38;
+  double scale_STopT=4.58;
   scale_STopT=Lumi*scale_STopT;
-  double scale_STopS=0.49;
+  double scale_STopS=0.44;
   scale_STopS=Lumi*scale_STopS;
 //   double scale_STopTW=0.61;
 //   scale_STopTW=Lumi*scale_STopTW;
-  double scale_QCDHT100to250=8.4;
-  scale_QCDHT100to250=Lumi*scale_QCDHT100to250;
-  double scale_QCDHT250to500=1.67;
-  scale_QCDHT250to500=Lumi*scale_QCDHT250to500;
+  double scale_QCDOnlyElData=3.5;
+  scale_QCDOnlyElData=Lumi*scale_QCDOnlyElData;
+  double scale_QCDOnlyMuData=2.6;
+  scale_QCDOnlyMuData=Lumi*scale_QCDOnlyMuData;
+
+  double scale_DataElandMu=117.8;
+  scale_DataElandMu=Lumi*scale_DataElandMu;
 
   TH1F* histWW;
   TH1F* histWZ;
@@ -97,8 +100,9 @@ int main(int argc, char **argv)
   TH1F* histSTopT;
   TH1F* histSTopS;
   //  TH1F* histSTopTW;
-  TH1F* histQCDHT100to250;
-  TH1F* histQCDHT250to500;
+  TH1F* histQCDOnlyElData;
+  TH1F* histQCDOnlyMuData;
+  TH1F* histDataElandMu;
 
   inputstr=dirPath+"WW_EPDWWandWZHistFile.root";
   TFile *infileWW = (TFile*)new TFile(inputstr);
@@ -137,15 +141,19 @@ int main(int argc, char **argv)
 //   histSTopTW  = (TH1F*)infileSTopTW->Get("EvtHist;1")->Clone("STopTWcent");
 //   histSTopTW->Scale(scale_STopTW);
   //// Use QCD without a MET Cut (in order to get a sufficient event count)
-  inputstr=dirPath+"QCDHT100to250_NoIsoCut_EPDWWandWZHistFile.root";
-  TFile *infileQCDHT100to250 = (TFile*) new TFile(inputstr);
-  histQCDHT100to250  = (TH1F*)infileQCDHT100to250->Get("EvtHist;1")->Clone("QCDHT100to250cent");
-  histQCDHT100to250->Scale(scale_QCDHT100to250);
-  inputstr=dirPath+"QCDHT250to500_NoIsoCut_EPDWWandWZHistFile.root";
-  TFile *infileQCDHT250to500 = (TFile*) new TFile(inputstr);
-  histQCDHT250to500  = (TH1F*)infileQCDHT250to500->Get("EvtHist;1")->Clone("QCDHT250to500cent");
-  histQCDHT250to500->Scale(scale_QCDHT250to500);
+  inputstr=dirPath+"QCDOnlyElData_EPDWWandWZHistFile.root";
+  TFile *infileQCDOnlyElData = (TFile*) new TFile(inputstr);
+  histQCDOnlyElData  = (TH1F*)infileQCDOnlyElData->Get("EvtHist;1")->Clone("QCDOnlyElDatacent");
+  histQCDOnlyElData->Scale(scale_QCDOnlyElData);
+  inputstr=dirPath+"QCDOnlyMuData_EPDWWandWZHistFile.root";
+  TFile *infileQCDOnlyMuData = (TFile*) new TFile(inputstr);
+  histQCDOnlyMuData  = (TH1F*)infileQCDOnlyMuData->Get("EvtHist;1")->Clone("QCDOnlyMuDatacent");
+  histQCDOnlyMuData->Scale(scale_QCDOnlyMuData);
 
+  inputstr=dirPath+"DataElandMu_EPDWWandWZHistFile.root";
+  TFile *infileDataElandMu = (TFile*) new TFile(inputstr);
+  histDataElandMu  = (TH1F*)infileDataElandMu->Get("EvtHist;1")->Clone("WpJcent");
+  histDataElandMu->Scale(scale_DataElandMu);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////***** Add The Backgrounds *****/////////////////////////////////////////////
@@ -341,8 +349,8 @@ int main(int argc, char **argv)
 // 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
   //-----------------------------------------------------------
-  // "QCDHT100to250 background"
-  cout << "QCDHT100to250 bg " << endl;
+  // "QCDOnlyElData background"
+  cout << "QCDOnlyElData bg " << endl;
   for(i=0;i<15;i++) {
     nps_low[i] = 0;
     nps_high[i] = 0;
@@ -352,24 +360,24 @@ int main(int argc, char **argv)
     highshape[i] = 0;
   }
   
-  ename[0] = QCDHT100to250VarName;
+  ename[0] = QCDOnlyElDataVarName;
   nps_low[0] = -0.2;
   nps_high[0] = 0.2;
 
   sfact = 1;
 
-  nullhyp_pe->add_template(histQCDHT100to250,sfact,1,ename,nps_low,nps_high,
+  nullhyp_pe->add_template(histQCDOnlyElData,sfact,1,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp_pe->add_template(histQCDHT100to250,sfact,1,ename,nps_low,nps_high,
+  testhyp_pe->add_template(histQCDOnlyElData,sfact,1,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  nullhyp->add_template(histQCDHT100to250,sfact,0,ename,nps_low,nps_high,
+  nullhyp->add_template(histQCDOnlyElData,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp->add_template(histQCDHT100to250,sfact,0,ename,nps_low,nps_high,
+  testhyp->add_template(histQCDOnlyElData,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
   //-----------------------------------------------------------
-  // "QCDHT250to500 background"
-  cout << "QCDHT250to500 bg " << endl;
+  // "QCDOnlyMuData background"
+  cout << "QCDOnlyMuData bg " << endl;
   for(i=0;i<15;i++) {
     nps_low[i] = 0;
     nps_high[i] = 0;
@@ -379,19 +387,19 @@ int main(int argc, char **argv)
     highshape[i] = 0;
   }
   
-  ename[0] = QCDHT250to500VarName;
+  ename[0] = QCDOnlyMuDataVarName;
   nps_low[0] = -0.2;
   nps_high[0] = 0.2;
 
   sfact = 1;
 
-  nullhyp_pe->add_template(histQCDHT250to500,sfact,1,ename,nps_low,nps_high,
+  nullhyp_pe->add_template(histQCDOnlyMuData,sfact,1,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp_pe->add_template(histQCDHT250to500,sfact,1,ename,nps_low,nps_high,
+  testhyp_pe->add_template(histQCDOnlyMuData,sfact,1,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  nullhyp->add_template(histQCDHT250to500,sfact,0,ename,nps_low,nps_high,
+  nullhyp->add_template(histQCDOnlyMuData,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
-  testhyp->add_template(histQCDHT250to500,sfact,0,ename,nps_low,nps_high,
+  testhyp->add_template(histQCDOnlyMuData,sfact,0,ename,nps_low,nps_high,
 			lowshape,lowsigma,highshape,highsigma,0,0,"WWchan");
 
 
@@ -457,8 +465,8 @@ int main(int argc, char **argv)
   ////////////////////////////***** Compute The Limits *****//////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   double bh_CL=0.95;//default bayes-heinrich confidence limit
-  int npx=500;//default number of PE
-  int nPE=200;//default number of points per PE
+  int npx=10;//default number of PE
+  int nPE=10;//default number of points per PE
   if ( argc==4 ) {
     bh_CL=atof(argv[1]);
     npx=atoi(argv[2]);
@@ -482,6 +490,7 @@ int main(int argc, char **argv)
   mymclimit->set_null_hypothesis_pe(nullhyp_pe);
   mymclimit->set_test_hypothesis_pe(testhyp_pe);
   mymclimit->set_npe(nPE);
+  mymclimit->setpxprintflag(true);
   mymclimit->run_pseudoexperiments();
 
 //   cout << "Getting results" << endl;
@@ -524,7 +533,7 @@ int main(int argc, char **argv)
   std::cout << "BEGIN_PE" << std::endl;
   // use the background as 'data' in order to run the code
   char WWchan_name[]="WWchan";
-  mymclimit->set_datahist(histWpJ,WWchan_name);
+  mymclimit->set_datahist(histDataElandMu,WWchan_name);
   mymclimit->bayes_heinrich_withexpect(bh_CL,&sflimit,&unc,npx,&sm2,&sm1,&smed,&sp1,&sp2);
   //mymclimit->bayes_heinrich(bh_CL,&sflimit,&unc);
   std::cout << "END_PE" << std::endl;
