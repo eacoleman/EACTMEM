@@ -19,7 +19,6 @@ using namespace std;
 #include <TAMUWW/Tools/BkgPlotTools.cc>
 
 void TemplateFit(const char* TitleName, const char* TreeName, const char* VarName, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, const char* SaveName = 0 )
-//// Similar to Plot_CompareShapes, but plots backgrounds stacked on top of each other.
 //// Plots variable VarName for the given modes. The size (area) of each histogram is proportional to the number of given events. 
 /// inModes should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color[1] modename[2] ... " 
 /// Use AddRest to give additional restrictions)
@@ -141,4 +140,6 @@ void TemplateFit(const char* TitleName, const char* TreeName, const char* VarNam
 
 
 }
+
+
 

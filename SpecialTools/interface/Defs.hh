@@ -61,7 +61,7 @@ namespace DEFS{
   // Under no condition set the value of the category, otherwise nEvtCat 
   // will not be working on some classes like PhysicsProcessForOpt
   // In addition, make sure that all the categories that data/MC has are here
-  enum EvtCat {none,  muon, electron};
+  enum EvtCat {none,  muon, electron};//Change to lepton cat.
   static const unsigned int nEvtCat = 3; 
 
     // A routine that returns the string given the EvtType 

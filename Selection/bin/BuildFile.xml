@@ -1,8 +1,4 @@
-<<<<<<< BuildFile.xml
-<bin name="SyncExerciseSelection_HWWMC_Ex3.exe" file="SyncExerciseSelection_HWWMC_Ex3.cc">
-=======
-<bin name="PerformSelection.exe" file="PerformSelection.cc">
->>>>>>> 1.6
+<bin name="PerformSelection415.exe" file="PerformSelection415.cc">
  <use name="root"/>
  <use name="FWCore/FWLite"/>
  <use name="FWCore/Framework"/>
@@ -15,7 +11,4 @@
  <use name="CondFormats/JetMETObjects"/>
 
 </bin>
-<<<<<<< BuildFile.xml
-=======
 
->>>>>>> 1.6

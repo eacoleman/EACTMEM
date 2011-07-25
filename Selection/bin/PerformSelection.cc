@@ -418,11 +418,11 @@ int main (int argc, char* argv[])
       VtxHandle.getByLabel (eventCont, "offlinePrimaryVertices");
       assert ( VtxHandle.isValid() ); 
 
-      fwlite::Handle<reco::GenParticleCollection> genParticleHandle;
-      if ( !modename.Contains("Data") ) {
-	genParticleHandle.getByLabel (eventCont, "genParticles");
-	assert ( genParticleHandle.isValid() );
-      }
+//       fwlite::Handle<reco::GenParticleCollection> genParticleHandle;
+//       if ( !modename.Contains("Data") ) {
+// 	genParticleHandle.getByLabel (eventCont, "genParticles");
+// 	assert ( genParticleHandle.isValid() );
+//       }
 
       ///From PF2PAT, standard postfix=PFlow
       fwlite::Handle< vector< pat::Electron > > electronHandle;
@@ -436,11 +436,17 @@ int main (int argc, char* argv[])
       fwlite::Handle< vector< pat::Jet > > pfJetHandle;
       if ( !modename.Contains("PFlowLoose") ) {
 	pfJetHandle.getByLabel (eventCont, "selectedPatJetsPFlow");
+	//pfJetHandle.getByLabel (eventCont, "kt6PFJets");
       } else {
 	pfJetHandle.getByLabel (eventCont, "selectedPatJetsPFlowLoose");
       }
       assert ( pfJetHandle.isValid() );
  
+      fwlite::Handle< double > h_rho;
+      h_rho.getByLabel(eventCont,"kt6PFJets" );
+      assert (h_rho.isValid());
+
+
       fwlite::Handle< vector< pat::Muon > > muonHandle;
       if ( !modename.Contains("PFlowLoose") ) {
 	muonHandle.getByLabel (eventCont, "selectedPatMuonsPFlow");
@@ -463,6 +469,10 @@ int main (int argc, char* argv[])
       ////// ***************************************Perform The Selection*************************************** ///////////////////////
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       EventFail=false;
+
+//       const vector<double>::const_itrator val = h_rho->begin();
+      cout << "h_rho=" << *h_rho.ptr() << endl;
+       // cout << eventCont.Events.double_kt6PFJets__PAT.obj() << " 1" << endl; 
 
       ////// ********************************     Vertex Selection     ******************************** //////
       isPrimaryVertex=false;
@@ -501,7 +511,7 @@ int main (int argc, char* argv[])
 
  	/// We can either directly apply the electronID cuts or look at each individual step:
 	//temp//
-	el_eid=elIter->electronID("simpleEleId70relIso");
+	//el_eid=elIter->electronID("simpleEleId70relIso");
 	el_PassEIDcnt=-1;
 	el_PassEID=false;
 	elPrim_sigmaIetaIeta=elIter->sigmaIetaIeta();
@@ -609,6 +619,12 @@ int main (int argc, char* argv[])
       for (vector< pat::Jet >::const_iterator jetIter = pfJetHandle->begin(); ( pfJetEnd != jetIter ); ++jetIter ) { 
 	j_pt=jetIter->pt();
 	j_eta=jetIter->eta();
+	//	cout << jetIter->srcRho << endl;
+// 	vector < string > jecvec =  jetIter->availableJECLevels();
+
+// 	for ( Int_t i=0; i<jecvec.size(); i++ ) {
+// 	  cout << "i=" << i << " string=" << jecvec[i] << endl;
+// 	}
 	if ( elcnt_Prim==1 ){
 	  adphi=abs(el_Phi-jetIter->phi());
 	  //we're on a circle
@@ -1098,25 +1114,25 @@ int main (int argc, char* argv[])
        EvtNtuple->event=eventNumber;
        
        //Transfer Function Variables
-       EvtNtuple->matchedGenParticles.clear();
-       EvtNtuple->matchedpdgId.clear();
-       EvtNtuple->matchedDeltaR.clear();
-       //Do the matching between the pat::Jets and the reco::genParticles
-       //pair<int, reco::Candidate::LorentzVector> matchedPair = matchToGen((*jetIter),genParticleHandle);
-       //pair<int, TLorentzVector> matchedPair = matchToGen((*jetIter),genParticleHandle);
-       pair<int, TLorentzVector> matchedPair;
-       if ( !modename.Contains("Data") ) {
-	 matchedPair = matchToGen(j1p4LV.Eta(),j1p4LV.Phi(),genParticleHandle);
-	 EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
-	 EvtNtuple->matchedpdgId.push_back(matchedPair.first);
-	 //EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.eta(), matchedPair.second.phi(), (*jetIter).eta(), (*jetIter).phi()));
-	 //EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), (*jetIter).eta(), (*jetIter).phi()));
-	 EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j1p4LV.Eta(), j1p4LV.Phi()));
-	 matchedPair = matchToGen(j2p4LV.Eta(),j2p4LV.Phi(),genParticleHandle);
-	 EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
-	 EvtNtuple->matchedpdgId.push_back(matchedPair.first);
-	 EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j2p4LV.Eta(), j2p4LV.Phi()));
-       }
+//        EvtNtuple->matchedGenParticles.clear();
+//        EvtNtuple->matchedpdgId.clear();
+//        EvtNtuple->matchedDeltaR.clear();
+//        //Do the matching between the pat::Jets and the reco::genParticles
+//        //pair<int, reco::Candidate::LorentzVector> matchedPair = matchToGen((*jetIter),genParticleHandle);
+//        //pair<int, TLorentzVector> matchedPair = matchToGen((*jetIter),genParticleHandle);
+//        pair<int, TLorentzVector> matchedPair;
+//        if ( !modename.Contains("Data") ) {
+// 	 matchedPair = matchToGen(j1p4LV.Eta(),j1p4LV.Phi(),genParticleHandle);
+// 	 EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
+// 	 EvtNtuple->matchedpdgId.push_back(matchedPair.first);
+// 	 //EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.eta(), matchedPair.second.phi(), (*jetIter).eta(), (*jetIter).phi()));
+// 	 //EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), (*jetIter).eta(), (*jetIter).phi()));
+// 	 EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j1p4LV.Eta(), j1p4LV.Phi()));
+// 	 matchedPair = matchToGen(j2p4LV.Eta(),j2p4LV.Phi(),genParticleHandle);
+// 	 EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
+// 	 EvtNtuple->matchedpdgId.push_back(matchedPair.first);
+// 	 EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j2p4LV.Eta(), j2p4LV.Phi()));
+//        }
        //Additional Variables
        EvtNtuple->lTotIso=lTotIso;
        EvtNtuple->lecalIso=lecalIso;
