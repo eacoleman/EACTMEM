@@ -9,26 +9,36 @@
 //// replace _test with _MC or _Data for actual runs.
 
 
+///temporary fix
+#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_4/src/TAMUWW/Tools/ManipulateCRABOutput.cc>
+
 //#include <stdlib> 
 #include <iostream>
 #include <iomanip>
 #include <strstream>
+//#include <sstream>
 #include <fstream>
+//#include <ofstream>
 #include <vector>
 #include <map>
 #include <string>
+
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <math.h>
 
 using namespace std;
 
 #include <TString.h>
 #include <TChain.h>
 
-#include <../../Tools/ManipulateCRABOutput.cc>
+
 #define MAXJOBS 20000
 
 const bool isData=false; //use when setting .cfg file parameters.
 const bool useBackupLogs=false; //a feature used to restore logs, if they were damaged or lost (set to true and run CreateJobs, StartJobs and UpdateJobStatus).
-const TString designation="MC"; //Set to MC or Data for actual runs
+const TString designation="MCKalsNtuples_mu"; //Set to MC or Data for actual runs
+//const TString designation="MCKalsNtuples_el"; //Set to MC or Data for actual runs
 
 void ManipulateSingleCRABJobSet () {
 }
@@ -434,29 +444,39 @@ void CreateJobs (const char* _setName, int _nEvtsPerJob, int _nEvtsTotal, const 
   bool firstJobCreation=false;
   char line[500];
   char I_char[5];
+  //cout << "1" << endl;
   tempName="Template.cfg";
 //   tempName=".cfg";
 //   tempName="FNAL"+tempName;
 //   tempName="Template"+tempName;
   tempName=designation+tempName;
   tempName="crab_"+tempName;
+  // cout << "2" << endl;
   ifstream inTemplateFile(tempName);
+  cout << "TemplateName = " << tempName << endl;
+//   cout << inTemplateFile.good() << endl;
+
   logFileName=".log";
   logFileName=designation+logFileName;
   logFileName="_"+logFileName;
   logFileName=_setName+logFileName;
   logFileName="logs/"+logFileName;
+  // cout << "3" << endl;
   ifstream inLogFile(logFileName);
+  //cout << "3.1" << endl;
   ofstream outLogFile;
+  //cout << "3.2" << endl;
   outLogFile.open("logs/tempLog.txt",ios::out);
   cfgFileName=".cfg";
   cfgFileName=designation+cfgFileName;
   cfgFileName="_"+cfgFileName;
   cfgFileName=_setName+cfgFileName;
   cfgFileName="cfgs/"+cfgFileName;
+  //cout << "3.6" << endl;
   ofstream outCfgFile;
   outCfgFile.open(cfgFileName,ios::out);
 
+  //cout << "4" << endl;
   if ( !inLogFile.good() ) {
     firstJobCreation=true;
     NVersion=1;
@@ -570,6 +590,7 @@ void CreateJobs (const char* _setName, int _nEvtsPerJob, int _nEvtsTotal, const 
     if (_createAtFNAL) {
       if ( token=="se_black_list" ) {
 	outCfgFile << "## " << line << endl;
+	outCfgFile << "ce_white_list = cmssrm.fnal.gov" << endl;
 	writeline=false;
       }
     }

@@ -6,11 +6,14 @@
 //// A Tool For Working with a single set of CRAB Jobs
 //// initialize the proxy: voms-proxy-init -voms cms
 
+///temporary fix
+#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_4/src/TAMUWW/Tools/ManipulateSingleCRABJobSet.cc>
 
 //#include <stdlib> 
 #include <iostream>
 #include <iomanip>
 #include <strstream>
+//#include <ios>
 #include <fstream>
 #include <vector>
 #include <map>
@@ -21,7 +24,7 @@ using namespace std;
 #include <TString.h>
 #include <TChain.h>
 
-#include <../../Tools/ManipulateSingleCRABJobSet.cc>
+
 
 void ManipulateMultipleCRABJobSets () {
 }
@@ -52,9 +55,17 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
   bool createAtFNAL=false;
   TString setName,baseDir,dataset,lumimask,runselection;
   int nEvtsPerJob,nEvtsTotal,nReps,nJobsPerPart;
+
+  //TString endlog_checkString;
   ifstream allSetsLogFile(allSetsLogName);
+//   allSetsLogFile.getline(logline,500);
+//   cout << "logline = " << logline << endl;
+  //allSetsLogFile.open():
+  //cout << allSetsLogFile.good() << endl;
 
   while ( allSetsLogFile.good() ) {
+    //while ( endlog_checkString!="ENDOFLOG" ) {
+    //cout << "1" << endl;
     allSetsLogFile.getline(logline,500);
     istrstream str0(logline);
     str0 >> label >> token1 >> valstr >> token3;
@@ -137,7 +148,11 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
 	cerr << "ERROR : Lines in the log file are not in proper order" << endl;
       }
       CreateJobs(setName,nEvtsPerJob,nEvtsTotal,baseDir,dataset,lumimask,runselection,nReps,nJobsPerPart,createAtFNAL);
-    }
+    } 
+// else {
+//       endlog_checkString=label;
+//     }
+
   }
 }
 
