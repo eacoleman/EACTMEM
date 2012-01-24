@@ -7,7 +7,7 @@
 //// initialize the proxy: voms-proxy-init -voms cms
 
 ///temporary fix
-#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_4/src/TAMUWW/Tools/ManipulateSingleCRABJobSet.cc>
+#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src/TAMUWW/Tools/ManipulateSingleCRABJobSet.cc>
 
 //#include <stdlib> 
 #include <iostream>
@@ -39,8 +39,8 @@ void ManipulateMultipleCRABJobSets () {
 // _lumimask = 
 // _runselection = 
 // _baseDir =
-// _nEvtsTotal = 
-// _nEvtsPerJob =
+// _nEvtsOrJobsTotal = 
+// _nEvtsOrLumisPerJob =
 // _nReps = 
 // _nJobsPerPart =
 // _availableAtFNAL =
@@ -106,7 +106,7 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
       allSetsLogFile.getline(logline,500);
       istrstream str5(logline);
       str5 >> label >> token1 >> valint >> token3;
-      if ( label=="_nEvtsTotal" ) {
+      if ( label=="_nEvtsOrJobsTotal" ) {
 	nEvtsTotal=valint; 
       } else {
 	cerr << "ERROR : Lines in the log file are not in proper order" << endl;
@@ -114,7 +114,7 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
       allSetsLogFile.getline(logline,500);
       istrstream str6(logline);
       str6 >> label >> token1 >> valint >> token3;
-      if ( label=="_nEvtsPerJob" ) {
+      if ( label=="_nEvtsOrLumisPerJob" ) {
 	nEvtsPerJob=valint; 
       } else {
 	cerr << "ERROR : Lines in the log file are not in proper order" << endl;
@@ -335,7 +335,7 @@ void KillJobs_All(const char* allSetsLogName)
   }
 }
 
-void CleanUpJobs_All(const char* allSetsLogName, bool removeAll ) 
+void CleanUpJobs_All(const char* allSetsLogName, bool removeUnpDirs, bool removeLogs) 
 //// Cleans up the storage space for all of the sets
 {
   char logline[500];
@@ -346,10 +346,149 @@ void CleanUpJobs_All(const char* allSetsLogName, bool removeAll )
     istrstream str(logline);
     str >> label >> token1 >> setName >> token3;
     if ( label=="_setName" ) {
-      CleanUpJobs(setName,removeAll);
+      CleanUpJobs(setName,removeUnpDirs,removeLogs);
     }
   }
 }
+
+void HADDJobsInADirectory(const char* dirName, const char* filePrefix) 
+//// Do hadd for the jobs in all subdirectories of a given directory. Bypasses the 1K file limit (by creating subdirectories and adding files in them).
+{
+
+  TString Command, partialDir;
+  char line[500];
+  char I_char[5];
+  vector <TString> subdirectoryName;
+  subdirectoryName.clear();
+  int Nsubdirs=0;
+  int Nfiles, Nparts;
+
+  // Clean up dirName
+  Command="*";
+  Command=dirName+Command;
+  Command="rm "+Command;
+  cout << "Command=" << Command << endl;
+  system(Command);
+
+  ///Store the subdirectory names
+  Command = " >& dirNames.txt";
+  Command = dirName + Command;
+  Command = "ls " + Command;
+  cout << "Command=" << Command << endl;
+  system(Command);
+  ifstream infiledirs("dirNames.txt");
+  while ( infiledirs.good() ) {
+    infiledirs.getline(line,500);
+    //cout << "line=[" << line << "]" << endl;
+    subdirectoryName.push_back(line);
+    Nsubdirs++;
+  }
+  Nsubdirs=Nsubdirs-1;
+
+  for (Int_t i=0; i<Nsubdirs;i++) {
+    Command = "*.root >& fileNames.txt";
+    Command=filePrefix+Command;
+    Command="/"+Command;
+    Command=subdirectoryName[i]+Command;
+    Command=dirName+Command;
+    Command="ls " + Command;
+    cout << "Command=" << Command << endl;
+    system(Command);
+    ifstream infn("fileNames.txt");
+    Nfiles=0;
+    Nparts=0;
+    while ( infn.good() ) {
+      infn.getline(line,500);
+      Nfiles++;
+      //If we go over 900 files start moving to a (new) partial dir
+      if ( Nfiles>900 ) {
+	Nparts++;
+	Nfiles=0;
+	sprintf(I_char,"%i",Nparts);
+	partialDir=I_char;
+	partialDir="_pt"+partialDir;
+	partialDir=subdirectoryName[i]+partialDir;
+	partialDir=dirName+partialDir;
+	Command="mkdir "+partialDir;
+	cout << "Command=" << Command << endl;
+	system(Command);
+      }
+      if ( Nparts>0 ) {
+	Command=" " + partialDir;
+	Command=line+Command;
+	//Command=dirName+Command;
+	Command="mv "+Command;
+	cout << "Command=" << Command << endl;
+	system(Command);
+      }
+    }
+    if ( Nparts>0 ) {
+      sprintf(I_char,"%i",0);
+      partialDir=I_char;
+      partialDir="_pt"+partialDir;
+      partialDir=subdirectoryName[i]+partialDir;
+      partialDir=dirName+partialDir;
+      Command=" " + partialDir;
+      Command=subdirectoryName[i]+Command;
+      Command=dirName+Command;
+      Command="mv "+Command;
+      cout << "Command=" << Command << endl;
+      system(Command);
+    }
+    //Perform the hadd
+    if ( Nparts==0 ) {
+      //hadd ${n}_CMSSW428.root ${n}/MC428*.root
+      Command="*.root";
+      Command=filePrefix+Command;
+      Command="/"+Command;
+      Command=subdirectoryName[i]+Command;
+      Command=dirName+Command;
+      Command="_CMSSW428.root "+Command;
+      Command=subdirectoryName[i]+Command;
+      Command=dirName+Command;
+      Command="hadd "+Command;
+      cout << "Command=" << Command << endl;
+      system(Command);
+    } else {
+      //hadd the partial dirs
+      cout << "Adding the Files in the subdirectories" << endl;
+      for ( Int_t j=0; j<(Nparts+1);j++ ) {
+	sprintf(I_char,"%i",j);
+	partialDir=I_char;
+	partialDir="_pt"+partialDir;
+	partialDir=subdirectoryName[i]+partialDir;
+	partialDir=dirName+partialDir;
+	Command="*.root";
+	Command=filePrefix+Command;
+	Command="/"+Command;
+	Command=partialDir+Command;
+	Command="_CMSSW428.root "+Command;
+	Command=I_char+Command;
+	Command="_pt"+Command;
+	Command=subdirectoryName[i]+Command;
+	Command=dirName+Command;
+	Command="hadd "+Command;
+	cout << "Command=" << Command << endl;
+	system(Command);
+      }
+      //hadd the partial files
+      cout << "Adding the partial files" << endl;
+      Command="_pt*.root";
+      Command=subdirectoryName[i]+Command;
+      Command=dirName+Command;
+      Command="_CMSSW428.root "+Command;
+      Command=subdirectoryName[i]+Command;
+      Command=dirName+Command;
+      Command="hadd "+Command;
+      cout << "Command=" << Command << endl;
+      system(Command);
+    }
+
+  }
+
+}
+
+
 
 
 // void _All(const char* allSetsLogName) 

@@ -91,6 +91,8 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::STopS;
       if( str == "STopT")
 	return  DEFS::PhysicsProcess::STopT;
+      if( str == "STopTW")
+	return  DEFS::PhysicsProcess::STopTW;
       if( str == "Wbb")
 	return  DEFS::PhysicsProcess::Wbb;
       if( str == "Wcc")
@@ -99,12 +101,20 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::Wjets;
       if( str == "WLight")
 	return  DEFS::PhysicsProcess::WLight;
-      if( str == "QCD")
-	return  DEFS::PhysicsProcess::QCD;
-      if( str == "QCD100")
-	return  DEFS::PhysicsProcess::QCD100;
-      if( str == "QCD250")
-	return  DEFS::PhysicsProcess::QCD250;
+      if( str == "QCDMu")
+	return  DEFS::PhysicsProcess::QCDMu;
+      if( str == "QCDEl_Pt30to80")
+	return  DEFS::PhysicsProcess::QCDEl_Pt30to80;
+      if( str == "QCDEl_Pt80to170")
+	return  DEFS::PhysicsProcess::QCDEl_Pt80to170;
+      if( str == "QCDEl_BCtoE30to80")
+	return  DEFS::PhysicsProcess::QCDEl_BCtoE30to80;
+      if( str == "QCDEl_BCtoE80to170")
+	return  DEFS::PhysicsProcess::QCDEl_BCtoE80to170;
+//       if( str == "QCD100")
+// 	return  DEFS::PhysicsProcess::QCD100;
+//       if( str == "QCD250")
+// 	return  DEFS::PhysicsProcess::QCD250;
       if( str == "WW")
 	return  DEFS::PhysicsProcess::WW;
       if( str == "WZ")
@@ -119,6 +129,8 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::TTbarLJ;
       if( str == "Zjets")
 	return  DEFS::PhysicsProcess::Zjets;
+      if( str == "Ztautau")
+	return  DEFS::PhysicsProcess::Ztautau;
       if( str == "data")
 	return  DEFS::PhysicsProcess::Data;
   
@@ -186,6 +198,8 @@ namespace DEFS {
 	return string("STopS");
       else if (type == STopT)
 	return string("STopT");
+      else if (type == STopTW)
+	return string("STopTW");
       else if (type == Wjets)
 	return string("Wjets");
       else if (type == Wbb)
@@ -194,12 +208,20 @@ namespace DEFS {
 	return string("Wcc");
       else if (type == WLight) 
 	return string("WLight");
-      else if (type == QCD)
-	return string("QCD");
-      else if (type == QCD100)
-	return string("QCD100");
-      else if (type == QCD250)
-	return string("QCD250");
+      else if (type == QCDMu)
+	return string("QCDMu");
+      else if (type == QCDEl_Pt30to80)
+	return string("QCDEl_Pt30to80");
+      else if (type == QCDEl_Pt80to170)
+	return string("QCDEl_Pt80to170");
+      else if (type == QCDEl_BCtoE30to80)
+	return string("QCDEl_BCtoE30to80");
+      else if (type == QCDEl_BCtoE80to170)
+	return string("QCDEl_BCtoE80to170");
+//       else if (type == QCD100)
+// 	return string("QCD100");
+//       else if (type == QCD250)
+// 	return string("QCD250");
       else if (type == WW)
 	return string("WW");
       else if (type == WZ)
@@ -214,6 +236,8 @@ namespace DEFS {
 	return string("TTbarDil");
       else if (type == Zjets)
 	return string("Zjets");
+      else if (type == Ztautau)
+	return string("Ztautau");
       else if (type == Data)
 	return string("data");
       else     
@@ -309,7 +333,7 @@ namespace DEFS {
 
   //---------------------------------------------------------------------------
   // A routine that returns the string given the Event Category
-  string getEventCatString(EvtCat type){
+  string getEventCatString(LeptonCat type){
     if (type == electron)
       return "electron";
     else if (type == muon)

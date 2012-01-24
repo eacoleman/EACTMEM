@@ -21,9 +21,11 @@ using namespace std;
 #include <TTree.h>
 #include <TH1.h>
 
+#include <TAMUWW/Tools/GlobalTools428.cc>
+
 void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, const char* rootInputDir, const char* rootInputName, const char* OutputName, int FirstEvt, int NEvtsPerJob, int FirstJob, int NJobs)
 //// Creates a condor launcher (ScriptDir/CondorLauncher_ScriptName) script and a .csh script used by it (ScriptDir/CondorScript_ScriptName.csh).
-//// These can be used from any directory, provided it has cteq5l.tbl & cteq6l.tbl libraries, a /log subdirectory as well as run_MatrixElement macro in it. Note: rootInputDir is the location of the .root input file as seen from this directory.
+//// These can be used from any directory, provided it has cteq5l.tbl & cteq6l.tbl libraries (normally located in TAMUWW/PDFs/Pdfdata/), a /log subdirectory as well as run_MatrixElement macro in it. Note: rootInputDir is the location of the .root input file as seen from this directory.
 //// Running the CondorLauncher will generate root files of the form ScriptName_CondorRun#.root (with #=FirstJob,..,FirstJob+NJobs-1).
 {
   ofstream outlauncher, outscript;
@@ -64,10 +66,10 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, con
   /// Make the internal script
   outscript << "#! /bin/csh" << endl;
   outscript << "echo \"Starting\" " << endl;
-  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/ME387/src" << endl;
+  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
   outscript << "source /uscmst1/prod/sw/cms/cshrc uaf" << endl;
   // outscript << "source /uscmst1/prod/grid/gLite_SL5.csh" << endl;
-  outscript << "setenv SCRAM_ARCH slc5_ia32_gcc434"<< endl;//only needed for CMSSW_3_X_Y
+  // outscript << "setenv SCRAM_ARCH slc5_ia32_gcc434"<< endl;//only needed for CMSSW_3_X_Y
   outscript << "pwd" << endl;
   //  outscript << "cmsenv" << endl;
   outscript << "eval `scram runtime -csh` " << endl;
@@ -82,6 +84,50 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, con
 
   tempStr="chmod +x " + tempStr;
   system(tempStr);  
+}
+
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+void CreateMultipleCondorScripts_runME(const char* inputmode, const char* ScriptDir, const char* rootInputDir, int StartProcess, int EndProcess, int NEvtsPerJob, bool runOnJESShifted=false )
+//// Calls CreateCondorScript_runME for each process, with the option of running on JES shifted files as well (runOnJESShifted=true).
+//// ScriptName=LME+PLabel+suffix, OutputName=PLabel+ME+suffix; where suffix="DEF","JESp1s","JESm1s"
+//// rootInputName=PLabel+inputmode+inputsuffix, where inputsuffix="_outfile.root" and potentially "_JESp1s.root", "_JESm1s.root"
+{
+  TString scriptBaseName,rootinputBaseName,outputBaseName;
+  int nEntries,nJobs,nEvtsPerJob;
+  InitializeLabels(PLabel,CLabel);
+
+  for (Int_t np=StartProcess; np<(EndProcess+1);np++) {
+    cout << "Process=" << PLabel[np] << endl;
+    scriptBaseName=PLabel[np];
+    scriptBaseName=inputmode+scriptBaseName;
+    rootinputBaseName=inputmode;
+    rootinputBaseName=PLabel[np]+rootinputBaseName;
+    outputBaseName=inputmode;
+    outputBaseName=PLabel[np]+outputBaseName;
+
+    TFile* infile = new TFile(rootInputDir+rootinputBaseName+"_outfile.root");
+    TTree* InTree = (TTree*)infile->Get("EvtTree");
+    nEntries=InTree->GetEntries();
+    cout << "nEntries=" << nEntries ;
+    nJobs=nEntries/NEvtsPerJob;
+    nEvtsPerJob=NEvtsPerJob;
+    //when the number of events is less than number of jobs, run on all of the events
+    if ( nJobs==0 ) {
+      nJobs=1;
+      nEvtsPerJob=nEntries;
+    }
+
+    cout << ", nJobs=" << nJobs << endl;
+
+    CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",0,nEvtsPerJob,0,nJobs);
+    if ( runOnJESShifted ) {
+      CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESp1s",rootInputDir,rootinputBaseName+"_JESp1s.root",outputBaseName+"JESp1s",0,nEvtsPerJob,0,nJobs);
+      CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",0,nEvtsPerJob,0,nJobs);
+    }
+  }
+  
 }
 
 

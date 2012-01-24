@@ -5,7 +5,7 @@
 
 // This namespace holds the definitions of all physics processes 
 // author: Ricardo Eusebi, Feb 12, 2009
-
+// modified: Osipenkov, Ilya
 
 namespace DEFS{
 
@@ -32,8 +32,10 @@ namespace DEFS{
 	       WH130 , WH135 , WH140 , WH145 , WH150 ,
 	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
 	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
-	       STopS, STopT, Wjets, Wbb, Wcc, WLight, 
-	       QCD, QCD100, QCD250, WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Data};
+	       STopS, STopT, STopTW, Wjets, Wbb, Wcc, WLight, 
+	       WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
+	       QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
+	       Data};
  
 
     // A routine that returns the type given a string 
@@ -58,14 +60,14 @@ namespace DEFS{
   // ---------------------------------------------------------------
   //            ALL ABOUT THE DIFFERENT EVENT CATEGORIES
   // ---------------------------------------------------------------
-  // Under no condition set the value of the category, otherwise nEvtCat 
+  // Under no condition set the value of the category, otherwise nLeptonCat 
   // will not be working on some classes like PhysicsProcessForOpt
   // In addition, make sure that all the categories that data/MC has are here
-  enum EvtCat {none,  muon, electron};//Change to lepton cat.
-  static const unsigned int nEvtCat = 3; 
+  enum LeptonCat {none, muon, electron, both};
+  static const unsigned int nLeptonCat = 4; 
 
     // A routine that returns the string given the EvtType 
-  std::string getEventCatString(EvtCat );
+  std::string getEventCatString(LeptonCat );
 
   // -----------------------------------------------------------
   //            ALL ABOUT THE JET TYPES

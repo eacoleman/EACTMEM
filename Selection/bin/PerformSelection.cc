@@ -366,7 +366,8 @@ int main (int argc, char* argv[])
 
   // This object 'event' is used both to get all information from the
   // event as well as to store histograms, etc.
-  fwlite::EventContainer eventCont (parser);
+  // fwlite::EventContainer eventCont (parser);
+  fwlite::Event eventCont(parser);
   
   ////////////////////////////////////////
   // ////////////////////////////////// //

@@ -21,7 +21,7 @@ class DefaultValues{
 					  DEFS::PhysicsProcessType, int );
 
   // Return a table with normalization of process for the given tag category
-  static Table getNormTable(DEFS::EvtCat evtcat, DEFS::TagCat tagcat);
+  static Table getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat);
 
   // Return a table with location of files for the given tag category
   static Table getFileLocationTable(DEFS::TagCat tagcat);
@@ -39,7 +39,7 @@ class DefaultValues{
   // ntuples chained from files in fileTable
   static PhysicsProcess * getSingleProcess(DEFS::PhysicsProcessType process,
 					   DEFS::JetBin jetBin,
-					   std::map<DEFS::EvtCat,Table> normTable,
+					   std::map<DEFS::LeptonCat,Table> normTable,
 					   Table fileTable);
 
 

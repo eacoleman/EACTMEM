@@ -433,8 +433,7 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJe
   ProbsForEPD coeffs;
 
   if(tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV)
-    return ProbsForEPD(2.85714e+09,2e+10,4.23586e+08,1.41375e+08,0,30.055,4000,
-		       357143,0,0,0,6.46134e+06,1.79165e+06,0,0.486261);// DEFS::TagCat=0 figOfMerit=0.136779
+    return ProbsForEPD(2.85714e+09,2e+10,1.20062e+08,1.36023e+07,0,110.948,4000,357143,0,0,0,2.80857e+06,182765,0,3.99459); // DEFS::TagCat=0 figOfMerit=0.136722
   else if (tagcat == DEFS::eq1TSV)
     return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
   else if (tagcat != DEFS::eq2TSV)

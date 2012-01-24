@@ -17,7 +17,7 @@ using std::endl;
 
 // ----------------------------------------------------------------------------
 // This method returns the table with the event expectation for the evt/tag category
-Table DefaultValues::getNormTable(DEFS::EvtCat evtcat, DEFS::TagCat tagcat){
+Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
 
   Table table("NormTable");
   
@@ -73,7 +73,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
   vector<PhysicsProcess*>  proc;
 
   // get the table with the expected number of 
-  map<DEFS::EvtCat, Table> normTable;
+  map<DEFS::LeptonCat, Table> normTable;
   normTable[DEFS::muon    ] = getNormTable(DEFS::muon    ,tagcat);
   normTable[DEFS::electron] = getNormTable(DEFS::electron,tagcat);
 
@@ -104,7 +104,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
 // (..., const Table & normTable, const Table & fileTable, ...) 
 PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
 						 DEFS::JetBin jetBin,
-						 map<DEFS::EvtCat, Table> normTable,
+						 map<DEFS::LeptonCat, Table> normTable,
 						 Table fileTable){
 
     // get the process name
@@ -134,11 +134,11 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
   PhysicsProcess *  proc =  new PhysicsProcess(prName, prName, chain);
 
   // Tell it the formula to get the categories from its own data
-  proc->setCategory("EvtTree.passStd");//"h.det");
+  proc->setCategory("EvtTree.leptonCat");//"h.det");
   
   // Set the expected number of events for each category
   // iterating over the map of normTables.
-  for ( map<DEFS::EvtCat, Table>::iterator it = normTable.begin();
+  for ( map<DEFS::LeptonCat, Table>::iterator it = normTable.begin();
 	it != normTable.end(); it++){
 
     // Get the cell from the table
@@ -147,7 +147,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
     // make sure we found the cell
     if (cellNorm == 0){
       cout<<"ERROR DefaultValues::getSingleProcess normalization Table " <<it->second.getTableOrigin()
-	  <<" for EvtCat="<<DEFS::getEventCatString(it->first)
+	  <<" for LeptonCat="<<DEFS::getEventCatString(it->first)
 	  <<" does not have row "<<prName
 	  <<" and column "<<jetBinName<<endl;
       cout<<" SKIPPING PROCESS "<<prName<<endl;
@@ -250,6 +250,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
 
   procs.push_back(DEFS::PhysicsProcess::STopS   );
   procs.push_back(DEFS::PhysicsProcess::STopT   );
+  procs.push_back(DEFS::PhysicsProcess::STopTW  );
   procs.push_back(DEFS::PhysicsProcess::TTbar   );
   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
@@ -258,12 +259,17 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
   procs.push_back(DEFS::PhysicsProcess::Wjets   ); 
   procs.push_back(DEFS::PhysicsProcess::Zjets   );
-  procs.push_back(DEFS::PhysicsProcess::QCD  );
+  procs.push_back(DEFS::PhysicsProcess::Ztautau );
+  procs.push_back(DEFS::PhysicsProcess::QCDMu               );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80      );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170     );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80   );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170  );
   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
   procs.push_back(DEFS::PhysicsProcess::WW      );
   procs.push_back(DEFS::PhysicsProcess::WZ      );
   //procs.push_back(DEFS::PhysicsProcess::ZZ      );
-  
+
   if (include_data)
     procs.push_back(DEFS::PhysicsProcess::Data    );
 

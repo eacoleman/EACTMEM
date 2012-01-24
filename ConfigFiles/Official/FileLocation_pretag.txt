@@ -3,23 +3,28 @@
 CellClass=TableCellText
 
 Process |      FilePath 
-BasePath|  /uscms/home/ilyao/nobackup/MEResults/387PF2PAT/microNtuples/
-Data    |
-STopS   |  micro_STopS24000Evt.root
-STopT   |  micro_STopT24000Evt.root
-TTbar   |  micro_TTbar24000Evt.root
+BasePath|  /uscms/home/ilyao/nobackup/Summer11/428Reduced/MEResults/microNtuples/
+DataMu  |  micro_SingleMu_77100Evt.root
+DataEl  |  micro_SingleEl_51900Evt.root
+STopS   |  micro_STopS_6000Evt.root
+STopT   |  micro_STopT_20400Evt.root
+STopTW  |  micro_STopTW_9600Evt.root
+TTbar   |  micro_TTbar_13200Evt.root
 TTbarLJ |  
 TTbarDil|  
 Wbb     |  
 Wcc     |  
 WLight  |  
-Wjets   | micro_WpJ24000Evt.root
-Zjets   | micro_ZpJ680Evt.root
-QCD     | micro_QCDOnlyElplusOnlyMu.root
-QCD100  | micro_QCDElData400Evt.root
-QCD250  | micro_QCDElData400Evt.root
-WW      | micro_WW2200Evt.root
-WZ      | micro_WZ1500Evt.root
+Wjets   | micro_WpJ_19200Evt.root
+Zjets   | micro_ZpJ_3900Evt.root
+Ztautau | micro_Ztautau_800Evt.root
+QCDMu   | micro_QCDMu_1472Evt.root
+QCDEl_Pt30to80     | micro_QCDEl_Pt30to80.root
+QCDEl_Pt80to170    | micro_QCDEl_Pt80to170.root
+QCDEl_BCtoE30to80  | micro_QCDEl_BCtoE30to80.root
+QCDEl_BCtoE80to170 | micro_QCDEl_BCtoE80to170.root
+WW      | micro_WW_24900Evt.root
+WZ      | micro_WZ_14400Evt.root
 ZZ      |  
 WH100   |
 WH105   |  

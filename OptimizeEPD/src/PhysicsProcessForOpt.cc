@@ -78,8 +78,8 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
 
 
   //Create the histograms for each detector category
-  TH1 * histo_cat[DEFS::nEvtCat];
-  for (unsigned int hdet = 0 ; hdet < DEFS::nEvtCat; hdet++){
+  TH1 * histo_cat[DEFS::nLeptonCat];
+  for (unsigned int hdet = 0 ; hdet < DEFS::nLeptonCat; hdet++){
     histo_cat[hdet] = (TH1*) histo->Clone();
     //histo_cat[hdet] -> Sumw2();
   }
@@ -120,10 +120,10 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
 					  probs.ww + probs.wz);    
 
       // Do a basic check to make sure the category is within bounds. Otherwise complain heavily.
-      if ( rows[ro].category < 0 || rows[ro].category >= (int)  DEFS::nEvtCat) {
+      if ( rows[ro].category < 0 || rows[ro].category >= (int)  DEFS::nLeptonCat) {
 	cout<<"ERROR PhysicsProcessForOpt::fillNormEPDHisto (process "<<getName()
 	    <<") found category="<< rows[ro].category
-	    <<" which is not in the range [0,DEFS::nEvtCat="<< DEFS::nEvtCat<<") defined at SpecialTools/interface/Defs.hh"<<endl;
+	    <<" which is not in the range [0,DEFS::nLeptonCat="<< DEFS::nLeptonCat<<") defined at SpecialTools/interface/Defs.hh"<<endl;
 	cout<<"\t SKIPPING EVENT"<<endl;
       }
       else 
@@ -135,7 +135,7 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
   }//for subsamples
  
   // Loop over the categories, 
-  for (unsigned int hdet = 0; hdet < DEFS::nEvtCat; hdet++){
+  for (unsigned int hdet = 0; hdet < DEFS::nLeptonCat; hdet++){
 
     // normalize the histo to the expected number of events, and add to the total
     if (histo_cat[hdet]->Integral() > 0){

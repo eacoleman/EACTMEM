@@ -10,7 +10,7 @@
 
 
 ///temporary fix
-#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_4/src/TAMUWW/Tools/ManipulateCRABOutput.cc>
+#include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src/TAMUWW/Tools/ManipulateCRABOutput.cc>
 
 //#include <stdlib> 
 #include <iostream>
@@ -36,9 +36,14 @@ using namespace std;
 #define MAXJOBS 20000
 
 const bool isData=false; //use when setting .cfg file parameters.
+const bool isLocalDataset=true; //use to set .cfg file parameters when running on a locally stored dataset.
+const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.
 const bool useBackupLogs=false; //a feature used to restore logs, if they were damaged or lost (set to true and run CreateJobs, StartJobs and UpdateJobStatus).
-const TString designation="MCKalsNtuples_mu"; //Set to MC or Data for actual runs
-//const TString designation="MCKalsNtuples_el"; //Set to MC or Data for actual runs
+//const TString designation="MC"; //Set to MC or Data for actual runs
+//const TString designation="Data";
+const TString designation="MCEWKFall11_mu";
+//const TString designation="MCEWKFall11_el";
+
 
 void ManipulateSingleCRABJobSet () {
 }
@@ -434,10 +439,11 @@ bool returnNJobs(const char* statusLogName, int& NJobs, bool isStatusLog) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////    Main Functions  ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CreateJobs (const char* _setName, int _nEvtsPerJob, int _nEvtsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, bool _createAtFNAL)
+void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, bool _createAtFNAL)
 ///Creates the config cfgs/_setName.cfg and a log in logs/_setName.log
 ///Each set of jobs can have X Repetitions (i.e. the number of times you launch this set of jobs), Y Parts and version Z (i.e. if your resubmission fails enough time you can recreate).
 ///Log lines are of the form RepX PtY Label = Value
+///For MC/Data events_per_job/lumis_per_job = _nEvtsOrLumisPerJob, total_number_of_events/number_of_jobs = _nEvtsOrJobsTotal
 {
   TString Command, tempStr, tempName, processeddir, logFileName, cfgFileName, workingdir, remotedir, remotedir_base, outputdir, joblog, token;
   int NVersion, NJobsTot, NJobsProcessed, NParts, StartJob, EndJob;
@@ -561,15 +567,18 @@ void CreateJobs (const char* _setName, int _nEvtsPerJob, int _nEvtsTotal, const 
   remotedir_base=designation+remotedir_base;
   outCfgFile << "### Start Job Specific Settings ###" << endl;
   if ( isData ) {
-    outCfgFile << "lumis_per_job = " << _nEvtsPerJob << endl;
-    outCfgFile << "number_of_jobs = " << _nEvtsTotal << endl;
+    outCfgFile << "lumis_per_job = " << _nEvtsOrLumisPerJob << endl;
+    outCfgFile << "number_of_jobs = " << _nEvtsOrJobsTotal << endl;
     outCfgFile << "lumi_mask = " << _lumimask << endl;
     if ( _runselection!="0" ) {
       outCfgFile << "runselection = " << _runselection << endl;
     }
   } else {
-    outCfgFile << "events_per_job = " << _nEvtsPerJob << endl;
-    outCfgFile << "total_number_of_events = " << _nEvtsTotal << endl;
+    outCfgFile << "events_per_job = " << _nEvtsOrLumisPerJob << endl;
+    outCfgFile << "total_number_of_events = " << _nEvtsOrJobsTotal << endl;
+  }
+  if ( isLocalDataset ) {
+    outCfgFile << "dbs_url = " << dbs_url_name << endl;
   }
   outCfgFile << "datasetpath = " << _dataset << endl;
   outCfgFile << "[USER]" << endl;
@@ -641,8 +650,8 @@ void CreateJobs (const char* _setName, int _nEvtsPerJob, int _nEvtsTotal, const 
     outLogFile << "Rep0 Pt0 " << "Name = " << _setName << endl;
     outLogFile << "Rep0 Pt0 " << "BaseDir = " << _baseDir << endl;
     outLogFile << "Rep0 Pt0 " << "ProcessedDir = " << processeddir << endl;
-    outLogFile << "Rep0 Pt0 " << "EvtsPerJob = " << _nEvtsPerJob << endl;
-    outLogFile << "Rep0 Pt0 " << "EvtsTot = " << _nEvtsTotal << endl;
+    outLogFile << "Rep0 Pt0 " << "EvtsPerJob = " << _nEvtsOrLumisPerJob << endl;
+    outLogFile << "Rep0 Pt0 " << "EvtsTot = " << _nEvtsOrJobsTotal << endl;
     outLogFile << "Rep0 Pt0 " << "NJobsTot = " << NJobsTot << endl;
     outLogFile << "Rep0 Pt0 " << "NJobsProcessed = " << NJobsProcessed << endl;
     outLogFile << "Rep0 Pt0 " << "NParts = " << NParts << endl;
@@ -1219,7 +1228,7 @@ void KillJobs(const char* _setName)
   }
 }
 
-void CleanUpJobs(const char* _setName, bool removeAll)
+void CleanUpJobs(const char* _setName, bool removeUnpDirs, bool removeLogs)
 /// Cleans up all jobs for the set, and can also remove all of the directories (except Processed) and logs
 {
   cout << "CLEANING UP JOBS" << endl;
@@ -1261,7 +1270,7 @@ void CleanUpJobs(const char* _setName, bool removeAll)
       Command="rm -rf "+Command;
       cout << "Command = " << Command << endl;
       system(Command);
-      if ( removeAll ) {
+      if ( removeUnpDirs ) {
 	//remove the Unprocessed dirs
 	Command = "rm -rf " + FullDir;
 	cout << "Command = " << Command << endl;
@@ -1270,7 +1279,7 @@ void CleanUpJobs(const char* _setName, bool removeAll)
     }
   }
   //delete the log file
-  if ( removeAll ) {
+  if ( removeLogs ) {
     Command="rm " + logFileName;
     cout << "Command = " << Command << endl;
     system(Command);

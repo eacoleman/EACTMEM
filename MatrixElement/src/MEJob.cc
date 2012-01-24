@@ -73,13 +73,13 @@ void MEJob::loopOverEvents()
 {
   // Set the tree
   TTree* outputTree = new TTree("METree", "Output tree for matrix element");
-  outputTree->Branch("METree.", "METree", &m_output);
+  outputTree->Branch("METree", "METree", &m_output);
 
   // not-so-elegant code to attach tnt to tree if it's a tnt input
   EventFile* myfile = &m_inputFile;
   if (dynamic_cast<EventNtupleEventFile*>(myfile)){
     EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
-    outputTree->Branch("EvtTree.","EventNtuple",&myntuple);
+    outputTree->Branch("EvtTree","EventNtuple",&myntuple);
   }
   
   PartonColl partons;

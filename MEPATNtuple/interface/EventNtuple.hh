@@ -19,6 +19,8 @@ using std::vector;
 ///Headers for Transfer Function generation
 #include <utility>
 
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
+
 class EventNtuple : public TObject
 {
 public:
@@ -28,7 +30,6 @@ public:
 
 
   //Needed for ME
-  //TLorentzVector lLV;
   vector < TLorentzVector > jLV, METLV, lLV;
   vector < TLorentzVector > matchedGenParticles;
   vector < int > matchedpdgId;
@@ -41,8 +42,10 @@ public:
 
   //Additional
   double        Mjj;
-  int           passStd;
-  int           passAll;
+//   int           passStd;
+//   int           passAll;
+  DEFS::LeptonCat     leptonCat;
+  DEFS::LeptonCat     leptonCat_passAll;
 
   double        DRlj1;
   double        DRlj2;
@@ -55,7 +58,8 @@ public:
 
   double        METEt;
   double        lPhi;
-  ClassDef(EventNtuple, 3)
+
+  ClassDef(EventNtuple,4)
 
 };
 

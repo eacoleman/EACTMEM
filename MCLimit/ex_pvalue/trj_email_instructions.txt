@@ -1,0 +1,32 @@
+ Hi Ricardo,
+
+Have a look at
+
+/cdf/home/trj/forbernd_sep18_2009.tgz
+
+combocls5.C computes discovery p-values, reseeding the random number generator on each
+job segment and printing out -2lnQ values (see the single top PRD).
+
+For definitions, see the PRD:
+
+http://arxiv.org/abs/1004.1181
+
+sec. IX.
+
+For Markov chain limits, make an empty directory, set up cdfsoft2, cd to the empty directory, and type
+
+cvs co mclimit
+
+apologies for the large volume of H->tautau rootfiles Pierluigi gave me last summer.  Should still fit on
+most disks (only <300 Mb).
+
+The routine is tcbayes.C -- look for instances of bayes_heinrich or bayeslimit_mcmc1.  There are similar
+cross section fitters:  bh_xsfit, bh_xsfit2d, and cross section fitters which say mcmc1 in them.  A lot of the
+tcbayes.C lines of code are for a Markov chain calculator Nils wrote, which required some tuning steps
+and which didn't always agree exactly with bayes_heinrich, so I wrote the *mcmc1* routines.
+
+Good luck!
+
+Tom
+
+

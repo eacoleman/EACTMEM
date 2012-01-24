@@ -1,0 +1,27 @@
+"-----------------------------------------------------------------------"
+Muons:
+"-----------------------------------------------------------------------"
+_setName = SingleMu
+_dataset = /SingleMu/Run2011A-PromptReco-v6/AOD
+_lumimask = Cert_160404-173244_7TeV_PromptReco_Collisions11_JSON.txt
+_runselection = 160404-173244
+_baseDir = /uscms_data/d1/ilyao/Summer11/428Reduced/Data/
+_nEvtsOrJobsTotal = 10000000
+_nEvtsOrLumisPerJob = 100
+_nReps = 1
+_nJobsPerPart = 500
+_availableAtFNAL = yes
+"-----------------------------------------------------------------------"
+Electrons
+"-----------------------------------------------------------------------"
+_setName = SingleEl
+_dataset = /SingleElectron/Run2011A-PromptReco-v6/AOD
+_lumimask = Cert_160404-173244_7TeV_PromptReco_Collisions11_JSON.txt
+_runselection = 160404-173244
+_baseDir = /uscms_data/d1/ilyao/Summer11/428Reduced/Data/
+_nEvtsOrJobsTotal = 10000000
+_nEvtsOrLumisPerJob = 100
+_nReps = 1
+_nJobsPerPart = 500
+_availableAtFNAL = yes
+"-----------------------------------------------------------------------"
