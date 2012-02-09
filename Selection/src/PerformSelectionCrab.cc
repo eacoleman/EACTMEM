@@ -421,8 +421,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    InitializeIntMatrix(PassMu);
    InitializeIntMatrix(PassLp);
 
-   table = new Table(string(outtablename)); //EDIT ME!!!
-
 } //COMPLETED
 
 
@@ -445,6 +443,7 @@ void PerformSelection::beginJob()
                                  "TFileService missing from configuration!");
 
    // create the tree
+   table = fs->make<Table>(string(outtablename));
    EvtTree = fs->make<TTree>("EvtTree", "Output tree for matrix element");
    EvtNtuple = new EventNtuple();
    EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
@@ -788,7 +787,6 @@ void PerformSelection::endJob()
    InitializeLabels(PLabel,CLabel);
    
    getProcessTable(table,PassEl,PassMu,PassLp);
-   table->Write();
    if(runtype.CompareTo("cmsRun")==0)
    {
       //
