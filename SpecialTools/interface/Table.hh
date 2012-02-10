@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.hh,v 1.3 2011/03/01 01:56:46 eusebi Exp $
+// $Id: Table.hh,v 1.4 2011/04/27 17:21:09 aperloff Exp $
 
 #ifndef TABLE_DEF
 #define TABLE_DEF
@@ -20,6 +20,7 @@
 
 //ROOT libraries
 #include "TNamed.h"
+#include "TCollection.h"
 
 //----------------------------------------------------------------------------
 // a Table is just a collection of rows
@@ -87,6 +88,9 @@ public :
 
   // get the origin of the table
   std::string getTableOrigin() {return tableOrigin;}
+
+  // merge tables into a single table if they have the same name, column, and row titles
+  int Merge(TCollection *list);
 
  protected:
 

@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.3 2011/03/01 01:56:46 eusebi Exp $
+// $Id: Table.cc,v 1.4 2011/04/27 17:22:57 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -614,5 +614,29 @@ TableCell* Table::createNewCell(string cellClass, string cellName){
   return 0;
 
 }//createNewCell
+
+//----------------------------------------------------------------------------
+// merge tables into a single table if they have the same name, column, and row titles
+// returns the total number of tables that were merged
+int Table::Merge(TCollection *list){
+   if (!list) return 0;
+   TIter next(list);
+   Table *table;
+   while ((table = (Table*)next())){
+      if (table==this) continue;
+      if (!table->InheritsFrom(TNamed::Class())){
+         Error("Add","Attempt to add object of class: %s to a %s", table->ClassName(), ClassName());
+         return -1;
+      }
+      
+      unsigned int nrows = table->getRows().size();
+      if (nrows == 0) continue;
+      
+      for (unsigned int i=0; i<nrows; i++){
+         this->addTable(*table);
+      }
+   }
+   return tableRows.size();
+}//Merge
 
 ClassImp(Table)
