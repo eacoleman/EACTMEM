@@ -12,6 +12,7 @@
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
+#include "TAMUWW/SpecialTools/interface/Value.hh"
 
 // ROOT includes
 #include "TROOT.h"
@@ -19,6 +20,7 @@
 #include "TString.h"
 
 //Standard library includes
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -357,7 +359,7 @@ void computeProcessResults(const char* inXSecFile, int processNumber, double Evt
 /// Creates a Table for the process
 void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[NCUTS][NJETS], int EvtTableLp[NCUTS][NJETS]) {
    TableRow* tableRow;
-   TableCellText* tableCellText;
+   TableCellVal* tableCellVal;
    stringstream out;
    //
    // loop over the desired jet counts
@@ -366,28 +368,17 @@ void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[
       //
       // electrons
       //
-      tableRow = new TableRow("ELECTRONS");
-      tableCellText = new TableCellText("nJ");
-      out << nj;
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      out << "ELECTRONS ( " << nj << " Jets )";
+      tableRow = new TableRow(out.str());
       //
       // clears the stringstream
       //
       out.str("");
 
-      tableCellText = new TableCellText("Efficiency");
-      out << double(EvtTableEl[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of electrons (after cut " << FINALCUT << ")";
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
-      out.str("");
-
       for (Int_t nc=0; nc<NCUTS;nc++) {
-         tableCellText = new TableCellText(string(CLabel[nc]));
-         out << EvtTableEl[nc][nj];
-         tableCellText->text = out.str();
-         tableRow->addCellEntries(tableCellText);
-         out.str("");
+         tableCellVal = new TableCellVal(string(CLabel[nc]));
+         tableCellVal->val = Value(EvtTableEl[nc][nj],0.0);
+         tableRow->addCellEntries(tableCellVal);
       }
       table->addRow(*tableRow);
       delete tableRow;
@@ -395,25 +386,14 @@ void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[
       //
       // muons
       //
-      tableRow = new TableRow("MUONS");
-      tableCellText = new TableCellText("nJ");
-      out << nj;
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
-      out.str("");
-
-      tableCellText = new TableCellText("Efficiency");
-      out << double(EvtTableMu[FINALCUT][nj])/double(EvtTableLp[FINALCUT][nj])*100 << "% of muons (after cut " << FINALCUT << ")";
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      out << "MUONS ( " << nj << " Jets )";
+      tableRow = new TableRow(out.str());
       out.str("");
 
       for (Int_t nc=0; nc<NCUTS;nc++) {
-         tableCellText = new TableCellText(string(CLabel[nc]));
-         out << EvtTableMu[nc][nj];
-         tableCellText->text = out.str();
-         tableRow->addCellEntries(tableCellText);
-         out.str("");
+         tableCellVal = new TableCellVal(string(CLabel[nc]));
+         tableCellVal->val = Value(EvtTableMu[nc][nj],0.0);
+         tableRow->addCellEntries(tableCellVal);
       }
       table->addRow(*tableRow);
       delete tableRow;
@@ -421,25 +401,14 @@ void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[
       //
       // leptons
       //
-      tableRow = new TableRow("LEPTONS");
-      tableCellText = new TableCellText("nJ");
-      out << nj;
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
-      out.str("");
-
-      tableCellText = new TableCellText("Efficiency");
-      out << EvtTableLp[0][nj] << " Events Total (after cut 0)";
-      tableCellText->text = out.str();
-      tableRow->addCellEntries(tableCellText);
+      out << "LEPTONS ( " << nj << " Jets )";
+      tableRow = new TableRow(out.str());
       out.str("");
 
       for (Int_t nc=0; nc<NCUTS;nc++) {
-         tableCellText = new TableCellText(string(CLabel[nc]));
-         out << EvtTableLp[nc][nj];
-         tableCellText->text = out.str();
-         tableRow->addCellEntries(tableCellText);
-         out.str("");
+         tableCellVal = new TableCellVal(string(CLabel[nc]));
+         tableCellVal->val = Value(EvtTableLp[nc][nj],0.0);
+         tableRow->addCellEntries(tableCellVal);
       }
       table->addRow(*tableRow);
       delete tableRow;
@@ -453,13 +422,32 @@ void setProcessTable(TString selFileName, TString directory, TString tablename, 
    Table* table;
    vector<TableRow> tableRows;
    vector<TableCell*> rowCells;
-   stringstream out;
+   int value;
+   TString token[12];
    int nJ;
    TFile selFile(selFileName);
+   if (!selFile.IsOpen()) {
+      cout << "ERROR: The file \"" << selFileName << "\" was not opened." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+   }
+   else {
+      cout << "selFileName=" << selFileName << endl;
+   }
+
    gDirectory->cd(directory);
-   cout << "selFileName=" << selFileName << endl;
    table = (Table*)gDirectory->Get(tablename);
+   if (!table) {
+      cout << "ERROR: The table names \"" << tablename << "\" was not found in the directory given." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+   }
    tableRows = table->getRows();
+   if(tableRows.size()==0) {
+      cout << "ERROR: The table has 0 rows." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+         }
    
    //
    // loop over the desired jet counts
@@ -467,7 +455,9 @@ void setProcessTable(TString selFileName, TString directory, TString tablename, 
    for (Int_t nj=0; nj<NJETS; nj++) {
       for (Int_t r=0; r<3; r++) {
          rowCells = tableRows[(nj*3)+r].getCellEntries();
-         nJ = atoi(TString(((TableCellText*)rowCells[0])->text));
+         istrstream str(tableRows[(nj*3)+r].GetName());
+         str >> token[0] >> token[1] >> token[2] >> token[3] >> token[4];
+         nJ = atoi(token[2]);
          if ( nJ!=nj ) {
             if ( r==0 )
                cout << "Error - Electrons: nJ=" << nJ << ",while nj=" << nj << endl;
@@ -477,14 +467,13 @@ void setProcessTable(TString selFileName, TString directory, TString tablename, 
                cout << "Error - All Leptons: nJ=" << nJ << ",while nj=" << nj << endl;
          }
          for (Int_t nc=0; nc<NCUTS;nc++) {
-            out << rowCells[nc+2];
+            value = (int)(((TableCellVal*)rowCells[nc])->val.value);
             if ( r==0 )
-               EvtTableEl[nc][nJ] = atof(TString(out.str()));
+               EvtTableEl[nc][nJ] = value;
             else if ( r==1)
-               EvtTableMu[nc][nJ] = atof(TString(out.str()));
+               EvtTableMu[nc][nJ] = value;
             else if ( r==2 )
-               EvtTableLp[nc][nJ] = atof(TString(out.str()));
-            out.str("");
+               EvtTableLp[nc][nJ] = value;
          }
       }
    }// end the loop over nj
