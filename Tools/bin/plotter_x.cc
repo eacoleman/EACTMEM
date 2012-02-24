@@ -148,7 +148,9 @@ double getCrossSection(TString channelName)
    Table table;
    double xsec;
 
-   table.parseFromFile(gSystem->pwd()+string("/../../ConfigFiles/Official/CrossSections.txt"),"TableCellVal");
+   string basePath = gSystem->pwd();
+   basePath = basePath.substr(0,basePath.find("CMSSW_4_2_8")+12);
+   table.parseFromFile(basePath+string("src/TAMUWW/ConfigFiles/Official/CrossSections.txt"),"TableCellVal");
    TableCell * cell = table.getCellRowColumn(string(channelName),"CrossSection");
    if(cell){
       xsec = ((TableCellVal*)cell)->val.value;
@@ -168,7 +170,9 @@ double getNumMCEvts(TString channelName)
    Table table;
    double value;
 
-   table.parseFromFile(gSystem->pwd()+string("/../../ConfigFiles/Official/EventsFromMC.txt"),"TableCellVal");
+   string basePath = gSystem->pwd();
+   basePath = basePath.substr(0,basePath.find("CMSSW_4_2_8")+12);
+   table.parseFromFile(basePath+string("src/TAMUWW/ConfigFiles/Official/EventsFromMC.txt"),"TableCellVal");
    TableCell * cell = table.getCellRowColumn(string(channelName),"Events");
    if(cell){
       value = ((TableCellVal*)cell)->val.value;
@@ -264,90 +268,122 @@ map<string, aPlot> getPlots(){
    aPlot a;
 
    a.templateHisto = new TH1D("Mjj","Mjj",200,0,2000);
-   a.axisTitles.push_back("M_{jj} (per 10 GeV)");
-   a.axisTitles.push_back("Events");
+   a.axisTitles.push_back("M_{jj} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["Mjj"] = a;
 
+   a.axisTitles.clear();
+
    a.templateHisto = new TH1D("LeptPt","LeptPt",500,0,5000);
-   a.axisTitles.push_back("p_{T}^{lepton} (per 10 GeV)");
-   a.axisTitles.push_back("Events");
+   a.axisTitles.push_back("p_{T}^{lepton} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["LeptPt"] = a;
 
    a.templateHisto = new TH1D("LeptEta","LeptEta",50,-5,5);
+   a.axisTitles.push_back("#eta^{lepton} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["LeptEta"] = a;
 
    a.templateHisto = new TH1D("LeptPhi","LeptPhi",70,-3.5,3.5);
+   a.axisTitles.push_back("#phi^{lepton} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.1 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["LeptPhi"] = a;
 
    a.templateHisto = new TH1D("MET","MET",500,0,5000);
+   a.axisTitles.push_back("Missing E_{T} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["MET"] = a;
 
    a.templateHisto = new TH1D("WmT","WmT",500,0,5000);
+   a.axisTitles.push_back("M_{T}^{W} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["WmT"] = a;
 
    a.templateHisto = new TH1D("Jet1Pt","Jet1Pt",200,0,2000);
+   a.axisTitles.push_back("p_{T}^{jet_{1}} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Pt"] = a;
 
    a.templateHisto = new TH1D("Jet1Eta","Jet1Eta",50,-5,5);
+   a.axisTitles.push_back("#eta^{jet_{1}} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Eta"] = a;
 
    a.templateHisto = new TH1D("Jet1Phi","Jet1Phi",70,-3.5,3.5);
+   a.axisTitles.push_back("#phi^{jet_{1}} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.1 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Phi"] = a;
 
    a.templateHisto = new TH1D("Jet2Pt","Jet2Pt",200,0,2000);
+   a.axisTitles.push_back("p_{T}^{jet_{2}} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Pt"] = a;
 
    a.templateHisto = new TH1D("Jet2Eta","Jet2Eta",50,-5,5);
+   a.axisTitles.push_back("#eta^{jet_{1}} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Eta"] = a;
 
    a.templateHisto = new TH1D("Jet2Phi","Jet2Phi",70,-3.5,3.5);
+   a.axisTitles.push_back("#phi^{jet_{1}} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.1 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Phi"] = a;
 
    a.templateHisto = new TH1D("EtaJ1-EtaJ2","EtaJ1-EtaJ2",50,0,5);
+   a.axisTitles.push_back("#eta^{jet_{1}} - #eta^{jet_{2}} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.1 Radians");
    a.normToData = true;
    a.stacked = true;
    plots["EtaJ1-EtaJ2"] = a;
 
    a.templateHisto = new TH1D("Ptjj","Ptjj",500,0,5000);
+   a.axisTitles.push_back("p_{T}^{jj} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["Ptjj"] = a;
 
-   a.templateHisto = new TH1D("j1Pt/Mjj","j1Pt/Mjj",500,0,5);
+   a.templateHisto = new TH1D("j1Pt_Mjj","j1Pt_Mjj",500,0,5);
+   a.axisTitles.push_back("#frac{p_{T}^{jet_{1}}}{M_{jj}} [GeV]");
+   a.axisTitles.push_back("Number of Events / 0.01 GeV");
    a.normToData = true;
    a.stacked = true;
-   plots["j1Pt/Mjj"] = a;
+   plots["j1Pt_Mjj"] = a;
 
-   a.templateHisto = new TH1D("j2Pt/Mjj","j2Pt/Mjj",500,0,5);
+   a.templateHisto = new TH1D("j2Pt_Mjj","j2Pt_Mjj",500,0,5);
+   a.axisTitles.push_back("#frac{p_{T}^{jet_{2}}}{M_{jj}} [GeV]");
+   a.axisTitles.push_back("Number of Events / 0.01 GeV");
    a.normToData = true;
    a.stacked = true;
-   plots["j2Pt/Mjj"] = a;
+   plots["j2Pt_Mjj"] = a;
 
    a.templateHisto = new TH1D("Mlvjj","Mlvjj",500,0,5000);
+   a.axisTitles.push_back("M_{lvjj} [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
    a.normToData = true;
    a.stacked = true;
    plots["Mlvjj"] = a;
@@ -397,24 +433,22 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, string extraCut
 void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple){
 
    plots["Mjj"].Fill(ntuple->Mjj);
-/*
-  plots["LeptPt"].Fill(ntuple->lLV[0].Pt()); 
-  plots["LeptEta"].Fill(ntuple->lLV[0].Eta());
-  plots["LeptPhi"].Fill(ntuple->lLV[0].Phi());
-  plots["MET"].Fill(ntuple->METLV[0].Et());
-  plots["WmT"].Fill(sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2)));
-  plots["Jet1Pt"].Fill(ntuple->jLV[0].Pt());
-  plots["Jet1Eta"].Fill(ntuple->jLV[0].Eta());
-  plots["Jet1Phi"].Fill(ntuple->jLV[0].Phi());
-  plots["Jet2Pt"].Fill(ntuple->jLV[1].Pt());
-  plots["Jet2Eta"].Fill(ntuple->jLV[1].Eta());
-  plots["Jet2Phi"].Fill(ntuple->jLV[1].Phi());
-  plots["EtaJ1-EtaJ2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()));
-  plots["Ptjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt());
-  plots["j1Pt/Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj);
-  plots["j2Pt/Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj);
-  plots["Mlvjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M());
-*/
+   plots["LeptPt"].Fill(ntuple->lLV[0].Pt()); 
+   plots["LeptEta"].Fill(ntuple->lLV[0].Eta());
+   plots["LeptPhi"].Fill(ntuple->lLV[0].Phi());
+   plots["MET"].Fill(ntuple->METLV[0].Et());
+   plots["WmT"].Fill(sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2)));
+   plots["Jet1Pt"].Fill(ntuple->jLV[0].Pt());
+   plots["Jet1Eta"].Fill(ntuple->jLV[0].Eta());
+   plots["Jet1Phi"].Fill(ntuple->jLV[0].Phi());
+   plots["Jet2Pt"].Fill(ntuple->jLV[1].Pt());
+   plots["Jet2Eta"].Fill(ntuple->jLV[1].Eta());
+   plots["Jet2Phi"].Fill(ntuple->jLV[1].Phi());
+   plots["EtaJ1-EtaJ2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()));
+   plots["Ptjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt());
+   plots["j1Pt_Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj);
+   plots["j2Pt_Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj);
+   plots["Mlvjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M());
 
 }//fillPlots
 
