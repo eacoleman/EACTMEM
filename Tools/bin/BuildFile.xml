@@ -1,6 +1,7 @@
 <use   name="TAMUWW/SpecialTools"/>
 <use   name="TAMUWW/Tools"/>
 <use   name="TAMUWW/MEPATNtuple"/>
+<use   name="JetMETAnalysis/JetUtilities"/>
 <use   name="FWCore/FWLite"/>
 <use   name="rootphysics"/>
 <use   name="rootgraphics"/>  
