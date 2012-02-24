@@ -2,10 +2,14 @@
 #include "TAMUWW/Tools/interface/PlotterAux.hh"
 
 // ROOT libraries
+#include "TROOT.h"
+#include "TStyle.h"
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1.h"
+#include "THStack.h"
 #include "TChain.h"
+#include "TLegend.h"
 
 // C++ libraries
 #include <iostream>
@@ -16,9 +20,9 @@
 using namespace std;
 
 proc::proc(string procName, string fileName, double cross_section, double lum, 
-	   unsigned int in_ev, string treeName):
-  name(procName), chain (0), sigma(cross_section), intLum(lum),
-  initial_events(in_ev) {
+           unsigned int in_ev, int col, string treeName):
+   name(procName), chain (0), sigma(cross_section), intLum(lum),
+   initial_events(in_ev), color(col) {
   
   TFile * file = TFile::Open(fileName.c_str());
   if (!file->IsOpen()){
@@ -96,7 +100,7 @@ void aPlot::doScaling(vector<proc*> procs){
     //Do the scaling
     for (unsigned int p = 0 ; p < procs.size() ; p++)
       if (procs[p]->name.compare("Data") != 0)
-	histos[p]->Scale(totalData/totalMC);
+         histos[p]->Scale(totalData/totalMC);
     
   }// normToData
   
@@ -113,16 +117,85 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
 
     // Make the canvas
     TCanvas * c = new TCanvas(templateHisto->GetName());
+    c->SetFillColor(0);
+    gPad->SetFillColor(0);
+    gPad->SetFrameFillColor(0);
+
+    // Make the legend
+    TLegend * l = new TLegend(0.7,0.5,0.89,0.89);
+    l->SetBorderSize(0);
+    l->SetFillColor(0);
     
+    THStack * s=0;
+    TH1 * totalData=0;
+    if (stacked){
+       s = new THStack(TString(templateHisto->GetName())+"_stack",TString(templateHisto->GetName())+"_stack");
+       totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
+       totalData->SetMarkerStyle(8);
+    }
+
     // Loop over all the histos, drawing them, or add some of them up if needed
     // eg WW and WZ are usually put together...
     for (unsigned int h = 0 ; h < histos.size() ; h++){
-      histos[h]->SetLineColor(h+1);
-      if (h==0)
-	histos[h]->Draw();
-      else
-	histos[h]->Draw("same");
+      histos[h]->SetLineColor(procs[h]->color);
+      histos[h]->SetFillColor(procs[h]->color);
+      histos[h]->SetMarkerColor(procs[h]->color);
+      try{
+         if (stacked && s!=0 and totalData!=0){
+            if (procs[h]->name.compare("Data") != 0){
+               s->Add(histos[h],"hist");
+               l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
+            } else {
+               totalData->Add(histos[h]);
+            }
+            
+            if (h == histos.size() -1) {
+               s->Draw();
+               s->SetTitle(templateHisto->GetName());
+               for(unsigned int a=0; a<axisTitles.size(); a++){
+                  if (a==0){
+                     s->GetXaxis()->SetTitleOffset(1.1);
+                     s->GetXaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+                  else if (a==1){
+                     s->GetYaxis()->SetTitleOffset(1.3);
+                     s->GetYaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+               }
+               l->AddEntry(totalData,"Data","p");
+               totalData->Draw("same");
+            }
+         } else {
+            if (h==0){
+               histos[h]->Draw();
+               for(unsigned int a=0; a<axisTitles.size(); a++){
+                  if (a==0){
+                     histos[h]->GetXaxis()->SetTitleOffset(1.1);
+                     histos[h]->GetXaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+                  else if (a==1){
+                     histos[h]->GetYaxis()->SetTitleOffset(1.3);
+                     histos[h]->GetYaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+                  else if (a==2){
+                     histos[h]->GetZaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+               }
+            } else
+               histos[h]->Draw("same");
+            l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
+         }
+      }
+      catch (exception& e){
+         if (s==0)
+            cout << "\tERROR::THStack * s is uninitiallized." << endl;
+         else if (totalData==0)
+            cout << "\tERROR::TH1 * totalData is uninitiallized." << endl;
+         else
+            cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
+      }
     }
+    l->Draw("same");
 
     return c;
 
