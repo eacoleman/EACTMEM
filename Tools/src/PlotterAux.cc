@@ -58,7 +58,7 @@ void aPlot::Fill(double h, double w){
 void aPlot::doScaling(vector<proc*> procs){
   
   //flag to keep track of whether we did the scaling already or not.
-  static bool scaled = false;
+  bool scaled = false;
   
   // Make sure we can't do the scaling twice
   if (scaled) return;
