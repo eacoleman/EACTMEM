@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.4 2011/04/27 17:22:57 aperloff Exp $
+// $Id: Table.cc,v 1.5 2012/02/10 04:47:55 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -632,9 +632,7 @@ int Table::Merge(TCollection *list){
       unsigned int nrows = table->getRows().size();
       if (nrows == 0) continue;
       
-      for (unsigned int i=0; i<nrows; i++){
-         this->addTable(*table);
-      }
+      this->addTable(*table);
    }
    return tableRows.size();
 }//Merge
