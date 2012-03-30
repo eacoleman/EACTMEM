@@ -35,7 +35,7 @@ using namespace std;
 const int NPROCESSES=18;
 const int NCUTS=10;
 const int FINALCUT=5;
-const int NJETS=5;
+const int NJETS=5; //changed on 02/28/2012 to include more jet bins
 
 //Global Variables
 TString PLabel[NPROCESSES];
@@ -356,7 +356,7 @@ void computeProcessResults(const char* inXSecFile, int processNumber, double Evt
   Evts=NTotEvts[processNumber];
 }
 
-/// Creates a Table for the process
+/// Creates a Table for the process (combines the electron, muon, and lepton numbers)
 void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[NCUTS][NJETS], int EvtTableLp[NCUTS][NJETS]) {
    TableRow* tableRow;
    TableCellVal* tableCellVal;
@@ -413,6 +413,35 @@ void getProcessTable(Table* table, int EvtTableEl[NCUTS][NJETS], int EvtTableMu[
       table->addRow(*tableRow);
       delete tableRow;
    }
+}
+
+/// Creates a Table for the process
+void getProcessTable(Table* table, int EvtTable[NCUTS][NJETS]) {
+   TableRow* tableRow;
+   TableCellVal* tableCellVal;
+   stringstream out;
+
+   //
+   // loop over the desired cuts
+   //
+   for (Int_t nc=0; nc<NCUTS;nc++) {
+      tableRow = new TableRow(string(CLabel[nc]));
+      //
+      // loop over the desired jet counts
+      //
+      for (Int_t nj=0; nj<NJETS; nj++) {
+         if (nj == NJETS-1)
+            out << nj << "+ Jet(s)";
+         else
+            out << nj << " Jet(s)";
+         tableCellVal = new TableCellVal(out.str());
+         out.str("");
+         tableCellVal->val = Value(EvtTable[nc][nj],0.0);
+         tableRow->addCellEntries(tableCellVal);
+      }
+      table->addRow(*tableRow);
+      delete tableRow;
+   }   
 }
 
 void setProcessTable(TString selFileName, TString directory, TString tablename, double EvtTableEl[NCUTS][NJETS], double EvtTableMu[NCUTS][NJETS], double EvtTableLp[NCUTS][NJETS]) {
@@ -477,4 +506,52 @@ void setProcessTable(TString selFileName, TString directory, TString tablename, 
          }
       }
    }// end the loop over nj
+}
+
+
+void setProcessTable(TString selFileName, TString directory, TString tablename, double EvtTable[NCUTS][NJETS]) {
+   //
+   // extracts the variables from a root file with a selection table
+   //
+   Table* table;
+   vector<TableRow> tableRows;
+   vector<TableCell*> rowCells;
+   int value;
+   TFile selFile(selFileName);
+   if (!selFile.IsOpen()) {
+      cout << "ERROR: The file \"" << selFileName << "\" was not opened." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+   }
+   else {
+      cout << "selFileName=" << selFileName << endl;
+   }
+
+   gDirectory->cd(directory);
+   table = (Table*)gDirectory->Get(tablename);
+   if (!table) {
+      cout << "ERROR: The table names \"" << tablename << "\" was not found in the directory given." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+   }
+   tableRows = table->getRows();
+   if(tableRows.size()==0) {
+      cout << "ERROR: The table has 0 rows." << endl
+           << " Return without setting the arrays." << endl;
+      return;
+         }
+   
+   //
+   // loop over the desired cuts
+   //
+   for (Int_t nc=0; nc<NCUTS;nc++) {
+      rowCells = tableRows[nc].getCellEntries();
+      //
+      // loop over the desired jet counts
+      //
+      for (Int_t nj=0; nj<NJETS; nj++) {
+         value = (int)(((TableCellVal*)rowCells[nj])->val.value);
+         EvtTable[nc][nj] = value;
+      }
+   }
 }
