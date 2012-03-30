@@ -31,7 +31,7 @@ enum trinary {el, mu, both};
 ////////////////////////////////////////////////////////////////////////////////
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, string extraCuts);
+void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int extraCuts);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
@@ -40,16 +40,16 @@ double getCrossSection(TString channelName);
 double getNumMCEvts(TString channelName);
 
 /// returns a vector containing all of the processes that the program will use
-vector<proc*> getProcesses(bool ele);
+vector<proc*> getProcesses(bool el);
 
 /// returns a vector containing all of the processes that the program will use
 vector<proc*> getProcesses(vector<string>& processNames);
 
 /// returns a map containing all of the plots that will be made for each process and their specific attributes
-map<string, aPlot> getPlots();
+map<string, aPlot> getPlots(string leptonCatString);
 
 /// this function prepares the histograms of a given process to be filled
-void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, string extraCuts);
+void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts);
 
 /// this function fills all of the plots for a given process
 void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple);
@@ -76,15 +76,17 @@ int main(int argc,char**argv) {
 
    if (!cl.check()) return 0;
    cl.print();
-
-   // The vector containing all plots to be made
-   map<string, aPlot> plots = getPlots();
+   int lepton = 0;
 
    // The enum telling the program to run over electrons, muons, or both
    trinary leptonCat = getLeptonCat(leptonCatString);
 
+   // The vector containing all plots to be made
+   map<string, aPlot> plots = getPlots(leptonCatString);
+
    if (leptonCat==el || leptonCat==both){
       cout << "Doing lepton category ELECTRONS" << endl;
+      lepton = 2;
 
       // The vector holding all processes.
       vector <proc*> procs_el;
@@ -95,10 +97,12 @@ int main(int argc,char**argv) {
          procs_el = getProcesses(true);
       
       // Make all the plots and store to outputFile
-      plotter("outputFile_el.root", plots, procs_el, "idet==0");
+      plotter("outputFile_el.root", plots, procs_el, lepton);
    }
+
    else if (leptonCat==mu || leptonCat==both){
       cout << "Doing lepton category MUONS" << endl;
+      lepton = 1;
 
       // The vector holding all processes.
       vector <proc*> procs_mu;
@@ -108,7 +112,7 @@ int main(int argc,char**argv) {
          procs_mu = getProcesses(false);
 
       // Make all the plots and store to outputFile
-      plotter("outputFile_mu.root", plots, procs_mu, "idet==1");
+      plotter("outputFile_mu.root", plots, procs_mu, lepton);
    }
   
    return 0;
@@ -121,7 +125,7 @@ int main(int argc,char**argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, string extraCuts) {
+void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int extraCuts) {
 
    TFile * outFile = new TFile(fileName.c_str(),"RECREATE");
 
@@ -129,13 +133,18 @@ void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, s
    for (unsigned int p = 0 ; p < procs.size() ; p++){
     
       fillPlotsForProcess(plots, procs[p], extraCuts);
+
+      //make the table to go in the root file here
+      Table numProcEvtsT;
+
     
    }//for 
 
    // Will all the info in the plots get the canvas and write it to file
    for ( map<string, aPlot>::iterator p = plots.begin(); p != plots.end() ; p++){
       TCanvas * can = p->second.getCanvas(procs);
-      can->Write();
+      can->Write();			
+      can->SaveAs(TString(can->GetName())+".png");
    }
   
    outFile->Close();
@@ -187,17 +196,17 @@ double getNumMCEvts(TString channelName)
 
 
 //______________________________________________________________________________
-vector<proc*> getProcesses(bool ele){
+vector<proc*> getProcesses(bool el){
    
    string basePath = "/uscms_data/d3/ilyao/Summer11/428Full/Stage2SkimResults/";
    vector <proc*> procs;
 
+   procs.push_back(new proc("WpJ",basePath+"WpJ_StandardCuts_outfile.root", getCrossSection("WpJ"),
+                            990, getNumMCEvts("WpJ"), getProcessColor("WpJ")));
    procs.push_back(new proc("WW",basePath+"WW_StandardCuts_outfile.root", getCrossSection("WW"),
                             990, getNumMCEvts("WW"), getProcessColor("WW")));
    procs.push_back(new proc("WZ",basePath+"WZ_StandardCuts_outfile.root", getCrossSection("WZ"),
                             990, getNumMCEvts("WZ"), getProcessColor("WZ")));
-   procs.push_back(new proc("WpJ",basePath+"WpJ_StandardCuts_outfile.root", getCrossSection("WpJ"),
-                            990, getNumMCEvts("WpJ"), getProcessColor("WpJ")));
    procs.push_back(new proc("ZpJ",basePath+"ZpJ_StandardCuts_outfile.root", getCrossSection("ZpJ"),
                             990, getNumMCEvts("ZpJ"), getProcessColor("ZpJ")));
    procs.push_back(new proc("TTbar",basePath+"TTbar_MG_StandardCuts_outfile.root", getCrossSection("TTbar"),
@@ -220,7 +229,7 @@ vector<proc*> getProcesses(bool ele){
                             getProcessColor("STopTW_Tbar")));
    
    // 1's so we don't normalize data.
-   if (ele)
+   if (el)
       procs.push_back(new proc("Data",basePath+"SingleEl_Data_StandardCuts_outfile.root",
                                getCrossSection("SingleEl_Data"), 1, getNumMCEvts("SingleEl_Data"),
                                getProcessColor("SingleEl_Data"))); 
@@ -261,129 +270,187 @@ vector<proc*> getProcesses(vector<string>& processNames){
 
 
 //______________________________________________________________________________
-map<string, aPlot> getPlots(){
+map<string, aPlot> getPlots(string leptonCatString){
 
    map<string, aPlot> plots;
 
    aPlot a;
 
-   a.templateHisto = new TH1D("Mjj","Mjj",200,0,2000);
+   //goes in the label and tells us whether we are looking at electrons or muons
+   TString lep = TString(leptonCatString);
+
+   //goes in the label and tells us what cuts we are applying
+   string cut;
+   if (lep.CompareTo("mu") == 0)
+      cut = "_MET > 30, muPt > 25";
+   else
+      cut = "_MET > 35, elPt > 30";
+   TString cuts = TString(cut);
+
+   a.templateHisto = new TH1D("Mjj_" + lep,"Mjj_" + lep +  cuts,500,0,5000);
    a.axisTitles.push_back("M_{jj} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(0.,400.);
    a.normToData = true;
    a.stacked = true;
    plots["Mjj"] = a;
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("LeptPt","LeptPt",500,0,5000);
+   a.templateHisto = new TH1D("LeptPt_" + lep,"LeptPt_" + lep + cuts,500,0,5000);
    a.axisTitles.push_back("p_{T}^{lepton} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(20.,150.);
    a.normToData = true;
    a.stacked = true;
    plots["LeptPt"] = a;
 
-   a.templateHisto = new TH1D("LeptEta","LeptEta",50,-5,5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("LeptEta_" + lep,"LeptEta_" + lep + cuts,50,-5,5);
    a.axisTitles.push_back("#eta^{lepton} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(-3.,3.);
    a.normToData = true;
    a.stacked = true;
    plots["LeptEta"] = a;
 
-   a.templateHisto = new TH1D("LeptPhi","LeptPhi",70,-3.5,3.5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("LeptPhi_" + lep,"LeptPhi_" + lep + cuts,70,-3.5,3.5);
    a.axisTitles.push_back("#phi^{lepton} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.1 Radians");
+   a.range = make_pair(-3.5,3.5);
    a.normToData = true;
    a.stacked = true;
    plots["LeptPhi"] = a;
 
-   a.templateHisto = new TH1D("MET","MET",500,0,5000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("MET_" + lep,"MET_" + lep + cuts,500,0,5000);
    a.axisTitles.push_back("Missing E_{T} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(30.,150.);
    a.normToData = true;
    a.stacked = true;
    plots["MET"] = a;
 
-   a.templateHisto = new TH1D("WmT","WmT",500,0,5000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("WmT_" + lep,"WmT_" + lep + cuts,1000,0,5000);
    a.axisTitles.push_back("M_{T}^{W} [GeV]");
-   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.axisTitles.push_back("Number of Events / 5 GeV");
+   a.range = make_pair(0.,150.);
    a.normToData = true;
    a.stacked = true;
    plots["WmT"] = a;
 
-   a.templateHisto = new TH1D("Jet1Pt","Jet1Pt",200,0,2000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet1Pt_" + lep,"Jet1Pt_" + lep + cuts,100,0,1000);
    a.axisTitles.push_back("p_{T}^{jet_{1}} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(20.,200.);
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Pt"] = a;
 
-   a.templateHisto = new TH1D("Jet1Eta","Jet1Eta",50,-5,5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet1Eta_" + lep,"Jet1Eta_" + lep + cuts,50,-5,5);
    a.axisTitles.push_back("#eta^{jet_{1}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(-3.,3.);
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Eta"] = a;
 
-   a.templateHisto = new TH1D("Jet1Phi","Jet1Phi",70,-3.5,3.5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet1Phi_" + lep,"Jet1Phi_" + lep + cuts,70,-3.5,3.5);
    a.axisTitles.push_back("#phi^{jet_{1}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.1 Radians");
+   a.range = make_pair(-3.5,3.5);
    a.normToData = true;
    a.stacked = true;
    plots["Jet1Phi"] = a;
 
-   a.templateHisto = new TH1D("Jet2Pt","Jet2Pt",200,0,2000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet2Pt_" + lep,"Jet2Pt_" + lep + cuts,100,0,1000);
    a.axisTitles.push_back("p_{T}^{jet_{2}} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(20.,100.);
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Pt"] = a;
 
-   a.templateHisto = new TH1D("Jet2Eta","Jet2Eta",50,-5,5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet2Eta_" + lep,"Jet2Eta_" + lep + cuts,50,-5,5);
    a.axisTitles.push_back("#eta^{jet_{1}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(-3.,3.);
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Eta"] = a;
 
-   a.templateHisto = new TH1D("Jet2Phi","Jet2Phi",70,-3.5,3.5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Jet2Phi_" + lep,"Jet2Phi_" + lep + cuts,70,-3.5,3.5);
    a.axisTitles.push_back("#phi^{jet_{1}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.1 Radians");
+   a.range = make_pair(-3.5,3.5);
    a.normToData = true;
    a.stacked = true;
    plots["Jet2Phi"] = a;
 
-   a.templateHisto = new TH1D("EtaJ1-EtaJ2","EtaJ1-EtaJ2",50,0,5);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("EtaJ1_EtaJ2_" + lep,"EtaJ1-EtaJ2_" + lep + cuts,50,0,5);
    a.axisTitles.push_back("#eta^{jet_{1}} - #eta^{jet_{2}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.1 Radians");
+   a.range = make_pair(0.,5.);
    a.normToData = true;
    a.stacked = true;
    plots["EtaJ1-EtaJ2"] = a;
 
-   a.templateHisto = new TH1D("Ptjj","Ptjj",500,0,5000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Ptjj_" + lep,"Ptjj_" + lep + cuts,100,0,1000);
    a.axisTitles.push_back("p_{T}^{jj} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(0.,250.);
    a.normToData = true;
    a.stacked = true;
    plots["Ptjj"] = a;
 
-   a.templateHisto = new TH1D("j1Pt_Mjj","j1Pt_Mjj",500,0,5);
-   a.axisTitles.push_back("#frac{p_{T}^{jet_{1}}}{M_{jj}} [GeV]");
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("j1Pt_Mjj_" + lep,"j1Pt_Mjj_" + lep + cuts,500,0,5);
+   a.axisTitles.push_back("p_{T}^{jet_{1}}/M_{jj} [GeV]");
    a.axisTitles.push_back("Number of Events / 0.01 GeV");
+   a.range = make_pair(0.,2.);
    a.normToData = true;
    a.stacked = true;
    plots["j1Pt_Mjj"] = a;
 
-   a.templateHisto = new TH1D("j2Pt_Mjj","j2Pt_Mjj",500,0,5);
-   a.axisTitles.push_back("#frac{p_{T}^{jet_{2}}}{M_{jj}} [GeV]");
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("j2Pt_Mjj_" + lep,"j2Pt_Mjj_" + lep + cuts,500,0,5);
+   a.axisTitles.push_back("p_{T}^{jet_{2}}/M_{jj} [GeV]");
    a.axisTitles.push_back("Number of Events / 0.01 GeV");
+   a.range = make_pair(0.,1.5);
    a.normToData = true;
    a.stacked = true;
    plots["j2Pt_Mjj"] = a;
 
-   a.templateHisto = new TH1D("Mlvjj","Mlvjj",500,0,5000);
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("Mlvjj_" + lep,"Mlvjj_" + lep + cuts,250,0,2500);
    a.axisTitles.push_back("M_{lvjj} [GeV]");
    a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(50.,800.);
    a.normToData = true;
    a.stacked = true;
    plots["Mlvjj"] = a;
@@ -394,7 +461,7 @@ map<string, aPlot> getPlots(){
 
 
 //______________________________________________________________________________
-void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, string extraCuts){
+void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
 
    cout<<"\tDoing Process "<<proc->name<<endl;
 
@@ -406,7 +473,17 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, string extraCut
    EventNtuple * ntuple = new EventNtuple();
    TChain * c = proc->chain;
    c->SetBranchAddress("EvtNtuple",&ntuple);
-  
+
+   //the counter for how many events pass the cuts in each process
+   int numProcEvts = 0;
+
+/*  
+   //open the efficiency root file for electrons and get the histo
+   if (extraCuts == 2) {
+
+   } 
+*/
+
    // Loop over events in the process
    for (unsigned ev = 0 ; ev < c->GetEntries() ; ev++){
  
@@ -416,24 +493,38 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, string extraCut
       //report every now and then
       if ((ev % 10000)==0 )
          cout<<"\t\tevent "<<ev<<endl;
-      
-      // make sure the event pass the extraCuts
-      //if (!passCuts(ntuple, extraCuts))
-      //ontinue;
+
+      // make sure the events pass the extraCuts
+      if (ntuple->leptonCat != extraCuts)
+         continue;
+
+      //cuts for muons
+      if(extraCuts == 1)
+         if ((ntuple->lLV[0].Pt()) <= 25.0 || (ntuple->METLV[0].Et()) <= 30.0)
+            continue;
+
+      //cuts for electrons
+      if(extraCuts == 2)
+         if ((ntuple->lLV[0].Pt()) <= 30.0 || (ntuple->METLV[0].Et()) <= 35.0)
+            continue;
+
+      //total number of events that pass the cuts for each process
+      numProcEvts = ev;
 
       // fill plots
       fillPlots(plots, ntuple);
 
    }//for events
 
-}//fillPlotsForProcess
+   cout<<"\tNumber of "<<proc->name<<" Events Passing the Cuts "<<numProcEvts<<endl;
 
+}//fillPlotsForProcess
 
 //______________________________________________________________________________
 void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple){
 
    plots["Mjj"].Fill(ntuple->Mjj);
-   plots["LeptPt"].Fill(ntuple->lLV[0].Pt()); 
+   plots["LeptPt"].Fill(ntuple->lLV[0].Pt());
    plots["LeptEta"].Fill(ntuple->lLV[0].Eta());
    plots["LeptPhi"].Fill(ntuple->lLV[0].Phi());
    plots["MET"].Fill(ntuple->METLV[0].Et());
@@ -473,15 +564,17 @@ Color_t getProcessColor(TString channelName){
    if (channelName.CompareTo("WW")==0)
       return kRed;
    else if (channelName.CompareTo("WZ")==0)
-      return kRed+3;
+      return kBlue;
    else if (channelName.CompareTo("WpJ")==0)
-      return kGreen;
+      return kGreen+1;
    else if (channelName.CompareTo("ZpJ")==0)
-      return kGreen+3;
-   else if (channelName.CompareTo("TTbar")==0)
-      return kYellow;
-   else if (channelName.CompareTo("STopT_T")==0)
       return kCyan;
+   else if (channelName.CompareTo("TTbar")==0)
+      return kMagenta;
+
+   //right now these aren't being used because we are combining all the STop's in PlotterAux.cc
+   else if (channelName.Contains("STopT_T")==0)
+      return kGreen;
    else if (channelName.CompareTo("STopT_Tbar")==0)
       return kCyan+3;
    else if (channelName.CompareTo("STopS_T")==0)
@@ -492,12 +585,14 @@ Color_t getProcessColor(TString channelName){
       return kMagenta;
    else if (channelName.CompareTo("STopTW_Tbar")==0)
       return kMagenta+3;
+
+   //these are still being used
    else if (channelName.CompareTo("SingleEl_Data")==0)
       return kBlack;
    else if (channelName.CompareTo("SingleMu_Data")==0)
       return kBlack;
    else{
-      cout << "WARNING::Unknown process name. Returning process color as kBlack." << endl;
-      return kBlack;
+      cout << "WARNING::Unknown process name. Returning process color as kYellow." << endl;
+      return kYellow;
    }
 }//getProcessColor

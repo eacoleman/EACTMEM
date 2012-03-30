@@ -27,7 +27,10 @@ public:
 };
 
 class aPlot {
-public :
+   public :
+
+   // Constructor
+      aPlot() { scaled = false;}
 
    // Create a new histo here
    void prepareToFillProcess(string procName);
@@ -46,5 +49,9 @@ public :
    std::vector<std::string> axisTitles;
    bool stacked;
    bool normToData;
+   std::pair<double,double> range;
+
+   private:
+      bool scaled;
 };
 
