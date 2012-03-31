@@ -7,19 +7,28 @@
 #ifndef EVENTNTUPLE_HH
 #define EVENTNTUPLE_HH
 
+//
+// User Defined Includes
+//
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
+#include "ElectroWeakAnalysis/VPlusJets/interface/QGLikelihoodCalculator.h"
+
+//
+// Root includes
+//
 #include "TLorentzVector.h"
 #include "TObject.h"
-//#include "TROOT.h"
-//#include "TTree.h"
+
+//
+// Standard Library Includes
+//
 #include <string>
 #include <vector>
-//#include <math>
+
+//
+// Namespace
+//
 using std::vector;
-
-///Headers for Transfer Function generation
-#include <utility>
-
-#include "TAMUWW/SpecialTools/interface/Defs.hh"
 
 class EventNtuple : public TObject
 {
@@ -28,6 +37,8 @@ public:
   EventNtuple();
   ~EventNtuple();
 
+  double getQGLikelihood(unsigned int index, QGLikelihoodCalculator* qglikeli = 0);
+  vector < double > getQGLikelihoods(QGLikelihoodCalculator* qglikeli = 0);
 
   //Needed for ME
   vector < TLorentzVector > jLV, METLV, lLV;
@@ -58,6 +69,11 @@ public:
 
   double        METEt;
   double        lPhi;
+
+  vector < double > jChargedMultiplicity;
+  vector < double > jNeutralMultiplicity;
+  vector < double > jPtD;
+  double rho;
 
   ClassDef(EventNtuple,4)
 
