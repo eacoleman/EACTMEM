@@ -14,6 +14,7 @@
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1.h"
+#include "TH2D.h"
 #include "TChain.h"
 
 // C++ libraries
@@ -52,7 +53,7 @@ map<string, aPlot> getPlots(string leptonCatString);
 void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts);
 
 /// this function fills all of the plots for a given process
-void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple);
+void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight = 1.0);
 
 /// returns the lepton category to run over
 trinary getLeptonCat(string leptonCatString);
@@ -127,8 +128,6 @@ int main(int argc,char**argv) {
 //______________________________________________________________________________
 void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int extraCuts) {
 
-   TFile * outFile = new TFile(fileName.c_str(),"RECREATE");
-
    // Loop over each process filling the histos in each plots
    for (unsigned int p = 0 ; p < procs.size() ; p++){
     
@@ -141,6 +140,7 @@ void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, i
    }//for 
 
    // Will all the info in the plots get the canvas and write it to file
+   TFile * outFile = new TFile(fileName.c_str(),"RECREATE");
    for ( map<string, aPlot>::iterator p = plots.begin(); p != plots.end() ; p++){
       TCanvas * can = p->second.getCanvas(procs);
       can->Write();			
@@ -477,12 +477,38 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
    //the counter for how many events pass the cuts in each process
    int numProcEvts = 0;
 
-/*  
-   //open the efficiency root file for electrons and get the histo
-   if (extraCuts == 2) {
+   //define the weight variable and set the default as 1.0
+   double weight = 1.0;
 
-   } 
-*/
+   //get the .root file that contains the trigger efficiency histograms for both electrons and muons
+   TDirectory* currentDirectory = gDirectory;
+   TFile* effFile = new TFile("efficiency1.root","READ");
+
+   if (!effFile->IsOpen()) {
+      cout << "\tWARNING::File efficiency1.root not found/opened!" << endl;
+      return;
+   }
+   //define the histos for muons and electrons
+   TH2D* muEffHist;
+   TH2D* elEffHist;
+
+   // Get histogram of trigger efficiencies for muons
+   if(extraCuts == 1){
+      muEffHist = (TH2D*)gDirectory->Get("muEffs");
+      if (!muEffHist) {
+         cout << "\tWARNING::Muon efficiency histogram was not successfully retrieved from the file " << effFile->GetName() << "." << endl;
+         return;
+      } 
+   }
+
+   // Get histograms of trigger efficiencies for electrons
+   if(extraCuts == 2){
+      elEffHist = (TH2D*)gDirectory->Get("elEffs");
+      if (!elEffHist) {
+         cout << "\tWARNING::Electron efficiency histogram was not successfully retrieved from the file " << effFile->GetName() << "." << endl;
+         return;
+      }
+   }
 
    // Loop over events in the process
    for (unsigned ev = 0 ; ev < c->GetEntries() ; ev++){
@@ -498,48 +524,74 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
       if (ntuple->leptonCat != extraCuts)
          continue;
 
-      //cuts for muons
-      if(extraCuts == 1)
+      //reset the weight for each event, so the default will be 1.0
+      weight = 1.0;
+
+      //efficiencies and cuts for muons
+      if(extraCuts == 1){
+         //ensure the efficiencies are only applied to the MC
+         if (proc->name.compare("Data") != 0){
+            if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.5){
+               weight = 1.0;
+            }
+            else{
+               weight = muEffHist->GetBinContent(muEffHist->FindBin(ntuple->lLV[0].Pt(),ntuple->lLV[0].Eta()));
+            }
+         }
+         //cuts
          if ((ntuple->lLV[0].Pt()) <= 25.0 || (ntuple->METLV[0].Et()) <= 30.0)
             continue;
+      }
 
-      //cuts for electrons
-      if(extraCuts == 2)
+      //cuts and efficiencies for electrons
+      if(extraCuts == 2){
+         //ensure the efficiencies are only applied to the MC
+         if (proc->name.compare("Data") != 0){
+            if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.5)
+               weight = 1.0;
+            else
+               weight = elEffHist->GetBinContent(elEffHist->FindBin(ntuple->lLV[0].Pt(),ntuple->lLV[0].Eta()));
+         }
+         //cuts
          if ((ntuple->lLV[0].Pt()) <= 30.0 || (ntuple->METLV[0].Et()) <= 35.0)
             continue;
+      }
 
       //total number of events that pass the cuts for each process
       numProcEvts = ev;
 
       // fill plots
-      fillPlots(plots, ntuple);
+      fillPlots(plots, ntuple, weight);
 
    }//for events
 
    cout<<"\tNumber of "<<proc->name<<" Events Passing the Cuts "<<numProcEvts<<endl;
+   
+   effFile->Close();
+   gDirectory = currentDirectory;
 
 }//fillPlotsForProcess
 
 //______________________________________________________________________________
-void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple){
+void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight){
 
-   plots["Mjj"].Fill(ntuple->Mjj);
-   plots["LeptPt"].Fill(ntuple->lLV[0].Pt());
-   plots["LeptEta"].Fill(ntuple->lLV[0].Eta());
-   plots["LeptPhi"].Fill(ntuple->lLV[0].Phi());
-   plots["MET"].Fill(ntuple->METLV[0].Et());
-   plots["WmT"].Fill(sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2)));
-   plots["Jet1Pt"].Fill(ntuple->jLV[0].Pt());
-   plots["Jet1Eta"].Fill(ntuple->jLV[0].Eta());
-   plots["Jet1Phi"].Fill(ntuple->jLV[0].Phi());
-   plots["Jet2Pt"].Fill(ntuple->jLV[1].Pt());
-   plots["Jet2Eta"].Fill(ntuple->jLV[1].Eta());
-   plots["Jet2Phi"].Fill(ntuple->jLV[1].Phi());
-   plots["EtaJ1-EtaJ2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()));
-   plots["Ptjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt());
-   plots["j1Pt_Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj);
-   plots["j2Pt_Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj);
-   plots["Mlvjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M());
+   plots["Mjj"].Fill(ntuple->Mjj,weight);
+   plots["LeptPt"].Fill(ntuple->lLV[0].Pt(),weight);
+   plots["LeptEta"].Fill(ntuple->lLV[0].Eta(),weight);
+   plots["LeptPhi"].Fill(ntuple->lLV[0].Phi(),weight);
+   plots["MET"].Fill(ntuple->METLV[0].Et(),weight);
+   plots["WmT"].Fill(sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2)),weight);
+   plots["Jet1Pt"].Fill(ntuple->jLV[0].Pt(),weight);
+   plots["Jet1Eta"].Fill(ntuple->jLV[0].Eta(),weight);
+   plots["Jet1Phi"].Fill(ntuple->jLV[0].Phi(),weight);
+   plots["Jet2Pt"].Fill(ntuple->jLV[1].Pt(),weight);
+   plots["Jet2Eta"].Fill(ntuple->jLV[1].Eta(),weight);
+   plots["Jet2Phi"].Fill(ntuple->jLV[1].Phi(),weight);
+   plots["EtaJ1-EtaJ2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
+   plots["Ptjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
+   plots["j1Pt_Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
+   plots["j2Pt_Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
+   plots["Mlvjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
 
 }//fillPlots
 

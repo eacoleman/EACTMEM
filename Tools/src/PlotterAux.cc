@@ -67,7 +67,7 @@ void aPlot::Fill(double h, double w){
 
 // Do the scaling to luminosity or data.
 void aPlot::doScaling(vector<proc*> procs){
-  
+
   // Make sure we can't do the scaling twice
   if (scaled) return;
   
@@ -76,16 +76,16 @@ void aPlot::doScaling(vector<proc*> procs){
     cout<<"ERROR aPlot::doScaling() wrong sizes. Something is wrong"<<endl;
     return;
   }
-  
+
   // First normalize to luminosity, and in case we might need to normalize to data
   // obtain also the total MC and total data
   double totalMC   = 0;
   double totalData = 0;
   bool foundData = false;
   for (unsigned int p = 0 ; p < procs.size() ; p++){
-    
+
     histos[p]->Scale(procs[p]->getScaleFactor());
-    
+
     if (procs[p]->name.compare("Data") == 0){
       totalData += histos[p]->Integral();
       foundData = true;
@@ -93,7 +93,7 @@ void aPlot::doScaling(vector<proc*> procs){
       totalMC += histos[p]->Integral();
     }
   }// for processes
-  
+
   // Normalize to data ?
   if (normToData){
     
@@ -104,7 +104,7 @@ void aPlot::doScaling(vector<proc*> procs){
       cout<<"Error aPlot::doScaling requested normToData but Data has 0 entries!"<<endl;
       return;
     }
-    
+
     //Do the scaling
     for (unsigned int p = 0 ; p < procs.size() ; p++)
       if (procs[p]->name.compare("Data") != 0)
@@ -119,12 +119,15 @@ void aPlot::doScaling(vector<proc*> procs){
   
   //set this flag to true so we won't do the scaling again.
   scaled = true;
-  
+
 }// doScaling
 
 // Make the Canvas here
 TCanvas * aPlot::getCanvas(vector<proc*> procs){
   
+    //some constants
+    double lum = 0;
+
     // do the scaling of the histos to lum or to data
     doScaling(procs);
 
@@ -202,6 +205,7 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                l->AddEntry(stop,"STop","f");
                totalData->Add(histos[h]);
                tData->Add(histos[h]);
+               lum = procs[h]->intLum;
             }
             if (h == histos.size() -1) {
                //plot the histogram on the top pad
@@ -233,6 +237,7 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                totalData->Draw("same");
                l->Draw("same");
                drawKSandChi2Tests(totalData, all, range);
+               lumi(lum);
             }
          } 
          else {
@@ -271,6 +276,7 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
            
             drawKSandChi2Tests(totalData, all, range);
+            lumi(lum);
          }
 
          //plot the (data-MC)/MC part on the bottom pad
@@ -351,7 +357,7 @@ void lumi(double intLum)
    latex.DrawLatex(0.90,0.96,"#sqrt{s} = 7 TeV");          
    if (LUMINOSITY > 0.) {                                  
       latex.SetTextAlign(31); // align right                
-      latex.DrawLatex(0.65,0.85,Form("#int #font[12]{L} dt = %d pb^{-1}", (int) 
+      latex.DrawLatex(0.75,0.96,Form("#int #font[12]{L} dt = %d fb^{-1}", (int) 
                                      LUMINOSITY)); //29/07/2011    
    }             
    //latex.SetTextAlign(11); // align left
