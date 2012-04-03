@@ -531,7 +531,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
       if(extraCuts == 1){
          //ensure the efficiencies are only applied to the MC
          if (proc->name.compare("Data") != 0){
-            if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.5){
+            if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.4){
                weight = 1.0;
             }
             else{
