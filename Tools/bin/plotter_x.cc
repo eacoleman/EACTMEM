@@ -297,9 +297,9 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("LeptPt_" + lep,"LeptPt_" + lep + cuts,500,0,5000);
+   a.templateHisto = new TH1D("LeptPt_" + lep,"LeptPt_" + lep + cuts,1000,0,5000);
    a.axisTitles.push_back("p_{T}^{lepton} [GeV]");
-   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.axisTitles.push_back("Number of Events / 5 GeV");
    a.range = make_pair(20.,150.);
    a.normToData = true;
    a.stacked = true;
@@ -327,9 +327,9 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("MET_" + lep,"MET_" + lep + cuts,500,0,5000);
+   a.templateHisto = new TH1D("MET_" + lep,"MET_" + lep + cuts,1000,0,5000);
    a.axisTitles.push_back("Missing E_{T} [GeV]");
-   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.axisTitles.push_back("Number of Events / 5 GeV");
    a.range = make_pair(30.,150.);
    a.normToData = true;
    a.stacked = true;
@@ -347,9 +347,9 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("Jet1Pt_" + lep,"Jet1Pt_" + lep + cuts,100,0,1000);
+   a.templateHisto = new TH1D("Jet1Pt_" + lep,"Jet1Pt_" + lep + cuts,200,0,1000);
    a.axisTitles.push_back("p_{T}^{jet_{1}} [GeV]");
-   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.axisTitles.push_back("Number of Events / 5 GeV");
    a.range = make_pair(20.,200.);
    a.normToData = true;
    a.stacked = true;
@@ -377,9 +377,9 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("Jet2Pt_" + lep,"Jet2Pt_" + lep + cuts,100,0,1000);
+   a.templateHisto = new TH1D("Jet2Pt_" + lep,"Jet2Pt_" + lep + cuts,200,0,1000);
    a.axisTitles.push_back("p_{T}^{jet_{2}} [GeV]");
-   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.axisTitles.push_back("Number of Events / 5 GeV");
    a.range = make_pair(20.,100.);
    a.normToData = true;
    a.stacked = true;
@@ -454,6 +454,66 @@ map<string, aPlot> getPlots(string leptonCatString){
    a.normToData = true;
    a.stacked = true;
    plots["Mlvjj"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("DeltaRLepMET_" + lep,"DeltaRLepMET_" + lep + cuts,50,0,10);
+   a.axisTitles.push_back("#DeltaR of lep and MET [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(0.,7.);
+   a.normToData = true;
+   a.stacked = true;
+   plots["DeltaRLepMET"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("EJ1EJ2_" + lep,"EJ1EJ2_" + lep + cuts,500,0,5000);
+   a.axisTitles.push_back("E_{J1} * E_{J2}  [GeV]");
+   a.axisTitles.push_back("Number of Events / 10 GeV");
+   a.range = make_pair(0.,5000.);
+   a.normToData = true;
+   a.stacked = true;
+   plots["EJ1EJ2"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("BetaJ1BetaJ2_" + lep,"BetaJ1BetaJ2_" + lep + cuts,10000,0,10);
+   a.axisTitles.push_back("#beta_{J1} * #beta_{J2} [GeV]");
+   a.axisTitles.push_back("Number of Events / .01 GeV");
+   a.range = make_pair(0.85,1.03);
+   a.normToData = true;
+   a.stacked = true;
+   plots["BetaJ1BetaJ2"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("DeltaRJ1J2_" + lep,"DeltaRJ1J2_" + lep + cuts,50,0,10);
+   a.axisTitles.push_back("#DeltaR of J1 and J2 [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(0.,7.);
+   a.normToData = true;
+   a.stacked = true;
+   plots["DeltaRJ1J2"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("AngleJ1J2_" + lep,"AngleJ1J2_" + lep + cuts,50,0,5);
+   a.axisTitles.push_back("#theta between J1 and J2 [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.1 Radians");
+   a.range = make_pair(-0.5,3.5);
+   a.normToData = true;
+   a.stacked = true;
+   plots["AngleJ1J2"] = a;
+
+   a.axisTitles.clear();
+
+   a.templateHisto = new TH1D("PhiJ1_PhiJ2_" + lep,"PhiJ1_PhiJ2_" + lep + cuts,50,0,10);
+   a.axisTitles.push_back("#phi_{J1} - #phi_{J2} [Radians]");
+   a.axisTitles.push_back("Number of Events / 0.2 Radians");
+   a.range = make_pair(0,6);
+   a.normToData = true;
+   a.stacked = true;
+   plots["PhiJ1-PhiJ2"] = a;
 
    return plots;
 
@@ -562,7 +622,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
 
       // fill plots
       fillPlots(plots, ntuple, weight);
-
+      
    }//for events
 
    cout<<"\tNumber of "<<proc->name<<" Events Passing the Cuts "<<numProcEvts<<endl;
@@ -592,6 +652,12 @@ void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight)
    plots["j1Pt_Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
    plots["j2Pt_Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
    plots["Mlvjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
+   plots["DeltaRLepMET"].Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2)),weight);
+   plots["EJ1EJ2"].Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
+   plots["BetaJ1BetaJ2"].Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
+   plots["DeltaRJ1J2"].Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
+   plots["AngleJ1J2"].Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
+   plots["PhiJ1-PhiJ2"].Fill(abs(ntuple->jLV[0].Phi() - ntuple->jLV[1].Phi()),weight);
 
 }//fillPlots
 

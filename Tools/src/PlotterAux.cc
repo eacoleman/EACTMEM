@@ -113,10 +113,13 @@ void aPlot::doScaling(vector<proc*> procs){
   }// normToData
 
 //this will tell you the area of the process
-//  for (unsigned int p = 0 ; p < procs.size() ; p++){
-//     cout << histos[p]->GetName() << " " << histos[p]->Integral() << endl;
-//  }
-  
+/*  double areaTot = 0;
+  for (unsigned int p = 0 ; p < procs.size() ; p++){
+     cout << histos[p]->GetName() << " " << histos[p]->Integral() << endl;
+     areaTot = histos[p]->Integral() + areaTot;
+     cout << areaTot << endl;
+  }
+*/  
   //set this flag to true so we won't do the scaling again.
   scaled = true;
 
@@ -200,6 +203,9 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                   all->Add(histos[h]);
                }
             }
+
+
+
             else {
                s->Add(stop,"hist");
                l->AddEntry(stop,"STop","f");
@@ -320,6 +326,13 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
             cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
       }//catch
     }//for
+
+    //this will tell you the bin content of the first 20 bins for MC in the stacked plots
+    //used to check if the efficiency is working properly
+/*    cout << all->GetName() << endl;
+    for(int i = 0; i < 20; i++){
+       cout << "bin " << i << " content " << all->GetBinContent(i) << endl;
+    }*/
 
     return c;
 
