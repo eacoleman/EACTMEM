@@ -24,11 +24,14 @@
 //
 #include <string>
 #include <vector>
+#include <map>
 
 //
 // Namespace
 //
 using std::vector;
+using std::map;
+using std::string;
 
 class EventNtuple : public TObject
 {
@@ -66,6 +69,7 @@ public:
   double        lecalIso;
   double        lhcalIso;
   double        ltrkIso;
+  double        lrelIso;
 
   double        METEt;
   double        lPhi;
@@ -74,6 +78,8 @@ public:
   vector < double > jNeutralMultiplicity;
   vector < double > jPtD;
   double rho;
+
+  map<string,bool> triggerMap;
 
   ClassDef(EventNtuple,4)
 
