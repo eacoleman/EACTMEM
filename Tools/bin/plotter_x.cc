@@ -32,7 +32,7 @@ enum trinary {el, mu, both};
 ////////////////////////////////////////////////////////////////////////////////
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int extraCuts);
+void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int leptCat);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
@@ -50,7 +50,7 @@ vector<proc*> getProcesses(vector<string>& processNames);
 map<string, aPlot> getPlots(string leptonCatString);
 
 /// this function prepares the histograms of a given process to be filled
-void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts);
+void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int leptCat);
 
 /// this function fills all of the plots for a given process
 void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight = 1.0);
@@ -98,7 +98,7 @@ int main(int argc,char**argv) {
          procs_el = getProcesses(true);
       
       // Make all the plots and store to outputFile
-      plotter("outputFile_el.root", plots, procs_el, lepton);
+      plotter("outputFile_el_diffScale.root", plots, procs_el, lepton);
    }
 
    else if (leptonCat==mu || leptonCat==both){
@@ -113,7 +113,7 @@ int main(int argc,char**argv) {
          procs_mu = getProcesses(false);
 
       // Make all the plots and store to outputFile
-      plotter("outputFile_mu.root", plots, procs_mu, lepton);
+      plotter("outputFile_mu_diffScale.root", plots, procs_mu, lepton);
    }
   
    return 0;
@@ -126,22 +126,24 @@ int main(int argc,char**argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int extraCuts) {
+void plotter(string fileName, map<string, aPlot> & plots, vector<proc*> procs, int leptCat) {
 
    // Loop over each process filling the histos in each plots
    for (unsigned int p = 0 ; p < procs.size() ; p++){
     
-      fillPlotsForProcess(plots, procs[p], extraCuts);
+      fillPlotsForProcess(plots, procs[p], leptCat);
 
       //make the table to go in the root file here
       Table numProcEvtsT;
-
     
    }//for 
 
    // Will all the info in the plots get the canvas and write it to file
    TFile * outFile = new TFile(fileName.c_str(),"RECREATE");
    for ( map<string, aPlot>::iterator p = plots.begin(); p != plots.end() ; p++){
+      TH1 * histo = p->second.getHisto(procs);
+      histo->Write();
+
       TCanvas * can = p->second.getCanvas(procs);
       can->Write();			
       can->SaveAs(TString(can->GetName())+".png");
@@ -277,11 +279,11 @@ map<string, aPlot> getPlots(string leptonCatString){
    aPlot a;
 
    //goes in the label and tells us whether we are looking at electrons or muons
-   TString lep = TString(leptonCatString);
+   TString lep = TString(leptonCatString) + "_diffScale";
 
    //goes in the label and tells us what cuts we are applying
    string cut;
-   if (lep.CompareTo("mu") == 0)
+   if (lep.CompareTo("mu_diffScale") == 0)
       cut = "_MET > 30, muPt > 25";
    else
       cut = "_MET > 35, elPt > 30";
@@ -407,13 +409,13 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("EtaJ1_EtaJ2_" + lep,"EtaJ1-EtaJ2_" + lep + cuts,50,0,5);
+   a.templateHisto = new TH1D("DeltaEtaJ1J2_" + lep,"DeltaEtaJ1J2_" + lep + cuts,50,0,5);
    a.axisTitles.push_back("#eta^{jet_{1}} - #eta^{jet_{2}} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.1 Radians");
    a.range = make_pair(0.,5.);
    a.normToData = true;
    a.stacked = true;
-   plots["EtaJ1-EtaJ2"] = a;
+   plots["DeltaEtaJ1J2"] = a;
 
    a.axisTitles.clear();
 
@@ -507,13 +509,13 @@ map<string, aPlot> getPlots(string leptonCatString){
 
    a.axisTitles.clear();
 
-   a.templateHisto = new TH1D("PhiJ1_PhiJ2_" + lep,"PhiJ1_PhiJ2_" + lep + cuts,50,0,10);
+   a.templateHisto = new TH1D("DeltaPhiJ1J2_" + lep,"DeltaPhiJ1J2_" + lep + cuts,50,0,10);
    a.axisTitles.push_back("#phi_{J1} - #phi_{J2} [Radians]");
    a.axisTitles.push_back("Number of Events / 0.2 Radians");
    a.range = make_pair(0,6);
    a.normToData = true;
    a.stacked = true;
-   plots["PhiJ1-PhiJ2"] = a;
+   plots["DeltaPhiJ1J2"] = a;
 
    return plots;
 
@@ -521,7 +523,7 @@ map<string, aPlot> getPlots(string leptonCatString){
 
 
 //______________________________________________________________________________
-void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
+void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int leptCat){
 
    cout<<"\tDoing Process "<<proc->name<<endl;
 
@@ -553,7 +555,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
    TH2D* elEffHist;
 
    // Get histogram of trigger efficiencies for muons
-   if(extraCuts == 1){
+   if(leptCat == 1){
       muEffHist = (TH2D*)gDirectory->Get("muEffs");
       if (!muEffHist) {
          cout << "\tWARNING::Muon efficiency histogram was not successfully retrieved from the file " << effFile->GetName() << "." << endl;
@@ -562,7 +564,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
    }
 
    // Get histograms of trigger efficiencies for electrons
-   if(extraCuts == 2){
+   if(leptCat == 2){
       elEffHist = (TH2D*)gDirectory->Get("elEffs");
       if (!elEffHist) {
          cout << "\tWARNING::Electron efficiency histogram was not successfully retrieved from the file " << effFile->GetName() << "." << endl;
@@ -581,14 +583,14 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
          cout<<"\t\tevent "<<ev<<endl;
 
       // make sure the events pass the extraCuts
-      if (ntuple->leptonCat != extraCuts)
+      if (ntuple->leptonCat != leptCat)
          continue;
 
       //reset the weight for each event, so the default will be 1.0
       weight = 1.0;
 
       //efficiencies and cuts for muons
-      if(extraCuts == 1){
+      if(leptCat == 1){
          //ensure the efficiencies are only applied to the MC
          if (proc->name.compare("Data") != 0){
             if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.4){
@@ -604,7 +606,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int extraCuts){
       }
 
       //cuts and efficiencies for electrons
-      if(extraCuts == 2){
+      if(leptCat == 2){
          //ensure the efficiencies are only applied to the MC
          if (proc->name.compare("Data") != 0){
             if (ntuple->lLV[0].Pt() > 200 || abs(ntuple->lLV[0].Eta()) > 2.5)
@@ -647,7 +649,7 @@ void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight)
    plots["Jet2Pt"].Fill(ntuple->jLV[1].Pt(),weight);
    plots["Jet2Eta"].Fill(ntuple->jLV[1].Eta(),weight);
    plots["Jet2Phi"].Fill(ntuple->jLV[1].Phi(),weight);
-   plots["EtaJ1-EtaJ2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
+   plots["DeltaEtaJ1J2"].Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
    plots["Ptjj"].Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
    plots["j1Pt_Mjj"].Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
    plots["j2Pt_Mjj"].Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
@@ -657,7 +659,7 @@ void fillPlots(map<string, aPlot> &  plots, EventNtuple * ntuple, double weight)
    plots["BetaJ1BetaJ2"].Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
    plots["DeltaRJ1J2"].Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
    plots["AngleJ1J2"].Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
-   plots["PhiJ1-PhiJ2"].Fill(abs(ntuple->jLV[0].Phi() - ntuple->jLV[1].Phi()),weight);
+   plots["DeltaPhiJ1J2"].Fill(abs(ntuple->jLV[0].Phi() - ntuple->jLV[1].Phi()),weight);
 
 }//fillPlots
 
@@ -686,9 +688,9 @@ Color_t getProcessColor(TString channelName){
    else if (channelName.CompareTo("WpJ")==0)
       return kGreen+1;
    else if (channelName.CompareTo("ZpJ")==0)
-      return kCyan;
-   else if (channelName.CompareTo("TTbar")==0)
       return kMagenta;
+   else if (channelName.CompareTo("TTbar")==0)
+      return kCyan;
 
    //right now these aren't being used because we are combining all the STop's in PlotterAux.cc
    else if (channelName.Contains("STopT_T")==0)

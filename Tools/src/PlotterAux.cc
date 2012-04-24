@@ -81,17 +81,33 @@ void aPlot::doScaling(vector<proc*> procs){
   // obtain also the total MC and total data
   double totalMC   = 0;
   double totalData = 0;
+  double WpJ = 0;
+  double allMinWpJ = 0;
   bool foundData = false;
   for (unsigned int p = 0 ; p < procs.size() ; p++){
 
     histos[p]->Scale(procs[p]->getScaleFactor());
 
-    if (procs[p]->name.compare("Data") == 0){
+    //scale all the MC to the data
+/*    if (procs[p]->name.compare("Data") == 0){
       totalData += histos[p]->Integral();
       foundData = true;
     } else{
       totalMC += histos[p]->Integral();
+    }*/
+
+    //scale WpJ to data - all others
+    if (procs[p]->name.compare("WpJ") == 0){
+      WpJ += histos[p]->Integral();
+    } 
+    else if (procs[p]->name.compare("Data") == 0){
+      totalData += histos[p]->Integral();
+      foundData = true;
     }
+    else{
+      allMinWpJ += histos[p]->Integral();
+    }
+
   }// for processes
 
   // Normalize to data ?
@@ -103,12 +119,18 @@ void aPlot::doScaling(vector<proc*> procs){
     if (totalData == 0){
       cout<<"Error aPlot::doScaling requested normToData but Data has 0 entries!"<<endl;
       return;
-    }
+      }
 
-    //Do the scaling
-    for (unsigned int p = 0 ; p < procs.size() ; p++)
+    //Do the scaling of the all the MC to the data
+/*    for (unsigned int p = 0 ; p < procs.size() ; p++)
       if (procs[p]->name.compare("Data") != 0)
-         histos[p]->Scale(totalData/totalMC);
+      histos[p]->Scale(totalData/totalMC);*/
+
+    //do the scaling of the WpJ to Data - all others
+    for (unsigned int p = 0 ; p < procs.size() ; p++)
+      if (procs[p]->name.compare("WpJ") == 0)
+         histos[p]->Scale((totalData - allMinWpJ)/WpJ);
+
     
   }// normToData
 
@@ -120,6 +142,7 @@ void aPlot::doScaling(vector<proc*> procs){
      cout << areaTot << endl;
   }
 */  
+
   //set this flag to true so we won't do the scaling again.
   scaled = true;
 
@@ -165,18 +188,18 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
 
     if (stacked){
        s = new THStack(TString(templateHisto->GetName())+"_stack",TString(templateHisto->GetName())+"_stack");
-       totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
-       tData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_MyData");
-       stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
-       all = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_All");
-       totalData->Sumw2();
-       totalData->SetMarkerStyle(8);
-       totalData->SetMarkerSize(0.7);
-       tData->SetMarkerStyle(8);
-       tData->SetMarkerSize(0.7);
-       stop->SetFillColor(12);
-       stop->SetLineColor(12);
     }
+    totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
+    tData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_MyData");
+    stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
+    all = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_All");
+    totalData->Sumw2();
+    totalData->SetMarkerStyle(8);
+    totalData->SetMarkerSize(0.7);
+    tData->SetMarkerStyle(8);
+    tData->SetMarkerSize(0.7);
+    stop->SetFillColor(46);
+    stop->SetLineColor(46);
 
     // Loop over all the histos, drawing them, or add some of them up if needed
     // eg WW and WZ are usually put together...
@@ -203,9 +226,6 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                   all->Add(histos[h]);
                }
             }
-
-
-
             else {
                s->Add(stop,"hist");
                l->AddEntry(stop,"STop","f");
@@ -334,9 +354,165 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
        cout << "bin " << i << " content " << all->GetBinContent(i) << endl;
     }*/
 
+    //this will save the hisotgrams to a file but it's only saving the last one ...
+/*    TFile * outFile = new TFile("outputFile2.root","RECREATE");
+    s->Add(totalData,"hist");
+    s->Write();
+    outFile->Close();
+*/
     return c;
 
 }//getCanvas
+
+//________________________________________________________________________________
+TH1 * aPlot::getHisto(vector<proc*> procs) {
+    
+    //some constants
+    double lum = 0;
+
+    //make the histogram
+    TH1 * hist = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_hist");
+
+    // do the scaling of the histos to lum or to data
+    doScaling(procs);
+
+    // Make the legend
+    TLegend * l = new TLegend(0.78,0.5,0.89,0.89);
+    l->SetBorderSize(0);
+    l->SetFillColor(0);
+
+    //Make the Stacks, sTop, unstacked  and data histograms
+    THStack * s=0;
+    TH1 * totalData=0;
+    TH1 * stop=0;
+    gStyle->SetOptStat(2211);
+
+    if (stacked){
+       s = new THStack(TString(templateHisto->GetName())+"_stack",TString(templateHisto->GetName())+"_stack");
+    } 
+    totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
+    stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
+    totalData->Sumw2();
+    totalData->SetMarkerStyle(8);
+    totalData->SetMarkerSize(0.7);
+    stop->SetFillColor(12);
+    stop->SetLineColor(12);
+ 
+
+    // Loop over all the histos, drawing them, or add some of them up if needed
+    // eg WW and WZ are usually put together...
+    for (unsigned int h = 0 ; h < histos.size() ; h++){
+      histos[h]->SetLineColor(procs[h]->color);
+      histos[h]->SetFillColor(procs[h]->color);
+      histos[h]->SetMarkerColor(procs[h]->color);
+      try{
+         if (stacked && s!=0 and totalData!=0){
+            if (procs[h]->name.compare("Data") != 0){
+               //combine the STop MC into one piece
+               if (procs[h]->name.compare("STopT_T") == 0
+                   || procs[h]->name.compare("STopT_Tbar") == 0
+                   || procs[h]->name.compare("STopS_T") == 0
+                   || procs[h]->name.compare("STopS_Tbar") == 0
+                   || procs[h]->name.compare("STopTW_T") == 0
+                   || procs[h]->name.compare("STopTW_Tbar") == 0){
+                  stop->Add(histos[h]);
+               }
+               else {
+                  s->Add(histos[h],"hist");
+                  hist->Add(histos[h]); 
+                  l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
+               }
+            }
+            else {
+               s->Add(stop,"hist");
+               hist->Add(stop);
+               l->AddEntry(stop,"STop","f");
+               totalData->Add(histos[h]);
+               hist->Add(histos[h]);
+               lum = procs[h]->intLum;
+            }
+            if (h == histos.size() -1) {
+               hist->Draw();
+               hist->SetTitle(templateHisto->GetTitle());
+               for(unsigned int a=0; a<axisTitles.size(); a++){
+                  if (a==0){
+                     hist->GetXaxis()->SetTitleOffset(1.1);
+                     hist->GetXaxis()->SetTitle(axisTitles[a].c_str());
+                     hist->GetXaxis()->SetRangeUser(range.first,range.second);
+                     hist->GetXaxis()->SetLabelSize(0.06);
+                     hist->GetXaxis()->SetTitleSize(0.06);
+                     hist->GetXaxis()->SetLabelFont(42);
+                     hist->GetXaxis()->SetTitleFont(42);
+                  }
+                  else if (a==1){
+                     hist->GetYaxis()->SetTitleOffset(1.3);
+                     hist->GetYaxis()->SetTitle(axisTitles[a].c_str());
+                     hist->SetMaximum(max(s->GetMaximum(),totalData->GetMaximum())*1.1);
+                     hist->GetYaxis()->SetLabelSize(0.06);
+                     hist->GetYaxis()->SetTitleSize(0.06);
+                     hist->GetYaxis()->SetLabelFont(42);
+                     hist->GetYaxis()->SetTitleFont(42);
+                     hist->GetYaxis()->SetTitleOffset(0.85);
+                  }
+               }
+               l->AddEntry(totalData,"Data","lpe");
+               totalData->Draw("same");
+               hist->Draw("same");
+               l->Draw("same");
+            }
+         } 
+         else {
+            if (h==0){
+               histos[h]->Draw();
+               for(unsigned int a=0; a<axisTitles.size(); a++){
+                  if (a==0){
+                     histos[h]->GetXaxis()->SetTitleOffset(1.1);
+                     histos[h]->GetXaxis()->SetTitle(axisTitles[a].c_str());
+                     histos[h]->GetXaxis()->SetRangeUser(range.first,range.second);
+                     histos[h]->GetXaxis()->SetLabelSize(0.06);
+                     histos[h]->GetXaxis()->SetTitleSize(0.06);
+                     histos[h]->GetXaxis()->SetLabelFont(42);
+                     histos[h]->GetXaxis()->SetTitleFont(42);
+                  }
+                  else if (a==1){
+                     histos[h]->GetYaxis()->SetTitleOffset(1.3);
+                     histos[h]->GetYaxis()->SetTitle(axisTitles[a].c_str());
+                     histos[h]->SetMaximum(max(histos[h]->GetMaximum(),totalData->GetMaximum())*1.1);
+                     histos[h]->GetYaxis()->SetLabelSize(0.06);
+                     histos[h]->GetYaxis()->SetTitleSize(0.06);
+                     histos[h]->GetYaxis()->SetLabelFont(42);                     
+                     histos[h]->GetYaxis()->SetTitleFont(42);
+                     histos[h]->GetYaxis()->SetTitleOffset(0.85);
+                  }
+                  else if (a==2){
+                     histos[h]->GetZaxis()->SetTitle(axisTitles[a].c_str());
+                  }
+               }
+            } 
+            else
+               histos[h]->Draw("same");
+            if (procs[h]->name.compare("STop") == 0)
+               l->AddEntry(stop,"STop","l");
+            else
+               l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
+         }
+      }//try
+      catch (exception& e){
+         if (s==0)
+            cout << "\tERROR::THStack * s is uninitiallized." << endl;
+         else if (totalData==0)
+            cout << "\tERROR::TH1 * totalData is uninitiallized." << endl;
+         else
+            cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
+      }//catch
+    }//for
+
+//    hist->Add(totalData);
+//    hist->Add(s);
+
+    return hist;
+
+}//getHisto
 
 //________________________________________________________________________________
 

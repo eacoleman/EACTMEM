@@ -29,27 +29,30 @@ public:
 class aPlot {
    public :
 
-   // Constructor
+      // Constructor
       aPlot() { scaled = false;}
 
-   // Create a new histo here
-   void prepareToFillProcess(string procName);
+      // Create a new histo here
+      void prepareToFillProcess(string procName);
+      
+      // Fill the last histo here
+      void Fill(double h, double w = 1);
 
-   // Fill the last histo here
-   void Fill(double h, double w = 1);
+      // Do the scaling to luminosity or data.
+      void doScaling(std::vector<proc*> procs);
 
-   // Do the scaling to luminosity or data.
-   void doScaling(std::vector<proc*> procs);
+      // Make the Canvas here
+      TCanvas * getCanvas(std::vector<proc*> procs);
 
-   // Make the Canvas here
-   TCanvas * getCanvas(std::vector<proc*> procs);
+      //Make the historam here
+      TH1 * getHisto(std::vector<proc*> procs);
 
-   TH1* templateHisto;
-   std::vector<TH1*> histos;
-   std::vector<std::string> axisTitles;
-   bool stacked;
-   bool normToData;
-   std::pair<double,double> range;
+      TH1* templateHisto;
+      std::vector<TH1*> histos;
+      std::vector<std::string> axisTitles;
+      bool stacked;
+      bool normToData;
+      std::pair<double,double> range;
 
    private:
       bool scaled;
