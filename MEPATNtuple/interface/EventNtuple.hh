@@ -18,6 +18,7 @@
 //
 #include "TLorentzVector.h"
 #include "TObject.h"
+#include "Math/Point3D.h"
 
 //
 // Standard Library Includes
@@ -32,6 +33,31 @@
 using std::vector;
 using std::map;
 using std::string;
+
+typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double> > XYZPointD;
+typedef XYZPointD XYZPoint;
+//typedef XYZPoint Point;
+
+class GenParticle
+{
+public:
+   
+   GenParticle();
+   ~GenParticle();
+
+   double charge;
+   TLorentzVector p4;
+   XYZPoint vtx;
+   int pdgId;
+   int status;
+   int particlePosition;
+   int numberOfMothers;
+   int numberOfDaughters;
+   vector<int> motherPositions;
+   vector<int> daughterPositions;
+
+   ClassDef(GenParticle,1)
+};
 
 class EventNtuple : public TObject
 {
@@ -49,6 +75,7 @@ public:
   vector < int > matchedpdgId;
   vector < double > matchedDeltaR;
   vector < int > jBtag;
+  vector < GenParticle > genParticleCollection;
   int lQ;
   int ldetComp;
   int run;

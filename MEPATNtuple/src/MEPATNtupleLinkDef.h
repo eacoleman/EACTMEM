@@ -14,6 +14,7 @@
 #pragma link C++ class ProbsForEPD+;
 #pragma link C++ class MicroNtuple+;
 #pragma link C++ class EventNtuple+;
+#pragma link C++ class GenParticle+;
 
 
 #endif

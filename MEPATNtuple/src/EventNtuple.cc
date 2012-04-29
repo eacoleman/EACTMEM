@@ -18,13 +18,20 @@
 using std::cout;
 using std::endl;
 
-EventNtuple::EventNtuple()
-{
+GenParticle::GenParticle() {
+   charge = 0;
+   pdgId = 0;
+   status = 0;
+   particlePosition = -1;
+   numberOfMothers = -1;
+   numberOfDaughters = -1;
 }
 
-EventNtuple::~EventNtuple()
-{
-}
+GenParticle::~GenParticle() {}
+
+EventNtuple::EventNtuple() {}
+
+EventNtuple::~EventNtuple() {}
 
 double EventNtuple::getQGLikelihood(unsigned int index, QGLikelihoodCalculator* qglikeli)
 {
