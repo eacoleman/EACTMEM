@@ -152,12 +152,14 @@ private:
    void setDRlj1();
    void setDRlj2();
    void setThetalj1pj2();
+   void saveGenPart();
+   bool matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2);
    /// matches jets to generator level objects
    pair<int, TLorentzVector> matchToGen(double eta, double phi);
    /// increments the specified counters: either El&Lp or Mu&Lp depending on whether MuPresent or ElPresent = 1 (the other counter should = 0 )
    void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[NCUTS][NJETS],
                          int LpPass[NCUTS][NJETS], int MuPresent, int ElPresent);
-   void printEventInformation(int cLevel, bool muon);
+   void printEventInformation(bool print, int cLevel, bool muon);
    void printJetInformation(); vector<string> jstreams; stringstream jstream;
    void printLeptonInformation(); vector<string> lstreams; stringstream lstream;
 
@@ -167,6 +169,7 @@ private:
    //
    // program variables
    bool Data;
+   bool saveGenParticles;
    bool noMETCut;
    bool invertEID;
    bool PFlowLoose;
@@ -174,6 +177,9 @@ private:
    bool muONLY;
    int SQWaT_Version;
    bool doRelIso;
+   bool printEventInfo;
+   bool printJetInfo;
+   bool printLeptonInfo;
    // file variables
    TString outtablefilename;
    ofstream outtablefile;

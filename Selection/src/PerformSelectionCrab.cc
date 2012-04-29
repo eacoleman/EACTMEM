@@ -24,120 +24,139 @@ using namespace std;
 
 //______________________________________________________________________________
 PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
-   // event variables
-   : elcnt_Prim(0)
-   , elcnt_Loose(0)
-   , mucnt_Prim(0)
-   , mucnt_Loose(0)
-   , jcnt_tot(0)
-   , EvtTotCount(0)
-   , mu_passAll(false)
-   , mu_passStandard(false)
-   , mu_passFlag(false)
-   , el_passAll(false)
-   , el_passStandard(false)
-   , el_passFlag(false)
-     // vertex variables
-   , PVfound(false)
-   , zvtx(-999)
-   , vtxcnt(0)
-     // jet variables
-   , j_ptMin(20.0)
-   , j_aetaMax(2.4)
-   , j_DRelMin(0.3)
-   , muPrim_DRjMin(0.1)
-     // b-tag variables
-   , nBtag(0)
-     // muon variables
-   , muPrim_ptMin(20.0)
-   , muPrim_aetaMax(2.1)
-   , muPrim_dBMax(0.02)
-   , muPrim_RelIsoMax(0.1)
-   , muPrim_TrkIsoMax(0.05)
-   , isProperlyIsolatedMu(false)
-   , muLoose_ptMin(10.0)
-   , muLoose_aetaMax(2.5)
-   , muLoose_RelIsoMax(0.2)
-   , muLoose_TrkIsoMax(0.2)
-     // electron variables
-   , elPrim_ptMin(20.0)
-   , elPrim_aetaMax(2.5)
-   , elPrim_aetascExcludeMax(1.5660)
-   , elPrim_aetascExcludeMin(1.4442)
-   , elPrim_dBMax(0.02)
-   , elPrim_RelIsoMax(0.05)
-   , elPrim_TrkIsoMax(0.1)
-   
-   , elPrim_sigmaIetaIetaMaxEB(0.01)
-   , elPrim_aDeltaPhiMaxEB(0.03) //Changed from 0.06 on 03/05/2012
-   , elPrim_aDeltaEtaMaxEB(0.004)
-   , elPrim_HoEMaxEB(0.025) //Changed from 0.040 
-   , elPrim_sigmaIetaIetaMaxEE(0.03)
-   , elPrim_aDeltaPhiMaxEE(0.02) //Changed from 0.03
-   , elPrim_aDeltaEtaMaxEE(0.005) //Changed from 0.007
-   , elPrim_HoEMaxEE(0.025)
-    
-   , elLoose_ptMin(15.0)
-   , elLoose_RelIsoMax(0.2)
-   , elLoose_TrkIsoMax(0.2)
-   , elLoose_sigmaIetaIetaMaxEB(0.01)
-   , elLoose_aDeltaPhiMaxEB(0.8)
-   , elLoose_aDeltaEtaMaxEB(0.007)
-   , elLoose_HoEMaxEB(0.15)
-   , elLoose_sigmaIetaIetaMaxEE(0.03)
-   , elLoose_aDeltaPhiMaxEE(0.7)
-   , elLoose_aDeltaEtaMaxEE(0.01)
-   , elLoose_HoEMaxEE(0.07)
-   
-   , el_aetaPass(false)
-   , el_convPass_a(false)
-   , el_convPass_b(false)
-     // lepton variables
-     // MET variables
-   , MET_EtMin(25)
-     // additional variables
-   , lTotIso(-1)
-   , lecalIso(-10)
-   , lhcalIso(-10)
-   , ltrkIso(-1)
-   , lrelIso(-1)
-   , Mjj(-1)
-   , lQ(-10)
-   , lEta(-1)
-     // constants
-   , etaBarrelMax(1.442) // the Maximum value of eta for the Barrel//**fix when needed
+   // Sample initialization
+   //: s1(0) //An int defined in the header
+   //, s2(false) //A bool defined in the header
+   //, s3(0.1) //A double defined in the header
 {
    //-----Input Tags For Handles
-   triggerSource     = iConfig.getParameter<edm::InputTag> ("triggerSource");
-   vtxSource         = iConfig.getParameter<edm::InputTag> ("vtxSource");
-   genParticleSource = iConfig.getParameter<edm::InputTag> ("genParticleSource");
-   pfJetSource       = iConfig.getParameter<edm::InputTag> ("pfJetSource");
-   electronSource    = iConfig.getParameter<edm::InputTag> ("electronSource");
-   muonSource        = iConfig.getParameter<edm::InputTag> ("muonSource");
-   METSource         = iConfig.getParameter<edm::InputTag> ("METSource");
-   rhoSource         = iConfig.getParameter<edm::InputTag> ("rhoSource");
+   triggerSource              =         iConfig.getParameter<edm::InputTag> ("triggerSource");
+   vtxSource                  =         iConfig.getParameter<edm::InputTag> ("vtxSource");
+   genParticleSource          =         iConfig.getParameter<edm::InputTag> ("genParticleSource");
+   pfJetSource                =         iConfig.getParameter<edm::InputTag> ("pfJetSource");
+   electronSource             =         iConfig.getParameter<edm::InputTag> ("electronSource");
+   muonSource                 =         iConfig.getParameter<edm::InputTag> ("muonSource");
+   METSource                  =         iConfig.getParameter<edm::InputTag> ("METSource");
+   rhoSource                  =         iConfig.getParameter<edm::InputTag> ("rhoSource");
 
    //-----Trigger Information
-   muTrigger         = iConfig.getParameter<string> ("muTrigger");
-   eleTrigger        = iConfig.getParameter<string> ("eleTrigger");
+   muTrigger                  =         iConfig.getParameter<string>        ("muTrigger");
+   eleTrigger                 =         iConfig.getParameter<string>        ("eleTrigger");
 
    //-----Program Level Inputs
-   outtablefilename  = TString(iConfig.getParameter<string> ("outtablefilename"));
-   outtablenameEl    = TString(iConfig.getParameter<string> ("outtablenameEl"));
-   outtablenameMu    = TString(iConfig.getParameter<string> ("outtablenameMu"));
-   outtablenameLp    = TString(iConfig.getParameter<string> ("outtablenameLp"));
-   runtype           = TString(iConfig.getParameter<string> ("runtype"));
+   outtablefilename           = TString(iConfig.getParameter<string>        ("outtablefilename"));
+   outtablenameEl             = TString(iConfig.getParameter<string>        ("outtablenameEl"));
+   outtablenameMu             = TString(iConfig.getParameter<string>        ("outtablenameMu"));
+   outtablenameLp             = TString(iConfig.getParameter<string>        ("outtablenameLp"));
+   runtype                    = TString(iConfig.getParameter<string>        ("runtype"));
 
-   Data              =         iConfig.getParameter<bool>   ("Data");
-   noMETCut          =         iConfig.getParameter<bool>   ("noMETCut");
-   invertEID         =         iConfig.getParameter<bool>   ("invertEID");
-   PFlowLoose        =         iConfig.getParameter<bool>   ("PFlowLoose");
-   elONLY            =         iConfig.getParameter<bool>   ("elONLY");
-   muONLY            =         iConfig.getParameter<bool>   ("muONLY");
+   printEventInfo             =         iConfig.getParameter<bool>          ("printEventInfo");
+   printJetInfo               =         iConfig.getParameter<bool>          ("printJetInfo");
+   printLeptonInfo            =         iConfig.getParameter<bool>          ("printLeptonInfo");
+   Data                       =         iConfig.getParameter<bool>          ("Data");
+   saveGenParticles           =         iConfig.getParameter<bool>          ("saveGenParticles");
+   noMETCut                   =         iConfig.getParameter<bool>          ("noMETCut");
+   invertEID                  =         iConfig.getParameter<bool>          ("invertEID");
+   PFlowLoose                 =         iConfig.getParameter<bool>          ("PFlowLoose");
+   elONLY                     =         iConfig.getParameter<bool>          ("elONLY");
+   muONLY                     =         iConfig.getParameter<bool>          ("muONLY");
 
-   cutOnTrigger      =         iConfig.getParameter<bool>   ("cutOnTrigger");
-   SQWaT_Version     =         iConfig.getParameter<int>    ("SQWaT_Version");
-   doRelIso          =         iConfig.getParameter<bool>   ("doRelIso");
+   cutOnTrigger               =         iConfig.getParameter<bool>          ("cutOnTrigger");
+   SQWaT_Version              =         iConfig.getParameter<int>           ("SQWaT_Version");
+   doRelIso                   =         iConfig.getParameter<bool>          ("doRelIso");
+
+   //-----Event Variable Inputs
+   elcnt_Prim                 =         iConfig.getParameter<int>           ("elcnt_Prim");
+   elcnt_Loose                =         iConfig.getParameter<int>           ("elcnt_Loose");
+   mucnt_Prim                 =         iConfig.getParameter<int>           ("mucnt_Prim");
+   mucnt_Loose                =         iConfig.getParameter<int>           ("mucnt_Loose");
+   jcnt_tot                   =         iConfig.getParameter<int>           ("jcnt_tot");
+   EvtTotCount                =         iConfig.getParameter<int>           ("EvtTotCount");
+   mu_passAll                 =         iConfig.getParameter<bool>          ("mu_passAll");
+   mu_passStandard            =         iConfig.getParameter<bool>          ("mu_passStandard");
+   mu_passFlag                =         iConfig.getParameter<bool>          ("mu_passFlag");
+   el_passAll                 =         iConfig.getParameter<bool>          ("el_passAll");
+   el_passStandard            =         iConfig.getParameter<bool>          ("el_passStandard");
+   el_passFlag                =         iConfig.getParameter<bool>          ("el_passFlag");
+
+   //-----Vertex Variable Inputs
+   PVfound                    =         iConfig.getParameter<bool>          ("PVfound");
+   zvtx                       =         iConfig.getParameter<double>        ("zvtx");
+   vtxcnt                     =         iConfig.getParameter<int>           ("vtxcnt");
+
+   //-----Jet Variable Inputs
+   j_ptMin                    =         iConfig.getParameter<double>        ("j_ptMin");
+   j_aetaMax                  =         iConfig.getParameter<double>        ("j_aetaMax");
+   j_DRelMin                  =         iConfig.getParameter<double>        ("j_DRelMin");
+   muPrim_DRjMin              =         iConfig.getParameter<double>        ("muPrim_DRjMin");
+
+   //-----B-Tag Variable Inputs
+   nBtag                      =         iConfig.getParameter<int>           ("nBtag");
+
+   //-----Muon Variable Inputs
+   muPrim_ptMin               =         iConfig.getParameter<double>        ("muPrim_ptMin");
+   muPrim_aetaMax             =         iConfig.getParameter<double>        ("muPrim_aetaMax");
+   muPrim_dBMax               =         iConfig.getParameter<double>        ("muPrim_dBMax");
+   muPrim_RelIsoMax           =         iConfig.getParameter<double>        ("muPrim_RelIsoMax");
+   muPrim_TrkIsoMax           =         iConfig.getParameter<double>        ("muPrim_TrkIsoMax");
+   isProperlyIsolatedMu       =         iConfig.getParameter<bool>          ("isProperlyIsolatedMu");
+   muLoose_ptMin              =         iConfig.getParameter<double>        ("muLoose_ptMin");
+   muLoose_aetaMax            =         iConfig.getParameter<double>        ("muLoose_aetaMax");
+   muLoose_RelIsoMax          =         iConfig.getParameter<double>        ("muLoose_RelIsoMax");
+   muLoose_TrkIsoMax          =         iConfig.getParameter<double>        ("muLoose_TrkIsoMax");
+
+   //-----Electron Variable Inputs
+   elPrim_ptMin               =         iConfig.getParameter<double>        ("elPrim_ptMin");
+   elPrim_aetaMax             =         iConfig.getParameter<double>        ("elPrim_aetaMax");
+   elPrim_aetascExcludeMax    =         iConfig.getParameter<double>        ("elPrim_aetascExcludeMax");
+   elPrim_aetascExcludeMin    =         iConfig.getParameter<double>        ("elPrim_aetascExcludeMin");
+   elPrim_dBMax               =         iConfig.getParameter<double>        ("elPrim_dBMax");
+   elPrim_RelIsoMax           =         iConfig.getParameter<double>        ("elPrim_RelIsoMax");
+   elPrim_TrkIsoMax           =         iConfig.getParameter<double>        ("elPrim_TrkIsoMax");
+   
+   elPrim_sigmaIetaIetaMaxEB  =         iConfig.getParameter<double>        ("elPrim_sigmaIetaIetaMaxEB");
+   elPrim_aDeltaPhiMaxEB      =         iConfig.getParameter<double>        ("elPrim_aDeltaPhiMaxEB");
+   elPrim_aDeltaEtaMaxEB      =         iConfig.getParameter<double>        ("elPrim_aDeltaEtaMaxEB");
+   elPrim_HoEMaxEB            =         iConfig.getParameter<double>        ("elPrim_HoEMaxEB"); 
+   elPrim_sigmaIetaIetaMaxEE  =         iConfig.getParameter<double>        ("elPrim_sigmaIetaIetaMaxEE");
+   elPrim_aDeltaPhiMaxEE      =         iConfig.getParameter<double>        ("elPrim_aDeltaPhiMaxEE");
+   elPrim_aDeltaEtaMaxEE      =         iConfig.getParameter<double>        ("elPrim_aDeltaEtaMaxEE");
+   elPrim_HoEMaxEE            =         iConfig.getParameter<double>        ("elPrim_HoEMaxEE");
+
+   elLoose_ptMin              =         iConfig.getParameter<double>        ("elLoose_ptMin");
+   elLoose_RelIsoMax          =         iConfig.getParameter<double>        ("elLoose_RelIsoMax");
+   elLoose_TrkIsoMax          =         iConfig.getParameter<double>        ("elLoose_TrkIsoMax");
+
+   elLoose_sigmaIetaIetaMaxEB =         iConfig.getParameter<double>        ("elLoose_sigmaIetaIetaMaxEB");
+   elLoose_aDeltaPhiMaxEB     =         iConfig.getParameter<double>        ("elLoose_aDeltaPhiMaxEB");
+   elLoose_aDeltaEtaMaxEB     =         iConfig.getParameter<double>        ("elLoose_aDeltaEtaMaxEB");
+   elLoose_HoEMaxEB           =         iConfig.getParameter<double>        ("elLoose_HoEMaxEB");
+   elLoose_sigmaIetaIetaMaxEE =         iConfig.getParameter<double>        ("elLoose_sigmaIetaIetaMaxEE");
+   elLoose_aDeltaPhiMaxEE     =         iConfig.getParameter<double>        ("elLoose_aDeltaPhiMaxEE");
+   elLoose_aDeltaEtaMaxEE     =         iConfig.getParameter<double>        ("elLoose_aDeltaEtaMaxEE");
+   elLoose_HoEMaxEE           =         iConfig.getParameter<double>        ("elLoose_HoEMaxEE"); 
+   
+   el_aetaPass                =         iConfig.getParameter<bool>          ("el_aetaPass");
+   el_convPass_a              =         iConfig.getParameter<bool>          ("el_convPass_a");
+   el_convPass_b              =         iConfig.getParameter<bool>          ("el_convPass_b");
+
+   //-----Lepton Variable Inputs
+
+   //-----MET Variable Inputs
+   MET_EtMin                  =         iConfig.getParameter<double>        ("MET_EtMin");
+
+   //-----Additional Variable Inputs
+   lTotIso                    =         iConfig.getParameter<double>        ("lTotIso");
+   lecalIso                   =         iConfig.getParameter<double>        ("lecalIso");
+   lhcalIso                   =         iConfig.getParameter<double>        ("lhcalIso");
+   ltrkIso                    =         iConfig.getParameter<double>        ("ltrkIso");
+   lrelIso                    =         iConfig.getParameter<double>        ("lrelIso");
+   Mjj                        =         iConfig.getParameter<double>        ("Mjj");
+   lQ                         =         iConfig.getParameter<int>           ("lQ");
+   lEta                       =         iConfig.getParameter<double>        ("lEta");
+
+   //-----Constant Inputs
+   etaBarrelMax               =         iConfig.getParameter<double>        ("etaBarrelMax");
 
    InitializeIntMatrix(PassEl);
    InitializeIntMatrix(PassMu);
@@ -147,10 +166,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
 
 
 //______________________________________________________________________________
-PerformSelection::~PerformSelection()
-{
-
-}
+PerformSelection::~PerformSelection() {}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,8 +174,7 @@ PerformSelection::~PerformSelection()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::beginJob()
-{
+void PerformSelection::beginJob() {
    edm::Service<TFileService> fs;
    if (!fs) throw edm::Exception(edm::errors::Configuration,
                                  "TFileService missing from configuration!");
@@ -175,8 +190,7 @@ void PerformSelection::beginJob()
 
 
 //______________________________________________________________________________
-void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
    
    //
    //find the runNumber and eventNumber here
@@ -197,7 +211,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    //
    //Check and remove duplicates here
    //
-   if ( runEventSet.alreadySeen(runNumber, eventNumber)) {
+   if (runEventSet.alreadySeen(runNumber, eventNumber)) {
       cout << "WARNING, event Run = " << runNumber << ", Event = " << eventNumber
            <<" is duplicated" << endl << "We will skip this event." << endl;
       return;
@@ -288,49 +302,42 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    mu_passAll=false;
 
 
-   printEventInformation(0,true); //Added for Synchronization
-   for(Int_t Nj=0; Nj<NJETS;Nj++)
-   {
-      if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) 
-      {
+   printEventInformation(printEventInfo, 0, true);
+   for(Int_t Nj=0; Nj<NJETS;Nj++) {
+      if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) {
          PassLp[1][Nj]++;
          PassMu[1][Nj]++;
          PassEl[1][Nj]++;
-         printEventInformation(1,true); //Added for Synchronization
+         printEventInformation(printEventInfo, 1, true);
          
          //
          // Record the electron info
          //
-         if(elcnt_Prim>=1 && PVfound)
-         {
+         if (elcnt_Prim>=1 && PVfound) {
             incrementCounter(2,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-            printEventInformation(2,false); //Added for Synchronization
-            if(mucnt_Loose==0)
-            {
+            printEventInformation(printEventInfo, 2, false);
+            if (mucnt_Loose==0) {
                incrementCounter(3,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-               printEventInformation(3,false); //Added for Synchronization
-               if(elcnt_Loose==1)
-               {
+               printEventInformation(printEventInfo, 3, false);
+               if (elcnt_Loose==1) {
                   incrementCounter(4,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                  printEventInformation(4,false); //Added for Synchronization
+                  printEventInformation(printEventInfo, 4, false);
                   el_passStandard=true;
-                  if(MET_Et>MET_EtMin)
-                  {
+                  if (MET_Et>MET_EtMin) {
                      incrementCounter(5,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                     printEventInformation(printEventInfo, 5, false);
                      el_passAll=true;
                   }
                   //
                   // Record the Btag info
                   //
-                  if(nBtag==0)
+                  if (nBtag==0)
                      incrementCounter(6,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                  else
-                  {
-                     if(nBtag==1)
+                  else {
+                     if (nBtag==1)
                         incrementCounter(7,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                     else
-                     {
-                        if(nBtag==2)
+                     else {
+                        if (nBtag==2)
                            incrementCounter(8,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                         else
                            incrementCounter(9,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
@@ -343,22 +350,19 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
          //
          // Record the muon info
          //
-         if(mucnt_Prim>=1 && PVfound)
-         {
+         if (mucnt_Prim>=1 && PVfound) {
             incrementCounter(2,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-            printEventInformation(2,true); //Added for Synchronization
-            if(mucnt_Loose==1)
-            {
+            printEventInformation(printEventInfo, 2, true);
+            if (mucnt_Loose==1) {
                incrementCounter(3,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-               printEventInformation(3,true); //Added for Synchronization
-               if(elcnt_Loose==0)
-               {
+               printEventInformation(printEventInfo, 3, true);
+               if (elcnt_Loose==0) {
                   incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                  printEventInformation(4,true); //Added for Synchronization
+                  printEventInformation(printEventInfo, 4, true);
                   mu_passStandard=true;
-                  if(MET_Et>MET_EtMin)
-                  {
+                  if (MET_Et>MET_EtMin) {
                      incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                     printEventInformation(printEventInfo, 5, true);
                      mu_passAll=true;
                   }
                   //
@@ -366,13 +370,11 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                   //
                   if (nBtag==0 )
                      incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                  else 
-                  {
-                     if(nBtag==1) 
+                  else {
+                     if (nBtag==1) 
                         incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                     else 
-                     {
-                        if(nBtag==2)
+                     else {
+                        if (nBtag==2)
                            incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                         else
                            incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
@@ -383,10 +385,11 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
          } //if(mucnt_Prim>=1 && PVfound)
       } //if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) 
    } //for(Int_t Nj=0; Nj<NJETS;Nj++)
-   printEventInformation(5,true); //Added for Synchronization
-   //if (eventNumber == 72887 || eventNumber == 72920 || eventNumber == 72984 || eventNumber == 73099 || eventNumber == 74024 || eventNumber == 74268 || eventNumber == 74286 || eventNumber == 68791 || eventNumber == 96036)
-   //printJetInformation();
-   printLeptonInformation();
+   printEventInformation(printEventInfo, 6, true);
+   if (printJetInfo)
+      printJetInformation();
+   if (printLeptonInfo)
+      printLeptonInformation();
 
    //
    // Fill the Ntuple to be used in Matrix Element computations
@@ -395,8 +398,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    //
    setFlags();
 
-   if((el_passFlag || mu_passFlag) && jcnt_tot==2)
-   {
+   if ((el_passFlag || mu_passFlag) && jcnt_tot==2) {
       setlp4LV();
       setlp3();
       EvtNtuple->lLV.clear();
@@ -435,15 +437,13 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       EvtNtuple->jBtag.push_back(jBtag[1]);
       EvtNtuple->lQ=lQ;
 
-      if (abs(lEta)<etaBarrelMax)
-      {
+      if (abs(lEta)<etaBarrelMax) {
          //
          // barrel
          //
          EvtNtuple->ldetComp=0;
       } 
-      else
-      {
+      else {
          //
          // endcap
          //
@@ -462,8 +462,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       // Do the matching between the pat::Jets and the reco::genParticles
       //
       pair<int, TLorentzVector> matchedPair;
-      if(!Data)
-      {
+      if (!Data) {
          matchedPair = matchToGen(j1p4LV.Eta(),j1p4LV.Phi());
          EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
          EvtNtuple->matchedpdgId.push_back(matchedPair.first);
@@ -473,6 +472,8 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
          EvtNtuple->matchedpdgId.push_back(matchedPair.first);
          EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j2p4LV.Eta(), j2p4LV.Phi()));
       }
+      if (!Data && saveGenParticles)
+         saveGenPart();
 
       //
       // Additional Variables
@@ -485,13 +486,13 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       EvtNtuple->Mjj=Mjj;
       EvtNtuple->leptonCat=DEFS::none;
       EvtNtuple->leptonCat_passAll=DEFS::none;
-      if(el_passFlag)
+      if (el_passFlag)
          EvtNtuple->leptonCat=DEFS::electron;
-      if(mu_passFlag)
+      if (mu_passFlag)
          EvtNtuple->leptonCat=DEFS::muon;
-      if(el_passAll)
+      if (el_passAll)
          EvtNtuple->leptonCat_passAll=DEFS::electron;
-      if(mu_passAll)
+      if (mu_passAll)
          EvtNtuple->leptonCat_passAll=DEFS::muon;
 
       setDRlj1();
@@ -517,8 +518,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 //______________________________________________________________________________
 void PerformSelection::endJob()
 {
-   for (Int_t Nj=0; Nj<NJETS;Nj++)
-   {
+   for (Int_t Nj=0; Nj<NJETS;Nj++) {
       PassLp[0][Nj]=EvtTotCount;
       PassMu[0][Nj]=EvtTotCount;
       PassEl[0][Nj]=EvtTotCount;
@@ -529,8 +529,7 @@ void PerformSelection::endJob()
    getProcessTable(tableEl,PassEl);
    getProcessTable(tableMu,PassMu);
    getProcessTable(tableLp,PassLp);
-   if(runtype.CompareTo("cmsRun")==0)
-   {
+   if (runtype.CompareTo("cmsRun")==0) {
       //
       // won't work for CRAB
       // only use if running using cmsRun
@@ -546,28 +545,24 @@ void PerformSelection::endJob()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::triggerSelection()
-{
+void PerformSelection::triggerSelection() {
    triggerMap.clear();
    passTrigger = false;
    pat::TriggerEvent const * trig = &*triggerHandle;
 
    const pat::TriggerPathCollection* triggerPaths = trig->paths();
    for (unsigned int i=0; i<triggerPaths->size(); i++) {
-      if ((*triggerPaths)[i].wasRun() && !(*triggerPaths)[i].wasError()) {
+      if ((*triggerPaths)[i].wasRun() && !(*triggerPaths)[i].wasError())
          triggerMap[(*triggerPaths)[i].name()] = (*triggerPaths)[i].wasAccept();
-      }
    }
 
-   if ( trig->wasRun() && trig->wasAccept() ) {
+   if (trig->wasRun() && trig->wasAccept()) {
       pat::TriggerPath const * muPath = trig->path(muTrigger);
       pat::TriggerPath const * elePath = trig->path(eleTrigger);
-      if (  muPath != 0 && muPath->wasAccept() ) {
+      if (muPath != 0 && muPath->wasAccept())
          passTrigger = true;    
-      }
-      if (  elePath != 0 && elePath->wasAccept() ) {
+      if (elePath != 0 && elePath->wasAccept())
          passTrigger = true;
-      }
    }
 }
 
@@ -581,8 +576,7 @@ void PerformSelection::setFlags()
 {
    el_passFlag=el_passAll;
    mu_passFlag=mu_passAll;
-   if(noMETCut)
-   {
+   if(noMETCut) {
       el_passFlag=el_passStandard;
       mu_passFlag=mu_passStandard;
    }
@@ -602,21 +596,16 @@ void PerformSelection::vertexSelection()
 {
    PVfound = (vtxHandle->begin() != vtxHandle->end());
    zvtx = -999;
-   if(PVfound)
-   {
+   if (PVfound) {
       pv = (*vtxHandle->begin());
-      if(pv.ndof()>=4 && fabs(pv.z())<=24 && fabs(pv.position().Rho())<=2.0)//Added 02/26/2012 for synchronization
-      {
+      if (pv.ndof()>=4 && fabs(pv.z())<=24 && fabs(pv.position().Rho())<=2.0) {
          vtxcnt++;
          zvtx = pv.z();
       }
-      else //Added 02/26/2012 for synchronization
-      {
+      else
          PVfound=false; 
-      }
    }
-   else
-   {
+   else {
       throw cms::Exception("InvalidInput") << " There needs to be at least one primary vertex in the event."
                                            << std::endl;
    }
@@ -628,8 +617,7 @@ void PerformSelection::vertexSelection()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::jetClear()
-{
+void PerformSelection::jetClear() {
    jcnt_tot=0;
    j_DRlepton=999;
    Mjj=-1;
@@ -643,12 +631,11 @@ void PerformSelection::jetClear()
    JChargedMultiplicity.clear();
    JNeutralMultiplicity.clear();
    JPtD.clear();
-   jstreams.clear(); //Added for synchronization 03/23/2012
+   jstreams.clear();
 }
 
 //______________________________________________________________________________
-void PerformSelection::jetSelection()
-{
+void PerformSelection::jetSelection() {
    //
    // Define the constants
    //
@@ -659,8 +646,7 @@ void PerformSelection::jetSelection()
    double bDiscriminator_min=1.74;
 
    const vector< pat::Jet >::const_iterator pfJetEnd = pfJetHandle->end();
-   for(vector<pat::Jet>::const_iterator jetIter = pfJetHandle->begin(); pfJetEnd != jetIter; ++jetIter)
-   { 
+   for (vector<pat::Jet>::const_iterator jetIter = pfJetHandle->begin(); pfJetEnd != jetIter; ++jetIter) { 
       j_pt=jetIter->pt();
       j_eta=jetIter->eta();
       j_phi=jetIter->phi();
@@ -674,12 +660,12 @@ void PerformSelection::jetSelection()
          //
          // we're on a circle
          //
-         if(adphi>pi_)
+         if (adphi>pi_)
             adphi=2*pi_-adphi;
          
          j_DRlepton=pow((j_eta-l_Eta[i])*(j_eta-l_Eta[i])+adphi*adphi,0.5);
          
-         if ((l_Type[i]==0 && j_DRlepton<j_DRelMin) || (l_Type[i]==1 && j_DRlepton<0.3/*muPrim_DRjMin*/))
+         if ((l_Type[i]==0 && j_DRlepton<j_DRelMin) || (l_Type[i]==1 && j_DRlepton<muPrim_DRjMin))
             jDR = false;
          else
             continue;
@@ -688,13 +674,10 @@ void PerformSelection::jetSelection()
       //
       // Apply The Cut
       //
-      if(j_pt>j_ptMin && abs(j_eta)<j_aetaMax && 
-         //((j_DRlepton>j_DRelMin && elcnt_Prim==1) || (j_DRlepton>0.3/*muPrim_DRjMin*/ && mucnt_Prim==1)) && 
-         jDR && //Modified for synchronization 03/23/2012
-         jetIter->neutralHadronEnergyFraction()<0.99 && jetIter->neutralEmEnergyFraction()<0.99 && 
-         jetIter->numberOfDaughters()>1 && jetIter->chargedHadronEnergyFraction()>0 && 
-         jetIter->chargedMultiplicity()>0 && jetIter->chargedEmEnergyFraction()<0.99)
-      {
+      if (j_pt>j_ptMin && abs(j_eta)<j_aetaMax && jDR &&
+          jetIter->neutralHadronEnergyFraction()<0.99 && jetIter->neutralEmEnergyFraction()<0.99 && 
+          jetIter->numberOfDaughters()>1 && jetIter->chargedHadronEnergyFraction()>0 && 
+          jetIter->chargedMultiplicity()>0 && jetIter->chargedEmEnergyFraction()<0.99) {
          jcnt_tot++;
 	  
          //
@@ -712,7 +695,6 @@ void PerformSelection::jetSelection()
          JPtD.push_back(0);
          jNEntries++;
 	 
-         //Added for synchronization 03/23/2012
          jstream << "pt " << j_pt << " eta " << j_eta << " j_DRlepton " << j_DRlepton
                  << " NHEF " << jetIter->neutralHadronEnergyFraction()
                  << " NEMEF " << jetIter->neutralEmEnergyFraction()
@@ -727,8 +709,7 @@ void PerformSelection::jetSelection()
          //
          // b-tagging
          //
-         if(jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminator_min)
-         {
+         if (jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminator_min) {
             jBtag.push_back(1);
             nBtag++;
          } 
@@ -739,17 +720,15 @@ void PerformSelection::jetSelection()
 }
 
 //______________________________________________________________________________
-void PerformSelection::computeInvariantMass()
-{
-   if(jcnt_tot==2)
+void PerformSelection::computeInvariantMass() {
+   if (jcnt_tot==2)
       Mjj=(jp4[0]+jp4[1]).M();
    else
       Mjj=-2;
 }
 
 //______________________________________________________________________________
-double PerformSelection::getPtD(vector<reco::PFCandidatePtr> pfCandidates)
-{
+double PerformSelection::getPtD(vector<reco::PFCandidatePtr> pfCandidates) {
    double sumPt_cands=0.;
    double sumPt2_cands=0.;
    
@@ -765,7 +744,7 @@ double PerformSelection::getPtD(vector<reco::PFCandidatePtr> pfCandidates)
       }
    }
 
-   if(sumPt_cands != 0)
+   if (sumPt_cands != 0)
       return sqrt( sumPt2_cands )/sumPt_cands;
    else
       return 0.0;
@@ -782,18 +761,15 @@ double PerformSelection::getPtD(vector<reco::PFCandidatePtr> pfCandidates)
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::muonClear()
-{
+void PerformSelection::muonClear() {
    mucnt_Prim=0;
    mucnt_Loose=0;
 }
 
 //______________________________________________________________________________
-void PerformSelection::muonSelection()
-{
+void PerformSelection::muonSelection() {
    const vector< pat::Muon >::const_iterator muEnd = muonHandle->end();
-   for(vector<pat::Muon>::const_iterator muIter = muonHandle->begin(); muEnd != muIter; ++muIter)
-   { 
+   for(vector<pat::Muon>::const_iterator muIter = muonHandle->begin(); muEnd != muIter; ++muIter) { 
       mu_pt=muIter->pt();
       mu_eta=muIter->eta();
       mu_phi=muIter->phi();
@@ -807,44 +783,41 @@ void PerformSelection::muonSelection()
       mu_TrkIso=(muIter->trackIso())/mu_pt;
       
       muisGmTm=false;
-      if(muIter->isGlobalMuon() && muIter->isTrackerMuon())
+      if (muIter->isGlobalMuon() && muIter->isTrackerMuon())
          muisGmTm=true;
 
       muisTightPrompt=false;
-      if(muIter->globalTrack().isNonnull())
-      {
-         if(muIter->globalTrack()->normalizedChi2()<10 &&
+      if (muIter->globalTrack().isNonnull()) {
+         if (muIter->globalTrack()->normalizedChi2()<10 &&
             muIter->globalTrack()->hitPattern().numberOfValidMuonHits()>0)
             muisTightPrompt=true;
       }
 
-      if(muIter->innerTrack().isNonnull())
+      if (muIter->innerTrack().isNonnull())
          muPrim_itNHits=muIter->innerTrack()->numberOfValidHits();
       else
          muPrim_itNHits=-1;
        
       mu_vtxPass=false;
-      if(abs(zvtx - muIter->vertex().z())<1)
+      if (abs(zvtx - muIter->vertex().z())<1)
          mu_vtxPass=true;
        
       //
       // Apply The Primary Cuts
       //
-      if(muisGmTm && mu_pt>muPrim_ptMin && abs(mu_eta)<muPrim_aetaMax && muisTightPrompt &&
-         muPrim_itNHits>10 && muIter->dB()<muPrim_dBMax && mu_vtxPass && 
-         muIter->innerTrack()->hitPattern().pixelLayersWithMeasurement()>=1 &&
-         muIter->numberOfMatches()>1)
-      {
+      if (muisGmTm && mu_pt>muPrim_ptMin && abs(mu_eta)<muPrim_aetaMax && muisTightPrompt &&
+          muPrim_itNHits>10 && muIter->dB()<muPrim_dBMax && mu_vtxPass && 
+          muIter->innerTrack()->hitPattern().pixelLayersWithMeasurement()>=1 &&
+          muIter->numberOfMatches()>1) {
          isProperlyIsolatedMu=false;
          
-         if(((doRelIso && mu_RelIso<muPrim_RelIsoMax)||(!doRelIso && mu_TrkIso<muPrim_TrkIsoMax)))
+         if (((doRelIso && mu_RelIso<muPrim_RelIsoMax)||(!doRelIso && mu_TrkIso<muPrim_TrkIsoMax)))
             isProperlyIsolatedMu=true;
             
          //
          // Record the muon quantities:
          //
-         if(isProperlyIsolatedMu)
-         {
+         if (isProperlyIsolatedMu) {
             mucnt_Prim++;
             lp4=muIter->p4();
             lQ=muIter->charge();
@@ -858,7 +831,6 @@ void PerformSelection::muonSelection()
             else
                lTotIso=mu_TrkIso;
 
-            //Added for synchronization 04/10/2012
             //lstream << "mu_tight trkIso " << mu_TrkIso << " relIso " << mu_RelIso << endl;
             lstream << "mu_tight trkIso " << muIter->trackIso() << " ecalIso " << muIter->ecalIso() << " hcalIso " << muIter->hcalIso() << " relIso " << mu_RelIso << " rho "<< *rhoHandle << endl;
             lstreams.push_back(lstream.str());
@@ -869,11 +841,10 @@ void PerformSelection::muonSelection()
       //
       // Apply The Loose Cuts
       //
-      if(muIter->isGlobalMuon() && mu_pt>muLoose_ptMin && abs(mu_eta)<muLoose_aetaMax &&
-         ((doRelIso && mu_RelIso<muLoose_RelIsoMax)||(!doRelIso && mu_TrkIso<muLoose_TrkIsoMax)))
-      {
+      if (muIter->isGlobalMuon() && mu_pt>muLoose_ptMin && abs(mu_eta)<muLoose_aetaMax &&
+          ((doRelIso && mu_RelIso<muLoose_RelIsoMax)||(!doRelIso && mu_TrkIso<muLoose_TrkIsoMax))) {
          mucnt_Loose++;
-         //Added for synchronization 04/10/2012
+
          //lstream << "mu_loose trkIso " << mu_TrkIso << " relIso " << mu_RelIso << endl;
          lstream << "mu_loose trkIso " << muIter->trackIso() << " ecalIso " << muIter->ecalIso() << " hcalIso " << muIter->hcalIso() << " relIso " << mu_RelIso << " rho "<< *rhoHandle << endl;
          lstreams.push_back(lstream.str());
@@ -888,8 +859,7 @@ void PerformSelection::muonSelection()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::eleClear()
-{
+void PerformSelection::eleClear() {
    elcnt_Prim=0;
    elcnt_Loose=0;
    el_convPass_a=false;
@@ -901,20 +871,18 @@ void PerformSelection::eleClear()
 }
 
 //______________________________________________________________________________
-void PerformSelection::eleSelection()
-{
+void PerformSelection::eleSelection() {
    const vector< pat::Electron >::const_iterator elEnd = electronHandle->end();
-   for (vector< pat::Electron >::const_iterator elIter = electronHandle->begin(); elEnd != elIter; ++elIter )
-   { 
+   for (vector< pat::Electron >::const_iterator elIter = electronHandle->begin(); elEnd != elIter; ++elIter) { 
       el_pt=elIter->p4().Pt();
       el_eta=elIter->eta();
       el_phi=elIter->phi();
       el_aetasc=abs(elIter->superCluster()->eta());
 
       el_aetaPass=false;
-      if(abs(el_eta)<elPrim_aetaMax)
+      if (abs(el_eta)<elPrim_aetaMax)
          el_aetaPass=true; //noscv
-      if(el_aetasc<elPrim_aetascExcludeMax && el_aetasc>elPrim_aetascExcludeMin)
+      if (el_aetasc<elPrim_aetascExcludeMax && el_aetasc>elPrim_aetascExcludeMin)
          el_aetaPass=false;
 
       //
@@ -926,31 +894,29 @@ void PerformSelection::eleSelection()
       el_aDeltaPhi=abs(elIter->deltaPhiSuperClusterTrackAtVtx());
       el_aDeltaEta=abs(elIter->deltaEtaSuperClusterTrackAtVtx());
       el_HoE=elIter->hadronicOverEm();
-      if(elIter->isEB())
-      {
+      if (elIter->isEB()) {
          el_PassEIDcnt=0;
-         if(el_sigmaIetaIeta<elPrim_sigmaIetaIetaMaxEB)
+         if (el_sigmaIetaIeta<elPrim_sigmaIetaIetaMaxEB)
             el_PassEIDcnt++;
-         if(el_aDeltaPhi<elPrim_aDeltaPhiMaxEB)
+         if (el_aDeltaPhi<elPrim_aDeltaPhiMaxEB)
             el_PassEIDcnt++;
-         if(el_aDeltaEta<elPrim_aDeltaEtaMaxEB)
+         if (el_aDeltaEta<elPrim_aDeltaEtaMaxEB)
             el_PassEIDcnt++;
-         if(el_HoE<elPrim_HoEMaxEB)
+         if (el_HoE<elPrim_HoEMaxEB)
             el_PassEIDcnt++;
       }
-      if(elIter->isEE())
-      {
+      if (elIter->isEE()) {
          el_PassEIDcnt=0;
-         if(el_sigmaIetaIeta<elPrim_sigmaIetaIetaMaxEE)
+         if (el_sigmaIetaIeta<elPrim_sigmaIetaIetaMaxEE)
             el_PassEIDcnt++;
-         if(el_aDeltaPhi<elPrim_aDeltaPhiMaxEE)
+         if (el_aDeltaPhi<elPrim_aDeltaPhiMaxEE)
             el_PassEIDcnt++;
-         if(el_aDeltaEta<elPrim_aDeltaEtaMaxEE)
+         if (el_aDeltaEta<elPrim_aDeltaEtaMaxEE)
             el_PassEIDcnt++;
-         if(el_HoE<elPrim_HoEMaxEE)
+         if (el_HoE<elPrim_HoEMaxEE)
             el_PassEIDcnt++;
       }
-      if(el_PassEIDcnt==4 ) el_PassEID=true;
+      if (el_PassEIDcnt==4 ) el_PassEID=true;
 
       //
       // calculate the relative/tracker isolation of the electron
@@ -968,13 +934,12 @@ void PerformSelection::eleSelection()
       //
       // Apply The Primary Cuts
       //
-      if(el_pt>elPrim_ptMin && el_aetaPass && 
+      if (el_pt>elPrim_ptMin && el_aetaPass && 
          ((doRelIso && el_RelIso<elPrim_RelIsoMax)||(!doRelIso && el_TrkIso<elPrim_TrkIsoMax)) && 
          el_PassEID  &&
          abs(elIter->dB())<elPrim_dBMax &&
          elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits()==0 &&
-         !((abs(elIter->convDist())<0.02)&&(abs(elIter->convDcot())<0.02)) ) 
-      {
+         !((abs(elIter->convDist())<0.02)&&(abs(elIter->convDcot())<0.02))) {
          elcnt_Prim++;
          lp4=elIter->p4();
          lQ=elIter->charge();
@@ -988,7 +953,6 @@ void PerformSelection::eleSelection()
          else
             lTotIso=el_TrkIso;
 
-         //Added for synchronization 04/10/2012
          //lstream << "el_tight trkIso " << el_TrkIso << " relIso " << el_RelIso << endl;
          lstream << "el_tight trkIso " << elIter->dr03TkSumPt() << " ecalIso " << elIter->dr03EcalRecHitSumEt() << " hcalIso " << elIter->dr03HcalTowerSumEt() << " relIso " << el_RelIso << " rho "<< *rhoHandle << endl;
          lstreams.push_back(lstream.str());
@@ -1015,40 +979,36 @@ void PerformSelection::eleSelection()
       //
       el_PassEIDcnt=-1;
       el_PassEID=false;
-      if( elIter->isEB())
-      {
+      if (elIter->isEB()) {
          el_PassEIDcnt=0;
-         if(el_sigmaIetaIeta<elLoose_sigmaIetaIetaMaxEB)
+         if (el_sigmaIetaIeta<elLoose_sigmaIetaIetaMaxEB)
             el_PassEIDcnt++;
-         if(el_aDeltaPhi<elLoose_aDeltaPhiMaxEB)
+         if (el_aDeltaPhi<elLoose_aDeltaPhiMaxEB)
             el_PassEIDcnt++;
-         if(el_aDeltaEta<elLoose_aDeltaEtaMaxEB)
+         if (el_aDeltaEta<elLoose_aDeltaEtaMaxEB)
             el_PassEIDcnt++;
-         if(el_HoE<elLoose_HoEMaxEB)
+         if (el_HoE<elLoose_HoEMaxEB)
             el_PassEIDcnt++;
       }
 
-      if(elIter->isEE())
-      {
+      if (elIter->isEE()) {
          el_PassEIDcnt=0;
-         if(el_sigmaIetaIeta<elLoose_sigmaIetaIetaMaxEE)
+         if (el_sigmaIetaIeta<elLoose_sigmaIetaIetaMaxEE)
             el_PassEIDcnt++;
-         if(el_aDeltaPhi<elLoose_aDeltaPhiMaxEE)
+         if (el_aDeltaPhi<elLoose_aDeltaPhiMaxEE)
             el_PassEIDcnt++;
-         if(el_aDeltaEta<elLoose_aDeltaEtaMaxEE)
+         if (el_aDeltaEta<elLoose_aDeltaEtaMaxEE)
             el_PassEIDcnt++;
-         if(el_HoE<elLoose_HoEMaxEE)
+         if (el_HoE<elLoose_HoEMaxEE)
             el_PassEIDcnt++;
       }
-      if(el_PassEIDcnt==4) el_PassEID=true;
+      if (el_PassEIDcnt==4) el_PassEID=true;
 
-      if(el_pt>elLoose_ptMin && el_aetaPass && 
-         ((doRelIso && el_RelIso<elLoose_RelIsoMax)||(!doRelIso && el_TrkIso<elLoose_TrkIsoMax)) &&
-         el_PassEID) 
-      {
+      if (el_pt>elLoose_ptMin && el_aetaPass && 
+          ((doRelIso && el_RelIso<elLoose_RelIsoMax)||(!doRelIso && el_TrkIso<elLoose_TrkIsoMax)) &&
+          el_PassEID) {
          elcnt_Loose++;
 
-         //Added for synchronization 04/10/2012
          //lstream << "el_loose trkIso " << el_TrkIso << " relIso " << el_RelIso << endl;
          lstream << "el_loose trkIso " << elIter->dr03TkSumPt() << " ecalIso " << elIter->dr03EcalRecHitSumEt() << " hcalIso " << elIter->dr03HcalTowerSumEt() << " relIso " << el_RelIso << " rho "<< *rhoHandle << endl;
          lstreams.push_back(lstream.str());
@@ -1068,8 +1028,7 @@ void PerformSelection::eleSelection()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::metSelection()
-{
+void PerformSelection::metSelection() {
    METp4=METHandle->front().p4();
    MET_Et=METp4.E();
 }
@@ -1080,8 +1039,7 @@ void PerformSelection::metSelection()
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void PerformSelection::getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void PerformSelection::getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
    iEvent.getByLabel(triggerSource, triggerHandle);
    assert ( triggerHandle.isValid() );
 
@@ -1111,8 +1069,7 @@ void PerformSelection::getCollections(const edm::Event& iEvent, const edm::Event
 
 
 //______________________________________________________________________________
-void PerformSelection::setlp4LV()
-{
+void PerformSelection::setlp4LV() {
    lp4LV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
 }
 
@@ -1123,64 +1080,110 @@ void PerformSelection::setlp3()
 }
 
 //______________________________________________________________________________
-void PerformSelection::setj1p4LV()
-{
+void PerformSelection::setj1p4LV() {
    j1p4LV.SetPxPyPzE(jp4[0].Px(),jp4[0].Py(),jp4[0].Pz(),jp4[0].E());
 }
 
 //______________________________________________________________________________
-void PerformSelection::setj2p4LV()
-{
+void PerformSelection::setj2p4LV() {
    j2p4LV.SetPxPyPzE(jp4[1].Px(),jp4[1].Py(),jp4[1].Pz(),jp4[1].E());
 }
 
 //______________________________________________________________________________
-void PerformSelection::setjjp3()
-{
+void PerformSelection::setjjp3() {
    jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
 }
 
 //______________________________________________________________________________
-void PerformSelection::setMETp4LV()
-{
+void PerformSelection::setMETp4LV() {
    METp4LV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
 }
 
 //______________________________________________________________________________
-void PerformSelection::setDRlj1()
-{
+void PerformSelection::setDRlj1() {
    DRlj1=lp4LV.DeltaR(j1p4LV);
 }
 
 //______________________________________________________________________________
-void PerformSelection::setDRlj2()
-{
+void PerformSelection::setDRlj2() {
    DRlj2=lp4LV.DeltaR(j2p4LV);
 }
 
 //______________________________________________________________________________
-void PerformSelection::setThetalj1pj2()
-{
+void PerformSelection::setThetalj1pj2() {
    Thetalj1pj2=lp3.Dot(jjp3)/(lp3.Mag()*jjp3.Mag());
 }
 
 //______________________________________________________________________________
-pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi)
-{
+void PerformSelection::saveGenPart() {
+   map<size_t,pair<int,int> > memMap;
+   int counter = 0;
+   for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle, ++counter) {
+      memMap[size_t((const reco::Candidate*)(& *genParticle))] = make_pair(counter, -1);
+      if (genParticle->status() == 3) {
+         GenParticle g;
+         g.charge = genParticle->charge();
+         math::XYZTLorentzVectorD const& p4t = genParticle->p4();
+         TLorentzVector p4(p4t.px(), p4t.py(), p4t.pz(), p4t.energy());
+         g.p4 = p4;
+         g.vtx = genParticle->vertex();
+         g.pdgId = genParticle->pdgId();
+         g.status = genParticle->status();
+         g.particlePosition = size_t((const reco::Candidate*)(& *genParticle));
+         g.numberOfMothers = genParticle->numberOfMothers();
+         g.numberOfDaughters = genParticle->numberOfDaughters();
+         for (unsigned int i = 0; i<genParticle->numberOfMothers(); i++) {
+            g.motherPositions.push_back(size_t(genParticle->mother(i)));
+         }
+         for (unsigned int i = 0; i<genParticle->numberOfDaughters(); i++) {
+            g.motherPositions.push_back(size_t(genParticle->daughter(i)));
+         }
+         EvtNtuple->genParticleCollection.push_back(g);
+         memMap[size_t((const reco::Candidate*)(& *genParticle))].second = EvtNtuple->genParticleCollection.size() - 1;
+/*
+          for (reco::GenParticleCollection::const_iterator genParticle2 = genParticleHandle->begin();genParticle2 != genParticleHandle->end();++genParticle2) {
+             if (genParticle->mother(0)==(const reco::Candidate*)(& *genParticle2))
+             //if (matchGenParticles(genParticle->mother(0),(const reco::Candidate*)(& *genParticle2)))
+                cout << "Found mother match at: " << genParticle->mother(0) << endl;
+          }
+*/
+       }
+   }
+   for(unsigned int i=0; i< EvtNtuple->genParticleCollection.size(); i++) {
+      EvtNtuple->genParticleCollection[i].particlePosition = memMap[EvtNtuple->genParticleCollection[i].particlePosition].second;
+      for(unsigned int j=0; j<EvtNtuple->genParticleCollection[i].motherPositions.size(); j++) {
+         EvtNtuple->genParticleCollection[i].motherPositions[j] = memMap[EvtNtuple->genParticleCollection[i].motherPositions[j]].second; 
+      }
+      for(unsigned int j=0; j<EvtNtuple->genParticleCollection[i].daughterPositions.size(); j++) {
+         EvtNtuple->genParticleCollection[i].daughterPositions[j] = memMap[EvtNtuple->genParticleCollection[i].daughterPositions[j]].second;
+      }
+   }
+}
+
+//______________________________________________________________________________
+bool PerformSelection::matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2) {
+   if (p1->status()==p2->status() && p1->pdgId()==p2->pdgId() && p1->charge()==p2->charge()) {
+      cout << "sfsg1" << endl;
+      math::XYZTLorentzVectorD const& tl1p4 = p1->p4();
+      math::XYZTLorentzVectorD const& tl2p4 = p2->p4();
+      if (tl1p4.px()==tl2p4.px() && tl1p4.py()==tl2p4.py() && tl1p4.pz()==tl2p4.pz() && tl1p4.energy()==tl2p4.energy())
+         return true;
+   }
+   return false;
+}
+
+//______________________________________________________________________________
+pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
    double bestDeltaR = 9999;
    int bestPDGID = 0;
    TLorentzVector theGenObject(0,0,0,0);
    TLorentzVector theBestGenObject(0,0,0,0);
-   for(reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle) {
-      if(genParticle->pt()==0)
-      {
+   for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle) {
+      if (genParticle->pt()==0)
          continue;
-      }
-      if(genParticle->status() == 3)
-      {
+      if (genParticle->status() == 3) {
          theGenObject.SetPxPyPzE(genParticle->px(),genParticle->py(),genParticle->pz(),genParticle->energy());
-         if(reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi) < bestDeltaR)
-         {
+         if (reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi) < bestDeltaR) {
             bestDeltaR = reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi);
             theBestGenObject = theGenObject;
             bestPDGID = genParticle->pdgId();
@@ -1194,8 +1197,7 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi)
 //______________________________________________________________________________
 void PerformSelection::incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS],
                                         int MuPass[NCUTS][NJETS], int LpPass[NCUTS][NJETS], 
-                                        int MuPresent, int ElPresent)
-{
+                                        int MuPresent, int ElPresent) {
    if ( (MuPresent>=1)&&(ElPresent==0) ) {
       MuPass[nCut][nJets]++;
       LpPass[nCut][nJets]++;
@@ -1207,50 +1209,32 @@ void PerformSelection::incrementCounter(int nCut, int nJets, int ElPass[NCUTS][N
 }
 
 //______________________________________________________________________________
-void PerformSelection::printEventInformation(int cLevel, bool muon) {
-   if (cLevel == 0) {
-      //cout << "----------" << endl << "Event Number: " << eventNumber << endl;
-      cout << "Event " << eventNumber;
-      //cout << "NJets: " << jcnt_tot << endl << "Primary Muons: " << mucnt_Prim << endl
-      //     << "Primary Electrons: " << elcnt_Prim << endl << "Loose Muons: " << mucnt_Loose << endl
-      //     << "Loose Electrons: " << elcnt_Loose << endl;
-      cout << " NJets " << jcnt_tot << " Primary Muons " << mucnt_Prim << " Primary Electrons " << elcnt_Prim
-           << " Loose Muons " << mucnt_Loose << " Loose Electrons " << elcnt_Loose;
-
-   }
-   else if (cLevel == 1) {
-      //cout << "Pass c1:NJets with " << jcnt_tot << " jets" << endl;
+void PerformSelection::printEventInformation(bool print, int cLevel, bool muon) {
+   if (!print) return;
+   if (cLevel == 0)
+      cout << "Event " << eventNumber << " NJets " << jcnt_tot << " Primary Muons " << mucnt_Prim
+           << " Primary Electrons " << elcnt_Prim << " Loose Muons " << mucnt_Loose << " Loose Electrons " 
+           << elcnt_Loose;
+   else if (cLevel == 1)
       cout << " c1";
-   }
    else if (cLevel == 2) {
-      if (muon) {
-         //cout << "Pass c2:PrimaryEl/Mu && PVFound with " << mucnt_Prim << " primary muons" << endl;  
+      if (muon)
          cout << " c2";  
-      }
-      else if (!muon) {
-         //cout << "Pass c2:PrimaryEl/Mu && PVFound with " << elcnt_Prim << " primary electrons" << endl;  
+      else if (!muon)
          cout << " c2";  
-      }
-      else {
-         //cout << "\tWARNING::Unknown primary lepton type!" << endl;
+      else
          cout << " WARNING::Unknown primary lepton type!";
-      }
    }
-   else if (cLevel == 3) {
-      //cout << "Pass c3:NotLooseMu with " << mucnt_Loose << " loose muons"<< endl;
+   else if (cLevel == 3)
       cout << " c3";
-   }
-   else if (cLevel == 4) {
-      //cout << "Pass c4:NotLooseEl with " << elcnt_Loose << " loose electrons" << endl;
+   else if (cLevel == 4)
       cout << " c4";
-   }
-   else if (cLevel == 5) {
+   else if (cLevel == 5)
+      cout << " c5";
+   else if (cLevel == 6)
       cout << endl;
-   }
-   else {
+   else
       cout << "\tWARNING::Unknown cut level!" << endl;
-   }
-
 }
 
 //______________________________________________________________________________
