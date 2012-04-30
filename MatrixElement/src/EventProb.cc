@@ -67,6 +67,10 @@ void EventProb::setBounds(unsigned param, double lower, double upper)
       throw std::runtime_error
          ("Parameter subscript out of range in EventProb::setBounds()");
 
+   // Make sure the lower bound !=0
+   if ( lower<1.0 ) {
+     lower=1.0;
+   }
    // correct volume if a value exists already
    if (m_bounds[param].second)
    {

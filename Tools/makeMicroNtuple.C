@@ -383,48 +383,48 @@ void createAllMicroNtuples(){
 //   listOfMicroNtuples.push_back(MyStr("WW_FullCutsV01DEF*","testmicroWW_FullCutsV01DEF",false,false,false));
 //   listOfMicroNtuples.push_back(MyStr("WpJ_FullCutsV01JESp1s*","testmicroWpJ_FullCutsV01JESp1s",false,false,false));
 
-  //Diboson
-//   listOfMicroNtuples.push_back(MyStr("WW_FullCutsV01DEF*","microWW_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WW_FullCutsV01JESp1s*","microWW_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WW_FullCutsV01JESm1s*","microWW_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ_FullCutsV01DEF*","microWZ_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ_FullCutsV01JESp1s*","microWZ_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ_FullCutsV01JESm1s*","microWZ_FullCutsV01JESm1s",false,false,false));
+  ////Diboson
+  listOfMicroNtuples.push_back(MyStr("WW_StandardCutsDEF*","microWW_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WW_StandardCutsJESp1s*","microWW_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WW_StandardCutsJESm1s*","microWW_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsDEF*","microWZ_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsJESp1s*","microWZ_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsJESm1s*","microWZ_StandardCutsJESm1s",false,false,false));
   
-//   //// Wjets, Zjets
-//   listOfMicroNtuples.push_back(MyStr("WpJ_FullCutsV01DEF*","microWpJ_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WpJ_FullCutsV01JESp1s*","microWpJ_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WpJ_FullCutsV01JESm1s*","microWpJ_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("ZpJ_FullCutsV01DEF*","microZpJ_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("ZpJ_FullCutsV01JESp1s*","microZpJ_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("ZpJ_FullCutsV01JESm1s*","microZpJ_FullCutsV01JESm1s",false,false,false));
+  //// Wjets, Zjets
+  listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsDEF*","microWpJ_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsJESp1s*","microWpJ_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsJESm1s*","microWpJ_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsDEF*","microZpJ_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsJESp1s*","microZpJ_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsJESm1s*","microZpJ_StandardCutsJESm1s",false,false,false));
 
 
   //// Top
-  //  listOfMicroNtuples.push_back(MyStr("TTbar_MG_FullCutsV01DEF*","microTTbar_MG_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_FullCutsV01JESp1s*","microTTbar_MG_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_FullCutsV01JESm1s*","microTTbar_MG_FullCutsV01JESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsDEF*","microTTbar_MG_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsJESp1s*","microTTbar_MG_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsJESm1s*","microTTbar_MG_StandardCutsJESm1s",false,false,false));
 
-//   listOfMicroNtuples.push_back(MyStr("STopT_T_FullCutsV01DEF*","microSTopT_T_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_T_FullCutsV01JESp1s*","microSTopT_T_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_T_FullCutsV01JESm1s*","microSTopT_T_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_FullCutsV01DEF*","microSTopT_Tbar_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_FullCutsV01JESp1s*","microSTopT_Tbar_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_FullCutsV01JESm1s*","microSTopT_Tbar_FullCutsV01JESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsDEF*","microSTopT_T_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsJESp1s*","microSTopT_T_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsJESm1s*","microSTopT_T_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsDEF*","microSTopT_Tbar_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsJESp1s*","microSTopT_Tbar_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsJESm1s*","microSTopT_Tbar_StandardCutsJESm1s",false,false,false));
 
-//   listOfMicroNtuples.push_back(MyStr("STopS_T_FullCutsV01DEF*","microSTopS_T_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_T_FullCutsV01JESp1s*","microSTopS_T_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_T_FullCutsV01JESm1s*","microSTopS_T_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_FullCutsV01DEF*","microSTopS_Tbar_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_FullCutsV01JESp1s*","microSTopS_Tbar_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_FullCutsV01JESm1s*","microSTopS_Tbar_FullCutsV01JESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsDEF*","microSTopS_T_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsJESp1s*","microSTopS_T_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsJESm1s*","microSTopS_T_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsDEF*","microSTopS_Tbar_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsJESp1s*","microSTopS_Tbar_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsJESm1s*","microSTopS_Tbar_StandardCutsJESm1s",false,false,false));
 
-//   listOfMicroNtuples.push_back(MyStr("STopTW_T_FullCutsV01DEF*","microSTopTW_T_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_T_FullCutsV01JESp1s*","microSTopTW_T_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_T_FullCutsV01JESm1s*","microSTopTW_T_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_FullCutsV01DEF*","microSTopTW_Tbar_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_FullCutsV01JESp1s*","microSTopTW_Tbar_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_FullCutsV01JESm1s*","microSTopTW_Tbar_FullCutsV01JESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsDEF*","microSTopTW_T_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsJESp1s*","microSTopTW_T_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsJESm1s*","microSTopTW_T_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsDEF*","microSTopTW_Tbar_StandardCutsDEF",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsJESp1s*","microSTopTW_Tbar_StandardCutsJESp1s",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsJESm1s*","microSTopTW_Tbar_StandardCutsJESm1s",false,false,false));
 
 
 
@@ -441,9 +441,9 @@ void createAllMicroNtuples(){
 //   listOfMicroNtuples.push_back(MyStr("QCDEl_BCtoE30to80_90Evt*","micro_QCDEl_BCtoE30to80_90Evt",false,false,false));
 //   listOfMicroNtuples.push_back(MyStr("QCDEl_BCtoE80to170_75Evt*","micro_QCDEl_BCtoE80to170_75Evt",false,false,false));
 
-  //// Data
-  listOfMicroNtuples.push_back(MyStr("SingleMu_77100Evt*","micro_SingleMu_77100Evt",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("SingleEl_51900Evt*","micro_SingleEl_51900Evt",false,false,false));
+//   //// Data
+//   listOfMicroNtuples.push_back(MyStr("SingleMu_77100Evt*","micro_SingleMu_77100Evt",false,false,false));
+//   listOfMicroNtuples.push_back(MyStr("SingleEl_51900Evt*","micro_SingleEl_51900Evt",false,false,false));
 
 
 //   //// Higgs 

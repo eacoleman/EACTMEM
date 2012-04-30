@@ -30,7 +30,7 @@ class EventProb2Jet : public EventProb
       void makeFortranArray_qqvl(double array[][4]) const;
       void makeFortranArray_qlvWq(double array[][4],TLorentzVector) const;
 
-      const TransferFunction& getBTF() const {return m_tf;}
+      const TransferFunction& getDefaultTF() const {return m_tf;}
 
       virtual bool onSwitch();
 

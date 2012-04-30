@@ -36,14 +36,19 @@ using namespace std;
 #define MAXJOBS 20000
 
 const bool isData=false; //use when setting .cfg file parameters.
-const bool isLocalDataset=true; //use to set .cfg file parameters when running on a locally stored dataset.
+const bool isLocalDataset=false; //use to set .cfg file parameters when running on a locally stored dataset.
+//const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet";//Use when working with a local dataset.
 const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.
 const bool useBackupLogs=false; //a feature used to restore logs, if they were damaged or lost (set to true and run CreateJobs, StartJobs and UpdateJobStatus).
 //const TString designation="MC"; //Set to MC or Data for actual runs
 //const TString designation="Data";
 const TString designation="MCEWKFall11_mu";
 //const TString designation="MCEWKFall11_el";
+//const TString designation="MCEWKPATSpring12_mu";
 
+//const TString designation="MCVBFPATGen";
+
+const bool useCfguser_remote_dir = false;// take the user_remote_dir from the TemplateCfg or construct it dynamically (will be pnfsstoragedir/designation/setName_VX_RepY_PtZ, should not be present in the TemplateCfg)
 
 void ManipulateSingleCRABJobSet () {
 }
@@ -439,13 +444,13 @@ bool returnNJobs(const char* statusLogName, int& NJobs, bool isStatusLog) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////    Main Functions  ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, bool _createAtFNAL)
+void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, const char* _publishDataName, bool _createAtFNAL)
 ///Creates the config cfgs/_setName.cfg and a log in logs/_setName.log
 ///Each set of jobs can have X Repetitions (i.e. the number of times you launch this set of jobs), Y Parts and version Z (i.e. if your resubmission fails enough time you can recreate).
 ///Log lines are of the form RepX PtY Label = Value
 ///For MC/Data events_per_job/lumis_per_job = _nEvtsOrLumisPerJob, total_number_of_events/number_of_jobs = _nEvtsOrJobsTotal
 {
-  TString Command, tempStr, tempName, processeddir, logFileName, cfgFileName, workingdir, remotedir, remotedir_base, outputdir, joblog, token;
+  TString Command, tempStr, tempName, processeddir, logFileName, cfgFileName, workingdir, remotedir, remotedir_base, outputdir, joblog, token, runselection, publishDataName;
   int NVersion, NJobsTot, NJobsProcessed, NParts, StartJob, EndJob;
   bool firstJobCreation=false;
   char line[500];
@@ -459,8 +464,12 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
   tempName="crab_"+tempName;
   // cout << "2" << endl;
   ifstream inTemplateFile(tempName);
-  cout << "TemplateName = " << tempName << endl;
-//   cout << inTemplateFile.good() << endl;
+  //  cout << "TemplateName = " << tempName << endl;
+  if ( !inTemplateFile.good() ) {
+    cerr << "ERROR: Unable to find the template file" << endl;
+    cout << "Exiting" << endl;
+    exit(1); 
+  }
 
   logFileName=".log";
   logFileName=designation+logFileName;
@@ -570,7 +579,8 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
     outCfgFile << "lumis_per_job = " << _nEvtsOrLumisPerJob << endl;
     outCfgFile << "number_of_jobs = " << _nEvtsOrJobsTotal << endl;
     outCfgFile << "lumi_mask = " << _lumimask << endl;
-    if ( _runselection!="0" ) {
+    runselection=_runselection;
+    if ( runselection!="0" ) {
       outCfgFile << "runselection = " << _runselection << endl;
     }
   } else {
@@ -583,7 +593,17 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
   outCfgFile << "datasetpath = " << _dataset << endl;
   outCfgFile << "[USER]" << endl;
   outCfgFile << "##ui_working_dir = " << workingdir << endl;
-  outCfgFile << "##user_remote_dir = " << remotedir_base << endl;
+  if ( !useCfguser_remote_dir ) {
+    outCfgFile << "##user_remote_dir = " << remotedir_base << endl;
+  }
+  publishDataName=_publishDataName;
+  if ( publishDataName=="NONE" ) {
+    outCfgFile << "publish_data = 0" << endl;
+    outCfgFile << "publish_data_name = NONE" << endl;
+  } else {
+    outCfgFile << "publish_data = 1" << endl;
+    outCfgFile << "publish_data_name = " << _publishDataName << endl;
+  }
   outCfgFile << "### End Job Specific Settings ###" << endl;
 
 
@@ -621,8 +641,11 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
     Command=" -create -cfg cfgs/"+Command;
     Command=outputdir+Command;
     Command = " -USER.ui_working_dir "+Command;
-    Command=remotedir+Command;
-    Command = "crab -USER.user_remote_dir "+Command;
+    if ( !useCfguser_remote_dir ) {
+      Command=remotedir+Command;
+      Command = "-USER.user_remote_dir "+Command;
+    }
+    Command = "crab "+Command;
     cout << "Command = " << Command << endl;
     system(Command);
     Command = "_Rep1_Pt1.txt";
@@ -691,8 +714,11 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
 	  Command=" -create -cfg cfgs/"+Command;
 	  Command=outputdir+Command;
 	  Command = " -USER.ui_working_dir "+Command;
-	  Command=remotedir+Command;
-	  Command = "crab -USER.user_remote_dir "+Command;
+	  if ( !useCfguser_remote_dir ) {
+	    Command=remotedir+Command;
+	    Command = "-USER.user_remote_dir "+Command;
+	  }
+	  Command = "crab "+Command;
 	  cout << "Command = " << Command << endl;
 	  system(Command);
 	  Command = ".txt";
@@ -789,18 +815,19 @@ void StartJobs (const char* _setName)
 
 }
 
-
-void UpdateJobStatus(const char* _setName)
+void UpdateJobStatus(const char* _setName, bool printJobStatus=true)
 ///Checks the Status and records/updates it in log/processName_log.log
 {
   cout << "UPDATING JOB STATUS" << endl;
-  bool jobCompleted[MAXJOBS];
   bool jobResubmit[MAXJOBS];
-  char logline[500];
+  bool jobCompleted[MAXJOBS];
+  bool jobCompletedNotExtracted[MAXJOBS];
+  char logline[1000];
   char I_char[5];
   TString strID, strEND, strSTATUS, strACTION, strExeExitCode, strJobExitCode;
-  TString Command, FullDir, strUnfinished, strResubmit, strExtract, strCheckJobs, logFileName;
+  TString Command, FullDir, strUnfinished, strResubmit, strExtract, strCheckJobs, strE_HOST, logFileName;
   int intJobExitCode, NParts, NReps, StartJob, EndJob, NJobsTot;
+  int iterator;
   logFileName=".log";
   logFileName=designation+logFileName;
   logFileName="_"+logFileName;
@@ -844,34 +871,45 @@ void UpdateJobStatus(const char* _setName)
       ///Record which jobs may need to be extracted (exit code 0) and which may need to be resubmitted (done with a different exit code)
       ifstream inJobLogFile("logs/jobLog.txt");
       while ( inJobLogFile.good() ) {
-	inJobLogFile.getline(logline,500);
+	inJobLogFile.getline(logline,1000);
 	istrstream str(logline);
 	str >> strID >> strEND >> strSTATUS >> strACTION >> strExeExitCode >> strJobExitCode;
 	if ( (strID=="ID")&&(strEND=="END")&&(strSTATUS=="STATUS")&&(strACTION=="ACTION")&&(strExeExitCode=="ExeExitCode")&&(strJobExitCode=="JobExitCode") ) {
-	  inJobLogFile.getline(logline,500);
-	  for (Int_t i=1; i<(NJobsTot+1);i++) {
-	    jobCompleted[i]=false;
-	    jobResubmit[i]=false;
-	    inJobLogFile.getline(logline,500);
+	  ///Begin parsing the relevant portion of the output
+	  inJobLogFile.getline(logline,1000);//skip the first line: "----..."
+	  iterator=0;
+	  while ( iterator < NJobsTot ) {
+	    iterator++;
+	    //cout << "iterator=" << iterator << endl;
+	    inJobLogFile.getline(logline,1000);
 	    istrstream str2(logline);
-	    str2 >> strID >> strEND >> strSTATUS >> strACTION >> strExeExitCode >> intJobExitCode;
+	    str2 >> strID >> strEND >> strSTATUS >> strACTION >> strExeExitCode >> intJobExitCode >> strE_HOST;
+	    //cout << " intJobExitCode = " << intJobExitCode << endl;
 	    if ( strID=="--------------------------------------------------------------------------------" ) {
-	      inJobLogFile.getline(logline,500);
-	      istrstream str2b(logline);
-	      str2b >> strID >> strEND >> strSTATUS >> strACTION >> strExeExitCode >> intJobExitCode;
-	    }
-	    if ( ((strSTATUS=="Done")||(strSTATUS=="Cleared"))&&
-		 (i>=StartJob)&&
-		 (i<=EndJob)
-		 ) {
-	      //cout << "Updating the log file" << endl;
-	      if ( intJobExitCode==0 ) {
-		jobCompleted[i]=true;
-	      } else {
-		//cout << "strID=" << strID << " strJobExitCode=" << strJobExitCode << endl;
-		if ( strJobExitCode!="JobExitCode" ) {
-		  //cout << "mark the job for resubmission" << endl;
-		  jobResubmit[i]=true;
+	      /// skip this line
+	      iterator=iterator-1;
+	    } else {
+	      jobResubmit[iterator]=false;
+	      jobCompleted[iterator]=false;
+	      jobCompletedNotExtracted[iterator]=false;
+	      //cout << "strSTATUS=" << strSTATUS << " , StartJob=" << StartJob << " , EndJob=" << EndJob << endl;
+	      if ( ((strSTATUS=="Done")||(strSTATUS=="Cleared")||(strSTATUS=="Retrieved"))&&
+		   (iterator>=StartJob)&&
+		   (iterator<=EndJob)
+		   ) {
+		//cout << "Updating the log file" << endl;
+		if ( intJobExitCode==0 ) {
+		  //cout << "mark the job as completed" << endl;
+		  jobCompleted[iterator]=true;
+		  if ( strSTATUS!="Retrieved" ) {
+		    jobCompletedNotExtracted[iterator]=true;
+		  }
+		} else {
+		  //cout << "strID=" << strID << " strJobExitCode=" << strJobExitCode << endl;
+		  if ( strE_HOST.Length()!=0 ) {
+		    //cout << "mark the job for resubmission" << endl;
+		  jobResubmit[iterator]=true;
+		  }
 		}
 	      }
 	    }
@@ -887,18 +925,68 @@ void UpdateJobStatus(const char* _setName)
       //cout << "unedited strUnfinished = " << strUnfinished << endl;
       editJobString(jobCompleted,strUnfinished,false,StartJob,EndJob);//remove the completed jobs
       //cout << "edited strUnfinished = " << strUnfinished << endl;
-      editJobString(jobCompleted,strExtract,true,StartJob,EndJob);//add the completed jobs
+      editJobString(jobCompletedNotExtracted,strExtract,true,StartJob,EndJob);//add the unextracted jobs
       editJobString(jobResubmit,strResubmit,true,StartJob,EndJob);//add the jobs to resubmit
       getStrLine(logFileName,rep,pt,"JobsUnfinished",strUnfinished,true);
       getStrLine(logFileName,rep,pt,"JobstoResubmit",strResubmit,true);
       getStrLine(logFileName,rep,pt,"JobstoExtract",strExtract,true);
+      if ( printJobStatus ) {
+	cout << "Jobs Which Haven't Been Extracted (e.g. Starting, Running, etc.): " << strUnfinished << endl;
+	cout << "Jobs To Resubmit: " << strResubmit << endl;
+	cout << "Jobs To Extract: " << strExtract << endl;
+      }
     }
   }
 
 }
 
 
-void ResubmitJobs(const char* _setName, bool resubmitAllUnfinished)
+void PreResubmissionCleanup(const char* _setName)
+/// Compensates for bugs in CRAB
+/// Removes FullDir + "/res/" + CMSSW_N.stderr, CMSSW_N.stdout, crab_fjr_N.xml; where N=each job to resubmit
+/// Can be used after resubmission (but before extraction/reextraction)
+{
+  TString tempstr, jobN, Command, FullDir, resDir, strResubmit, jobList, logFileName;
+  logFileName=".log";
+  logFileName=designation+logFileName;
+  logFileName="_"+logFileName;
+  logFileName=_setName+logFileName;
+  logFileName="logs/"+logFileName;
+  int NParts, NReps;
+  ///Check the status & store it in the jobLog.txt file
+  getIntLine(logFileName,0,0,"NParts",NParts,false);
+  getIntLine(logFileName,0,0,"NRepetitions",NReps,false);
+  for (Int_t rep=1; rep<(NReps+1);rep++) {
+    for (Int_t pt=1; pt<(NParts+1);pt++) {
+      getStrLine(logFileName,rep,pt,"FullDir",FullDir,false);
+      resDir="/res/";
+      resDir=FullDir+resDir;
+      getStrLine(logFileName,rep,pt,"JobstoResubmit",strResubmit,false);
+      jobList = makeJobInputString(strResubmit);
+      //cout << "jobList=" << jobList << endl;
+      cout << "Cleaning up Following Jobs: " << jobList << endl;
+      if ( jobList!="None" ) {
+	istrstream jobstr(strResubmit);
+	tempstr=",";
+	while ( tempstr=="," ) {
+	  jobstr >> jobN >> tempstr;
+	  Command = ".*";
+	  Command = jobN+Command;
+	  Command = "*_"+Command;
+	  Command = resDir+Command;
+	  Command = "rm "+Command;
+	  //cout << "Command = " << Command << endl;
+	  system(Command);
+	}
+      }
+    }
+  }
+
+}
+
+
+
+void ResubmitJobs(const char* _setName, bool resubmitAllUnfinished, bool doforceResubmit=false)
 /// Resubmits the jobs already scheduled as in need of resubmisssion or all unfinished jobs
 {
   cout << "RESUBMITTING JOBS" << endl;
@@ -926,11 +1014,15 @@ void ResubmitJobs(const char* _setName, bool resubmitAllUnfinished)
 	tempstr = FullDir;
 	tempstr = " -c " + tempstr;
 	tempstr = jobList + tempstr;
-	//To avoid issues with CRAB, furst get the output for the jobs you're about to resubmit
+	//To avoid issues with CRAB, first get the output for the jobs you're about to resubmit
 	Command = "crab -getoutput " + tempstr;
 	cout << "Command = " << Command << endl;
 	system(Command);
-	Command = "crab -resubmit " + tempstr;
+	if ( doforceResubmit ) {
+	  Command = "crab -forceResubmit " + tempstr;
+	} else {
+	  Command = "crab -resubmit " + tempstr;
+	}
 	cout << "Command = " << Command << endl;
 	system(Command);
 	strResubmit="";
@@ -979,6 +1071,30 @@ void ExtractJobs (const char* _setName, bool extractEverything)
     }
   }
 }
+
+void PublishJobs(const char* _setName)
+/// Publishes all completed jobs
+{
+  cout << "PUBLISHING ALL COMPLETED JOBS" << endl;
+  TString Command, FullDir, logFileName;
+  logFileName=".log";
+  logFileName=designation+logFileName;
+  logFileName="_"+logFileName;
+  logFileName=_setName+logFileName;
+  logFileName="logs/"+logFileName;
+  int NParts, NReps;
+  getIntLine(logFileName,0,0,"NParts",NParts,false);
+  getIntLine(logFileName,0,0,"NRepetitions",NReps,false);
+  for (Int_t rep=1; rep<(NReps+1);rep++) {
+    for (Int_t pt=1; pt<(NParts+1);pt++) {
+      getStrLine(logFileName,rep,pt,"FullDir",FullDir,false);
+      Command = "crab -publish -c " + FullDir;
+      cout << "Command = " << Command << endl;
+      system(Command);
+    }
+  }
+}
+
 
 void CopyJobs(const char* _setName)
 /// Copies the results to the /res directory

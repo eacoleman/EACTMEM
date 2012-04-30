@@ -1,7 +1,7 @@
 // Author: Ricardo Eusebi
 // TAMU, eusebi@physics.tamu.edu
 // Created: March 13, 2011.
-// $Id: EventProbDefs.hh,v 1.1 2011/03/16 18:35:46 eusebi Exp $
+// $Id: EventProbDefs.hh,v 1.2 2011/03/24 20:23:33 ilyao Exp $
 
 #ifndef EVENTPROBDEFS_HH
 #define EVENTPROBDEFS_HH
@@ -32,12 +32,16 @@ namespace DEFS {
       TTbar   = 250,
       
       // Related to single vector boson production
-      WLight  = 300,
-      ZLight  = 301,
-      Wbb     = 302,
-      Wc      = 303,
-      Wgg     = 304,
-      
+      WJets   = 300,
+      WLg     = 301,
+      Wgg     = 302,
+      WLL     = 303,
+      Wbb     = 304,
+      Wc      = 305,
+      ZLight  = 306,
+      WLight  = 399,
+
+
       // Related to double vector boson production
       WW      = 400,
       WZ      = 401,

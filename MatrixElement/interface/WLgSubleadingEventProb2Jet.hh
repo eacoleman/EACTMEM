@@ -1,12 +1,13 @@
-#ifndef WBBEVENTPROB2JET_HH
-#define WBBEVENTPROB2JET_HH
+#ifndef WLGSUBLEADINGEVENTPROB2JET_HH
+#define WLGSUBLEADINGEVENTPROB2JET_HH
 
 #include "EventProb2jet.hh"
 
-class WbbEventProb2Jet : public EventProb2Jet
+class WLgSubleadingEventProb2Jet : public EventProb2Jet
 {
    public:
-      WbbEventProb2Jet(Integrator& integrator, const TransferFunction& tf);
+      WLgSubleadingEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf, const TransferFunction& gluontf);
+      virtual void setDynamicBounds();
 
    protected:
       virtual bool onSwitch();
@@ -14,8 +15,10 @@ class WbbEventProb2Jet : public EventProb2Jet
       virtual double matrixElement() const;
       virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
+      virtual double totalTF() const;
 
    private:
+      const TransferFunction& m_gluonTF;
       bool swapPartonMom;
       double alphas_process;
 

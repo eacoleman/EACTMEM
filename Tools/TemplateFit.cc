@@ -2,6 +2,8 @@
 #include <fstream>
 #include <strstream>
 #include <vector>
+#include <stdio.h>
+#include <stdlib.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TNtuple.h>
@@ -9,6 +11,7 @@
 #include <TH1.h>
 #include <TLegend.h>
 #include <TCanvas.h>
+#include <TFrame.h>
 #include <TStyle.h>
 
 #include "TObjArray.h"
@@ -31,9 +34,15 @@ void TemplateFit(const char* TitleName, const char* TreeName, const char* VarNam
   int nModes = 0;
   readModes(inModes,modenames,infilenames,evtcounts,colors,nModes);
   cout << "nModes=" << nModes << endl;
+  TString label;
+  double BinWidth=(VarMax-VarMin)/NBins;
+  char BinWidth_char[5];
+  sprintf(BinWidth_char,"%4.1f",BinWidth);
+
 
   //Create the canvas
   TCanvas *cnv = new TCanvas("cnv","cnv",10,10,500,500);
+  //TFrame *frm = new TFrame(10,10,300,300);
   TLegend *lgnd;
   lgnd = new TLegend(0.6,0.6,0.90,0.9);
   lgnd->SetFillColor(kWhite);
@@ -176,9 +185,35 @@ void TemplateFit(const char* TitleName, const char* TreeName, const char* VarNam
   if ( XAxisName!=0 ) {
     h[0]->SetXTitle(XAxisName);
   }
-  h[0]->SetYTitle("Events");
+  //h[0]->GetXaxis()->Draw("same");
+  h[0]->GetXaxis()->SetTicks("+-");
+  h[0]->GetXaxis()->SetTitleOffset(1.2);
+
+  label="GeV";
+  label=BinWidth_char+label;
+  label="Events/"+label;
+  h[0]->SetYTitle(label);
+  cnv->SetLeftMargin(0.17);
+  h[0]->GetYaxis()->SetTitleOffset(-2.10);
+  h[0]->GetYaxis()->Draw("same");
+  h[0]->GetYaxis()->SetTicks("+-");
+
+  ///Draw chi2/ndof:
+  char text[30];
+  double chi2dof=(fit->GetChisquare())/(NBins+1.0);
+  sprintf(text,"#chi^{2}/ndof = %5.2f",chi2dof);
+  TLatex* tl = new TLatex(0.62,0.45,text);
+  tl->SetTextSize(1./25.);
+  tl->SetTextFont(132);
+  tl->SetNDC();
+  tl->Draw();
 
   lgnd->Draw();
+  cnv->Draw();
+
+  cout << "FitChiSquare/ndof=" << chi2dof << endl;
+  cout << "FitProbatility=" << fit->GetProb() << endl;
+
 
   /// Save the output
   if ( SaveName!=0 ) {

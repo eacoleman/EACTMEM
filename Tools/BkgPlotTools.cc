@@ -969,24 +969,31 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 //   VarMin[1]=-15.0;
 //   VarMax[1]=5.0;
 
-//  TString AddRest="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(WmT>40.0)&&(abs(lEta)<2.1)&&(lPt>25.0)&&(j1pT>30.0)&&(j2pT>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(DEtajj<1.5)&&(Ptjj>40.0)&&(0.3<(j1pT/Mjj))&&((j1pT/Mjj)<0.7)&&(MET>30.0) )";
-//   TString inModes_mu = "Data /uscms/home/ilyao/nobackup/Summer11/428Reduced/MEResults/microNtuples/flatmicro_SingleMu_77100Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/flatmicroWpJ_FullCutsV01DEF.root 0.0003849171 2 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/flatmicroWW_FullCutsV01DEF.root 0.0000101753087377979123 3";
-  TString inModes_mu = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleMu_77100Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_FullCutsV01DEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_FullCutsV01DEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_FullCutsV01DEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_FullCutsV01DEF.root 0.0000101753087377979123 4";
-  TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
-  TString inModes_el = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleEl_51900Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_FullCutsV01DEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_FullCutsV01DEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_FullCutsV01DEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_FullCutsV01DEF.root 0.0000101753087377979123 4";
-  TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+  TString inModes_mu = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleMu_77100Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_StandardCutsDEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_StandardCutsDEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_StandardCutsDEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_StandardCutsDEF.root 0.0000101753087377979123 4";
+  TString inModes_el = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleEl_51900Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_StandardCutsDEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_StandardCutsDEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_StandardCutsDEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_StandardCutsDEF.root 0.0000101753087377979123 4";
+
+  ///// FullCutsV01
+//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+
+  TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+  TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+
+
 
   for (Int_t n=0; n<NVars; n++) {
     TString SaveName="_mu.png";
+    //TString SaveName="_mu.root";
     SaveName=VarName[n]+SaveName;
-    SaveName="~ilyao/public_html/MEValidation/Scaled_"+SaveName;
+    SaveName="~ilyao/public_html/MEValidation/StandardCuts_"+SaveName;
     TString Title = VarName[n];
     Title = " Muons : " + Title;
     Title = TitleName + Title;
     Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_mu,inModes_mu,SaveName,scaleMCtoData,drawMCwithErrors);
     SaveName="_el.png";
+    //SaveName="_el.root";
     SaveName=VarName[n]+SaveName;
-    SaveName="~ilyao/public_html/MEValidation/Scaled_"+SaveName;
+    SaveName="~ilyao/public_html/MEValidation/StandardCuts_"+SaveName;
     Title = VarName[n];
     Title = " Electrons : " + Title;
     Title = TitleName + Title;

@@ -45,7 +45,7 @@ void WcEventProb2Jet::setDynamicBounds()
    const float lowPercent = .01;
    const float highPercent = .02;
    double lower, upper;
-   getBTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
+   getDefaultTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
                       highPercent, lower, upper);
    std::cout << "\tSetting jet 1 bounds from " << lower << " to " << upper
              << std::endl;
@@ -398,14 +398,14 @@ double WcEventProb2Jet::totalTF() const
 {
   /*
   if (debug ==0){
-    cout<<"  getBTF().getTF="<< getBTF().getTF(getPartonColl()->getFullJet(0),
+    cout<<"  getDefaultTF().getTF="<< getDefaultTF().getTF(getPartonColl()->getFullJet(0),
 					      getMeasuredColl()->getFullJet(0))
 	<<" m_gluonTF.getTF="<< m_gluonTF.getTF(getPartonColl()->getFullJet(1),
 						getMeasuredColl()->getFullJet(1))<<endl;
   }
   */
 
-  return getBTF().getTF (getPartonColl()->getFullJet(0),
+  return getDefaultTF().getTF (getPartonColl()->getFullJet(0),
 			 getMeasuredColl()->getFullJet(0))
        * m_gluonTF.getTF(getPartonColl()->getFullJet(1),
 		         getMeasuredColl()->getFullJet(1));

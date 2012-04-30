@@ -93,14 +93,18 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::STopT;
       if( str == "STopTW")
 	return  DEFS::PhysicsProcess::STopTW;
-      if( str == "Wbb")
-	return  DEFS::PhysicsProcess::Wbb;
       if( str == "Wcc")
 	return  DEFS::PhysicsProcess::Wcc;
-      if( str == "Wjets")
-	return  DEFS::PhysicsProcess::Wjets;
-      if( str == "WLight")
-	return  DEFS::PhysicsProcess::WLight;
+      if( str == "WJets")
+	return  DEFS::PhysicsProcess::WJets;
+      if( str == "WLg")
+	return  DEFS::PhysicsProcess::WLg;
+      if( str == "Wgg")
+	return  DEFS::PhysicsProcess::Wgg;
+      if( str == "WLL")
+	return  DEFS::PhysicsProcess::WLL;
+      if( str == "Wbb")
+	return  DEFS::PhysicsProcess::Wbb;
       if( str == "QCDMu")
 	return  DEFS::PhysicsProcess::QCDMu;
       if( str == "QCDEl_Pt30to80")
@@ -200,14 +204,18 @@ namespace DEFS {
 	return string("STopT");
       else if (type == STopTW)
 	return string("STopTW");
-      else if (type == Wjets)
-	return string("Wjets");
-      else if (type == Wbb)
-	return string("Wbb");
       else if (type == Wcc) 
 	return string("Wcc");
-      else if (type == WLight) 
-	return string("WLight");
+      else if (type == WJets)
+	return string("WJets");
+      else if (type == WLg)
+	return string("WLg");
+      else if (type == Wgg)
+	return string("Wgg");
+      else if (type == WLL)
+	return string("WLL");
+      else if (type == Wbb)
+	return string("Wbb");
       else if (type == QCDMu)
 	return string("QCDMu");
       else if (type == QCDEl_Pt30to80)

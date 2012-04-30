@@ -23,30 +23,30 @@ using namespace std;
 
 #include <TAMUWW/Tools/GlobalTools428.cc>
 
-void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, const char* rootInputDir, const char* rootInputName, const char* OutputName, int FirstEvt, int NEvtsPerJob, int FirstJob, int NJobs)
-//// Creates a condor launcher (ScriptDir/CondorLauncher_ScriptName) script and a .csh script used by it (ScriptDir/CondorScript_ScriptName.csh).
+void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffix, const char* rootInputDir, const char* rootInputName, const char* OutputName, int NEvtsPerJob, int FirstJob, int NJobs, bool createDisjointJobScript = false, const char* disjointJobsString="")
+//// Creates a condor launcher (ScriptDir/CondorLauncher_ScriptNameSuffix) script and a .csh script used by it (ScriptDir/CondorScript_ScriptNameSuffix.csh).
 //// These can be used from any directory, provided it has cteq5l.tbl & cteq6l.tbl libraries (normally located in TAMUWW/PDFs/Pdfdata/), a /log subdirectory as well as run_MatrixElement macro in it. Note: rootInputDir is the location of the .root input file as seen from this directory.
-//// Running the CondorLauncher will generate root files of the form ScriptName_CondorRun#.root (with #=FirstJob,..,FirstJob+NJobs-1).
+//// Running the CondorLauncher will generate root files of the form OutputName#.root (with #=FirstJob,...,FirstJob+NJobs-1).
+//// To create a script which will run over disjoint jobs set createDisjointJobScript=false and input disjointJobsString= JobA , JobB , ... , JobZ. Note, the job numbers & corresponding events are the same as in the continuos string, you are simply specifying explicitly which jobs to run over (through a series of if statements).
 {
   ofstream outlauncher, outscript;
   TString tempStr;
-  tempStr=ScriptName;
+  tempStr=ScriptNameSuffix;
   tempStr="CondorLauncher_" + tempStr;
   tempStr=ScriptDir + tempStr;
   outlauncher.open(tempStr,ios::out);
   tempStr=".csh";
-  tempStr=ScriptName + tempStr;
+  tempStr=ScriptNameSuffix + tempStr;
   tempStr="CondorScript_" + tempStr;
   tempStr=ScriptDir + tempStr;
   outscript.open(tempStr,ios::out);
 
   //Temporary Variables
-  //  TString str1;
-  char FirstEvt_C[6], NEvtsPerJob_C[6], FirstJob_C[6], NJobs_C[6];
-  sprintf(FirstEvt_C,"%i",FirstEvt);
-  sprintf(NEvtsPerJob_C,"%i",NEvtsPerJob);
-  sprintf(FirstJob_C,"%i",FirstJob);
-  sprintf(NJobs_C,"%i",NJobs);
+//   char NEvtsPerJob_C[6], FirstJob_C[6], NJobs_C[6];
+//   //sprintf(FirstEvt_C,"%i",FirstEvt);
+//   sprintf(NEvtsPerJob_C,"%i",NEvtsPerJob);
+//   sprintf(FirstJob_C,"%i",FirstJob);
+//   sprintf(NJobs_C,"%i",NJobs);
 
   /// Make the launcher
   outlauncher << "universe = vanilla" << endl;
@@ -55,47 +55,142 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptName, con
   outlauncher << "Should_Transfer_Files = YES" << endl;
   outlauncher << "WhenToTransferOutput = ON_EXIT" << endl;
   outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement, cteq5l.tbl, cteq6l.tbl" << endl;
-  //outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement" << endl;
-  outlauncher << "Output = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).stdout" << endl;
-  outlauncher << "Error = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).stderr" << endl;
-  outlauncher << "Log = log/CondorME_" << ScriptName << "_C$(Cluster)_$(Process).log" << endl;
+  outlauncher << "Output = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stdout" << endl;
+  outlauncher << "Error = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stderr" << endl;
+  outlauncher << "Log = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).log" << endl;
   outlauncher << "notify_user = none" << endl;
-  outlauncher << "Arguments = $(Process) " << NEvtsPerJob_C << endl;
-  outlauncher << "Queue " << NJobs_C << endl;
+  outlauncher << "Arguments = $(Process) " << NEvtsPerJob << endl;
+  outlauncher << "Queue " << NJobs << endl;
 
   /// Make the internal script
   outscript << "#! /bin/csh" << endl;
   outscript << "echo \"Starting\" " << endl;
   outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
   outscript << "source /uscmst1/prod/sw/cms/cshrc uaf" << endl;
-  // outscript << "source /uscmst1/prod/grid/gLite_SL5.csh" << endl;
-  // outscript << "setenv SCRAM_ARCH slc5_ia32_gcc434"<< endl;//only needed for CMSSW_3_X_Y
   outscript << "pwd" << endl;
   //  outscript << "cmsenv" << endl;
   outscript << "eval `scram runtime -csh` " << endl;
   outscript << "cd -" << endl;
-  outscript << "echo \"Process=$argv[1]\"" << endl;
-  outscript << "echo \"NEvts=$argv[2]\"" << endl;
-  outscript << "@ StartEvt = $argv[2] * $argv[1] + " << FirstEvt_C << endl;
-  outscript << "echo \"StartEvt=NEvts*Process+" << FirstEvt_C << "=$StartEvt\"" << endl;
-  outscript << "@ StartJob = $argv[1] + " << FirstJob_C << endl;
-  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$StartJob.root EvtTree " << NEvtsPerJob_C << " $StartEvt 1" << endl;
+  outscript << "@ JobNumber = $argv[1]" << endl;
+  outscript << "echo \"JobNumber=$JobNumber\"" << endl;
+  outscript << "@ NEvtsPerJob = $argv[2]" << endl;
+  outscript << "echo \"NEvtsPerJob=$NEvtsPerJob\"" << endl;
+  outscript << "@ TheJob = " << FirstJob << " + $JobNumber" << endl;
+
+  if ( createDisjointJobScript ) {
+    outscript << "###### START: Explicitly Setting Starting Job Number ######" << endl;
+    int nJob=0;
+    TString nj;
+    TString temp="temp";
+    istrstream djstr(disjointJobsString);
+    while ( temp!="" ) {
+      djstr >> nj >> temp;
+      outscript << "if ( $JobNumber == " << nJob << " ) then" << endl;
+      outscript << "   @ TheJob = " << nj << endl;
+      outscript << "endif" << endl;
+      nJob++;
+    }
+
+    if ( nJob!=NJobs ) { cerr << "Error: the job count in the disjointJobsString does not correspond to NJobs" << endl; }
+    outscript << "###### FINISH: Explicitly Setting Starting Job Number ######" << endl;
+  }
+  //  outscript << "@ StartEvt = $argv[2] * $argv[1] + " << FirstEvt_C << endl;
+  // outscript << "echo \"StartEvt=NEvts*Process+" << FirstEvt_C << "=$StartEvt\"" << endl;
+  // outscript << "@ StartJob = $argv[1] + " << FirstJob_C << endl;
+
+  outscript << "echo \"TheJob=$TheJob\"" << endl;
+  outscript << "@ StartEvt = $TheJob * $NEvtsPerJob" << endl;
+  outscript << "echo \"StartEvt=$StartEvt\"" << endl;
+
+
+  //  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$StartJob.root EvtTree " << NEvtsPerJob_C << " $StartEvt 1" << endl;
+
+  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root EvtTree $NEvtsPerJob $StartEvt 1" << endl;
   outscript << "echo \"Finished\"" << endl;
 
   tempStr="chmod +x " + tempStr;
   system(tempStr);  
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+void CheckCONDOROutput(const char* inFilePrefix, TString & invalidFileStr, int & nInvalidFiles, int cntBeg, int cntEnd, bool checkMETreePresence=true, bool suppressoutput=false) {
+//// Checks if files of the form inFilePrefixCNT.root (CNT=cntBeg,...,cntEnd) are present and returns the string of missing files.
+  TString Command, infilename, sstr;
+  char line[500];
+  char tempCnt[5];
+  int nMissingFiles=0;
+  int nEmptyFiles=0;
+  bool emptyTree=true;
+  //cout << "cntBeg=" << cntBeg << " cntEnd=" << cntEnd << endl;
+  for (Int_t i=cntBeg; i<(cntEnd+1);i++) {
+    infilename=".root";
+    sprintf(tempCnt,"%i",i);
+    infilename=tempCnt+infilename;
+    infilename=inFilePrefix+infilename;
+    Command=" >& tempErr.txt";
+    Command=infilename+Command;
+    Command="ls "+Command;
+    //cout << "Command= " << Command << endl;
+    system(Command);
+    ifstream infile("tempErr.txt");
+    infile.getline(line,500);
+    sstr = line;
+    if (sstr.Contains("No such file or directory") ) {
+      ///We're missing the ith file
+      if ( invalidFileStr!="" ) {
+	invalidFileStr=invalidFileStr+" , ";
+      }
+      invalidFileStr=invalidFileStr+tempCnt;
+      nMissingFiles++;
+    } else { 
+      if ( checkMETreePresence ) {
+	//cout << "1" << endl;
+	TFile* testfile = new TFile(infilename);
+	//cout << "2" << endl;
+	TTree* TestTree = (TTree*)testfile->Get("METree");
+	//cout << "3" << endl;
+	emptyTree=true;
+	if (TestTree) {
+	  emptyTree=false;
+	}
+	delete TestTree;
+	testfile->Close();
+	delete testfile;
+	//cout << "4" << endl;
+	if ( emptyTree ) {
+	  //cout << "Empty File" << endl;
+	  ///The i'th file is empty
+	  if ( invalidFileStr!="" ) {
+	    invalidFileStr=invalidFileStr+" , ";
+	  }
+	  invalidFileStr=invalidFileStr+tempCnt;
+	  nEmptyFiles++;
+	}
+      }      
+    }
+
+  }
+  if  ( !suppressoutput ) {
+    cout << "NMissing=" << nMissingFiles;
+    if ( checkMETreePresence ) { cout << ", NEmpty=" << nEmptyFiles; }
+    cout << " | invalidfiles : " <<  invalidFileStr << endl;
+  }
+  nInvalidFiles=nMissingFiles+nEmptyFiles;
+
+}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void CreateMultipleCondorScripts_runME(const char* inputmode, const char* ScriptDir, const char* rootInputDir, int StartProcess, int EndProcess, int NEvtsPerJob, bool runOnJESShifted=false )
+void CreateMultipleCondorScripts_runME(const char* inputmode, const char* ScriptDir, const char* rootInputDir, int StartProcess, int EndProcess, int NEvtsPerJob, bool runOnJESShifted=false, bool checkCompletedJobsInstead=false, const char* completedOutputDir="", bool createCompletionScripts = false)
 //// Calls CreateCondorScript_runME for each process, with the option of running on JES shifted files as well (runOnJESShifted=true).
 //// ScriptName=LME+PLabel+suffix, OutputName=PLabel+ME+suffix; where suffix="DEF","JESp1s","JESm1s"
 //// rootInputName=PLabel+inputmode+inputsuffix, where inputsuffix="_outfile.root" and potentially "_JESp1s.root", "_JESm1s.root"
+//// Set checkCompletedJobsInstead=true to check completed jobs (in the directory completedOutputDir) and set createCompletionScripts=true to create scripts to rerun the missing jobs.
 {
   TString scriptBaseName,rootinputBaseName,outputBaseName;
-  int nEntries,nJobs,nEvtsPerJob;
+  int nJobs,nEvtsPerJob;
+  double nEntries;
   InitializeLabels(PLabel,CLabel);
 
   for (Int_t np=StartProcess; np<(EndProcess+1);np++) {
@@ -111,25 +206,42 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
     TTree* InTree = (TTree*)infile->Get("EvtTree");
     nEntries=InTree->GetEntries();
     cout << "nEntries=" << nEntries ;
-    nJobs=nEntries/NEvtsPerJob;
+    nJobs=ceil(nEntries/NEvtsPerJob);
     nEvtsPerJob=NEvtsPerJob;
-    //when the number of events is less than number of jobs, run on all of the events
-    if ( nJobs==0 ) {
-      nJobs=1;
-      nEvtsPerJob=nEntries;
-    }
+//     //when the number of events is less than number of events in a single job, run on all of the events
+//     if ( nJobs==1 ) {
+//       nEvtsPerJob=nEntries;
+//     }
 
     cout << ", nJobs=" << nJobs << endl;
+    // cout << "CreateCondorScript_runME(" << ScriptDir << "," << scriptBaseName << "DEF" << "," << rootInputDir << "," << rootinputBaseName << "_outfile.root" << "," << outputBaseName << "DEF" << ",0," << nEvtsPerJob << ",0," << nJobs << ");" << endl;
 
-    CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",0,nEvtsPerJob,0,nJobs);
-    if ( runOnJESShifted ) {
-      CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESp1s",rootInputDir,rootinputBaseName+"_JESp1s.root",outputBaseName+"JESp1s",0,nEvtsPerJob,0,nJobs);
-      CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",0,nEvtsPerJob,0,nJobs);
+    if ( !checkCompletedJobsInstead ) {
+      CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",nEvtsPerJob,0,nJobs);
+      if ( runOnJESShifted ) {
+	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESp1s",rootInputDir,rootinputBaseName+"_JESp1s.root",outputBaseName+"JESp1s",nEvtsPerJob,0,nJobs);
+	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",nEvtsPerJob,0,nJobs);
+      }
+    } else {
+      //cout << "Checking Completed Jobs" << endl;
+      TString infileprefix="DEF";
+      infileprefix=inputmode+infileprefix;
+      infileprefix=PLabel[np]+infileprefix;
+      infileprefix=completedOutputDir+infileprefix;
+      //cout << "infileprefix=" << infileprefix << endl;
+      TString invalidFileStr;
+      int nInvalidFiles;
+
+      CheckCONDOROutput(infileprefix,invalidFileStr,nInvalidFiles,0,nJobs-1,true,false);
+      if ( createCompletionScripts && (nInvalidFiles>0) ) {
+	cout << "Creating the completion script" << endl;
+	CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF"+"Completion",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",nEvtsPerJob,0,nInvalidFiles,true,invalidFileStr);
+      }
     }
-  }
-  
-}
 
+  }
+
+}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 

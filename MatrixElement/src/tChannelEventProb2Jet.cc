@@ -34,7 +34,7 @@ extern "C"
 // ------------------------------------------------------------------
 tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf) :
   EventProb2Jet(DEFS::EP::TopT, integrator, 3,4, btf), 
-  m_lightTF(lighttf), 
+  m_lightTF(lighttf), //m_lightTF is stored locally (in the .hh)
   swapPartonMom(false), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
@@ -65,11 +65,12 @@ void tChannelEventProb2Jet::setTopMassAndWidth(double mTop) {
 
 // ------------------------------------------------------------------
 void tChannelEventProb2Jet::setDynamicBounds()
+///Add this function when using more than one TF
 {
    const float lowPercent = .01;
    const float highPercent = .02;
    double lower, upper;
-   getBTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
+   getDefaultTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
                       highPercent, lower, upper);
    std::cout << "\tSetting jet 1 bounds from " << lower << " to " << upper
              << std::endl;
@@ -286,8 +287,9 @@ void tChannelEventProb2Jet::getScale(double& scale1, double& scale2) const
 
 // ------------------------------------------------------------------
 double tChannelEventProb2Jet::totalTF() const
+/// Add when using more than one TF
 {
-   return getBTF().getTF(getPartonColl()->getFullJet(0),
+   return getDefaultTF().getTF(getPartonColl()->getFullJet(0),
                          getMeasuredColl()->getFullJet(0))
       * m_lightTF.getTF(getPartonColl()->getFullJet(1),
                         getMeasuredColl()->getFullJet(1));

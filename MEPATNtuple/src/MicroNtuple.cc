@@ -214,8 +214,8 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs,
   probs.wh     *=      bProb[0]  *  bProb[1];
   probs.hww    *= (1 - bProb[0]) * (1 - bProb[1]);
   probs.schan  *=      bProb[0]  *  bProb[1];
-  probs.tchan  *=  bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
-  probs.tchan2 *=  bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
+  probs.tchan  *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
+  probs.tchan2 *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
   probs.tt     *=       bProb[0] * bProb[1];
   probs.wlight *= (1 - bProb[0]) * (1 - bProb[1]); 
   probs.zlight *= (1 - bProb[0]) * (1 - bProb[1]);

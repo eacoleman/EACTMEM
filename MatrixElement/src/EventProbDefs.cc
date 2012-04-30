@@ -35,16 +35,20 @@ namespace DEFS {
 	return string("TTbar");
       
       // Related to single vector boson production
-      else if (type == WLight)
-	return string("WLight");
       else if (type == ZLight)
 	return string("ZLight");
-      else if (type == Wbb)
-	return string("Wbb");
       else if (type == Wc)
 	return string("Wc");
+      else if (type == WJets)
+	return string("WJets");
+      else if (type == WLg)
+	return string("WLg");
       else if (type == Wgg)
 	return string("Wgg");
+      else if (type == WLL)
+	return string("WLL");
+      else if (type == Wbb)
+	return string("Wbb");
       
       // Related to double vector boson production
       else if (type == WW)

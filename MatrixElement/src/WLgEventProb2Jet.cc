@@ -1,11 +1,11 @@
-// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
-// Created : 07/20/2010
-// The diagrams can be compared with madgraph using the processes 
-// g u -> e+ ve d g for W+, g d -> e- ve~ u g for W-
-// $Id: WLightEventProb2Jet.cc,v 1.2 2010/12/21 17:53:16 ilyao Exp $
+///////////////////////////////////////////////////////////////////////
+//// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
+//// The diagrams can be compared with madgraph using the processes:
+//// LightGluon final state (leading for this process): g u -> e+ ve d g (u g -> e+ ve d g) for W+, g d -> e- ve~ u g (d g -> e- ve~ u g) for W-
+//////////////////////////////////////////////////////////////////////
 
 //  This package libraries
-#include "TAMUWW/MatrixElement/interface/WLightEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/WLgEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
 #include "TAMUWW/MatrixElement/interface/MEConstants.hh"
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
@@ -18,23 +18,23 @@
 //#define MADGRAPH_TEST
 
 using std::vector;
-using std::cout;
-using std::endl;
+// using std::cout;
+// using std::endl;
 
 #ifdef MADGRAPH_TEST
 extern "C" {
-  void* wpjjm_ (double[][4], const double*, double*); // lepQ>0 
-  void* wpjjaltm_ (double[][4], const double*, double*); // for the u g -> e+ ve d g instead of g u -> e+ ve d g (lepQ>0) 
-  void* wmjjm_ (double[][4], const double*, double*); // lepQ<0 
-  void* wmjjaltm_ (double[][4], const double*, double*); // for the d g -> e- ve~ u g instead of g d -> e- ve~ u g (lepQ<0) 
-  // to use the altm_ functions for just one iteration initialize the swapPartonMom(true) in WLightEventProb2Jet
+  void* wpjjm_ (double[][4], const double*, double*); // lepQ>0, g u -> e+ ve d g
+  void* wpjjaltm_ (double[][4], const double*, double*); // lepQ>0, u g -> e+ ve d g instead
+  void* wmjjm_ (double[][4], const double*, double*); // lepQ<0, g d -> e- ve~ u g
+  void* wmjjaltm_ (double[][4], const double*, double*); // lepQ<0, d g -> e- ve~ u g instead 
+  // to use the altm_ functions for just one iteration set swapPartonMom=true in onSwitch
 }
 #endif
 
 // ------------------------------------------------------------------
-WLightEventProb2Jet::WLightEventProb2Jet(Integrator& integrator,
-                                   const TransferFunction& tf) :
-  EventProb2Jet(DEFS::EP::WLight, integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+WLgEventProb2Jet::WLgEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf, const TransferFunction& gluontf) :
+  EventProb2Jet(DEFS::EP::WLg, integrator, 3, 4, lighttf), m_gluonTF(gluontf),
+  swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
 
 }
@@ -43,7 +43,7 @@ WLightEventProb2Jet::WLightEventProb2Jet(Integrator& integrator,
 
 
 // ------------------------------------------------------------------
-void WLightEventProb2Jet::changeVars(const vector<double>& parameters)
+void WLgEventProb2Jet::changeVars(const vector<double>& parameters)
 {
    TLorentzVector& jet1 = getPartonColl()->getJet(0);
    TLorentzVector& jet2 = getPartonColl()->getJet(1);
@@ -57,7 +57,26 @@ void WLightEventProb2Jet::changeVars(const vector<double>& parameters)
 }
 
 // ------------------------------------------------------------------
-double WLightEventProb2Jet::matrixElement() const
+void WLgEventProb2Jet::setDynamicBounds()
+///Add this function when using more than one TF
+{
+   const float lowPercent = .01;
+   const float highPercent = .02;
+   double lower, upper;
+   getDefaultTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
+                      highPercent, lower, upper);
+   std::cout << "\tSetting jet 1 bounds from " << lower << " to " << upper
+             << std::endl;
+   setBounds(1, lower, upper);
+   m_gluonTF.getBounds(getMeasuredColl()->getFullJet(1), lowPercent,
+                       highPercent, lower, upper);
+   std::cout << "\tSetting jet 2 bounds from " << lower << " to " << upper
+             << std::endl;
+   setBounds(2, lower, upper);
+}
+
+// ------------------------------------------------------------------
+double WLgEventProb2Jet::matrixElement() const
 {
 
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
@@ -261,12 +280,20 @@ double WLightEventProb2Jet::matrixElement() const
   //double mhiggs = m_massHiggs; // to get rid of the const identifier
   double mw  = wMass; // to get rid of the const identifier
   double an = 0;
-  if (partons->getLepCharge() > 0)
-    wpjjm_(fortranArray , &mw, &an);
-  //wpjjaltm_(fortranArray , &mw, &an);
-  else
-    wmjjm_(fortranArray , &mw, &an);
-  //wmjjaltm_(fortranArray , &mw, &an);
+  if (partons->getLepCharge() > 0) {
+    if ( !swapPartonMom ) {
+      wpjjm_(fortranArray , &mw, &an);
+    } else {
+      wpjjaltm_(fortranArray , &mw, &an);
+    }
+  } else {
+    if ( !swapPartonMom ) {
+      wmjjm_(fortranArray , &mw, &an);
+    } else {
+      wmjjaltm_(fortranArray , &mw, &an);
+    }
+  }
+
   cout << "Madgraph answer= " << an << endl;
    
   // Exit right away
@@ -279,8 +306,9 @@ double WLightEventProb2Jet::matrixElement() const
 }
 
 // ------------------------------------------------------------------
-void WLightEventProb2Jet::setPartonTypes() const
-{   
+void WLgEventProb2Jet::setPartonTypes() const
+{  
+
   if ( getPartonColl()->getLepCharge() > 0 ) {
     if ( !swapPartonMom ) {
       getMeasuredColl()->setParton1Type(kGluon);
@@ -299,10 +327,11 @@ void WLightEventProb2Jet::setPartonTypes() const
       getMeasuredColl()->setParton2Type(kGluon);
     }
   }
+
 }
 
 // ------------------------------------------------------------------
-void WLightEventProb2Jet::getScale(double& scale1, double& scale2) const
+void WLgEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
    double scale = getPartonColl()->sHat();
    if (scale < 0)
@@ -312,9 +341,19 @@ void WLightEventProb2Jet::getScale(double& scale1, double& scale2) const
 }
 
 // ------------------------------------------------------------------
+double WLgEventProb2Jet::totalTF() const
+/// Add when using more than one TF
+{
+   return getDefaultTF().getTF(getPartonColl()->getFullJet(0),
+                         getMeasuredColl()->getFullJet(0))
+      * m_gluonTF.getTF(getPartonColl()->getFullJet(1),
+                        getMeasuredColl()->getFullJet(1));
+}
+
+// ------------------------------------------------------------------
 
 
-bool WLightEventProb2Jet::onSwitch()
+bool WLgEventProb2Jet::onSwitch()
 {
   
   switch (getLoop()) {

@@ -1,12 +1,12 @@
-#ifndef WBBEVENTPROB2JET_HH
-#define WBBEVENTPROB2JET_HH
+#ifndef WZTOBBEVENTPROB2JET_HH
+#define WZTOBBEVENTPROB2JET_HH
 
 #include "EventProb2jet.hh"
 
-class WbbEventProb2Jet : public EventProb2Jet
+class WZtobbEventProb2Jet : public EventProb2Jet
 {
    public:
-      WbbEventProb2Jet(Integrator& integrator, const TransferFunction& tf);
+      WZtobbEventProb2Jet(Integrator& integrator, const TransferFunction& tf);
 
    protected:
       virtual bool onSwitch();
@@ -14,11 +14,9 @@ class WbbEventProb2Jet : public EventProb2Jet
       virtual double matrixElement() const;
       virtual void setPartonTypes() const;
       virtual void getScale(double& scale1, double& scale2) const;
-
    private:
       bool swapPartonMom;
       double alphas_process;
-
 };
 
 #endif

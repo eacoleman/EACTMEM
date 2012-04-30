@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////
 //// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
 //// The diagrams can be compared with madgraph using the processes
-//// bb final state (suppressed by x~20 vs the leading diagrams): u d~ -> e+ ve b b~ (d~ u -> e+ ve b b~) for W+, d u~ -> e- ve~ b b~ (u~ d -> e- ve~ b b~ ) for W-
+//// Lb final state (suppressed by x~40 vs the leading diagrams): u b -> e+ ve d b (b u -> e+ ve d b) for W+, d b~ -> e- ve~ u b~ (b~ d -> e- ve~ u b~) for W-
 //////////////////////////////////////////////////////////////////////
-#include "TAMUWW/MatrixElement/interface/WbbEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/WLbEventProb2Jet.hh"
 
 //  C++ libraries
 #include <vector>
@@ -29,39 +29,76 @@ using std::vector;
 #ifdef MADGRAPH_TEST
 extern "C"
 {
-  void* wpbbm_(double[][4], const double*, double*); // lepQ>0, u d~ -> e+ ve b b~
-  void* wpbbaltm_ (double[][4], const double*, double*); // lepQ>0, d~ u -> e+ ve b b~ instead
-  void* wmbbm_(double[][4], const double*, double*); // lepQ<0, d u~ -> e- ve~ b b~
-  void* wmbbaltm_ (double[][4], const double*, double*); // lepQ<0, u~ d -> e- ve~ b b~ instead
+  void* wplbm_(double[][4], const double*, double*); //lepQ>0, u b -> e+ ve d b 
+  void* wplbaltm_ (double[][4], const double*, double*); //lepQ>0, b u -> e+ ve d b instead
+  void* wmlbm_(double[][4], const double*, double*); //lepQ<0, d b~ -> e- ve~ u b~
+  void* wmlbaltm_ (double[][4], const double*, double*); //lepQ<0, b~ d -> e- ve~ u b~ instead
   // to use the altm_ functions for just one iteration initialize the swapPartonMom(true) 
 }
 #endif
 
 // ------------------------------------------------------------------
-WbbEventProb2Jet::WbbEventProb2Jet(Integrator& integrator,
-                                   const TransferFunction& tf) :
-  EventProb2Jet(DEFS::EP::Wbb, integrator, 3, 4, tf), swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+WLbEventProb2Jet::WLbEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf, const TransferFunction& btf) :
+  EventProb2Jet(DEFS::EP::WLL, integrator, 3, 4, lighttf),
+  m_bTF(btf),
+  swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
+  // Set the top mass and width
+  setTopMassAndWidth(MEConstants::topMass);
 }
+
+// ------------------------------------------------------------------
+// This method sets the Top mass and the Top width
+void WLbEventProb2Jet::setTopMassAndWidth(double mTop) {
+
+  // Set the mass
+  m_massTop = mTop;
+  // Use the theoretical Top width for the given mass 
+  m_widthTop =  calcTopWidth(m_massTop);
+  // Save the mass in EventProb's param so it is available later for ProbStat
+  setEventProbParam(m_massTop);
+
+}//setTopMassAndWidth
+
 // ------------------------------------------------------------------
 
-void WbbEventProb2Jet::changeVars(const vector<double>& parameters)
+void WLbEventProb2Jet::changeVars(const vector<double>& parameters)
 {
-  using AuxFunctions::Math::square;
+   using AuxFunctions::Math::square;
 
   TLorentzVector& jet1 = getPartonColl()->getJet(0);
   TLorentzVector& jet2 = getPartonColl()->getJet(1);
   
   jet1.SetRho(parameters[1]);
-  jet1.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[1])));
+  jet1.SetE(parameters[1]);
   jet2.SetRho(parameters[2]);
   jet2.SetE(std::sqrt(square(MEConstants::bMass) + square(parameters[2])));
 
    getPartonColl()->getNeutrino().SetPz(parameters[0]);
 }
+
+// ------------------------------------------------------------------
+void WLbEventProb2Jet::setDynamicBounds()
+///Add this function when using more than one TF
+{
+   const float lowPercent = .01;
+   const float highPercent = .02;
+   double lower, upper;
+   getDefaultTF().getBounds(getMeasuredColl()->getFullJet(0), lowPercent,
+                      highPercent, lower, upper);
+   std::cout << "\tSetting jet 1 bounds from " << lower << " to " << upper
+             << std::endl;
+   setBounds(1, lower, upper);
+   m_bTF.getBounds(getMeasuredColl()->getFullJet(1), lowPercent,
+                       highPercent, lower, upper);
+   std::cout << "\tSetting jet 2 bounds from " << lower << " to " << upper
+             << std::endl;
+   setBounds(2, lower, upper);
+}
+
 // ------------------------------------------------------------------
 
-double WbbEventProb2Jet::matrixElement() const
+double WLbEventProb2Jet::matrixElement() const
 {
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
    typedef SimpleArray<DHELAS::HelArray, 2> Array2;
@@ -98,35 +135,41 @@ double WbbEventProb2Jet::matrixElement() const
 
       ///Initial State Partons
       Array1 vec1;
-      Array1 vec2;
+      Array2 vec2;
       if ( !swapPartonMom ) {
 	vec1 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, +1);
-	vec2 = DHELAS::oxxxxx<1>(partons->getParton2(), 0, -1);
+	vec2 = DHELAS::ixxxxx<2>(partons->getParton2(), bMass, +1);
       } else {
 	vec1 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, +1);
-	vec2 = DHELAS::oxxxxx<1>(partons->getParton1(), 0, -1);
+	vec2 = DHELAS::ixxxxx<2>(partons->getParton1(), bMass, +1);
       }
       ///Final State Neutrino & Partons
-      Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
-      Array2 vec5 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, 1);
-      Array2 vec6 = DHELAS::ixxxxx<2>(partons->getJet(1), bMass, -1);
+      Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, +1);
+      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, +1);
+      Array2 vec6 = DHELAS::oxxxxx<2>(partons->getJet(1), bMass, +1);
 
       Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factorGWF, wMass, wWidth);
-      Array1 vec8 = DHELAS::fvoxxx(vec2, vec7, factorGWF, 0, 0);
-      Array1 vec9 = DHELAS::jioxxx(vec1, vec8, factorGG, 0, 0);
-      OutputType output1 = DHELAS::iovxxx(vec6, vec5, vec9, factorGG);
+      Array1 vec8 = DHELAS::jioxxx(vec1, vec5, factorGWF, wMass, wWidth);
+      Array2 vec12 = DHELAS::fvixxx(vec2, vec8, factorGWF, m_massTop, m_widthTop);
+      OutputType output1 = DHELAS::iovxxx(vec12, vec6, vec7, factorGWF);
 
-      Array1 vec12 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
-      Array1 vec13 = DHELAS::jioxxx(vec12, vec2, factorGG, 0, 0);
-      OutputType output2 = DHELAS::iovxxx(vec6, vec5, vec13, factorGG);
 
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
- 	doublecomplex temp1 = -output1[i] - output2[i];
-	//doublecomplex temp2 = 0;
-	double m1 = 2.0*std::norm(temp1);
+      Array1 vec13 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
+      Array1 vec14 = DHELAS::jioxxx(vec13, vec5, factorGG, 0, 0);
+      OutputType output2 = DHELAS::iovxxx(vec2, vec6, vec14, factorGG);
 
-	answer+=m1;
+      Array1 vec17 = DHELAS::fvoxxx(vec5, vec7, factorGWF, 0, 0);
+      Array1 vec18 = DHELAS::jioxxx(vec1, vec17, factorGG, 0, 0);
+      OutputType output3 = DHELAS::iovxxx(vec2, vec6, vec18, factorGG);
+
+
+      for (unsigned i = 0; i < vecSize; ++i) {
+	doublecomplex temp1 = -output1[i];
+	doublecomplex temp2 = -output2[i] - output3[i];
+	double m1 = 9.0*std::norm(temp1);
+	double m2 = 2.0*std::norm(temp2);
+	
+	answer+= m1+m2;
       }
 
    }
@@ -143,35 +186,39 @@ double WbbEventProb2Jet::matrixElement() const
 
       ///Initial State Partons
       Array1 vec1;
-      Array1 vec2;
+      Array2 vec2;
       if ( !swapPartonMom ) {
 	vec1 = DHELAS::ixxxxx<1>(partons->getParton1(), 0, +1);
-	vec2 = DHELAS::oxxxxx<1>(partons->getParton2(), 0, -1);
+	vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), bMass, -1);
       } else {
 	vec1 = DHELAS::ixxxxx<1>(partons->getParton2(), 0, +1);
-	vec2 = DHELAS::oxxxxx<1>(partons->getParton1(), 0, -1);
+	vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), bMass, -1);
       }
       ///Final State Neutrino & Partons
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
-      Array2 vec5 = DHELAS::oxxxxx<2>(partons->getJet(0), bMass, +1);
+      Array1 vec5 = DHELAS::oxxxxx<1>(partons->getJet(0), 0, +1);
       Array2 vec6 = DHELAS::ixxxxx<2>(partons->getJet(1), bMass, -1);
 
       Array1 vec7 = DHELAS::jioxxx(vec4, vec3, factorGWF, wMass, wWidth);
-      Array1 vec8 = DHELAS::fvoxxx(vec2, vec7, factorGWF, 0, 0);
-      Array1 vec9 = DHELAS::jioxxx(vec1, vec8, factorGG, 0, 0);
-      OutputType output1 = DHELAS::iovxxx(vec6, vec5, vec9, factorGG);
+      Array1 vec8 = DHELAS::jioxxx(vec1, vec5, factorGWF, wMass, wWidth);
+      Array2 vec12 = DHELAS::fvoxxx(vec2, vec8, factorGWF, m_massTop, m_widthTop);
+      OutputType output1 = DHELAS::iovxxx(vec6, vec12, vec7, factorGWF);
 
-      Array1 vec12 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
-      Array1 vec13 = DHELAS::jioxxx(vec12, vec2, factorGG, 0, 0);
-      OutputType output2 = DHELAS::iovxxx(vec6, vec5, vec13, factorGG);
+      Array1 vec13 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
+      Array1 vec14 = DHELAS::jioxxx(vec13, vec5, factorGG, 0, 0);
+      OutputType output2 = DHELAS::iovxxx(vec6, vec2, vec14, factorGG);
 
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
- 	doublecomplex temp1 = +output1[i] + output2[i];
-	//doublecomplex temp2 = 0;
-	double m1 = 2.0*std::norm(temp1);
+      Array1 vec17 = DHELAS::fvoxxx(vec5, vec7, factorGWF, 0, 0);
+      Array1 vec18 = DHELAS::jioxxx(vec1, vec17, factorGG, 0, 0);
+      OutputType output3 = DHELAS::iovxxx(vec6, vec2, vec18, factorGG);
 
-	answer+=m1;
+      for (unsigned i = 0; i < vecSize; ++i) {
+	doublecomplex temp1 =  output1[i];
+	doublecomplex temp2 = -output2[i] - output3[i];
+	double m1 = 9.0*std::norm(temp1);
+	double m2 = 2.0*std::norm(temp2);
+	
+	answer+= m1+m2;
       }
 
    }
@@ -196,15 +243,15 @@ double WbbEventProb2Jet::matrixElement() const
   double an = 0;
   if (partons->getLepCharge() > 0) {
     if ( !swapPartonMom ) {
-      wpbbm_(fortranArray , &mw, &an);
+      wplbm_(fortranArray , &mw, &an);
     } else {
-      wpbbaltm_(fortranArray , &mw, &an);
+      wplbaltm_(fortranArray , &mw, &an);
     }
   } else {
     if ( !swapPartonMom ) {
-      wmbbm_(fortranArray , &mw, &an);
+      wmlbm_(fortranArray , &mw, &an);
     } else {
-      wmbbaltm_(fortranArray , &mw, &an);
+      wmlbaltm_(fortranArray , &mw, &an);
     }
   }
   cout << "Madgraph answer= " << an << endl;
@@ -221,15 +268,15 @@ double WbbEventProb2Jet::matrixElement() const
 
 
 // ------------------------------------------------------------------
-void WbbEventProb2Jet::setPartonTypes() const
+void WLbEventProb2Jet::setPartonTypes() const
 {
    if (getPartonColl()->getLepCharge() > 0)
    {
     if ( !swapPartonMom ) {
       getMeasuredColl()->setParton1Type(kUp);
-      getMeasuredColl()->setParton2Type(kAntiDown);
+      getMeasuredColl()->setParton2Type(kBottom);
     } else {
-      getMeasuredColl()->setParton1Type(kAntiDown);
+      getMeasuredColl()->setParton1Type(kBottom);
       getMeasuredColl()->setParton2Type(kUp);
     }
    }
@@ -237,9 +284,9 @@ void WbbEventProb2Jet::setPartonTypes() const
    {
     if ( !swapPartonMom ) {
       getMeasuredColl()->setParton1Type(kDown);
-      getMeasuredColl()->setParton2Type(kAntiUp);
+      getMeasuredColl()->setParton2Type(kAntiBottom);
     } else {
-      getMeasuredColl()->setParton1Type(kAntiUp);
+      getMeasuredColl()->setParton1Type(kAntiBottom);
       getMeasuredColl()->setParton2Type(kDown);
     }
 
@@ -247,7 +294,7 @@ void WbbEventProb2Jet::setPartonTypes() const
 }
 
 // ------------------------------------------------------------------
-void WbbEventProb2Jet::getScale(double& scale1, double& scale2) const
+void WLbEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
    using AuxFunctions::Math::square;
 //   scale1 = scale2 = MEConstants::wMass;
@@ -256,9 +303,19 @@ void WbbEventProb2Jet::getScale(double& scale1, double& scale2) const
 }
 
 // ------------------------------------------------------------------
+double WLbEventProb2Jet::totalTF() const
+/// Add when using more than one TF
+{
+   return getDefaultTF().getTF(getPartonColl()->getFullJet(0),
+                         getMeasuredColl()->getFullJet(0))
+      * m_bTF.getTF(getPartonColl()->getFullJet(1),
+                        getMeasuredColl()->getFullJet(1));
+}
+
+// ------------------------------------------------------------------
 
 
-bool WbbEventProb2Jet::onSwitch()
+bool WLbEventProb2Jet::onSwitch()
 {
   
   switch (getLoop()) {
@@ -283,4 +340,10 @@ bool WbbEventProb2Jet::onSwitch()
 
 }
 
+// ------------------------------------------------------------------
+void WLbEventProb2Jet::setupIntegral(){
+
+  std::cout<<"\tTop mass= "<< m_massTop<<" width= "<<m_widthTop<<std::endl;
+
+}
 

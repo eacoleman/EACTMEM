@@ -257,7 +257,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
-  procs.push_back(DEFS::PhysicsProcess::Wjets   ); 
+  procs.push_back(DEFS::PhysicsProcess::WJets   ); 
   procs.push_back(DEFS::PhysicsProcess::Zjets   );
   procs.push_back(DEFS::PhysicsProcess::Ztautau );
   procs.push_back(DEFS::PhysicsProcess::QCDMu               );
