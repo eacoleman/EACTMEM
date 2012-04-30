@@ -83,6 +83,7 @@ void aPlot::doScaling(vector<proc*> procs){
   double totalData = 0;
   double WpJ = 0;
   double allMinWpJ = 0;
+  double higgs = 0;
   bool foundData = false;
   for (unsigned int p = 0 ; p < procs.size() ; p++){
 
@@ -96,13 +97,16 @@ void aPlot::doScaling(vector<proc*> procs){
       totalMC += histos[p]->Integral();
     }*/
 
-    //scale WpJ to data - all others
+    //scale WpJ to (data - all others) and higgs to data
     if (procs[p]->name.compare("WpJ") == 0){
       WpJ += histos[p]->Integral();
     } 
     else if (procs[p]->name.compare("Data") == 0){
       totalData += histos[p]->Integral();
       foundData = true;
+    }
+    else if (procs[p]->name.compare("Higgs") == 0){
+       higgs += histos[p]->Integral();
     }
     else{
       allMinWpJ += histos[p]->Integral();
@@ -126,13 +130,17 @@ void aPlot::doScaling(vector<proc*> procs){
       if (procs[p]->name.compare("Data") != 0)
       histos[p]->Scale(totalData/totalMC);*/
 
-    //do the scaling of the WpJ to Data - all others
+    //do the scaling of the WpJ to (Data - all others)
     for (unsigned int p = 0 ; p < procs.size() ; p++)
       if (procs[p]->name.compare("WpJ") == 0)
          histos[p]->Scale((totalData - allMinWpJ)/WpJ);
-
     
   }// normToData
+
+  //do the scaling of the higgs to Data
+  for (unsigned int p = 0 ; p < procs.size() ; p++)
+     if (procs[p]->name.compare("Higgs") == 0)
+        histos[p]->Scale(totalData/higgs);
 
 //this will tell you the area of the process
 /*  double areaTot = 0;
@@ -184,6 +192,7 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
     TH1 * tData=0;
     TH1 * stop=0;
     TH1 * all = 0;
+    TH1 * higgs = 0;
     gStyle->SetOptStat(2211);
 
     if (stacked){
@@ -193,11 +202,14 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
     tData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_MyData");
     stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
     all = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_All");
+    higgs = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Higgs");
     totalData->Sumw2();
     totalData->SetMarkerStyle(8);
     totalData->SetMarkerSize(0.7);
     tData->SetMarkerStyle(8);
     tData->SetMarkerSize(0.7);
+    higgs->SetFillColor(0);
+    higgs->SetLineColor(kMagenta+3);
     stop->SetFillColor(46);
     stop->SetLineColor(46);
 
@@ -209,33 +221,46 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
       histos[h]->SetMarkerColor(procs[h]->color);
       try{
          if (stacked && s!=0 and totalData!=0){
-            if (procs[h]->name.compare("Data") != 0){
-               //combine the STop MC into one piece
-               if (procs[h]->name.compare("STopT_T") == 0
-                   || procs[h]->name.compare("STopT_Tbar") == 0
-                   || procs[h]->name.compare("STopS_T") == 0
-                   || procs[h]->name.compare("STopS_Tbar") == 0
-                   || procs[h]->name.compare("STopTW_T") == 0
-                   || procs[h]->name.compare("STopTW_Tbar") == 0){
-                  stop->Add(histos[h]);
-                  all->Add(histos[h]);
+            //put all the MC into their proper histograms
+            if (procs[h]->name.compare("Data") != 0) {
+               if (procs[h]->name.compare("Higgs") != 0) {
+                  //combine the STop MC into one histogram, stop
+                  if (procs[h]->name.compare("STopT_T") == 0
+                      || procs[h]->name.compare("STopT_Tbar") == 0
+                      || procs[h]->name.compare("STopS_T") == 0
+                      || procs[h]->name.compare("STopS_Tbar") == 0
+                      || procs[h]->name.compare("STopTW_T") == 0
+                      || procs[h]->name.compare("STopTW_Tbar") == 0){
+                     stop->Add(histos[h]);
+                     all->Add(histos[h]);
+                  }
+                  else {
+                     s->Add(histos[h],"hist");
+                     l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
+                     all->Add(histos[h]);
+                  }
                }
+               //get the higgs MC and put it into the proper histo
                else {
-                  s->Add(histos[h],"hist");
-                  l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
-                  all->Add(histos[h]);
+                  higgs->Add(histos[h]);
                }
             }
+            //put the data into it's proper histograms and get the luminosity
             else {
-               s->Add(stop,"hist");
-               l->AddEntry(stop,"STop","f");
                totalData->Add(histos[h]);
                tData->Add(histos[h]);
                lum = procs[h]->intLum;
+
+               //add the stop histogram to the stacked histogram and the legend
+               s->Add(stop,"hist");
+               l->AddEntry(stop,"STop","f");
             }
+
             if (h == histos.size() -1) {
-               //plot the histogram on the top pad
+               //plot the histograms on the top pad
                c1_2->cd();
+               //draw and implement the settings for the stacked histogram on the
+               //top pad of the canvas
                s->Draw();
                s->SetTitle(templateHisto->GetTitle());
                for(unsigned int a=0; a<axisTitles.size(); a++){
@@ -259,15 +284,22 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                      s->GetYaxis()->SetTitleOffset(0.85);
                   }
                }
+               //add totalData and higgs to the legend and draw the totalData and higgs histograms
+               //on the top pad of the canvas on top of the stacked histogram and draw the legend,
+               //KS and Chi^2, and luminosity on the top pad of the canvas
+               l->AddEntry(higgs,"Higgs","lpe");
+               higgs->Draw("same");
                l->AddEntry(totalData,"Data","lpe");
                totalData->Draw("same");
                l->Draw("same");
                drawKSandChi2Tests(totalData, all, range);
                lumi(lum);
             }
-         } 
+         }
+         //if the MC is not stacked
          else {
             if (h==0){
+               //draw each MC histogram on the top pad of the canvas and implement the settings
                histos[h]->Draw();
                for(unsigned int a=0; a<axisTitles.size(); a++){
                   if (a==0){
@@ -294,18 +326,17 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
                   }
                }
             } 
-            else
+            //draw the data histogram and the legend on the top pad of the canvas
+            else {
                histos[h]->Draw("same");
-            if (procs[h]->name.compare("STop") == 0)
-               l->AddEntry(stop,"STop","l");
-            else
                l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
-           
+            }
+            //draw the KS, Chi^2, and luminosity on the top pad of the canvas
             drawKSandChi2Tests(totalData, all, range);
             lumi(lum);
          }
 
-         //plot the (data-MC)/MC part on the bottom pad
+         //plot the (data-MC)/MC histogram on the bottom pad of the canvas
          c1_1->cd();
          c1_1->SetGridy();
          c1_1->SetObjectStat(false);
@@ -342,12 +373,14 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
             cout << "\tERROR::THStack * s is uninitiallized." << endl;
          else if (totalData==0)
             cout << "\tERROR::TH1 * totalData is uninitiallized." << endl;
+         else if (higgs==0)
+            cout << "\tERROR::TH1 * higgs is uninitiallized." << endl;
          else
             cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
       }//catch
     }//for
 
-    //this will tell you the bin content of the first 20 bins for MC in the stacked plots
+    //this will tell you the bin content of the first 20 bins of MC in each plot
     //used to check if the efficiency is working properly
 /*    cout << all->GetName() << endl;
     for(int i = 0; i < 20; i++){

@@ -482,7 +482,7 @@ map<string, aPlot> getPlots(string leptonCatString){
    a.templateHisto = new TH1D("BetaJ1BetaJ2_" + lep,"BetaJ1BetaJ2_" + lep + cuts,10000,0,10);
    a.axisTitles.push_back("#beta_{J1} * #beta_{J2} [GeV]");
    a.axisTitles.push_back("Number of Events / .01 GeV");
-   a.range = make_pair(0.85,1.03);
+   a.range = make_pair(0.9,1.03);
    a.normToData = true;
    a.stacked = true;
    plots["BetaJ1BetaJ2"] = a;
@@ -704,7 +704,7 @@ Color_t getProcessColor(TString channelName){
    else if (channelName.CompareTo("STopTW_T")==0)
       return kMagenta;
    else if (channelName.CompareTo("STopTW_Tbar")==0)
-      return kMagenta+3;
+      return kGreen+3;
 
    //these are still being used
    else if (channelName.CompareTo("SingleEl_Data")==0)
