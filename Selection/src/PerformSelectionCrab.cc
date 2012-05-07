@@ -692,7 +692,8 @@ void PerformSelection::jetSelection() {
          //PFConstituents not in SQWaT PATtuples created by V00-00-04 or earlier
          if (SQWaT_Version >= 5)
             JPtD.push_back(getPtD(jetIter->getPFConstituents()));
-         JPtD.push_back(0);
+         else
+            JPtD.push_back(0);
          jNEntries++;
 	 
          jstream << "pt " << j_pt << " eta " << j_eta << " j_DRlepton " << j_DRlepton
