@@ -91,7 +91,10 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    muPrim_DRjMin              =         iConfig.getParameter<double>        ("muPrim_DRjMin");
 
    //-----B-Tag Variable Inputs
-   nBtag                      =         iConfig.getParameter<int>           ("nBtag");
+   nBtagSSV                   =         iConfig.getParameter<int>           ("nBtagSSV");
+   nBtagTC                    =         iConfig.getParameter<int>           ("nBtagTC");
+   bDiscriminatorSSVMin       =         iConfig.getParameter<double>        ("bDiscriminatorSSVMin");
+   bDiscriminatorTCMin        =         iConfig.getParameter<double>        ("bDiscriminatorTCMin");
 
    //-----Muon Variable Inputs
    muPrim_ptMin               =         iConfig.getParameter<double>        ("muPrim_ptMin");
@@ -331,13 +334,13 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                   //
                   // Record the Btag info
                   //
-                  if (nBtag==0)
+                  if (nBtagSSV==0)
                      incrementCounter(6,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                   else {
-                     if (nBtag==1)
+                     if (nBtagSSV==1)
                         incrementCounter(7,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                      else {
-                        if (nBtag==2)
+                        if (nBtagSSV==2)
                            incrementCounter(8,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                         else
                            incrementCounter(9,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
@@ -368,13 +371,13 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                   //
                   // Record the Btag info
                   //
-                  if (nBtag==0 )
+                  if (nBtagSSV==0 )
                      incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                   else {
-                     if (nBtag==1) 
+                     if (nBtagSSV==1) 
                         incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                      else {
-                        if (nBtag==2)
+                        if (nBtagSSV==2)
                            incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                         else
                            incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
@@ -431,10 +434,14 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       EvtNtuple->lPhi=lp4.Phi();
       EvtNtuple->METEt=METp4LV.Et();
 
-
-      EvtNtuple->jBtag.clear();
-      EvtNtuple->jBtag.push_back(jBtag[0]);
-      EvtNtuple->jBtag.push_back(jBtag[1]);
+      EvtNtuple->jBtagSSV.clear();
+      EvtNtuple->jBtagTC.clear();
+      EvtNtuple->jBtagSSV = jBtagSSV;
+      EvtNtuple->jBtagTC = jBtagTC;
+      EvtNtuple->jBtagDiscriminatorSSV.clear();
+      EvtNtuple->jBtagDiscriminatorTC.clear();
+      EvtNtuple->jBtagDiscriminatorSSV = jBtagDiscriminatorSSV;
+      EvtNtuple->jBtagDiscriminatorTC = jBtagDiscriminatorTC;
       EvtNtuple->lQ=lQ;
 
       if (abs(lEta)<etaBarrelMax) {
@@ -626,8 +633,12 @@ void PerformSelection::jetClear() {
    jp4.clear();
    JEta.clear();
    JPhi.clear();
-   nBtag=0;
-   jBtag.clear();
+   nBtagSSV=0;
+   nBtagTC=0;
+   jBtagSSV.clear();
+   jBtagTC.clear();
+   jBtagDiscriminatorSSV.clear();
+   jBtagDiscriminatorTC.clear();
    JChargedMultiplicity.clear();
    JNeutralMultiplicity.clear();
    JPtD.clear();
@@ -710,12 +721,20 @@ void PerformSelection::jetSelection() {
          //
          // b-tagging
          //
-         if (jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminator_min) {
-            jBtag.push_back(1);
-            nBtag++;
+         jBtagDiscriminatorSSV.push_back(jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags"));
+         jBtagDiscriminatorTC.push_back(jetIter->bDiscriminator("trackCountingHighEffBJetTags"));
+         if (jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminatorSSVMin) {
+            jBtagSSV.push_back(1);
+            nBtagSSV++;
          } 
          else
-            jBtag.push_back(0);
+            jBtagSSV.push_back(0);
+         if (jetIter->bDiscriminator("trackCountingHighEffBJetTags")>bDiscriminatorTCMin) {
+            jBtagTC.push_back(1);
+            nBtagTC++;
+         } 
+         else
+            jBtagTC.push_back(0);
       } //for(Selection Cuts)
    } //for(jetIter)
 }

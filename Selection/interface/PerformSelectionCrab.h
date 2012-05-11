@@ -263,8 +263,11 @@ private:
    vector<double> JChargedMultiplicity, JNeutralMultiplicity, JPtD;
    
    // b-tag variables
-   vector <int> jBtag, jBtag_temp;
-   int nBtag;
+   vector <int> jBtagSSV, jBtagTC;
+   int nBtagSSV, nBtagTC;
+   vector <double> jBtagDiscriminatorSSV, jBtagDiscriminatorTC;
+   double bDiscriminatorSSVMin, bDiscriminatorTCMin;
+
    // muon variables
    // Primary Muons (used in muon selection)
    double mu_pt;

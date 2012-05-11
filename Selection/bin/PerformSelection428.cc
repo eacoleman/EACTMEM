@@ -809,9 +809,9 @@ int main (int argc, char* argv[])
        EvtNtuple->METEt=METp4LV.Et();
 
 
-       EvtNtuple->jBtag.clear();
-       EvtNtuple->jBtag.push_back(jBtag[0]);
-       EvtNtuple->jBtag.push_back(jBtag[1]);
+       EvtNtuple->jBtagSSV.clear();
+       EvtNtuple->jBtagSSV.push_back(jBtag[0]);
+       EvtNtuple->jBtagSSV.push_back(jBtag[1]);
        EvtNtuple->lQ=lQ;
        if (abs(lEta)<etaBarrelMax) {
 	 //barrel

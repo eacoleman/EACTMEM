@@ -74,7 +74,8 @@ public:
   vector < TLorentzVector > matchedGenParticles;
   vector < int > matchedpdgId;
   vector < double > matchedDeltaR;
-  vector < int > jBtag;
+  vector < int > jBtagSSV, jBtagTC;
+  vector < double > jBtagDiscriminatorSSV, jBtagDiscriminatorTC;
   vector < GenParticle > genParticleCollection;
   int lQ;
   int ldetComp;
