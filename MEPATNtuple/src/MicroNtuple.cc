@@ -115,8 +115,8 @@ void MicroNtuple::fillIndexMap(){
   
   // Map all the processes, except those with Higgs. 
   //NOTE that I'm not putting the top mass as I should... 
-  indexMap[DEFS::EP::TopS  ].insert ( make_pair (0,6));
-  indexMap[DEFS::EP::TopT  ].insert ( make_pair (0,5));
+  indexMap[DEFS::EP::STopS  ].insert ( make_pair (0,6));
+  indexMap[DEFS::EP::STopT  ].insert ( make_pair (0,5));
   indexMap[DEFS::EP::TTbar ].insert ( make_pair (0,4));
   indexMap[DEFS::EP::WLight].insert ( make_pair (0,2));
   indexMap[DEFS::EP::ZLight].insert ( make_pair (0,3));
@@ -161,8 +161,8 @@ ProbsForEPD  MicroNtuple::getEventProbs(double mhiggs, const double evtProb[nEve
   res.wh    = evtProb[indexMap[DEFS::EP::WH][mhiggs]];
 
   // The rest which don't depend on the higgs mass
-  res.schan  = evtProb[indexMap[DEFS::EP::TopS][0]];
-  res.tchan  = evtProb[indexMap[DEFS::EP::TopT][0]];
+  res.schan  = evtProb[indexMap[DEFS::EP::STopS][0]];
+  res.tchan  = evtProb[indexMap[DEFS::EP::STopT][0]];
   res.tt     = evtProb[indexMap[DEFS::EP::TTbar][0]];
   res.wlight = evtProb[indexMap[DEFS::EP::WLight][0]]; 
   res.zlight = evtProb[indexMap[DEFS::EP::ZLight][0]];

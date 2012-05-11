@@ -36,19 +36,21 @@ using namespace std;
 #define MAXJOBS 20000
 
 const bool isData=false; //use when setting .cfg file parameters.
-const bool isLocalDataset=false; //use to set .cfg file parameters when running on a locally stored dataset.
+const bool isLocalDataset=true; //use to set .cfg file parameters when running on a locally stored dataset.
 //const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet";//Use when working with a local dataset.
 const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.
 const bool useBackupLogs=false; //a feature used to restore logs, if they were damaged or lost (set to true and run CreateJobs, StartJobs and UpdateJobStatus).
 //const TString designation="MC"; //Set to MC or Data for actual runs
 //const TString designation="Data";
-const TString designation="MCEWKFall11_mu";
-//const TString designation="MCEWKFall11_el";
+//const TString designation="MCEWKFall11_mu";
+const TString designation="MCEWKFall11_el";
 //const TString designation="MCEWKPATSpring12_mu";
+//const TString designation="MCEWKPATSpring12_el";
 
 //const TString designation="MCVBFPATGen";
 
-const bool useCfguser_remote_dir = false;// take the user_remote_dir from the TemplateCfg or construct it dynamically (will be pnfsstoragedir/designation/setName_VX_RepY_PtZ, should not be present in the TemplateCfg)
+/// Set to true for PATTuple generation
+const bool useCfguser_remote_dir = false;// true = take the user_remote_dir from the TemplateCfg or false = construct it dynamically (will be pnfsstoragedir/designation/setName_VX_RepY_PtZ, should not be present in the TemplateCfg)
 
 void ManipulateSingleCRABJobSet () {
 }
@@ -1076,6 +1078,9 @@ void PublishJobs(const char* _setName)
 /// Publishes all completed jobs
 {
   cout << "PUBLISHING ALL COMPLETED JOBS" << endl;
+  bool Overwrite_dbs_url_for_publication=false;
+  TString Alternate_dbs_url_for_publication="\"https://cmsdbsprod.cern.ch:8443/cms_dbs_ph_analysis_01_writer/servlet/DBSServlet\"";
+
   TString Command, FullDir, logFileName;
   logFileName=".log";
   logFileName=designation+logFileName;
@@ -1088,7 +1093,12 @@ void PublishJobs(const char* _setName)
   for (Int_t rep=1; rep<(NReps+1);rep++) {
     for (Int_t pt=1; pt<(NParts+1);pt++) {
       getStrLine(logFileName,rep,pt,"FullDir",FullDir,false);
-      Command = "crab -publish -c " + FullDir;
+      Command = " -c " + FullDir;
+      if ( Overwrite_dbs_url_for_publication ) {
+	Command = Alternate_dbs_url_for_publication + Command;
+	Command = " -USER.dbs_url_for_publication=" + Command;
+      }
+      Command = "crab -publish" + Command;
       cout << "Command = " << Command << endl;
       system(Command);
     }

@@ -104,6 +104,8 @@ namespace DEFS {
       if( str == "WLL")
 	return  DEFS::PhysicsProcess::WLL;
       if( str == "Wbb")
+	return  DEFS::PhysicsProcess::WLb;
+      if( str == "WLb")
 	return  DEFS::PhysicsProcess::Wbb;
       if( str == "QCDMu")
 	return  DEFS::PhysicsProcess::QCDMu;
@@ -123,6 +125,8 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::WW;
       if( str == "WZ")
 	return  DEFS::PhysicsProcess::WZ;
+      if( str == "WZbb")
+	return  DEFS::PhysicsProcess::WZbb;
       if( str == "ZZ")
 	return  DEFS::PhysicsProcess::ZZ;
       if( str == "TTbar")

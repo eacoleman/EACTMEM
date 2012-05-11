@@ -16,7 +16,7 @@ class EventProb2Jet : public EventProb
    public:
   EventProb2Jet(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
                     unsigned nLoop, const TransferFunction& tf);
-      virtual ~EventProb2Jet() {}
+      virtual ~EventProb2Jet() {};
 
       virtual void getPeaks(VecVecDouble& answer, const double bounds[]) const;
 
@@ -29,6 +29,8 @@ class EventProb2Jet : public EventProb
       void makeFortranArray_qlvq(double array[][4]) const;
       void makeFortranArray_qqvl(double array[][4]) const;
       void makeFortranArray_qlvWq(double array[][4],TLorentzVector) const;
+      void makeFortranArray_bqqlv(double array[][4],TLorentzVector) const;
+      void makeFortranArray_blvqq(double array[][4],TLorentzVector) const;
 
       const TransferFunction& getDefaultTF() const {return m_tf;}
 

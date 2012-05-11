@@ -1,7 +1,8 @@
 // Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
 // Created : 11/19/2010
 // The diagrams can be compared with madgraph using the processes 
-// u b -> b e+ ve d (b u -> b e+ ve d), d b~ -> b~ e- ve~ u
+// u b -> b e+ ve d (b u -> b e+ ve d), d b~ -> b~ e- ve~ u (b~ d -> b~ e- ve~ u)
+//////////////////////////////////////////////////////////////////////
 
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb2Jet.hh"
 
@@ -24,16 +25,16 @@ using std::endl;
 
 extern "C"
 {
-  void* tchanlpm_(double[][4], const double*, double*);// lepQ>0, u b -> b e+ ve d 
-  void* tchanlpaltm_(double[][4], const double*, double*);// b u -> b e+ ve d 
-  void* tchanlmm_(double[][4], const double*, double*);// lepQ<0, d b~ -> b~ e- ve~ u
-  void* tchanlmaltm_(double[][4], const double*, double*);// 
+  void* tchanlpm_(double[][4], const double*, double*);//lepQ>0, u b -> b e+ ve d 
+  void* tchanlpaltm_(double[][4], const double*, double*);//lepQ>0, b u -> b e+ ve d  instead
+  void* tchanlmm_(double[][4], const double*, double*);//lepQ<0, d b~ -> b~ e- ve~ u
+  void* tchanlmaltm_(double[][4], const double*, double*);//lepQ<0, b~ d -> b~ e- ve~ u  instead
 }
 #endif
 
 // ------------------------------------------------------------------
 tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf) :
-  EventProb2Jet(DEFS::EP::TopT, integrator, 3,4, btf), 
+  EventProb2Jet(DEFS::EP::STopT, integrator, 3,4, btf), 
   m_lightTF(lighttf), //m_lightTF is stored locally (in the .hh)
   swapPartonMom(false), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
@@ -229,13 +230,19 @@ double tChannelEventProb2Jet::matrixElement() const
   // Evalute the matrix element according to madgraph
   double mw  = wMass; // to get rid of the const identifier
   double an = 0;
-  if (partons->getLepCharge() > 0)
-    tchanlpm_(fortranArray , &mw, &an);
-  //tchanlpaltm_(fortranArray , &mw, &an);
-  else
-    tchanlmm_(fortranArray , &mw, &an);
-  //tchanlmaltm_(fortranArray , &mw, &an);
-
+  if (partons->getLepCharge() > 0) {
+    if ( !swapPartonMom ) {
+      tchanlpm_(fortranArray , &mw, &an);
+    } else {
+      tchanlpaltm_(fortranArray , &mw, &an);
+    }
+  } else {
+    if ( !swapPartonMom ) {
+      tchanlmm_(fortranArray , &mw, &an);
+    } else {
+      tchanlmaltm_(fortranArray , &mw, &an);
+    }
+  }
   cout << "Madgraph answer= " << an << endl;
    
   // Exit right away
@@ -252,13 +259,23 @@ void tChannelEventProb2Jet::setPartonTypes() const
 {
    if (getMeasuredColl()->getLepCharge() > 0)
    {
-      getMeasuredColl()->setParton1Type(kUp);
-      getMeasuredColl()->setParton2Type(kBottom);
+     if ( !swapPartonMom ) {
+       getMeasuredColl()->setParton1Type(kUp);
+       getMeasuredColl()->setParton2Type(kBottom);
+     } else {
+       getMeasuredColl()->setParton1Type(kBottom);
+       getMeasuredColl()->setParton2Type(kUp);
+     }
    }
    else
    {
-      getMeasuredColl()->setParton1Type(kDown);
-      getMeasuredColl()->setParton2Type(kAntiBottom);
+     if ( !swapPartonMom ) {
+       getMeasuredColl()->setParton1Type(kDown);
+       getMeasuredColl()->setParton2Type(kAntiBottom);
+     } else {
+       getMeasuredColl()->setParton1Type(kAntiBottom);
+       getMeasuredColl()->setParton2Type(kDown);  
+     }
    }
 }
 

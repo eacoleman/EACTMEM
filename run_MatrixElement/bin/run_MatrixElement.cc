@@ -21,6 +21,7 @@
 #include "TAMUWW/MatrixElement/interface/MEJob.hh"
 #include "TAMUWW/MatrixElement/interface/sChannelEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/tChannelEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/STopTWEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/ttEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WcEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WHEventProb2Jet.hh"
@@ -169,30 +170,32 @@ int main(int argc, char* argv[]){
   vector<EventProb*> eventProbs2jet;
   vector<EventProb*> eventProbs3jet;
 
-  //Current test:
-  eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));//Fix DEFS
 
-  //Tested:
-  //eventProbs2jet.push_back(new WLgEventProb2Jet(rootInt, lightTF, gluonTF));
-  //eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
-  //eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
-  //eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));//Fix DEFS
-  //eventProbs2jet.push_back(new WLgSubleadingEventProb2Jet(rootInt, lightTF, gluonTF));
-  //eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));//Fix DEFS
+  ///Diboson:
+  eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));
 
+  ///W or Z backgrounds:
+  eventProbs2jet.push_back(new WLgEventProb2Jet(rootInt, lightTF, gluonTF));
+  eventProbs2jet.push_back(new WLgSubleadingEventProb2Jet(rootInt, lightTF, gluonTF));
+  eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));
+  eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
+  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
 
-//   //Most Recent Implementation:
-//   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
-//   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
-//   eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF));
-//   eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
-//   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
-//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-//   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
-//   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
-//   eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
+  ///Top and QCD:
+   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
+  eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+  eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+  eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+  eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
+  eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
+  eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt, lightTF));
+  eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+  eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+  eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
 
 
 //   ///HWW:

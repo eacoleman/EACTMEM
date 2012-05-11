@@ -22,7 +22,7 @@ extern "C"
 tChannelEventProb3Jet::tChannelEventProb3Jet(Integrator& integrator,
                                              const TransferFunction& bTF,
                                              const TransferFunction& lightTF) :
-  EventProb3Jet(DEFS::EP::TopT, integrator, 4, 4, bTF, lightTF)
+  EventProb3Jet(DEFS::EP::STopT, integrator, 4, 4, bTF, lightTF)
 {
   // Set the top mass and width
   setTopMassAndWidth(MEConstants::topMass);

@@ -213,6 +213,35 @@ void EventProb2Jet::makeFortranArray_qlvWq(double array[][4],TLorentzVector m_W)
    makeArray(getPartonColl()->getJet(1), array[6]);
 }
 
+//added to for consistency with STopTW Channel.
+void EventProb2Jet::makeFortranArray_bqqlv(double array[][4],TLorentzVector m_b) const
+{
+   using AuxFunctionsRoot::makeArray;
+
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
+   makeArray(m_b, array[2]);
+   makeArray(getPartonColl()->getJet(0), array[3]);
+   makeArray(getPartonColl()->getJet(1), array[4]);
+   makeArray(getPartonColl()->getLepton(), array[5]);
+   makeArray(getPartonColl()->getNeutrino(), array[6]);
+}
+
+
+//added to for consistency with STopTW Channel.
+void EventProb2Jet::makeFortranArray_blvqq(double array[][4],TLorentzVector m_b) const
+{
+   using AuxFunctionsRoot::makeArray;
+
+   makeArray(getPartonColl()->getParton1(), array[0]);
+   makeArray(getPartonColl()->getParton2(), array[1]);
+   makeArray(m_b, array[2]);
+   makeArray(getPartonColl()->getLepton(), array[3]);
+   makeArray(getPartonColl()->getNeutrino(), array[4]);
+   makeArray(getPartonColl()->getJet(0), array[5]);
+   makeArray(getPartonColl()->getJet(1), array[6]);
+}
+
 // ------------------------------------------------------------------
 // The maximum number of permutations with two jets is just two 
 // regardless of the tagging information.Fill onSwitch in this class

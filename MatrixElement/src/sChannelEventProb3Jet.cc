@@ -17,7 +17,7 @@ extern "C"
 sChannelEventProb3Jet::sChannelEventProb3Jet(Integrator& integrator,
                                              const TransferFunction& bTF,
                                              const TransferFunction& gluonTF) :
-  EventProb3Jet(DEFS::EP::TopS, integrator, 4, 4, bTF, gluonTF)
+  EventProb3Jet(DEFS::EP::STopS, integrator, 4, 4, bTF, gluonTF)
 //   EventProb3Jet("s-channel", 4, 1, bTF, lightTF)
 {
   // Set the top mass and width

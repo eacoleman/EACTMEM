@@ -1,7 +1,7 @@
 // Author: Ricardo Eusebi
 // TAMU, eusebi@physics.tamu.edu
 // Created: March 13, 2011.
-// $Id: EventProbDefs.hh,v 1.2 2011/03/24 20:23:33 ilyao Exp $
+// $Id: EventProbDefs.hh,v 1.3 2012/04/30 03:41:38 ilyao Exp $
 
 #ifndef EVENTPROBDEFS_HH
 #define EVENTPROBDEFS_HH
@@ -24,29 +24,33 @@ namespace DEFS {
       HWW     = 150,
       
       // Related to single top production
-      TopS    = 200,
-      TopT    = 201,
-      TopTAlt = 202,
+      STopT    = 200,
+      STopS    = 201,
+      STopTW   = 202,
+
+      TopTAlt  = 250,//Used for tChannel3Jets
       
       // Related to top pair production
-      TTbar   = 250,
+      TTbar   = 299,
       
       // Related to single vector boson production
       WJets   = 300,
       WLg     = 301,
       Wgg     = 302,
       WLL     = 303,
-      Wbb     = 304,
-      Wc      = 305,
-      ZLight  = 306,
+      WLb     = 304,
+      Wbb     = 305,
+      Wc      = 310,
+      ZLight  = 350,
       WLight  = 399,
 
 
       // Related to double vector boson production
       WW      = 400,
       WZ      = 401,
-      ZZ      = 402,
-      
+      WZbb    = 403,
+      ZZ      = 404,
+     
       // Related to QCD
       QCD     = 500,
       

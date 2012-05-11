@@ -39,7 +39,7 @@ extern "C"
 
 // ------------------------------------------------------------------
 WLbEventProb2Jet::WLbEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf, const TransferFunction& btf) :
-  EventProb2Jet(DEFS::EP::WLL, integrator, 3, 4, lighttf),
+  EventProb2Jet(DEFS::EP::WLb, integrator, 3, 4, lighttf),
   m_bTF(btf),
   swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {

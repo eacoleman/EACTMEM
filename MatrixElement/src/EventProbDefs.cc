@@ -23,10 +23,12 @@ namespace DEFS {
 	return string("HWW");
       
       // Related to single top production
-      else if (type == TopS)
-	return string("TopS");
-      else if (type == TopT)
-	return string("TopT");
+      else if (type == STopS)
+	return string("STopS");
+      else if (type == STopT)
+	return string("STopT");
+      else if (type == STopTW)
+	return string("STopTW");
       else if (type == TopTAlt)
 	return string("TopTAlt");
       
@@ -47,6 +49,8 @@ namespace DEFS {
 	return string("Wgg");
       else if (type == WLL)
 	return string("WLL");
+      else if (type == WLb)
+	return string("WLb");
       else if (type == Wbb)
 	return string("Wbb");
       
@@ -55,6 +59,8 @@ namespace DEFS {
 	return string("WW");
       else if (type == WZ)
 	return string("WZ");
+      else if (type == WZbb)
+	return string("WZbb");
       else if (type == ZZ)
 	return string("ZZ");
       

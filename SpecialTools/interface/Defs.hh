@@ -32,8 +32,8 @@ namespace DEFS{
 	       WH130 , WH135 , WH140 , WH145 , WH150 ,
 	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
 	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
-	       STopS, STopT, STopTW, Wcc, WJets, WLg, Wgg, WLL, Wbb,
-	       WW, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
+	       STopS, STopT, STopTW, Wcc, WJets, WLg, Wgg, WLL, WLb, Wbb,
+	       WW, WZbb, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
 	       QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
 	       Data};
  
