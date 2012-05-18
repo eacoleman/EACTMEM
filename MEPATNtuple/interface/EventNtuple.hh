@@ -16,9 +16,9 @@
 //
 // Root includes
 //
-#include "TLorentzVector.h"
 #include "TObject.h"
-#include "Math/Point3D.h"
+#include "TVector3.h"
+#include "TLorentzVector.h"
 
 //
 // Standard Library Includes
@@ -34,10 +34,6 @@ using std::vector;
 using std::map;
 using std::string;
 
-typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double> > XYZPointD;
-typedef XYZPointD XYZPoint;
-//typedef XYZPoint Point;
-
 class GenParticle
 {
 public:
@@ -47,14 +43,14 @@ public:
 
    double charge;
    TLorentzVector p4;
-   XYZPoint vtx;
+   TVector3 vtx;
    int pdgId;
    int status;
-   int particlePosition;
+   size_t particlePosition;
    int numberOfMothers;
    int numberOfDaughters;
-   vector<int> motherPositions;
-   vector<int> daughterPositions;
+   vector<size_t> motherPositions;
+   vector<size_t> daughterPositions;
 
    ClassDef(GenParticle,1)
 };

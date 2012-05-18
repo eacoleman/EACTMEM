@@ -1139,14 +1139,14 @@ void PerformSelection::saveGenPart() {
    map<size_t,pair<int,int> > memMap;
    int counter = 0;
    for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle, ++counter) {
-      memMap[size_t((const reco::Candidate*)(& *genParticle))] = make_pair(counter, -1);
+      memMap[size_t((const reco::Candidate*)(& *genParticle))] = make_pair(counter, 9999);
       if (genParticle->status() == 3) {
          GenParticle g;
          g.charge = genParticle->charge();
          math::XYZTLorentzVectorD const& p4t = genParticle->p4();
          TLorentzVector p4(p4t.px(), p4t.py(), p4t.pz(), p4t.energy());
          g.p4 = p4;
-         g.vtx = genParticle->vertex();
+         g.vtx.SetXYZ(genParticle->vertex().X(),genParticle->vertex().Y(),genParticle->vertex().Z());
          g.pdgId = genParticle->pdgId();
          g.status = genParticle->status();
          g.particlePosition = size_t((const reco::Candidate*)(& *genParticle));
@@ -1156,7 +1156,7 @@ void PerformSelection::saveGenPart() {
             g.motherPositions.push_back(size_t(genParticle->mother(i)));
          }
          for (unsigned int i = 0; i<genParticle->numberOfDaughters(); i++) {
-            g.motherPositions.push_back(size_t(genParticle->daughter(i)));
+            g.daughterPositions.push_back(size_t(genParticle->daughter(i)));
          }
          EvtNtuple->genParticleCollection.push_back(g);
          memMap[size_t((const reco::Candidate*)(& *genParticle))].second = EvtNtuple->genParticleCollection.size() - 1;
