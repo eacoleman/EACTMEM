@@ -216,10 +216,13 @@ private:
    edm::Handle<vector<pat::MET> > METHandle;
    edm::Handle<double> rhoHandle;
    // trigger variables
+   bool mu_passTrigger;
+   bool el_passTrigger;
    string muTrigger;
    string eleTrigger;
-   bool cutOnTrigger;
+   //bool cutOnTrigger;
    bool passTrigger;
+   //bool passTrigger;
    map<string,bool> triggerMap;
    // event variables
    long runNumber;

@@ -79,7 +79,7 @@ process.PS.printLeptonInfo            = cms.bool(False)               # tells th
 process.PS.SQWaT_Version              = cms.int32(5)                  # version number used to create the common PATtuples
 process.PS.doRelIso                   = cms.bool(True)                # if true, do rho corrected isolation, else do tracker only isolation
 
-process.PS.Data                       = cms.bool(True)               # is the dataset from real data or Monte Carlo
+process.PS.Data                       = cms.bool(False)               # is the dataset from real data or Monte Carlo
 process.PS.saveGenParticles           = cms.bool(False)               # save the generated particle information for hard scatter decays
 process.PS.noMETCut                   = cms.bool(False)               # disregard the MET cut when storing the events
 process.PS.invertEID                  = cms.bool(False)               # electrons which *fail* at least two of the EID requirements will be kept instead

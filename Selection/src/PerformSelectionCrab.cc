@@ -61,7 +61,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    elONLY                     =         iConfig.getParameter<bool>          ("elONLY");
    muONLY                     =         iConfig.getParameter<bool>          ("muONLY");
 
-   cutOnTrigger               =         iConfig.getParameter<bool>          ("cutOnTrigger");
+   //   cutOnTrigger               =         iConfig.getParameter<bool>          ("cutOnTrigger");
    SQWaT_Version              =         iConfig.getParameter<int>           ("SQWaT_Version");
    doRelIso                   =         iConfig.getParameter<bool>          ("doRelIso");
 
@@ -78,6 +78,10 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    el_passAll                 =         iConfig.getParameter<bool>          ("el_passAll");
    el_passStandard            =         iConfig.getParameter<bool>          ("el_passStandard");
    el_passFlag                =         iConfig.getParameter<bool>          ("el_passFlag");
+
+   //-----Trigger Variable Inputs
+   mu_passTrigger             =         iConfig.getParameter<bool>          ("mu_passTrigger");
+   el_passTrigger             =         iConfig.getParameter<bool>          ("el_passTrigger");
 
    //-----Vertex Variable Inputs
    PVfound                    =         iConfig.getParameter<bool>          ("PVfound");
@@ -307,7 +311,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
    printEventInformation(printEventInfo, 0, true);
    for(Int_t Nj=0; Nj<NJETS;Nj++) {
-      if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) {
+      if( (jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) && (mu_passTrigger||el_passTrigger)   ) {
          PassLp[1][Nj]++;
          PassMu[1][Nj]++;
          PassEl[1][Nj]++;
@@ -553,8 +557,13 @@ void PerformSelection::endJob()
 
 //______________________________________________________________________________
 void PerformSelection::triggerSelection() {
+  ///Do not apply trigger selection to MC
+  mu_passTrigger = true;
+  el_passTrigger = true;
+  if (Data) {
    triggerMap.clear();
-   passTrigger = false;
+   mu_passTrigger = false;
+   el_passTrigger = false;
    pat::TriggerEvent const * trig = &*triggerHandle;
 
    const pat::TriggerPathCollection* triggerPaths = trig->paths();
@@ -567,10 +576,11 @@ void PerformSelection::triggerSelection() {
       pat::TriggerPath const * muPath = trig->path(muTrigger);
       pat::TriggerPath const * elePath = trig->path(eleTrigger);
       if (muPath != 0 && muPath->wasAccept())
-         passTrigger = true;    
+         mu_passTrigger = true;    
       if (elePath != 0 && elePath->wasAccept())
-         passTrigger = true;
+         el_passTrigger = true;
    }
+  }
 }
 
 
