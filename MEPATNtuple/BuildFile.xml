@@ -1,8 +1,0 @@
-<use name="root"/>
-<use name="rootmath"/>
-<use name="rootcore"/>
-<use name="TAMUWW/AuxFunctions"/>
-<use name="ElectroWeakAnalysis/VPlusJets"/>
-<export>
-   <lib name="1"/>
-</export>

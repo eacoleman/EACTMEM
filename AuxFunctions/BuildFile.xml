@@ -1,7 +1,0 @@
-<use name="root"/>
-<use name="rootgraphics"/>
-<use name="rootinteractive"/>
-<use name="rootcintex"/>
-<export>
-   <lib name="1"/>
-</export>

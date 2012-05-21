@@ -1,9 +1,0 @@
-<use   name="TAMUWW/SpecialTools"/>
-<use   name="TAMUWW/Tools"/>
-<use   name="TAMUWW/MEPATNtuple"/>
-<use   name="JetMETAnalysis/JetUtilities"/>
-<use   name="FWCore/FWLite"/>
-<use   name="rootphysics"/>
-<use   name="rootgraphics"/>  
-<use   name="root"/>
-<bin   name="plotter_x" file="plotter_x.cc" />
