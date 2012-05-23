@@ -561,25 +561,50 @@ void PerformSelection::triggerSelection() {
   mu_passTrigger = true;
   el_passTrigger = true;
   if (Data) {
-   triggerMap.clear();
-   mu_passTrigger = false;
-   el_passTrigger = false;
-   pat::TriggerEvent const * trig = &*triggerHandle;
-
-   const pat::TriggerPathCollection* triggerPaths = trig->paths();
-   for (unsigned int i=0; i<triggerPaths->size(); i++) {
-      if ((*triggerPaths)[i].wasRun() && !(*triggerPaths)[i].wasError())
-         triggerMap[(*triggerPaths)[i].name()] = (*triggerPaths)[i].wasAccept();
-   }
-
-   if (trig->wasRun() && trig->wasAccept()) {
-      pat::TriggerPath const * muPath = trig->path(muTrigger);
-      pat::TriggerPath const * elePath = trig->path(eleTrigger);
-      if (muPath != 0 && muPath->wasAccept())
-         mu_passTrigger = true;    
-      if (elePath != 0 && elePath->wasAccept())
-         el_passTrigger = true;
-   }
+     triggerMap.clear();
+     mu_passTrigger = false;
+     el_passTrigger = false;
+     pat::TriggerEvent const * trig = &*triggerHandle;
+     
+     const pat::TriggerPathCollection* triggerPaths = trig->paths();
+     for (unsigned int i=0; i<triggerPaths->size(); i++) {
+        if ((*triggerPaths)[i].wasRun() && !(*triggerPaths)[i].wasError())
+           triggerMap[(*triggerPaths)[i].name()] = (*triggerPaths)[i].wasAccept();
+     }
+     
+     if (trig->wasRun() && trig->wasAccept()) {
+        //
+        // match muon trigger names to our wild card expression                                                         
+        //
+        TRegexp  muTrigRegexp(muTrigger);                                                                                
+        bool matchMuTrigName = false;                                                                                
+        for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
+           TString thisTrigPath = iPath->name();
+           matchMuTrigName =  thisTrigPath.Contains(muTrigRegexp);
+           if(matchMuTrigName == true){
+              pat::TriggerPath const * muPath = trig->path(iPath->name());
+              if (muPath != 0 && muPath->wasAccept()) {
+                 mu_passTrigger = true;
+              }
+           }
+        }
+        
+        //
+        // match electron trigger names to our wild card expression
+        //
+        TRegexp  eleTrigRegexp(eleTrigger);
+        bool matchElTrigName = false;
+        for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
+           TString thisTrigPath = iPath->name();
+           matchElTrigName =  thisTrigPath.Contains(eleTrigRegexp);
+           if(matchElTrigName == true){
+              pat::TriggerPath const * elePath = trig->path(iPath->name());
+              if (elePath != 0 && elePath->wasAccept()) {
+                 el_passTrigger = true;
+              }
+           }
+        }
+     }
   }
 }
 

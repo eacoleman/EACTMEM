@@ -86,6 +86,7 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include "TString.h"
+#include "TRegexp.h"
 
 //
 // Standard Library Includes
