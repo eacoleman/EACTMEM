@@ -30,140 +30,140 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    //, s3(0.1) //A double defined in the header
 {
    //-----Input Tags For Handles
-   triggerSource              =         iConfig.getParameter<edm::InputTag> ("triggerSource");
-   vtxSource                  =         iConfig.getParameter<edm::InputTag> ("vtxSource");
-   genParticleSource          =         iConfig.getParameter<edm::InputTag> ("genParticleSource");
-   pfJetSource                =         iConfig.getParameter<edm::InputTag> ("pfJetSource");
-   electronSource             =         iConfig.getParameter<edm::InputTag> ("electronSource");
-   muonSource                 =         iConfig.getParameter<edm::InputTag> ("muonSource");
-   METSource                  =         iConfig.getParameter<edm::InputTag> ("METSource");
-   rhoSource                  =         iConfig.getParameter<edm::InputTag> ("rhoSource");
+   triggerSource              =         iConfig.getParameter<edm::InputTag>   ("triggerSource");
+   vtxSource                  =         iConfig.getParameter<edm::InputTag>   ("vtxSource");
+   genParticleSource          =         iConfig.getParameter<edm::InputTag>   ("genParticleSource");
+   pfJetSource                =         iConfig.getParameter<edm::InputTag>   ("pfJetSource");
+   electronSource             =         iConfig.getParameter<edm::InputTag>   ("electronSource");
+   muonSource                 =         iConfig.getParameter<edm::InputTag>   ("muonSource");
+   METSource                  =         iConfig.getParameter<edm::InputTag>   ("METSource");
+   rhoSource                  =         iConfig.getParameter<edm::InputTag>   ("rhoSource");
 
    //-----Trigger Information
-   muTrigger                  =         iConfig.getParameter<string>        ("muTrigger");
-   eleTrigger                 =         iConfig.getParameter<string>        ("eleTrigger");
+   muTrigger                  =         iConfig.getParameter<vector<string> > ("muTrigger");
+   eleTrigger                 =         iConfig.getParameter<vector<string> > ("eleTrigger");
 
    //-----Program Level Inputs
-   outtablefilename           = TString(iConfig.getParameter<string>        ("outtablefilename"));
-   outtablenameEl             = TString(iConfig.getParameter<string>        ("outtablenameEl"));
-   outtablenameMu             = TString(iConfig.getParameter<string>        ("outtablenameMu"));
-   outtablenameLp             = TString(iConfig.getParameter<string>        ("outtablenameLp"));
-   runtype                    = TString(iConfig.getParameter<string>        ("runtype"));
+   outtablefilename           = TString(iConfig.getParameter<string>          ("outtablefilename"));
+   outtablenameEl             = TString(iConfig.getParameter<string>          ("outtablenameEl"));
+   outtablenameMu             = TString(iConfig.getParameter<string>          ("outtablenameMu"));
+   outtablenameLp             = TString(iConfig.getParameter<string>          ("outtablenameLp"));
+   runtype                    = TString(iConfig.getParameter<string>          ("runtype"));
 
-   printEventInfo             =         iConfig.getParameter<bool>          ("printEventInfo");
-   printJetInfo               =         iConfig.getParameter<bool>          ("printJetInfo");
-   printLeptonInfo            =         iConfig.getParameter<bool>          ("printLeptonInfo");
-   Data                       =         iConfig.getParameter<bool>          ("Data");
-   saveGenParticles           =         iConfig.getParameter<bool>          ("saveGenParticles");
-   noMETCut                   =         iConfig.getParameter<bool>          ("noMETCut");
-   invertEID                  =         iConfig.getParameter<bool>          ("invertEID");
-   PFlowLoose                 =         iConfig.getParameter<bool>          ("PFlowLoose");
-   elONLY                     =         iConfig.getParameter<bool>          ("elONLY");
-   muONLY                     =         iConfig.getParameter<bool>          ("muONLY");
+   printEventInfo             =         iConfig.getParameter<bool>            ("printEventInfo");
+   printJetInfo               =         iConfig.getParameter<bool>            ("printJetInfo");
+   printLeptonInfo            =         iConfig.getParameter<bool>            ("printLeptonInfo");
+   Data                       =         iConfig.getParameter<bool>            ("Data");
+   saveGenParticles           =         iConfig.getParameter<bool>            ("saveGenParticles");
+   noMETCut                   =         iConfig.getParameter<bool>            ("noMETCut");
+   invertEID                  =         iConfig.getParameter<bool>            ("invertEID");
+   PFlowLoose                 =         iConfig.getParameter<bool>            ("PFlowLoose");
+   elONLY                     =         iConfig.getParameter<bool>            ("elONLY");
+   muONLY                     =         iConfig.getParameter<bool>            ("muONLY");
 
-   //   cutOnTrigger               =         iConfig.getParameter<bool>          ("cutOnTrigger");
-   SQWaT_Version              =         iConfig.getParameter<int>           ("SQWaT_Version");
-   doRelIso                   =         iConfig.getParameter<bool>          ("doRelIso");
+   //   cutOnTrigger               =         iConfig.getParameter<bool>            ("cutOnTrigger");
+   SQWaT_Version              =         iConfig.getParameter<int>             ("SQWaT_Version");
+   doRelIso                   =         iConfig.getParameter<bool>            ("doRelIso");
 
    //-----Event Variable Inputs
-   elcnt_Prim                 =         iConfig.getParameter<int>           ("elcnt_Prim");
-   elcnt_Loose                =         iConfig.getParameter<int>           ("elcnt_Loose");
-   mucnt_Prim                 =         iConfig.getParameter<int>           ("mucnt_Prim");
-   mucnt_Loose                =         iConfig.getParameter<int>           ("mucnt_Loose");
-   jcnt_tot                   =         iConfig.getParameter<int>           ("jcnt_tot");
-   EvtTotCount                =         iConfig.getParameter<int>           ("EvtTotCount");
-   mu_passAll                 =         iConfig.getParameter<bool>          ("mu_passAll");
-   mu_passStandard            =         iConfig.getParameter<bool>          ("mu_passStandard");
-   mu_passFlag                =         iConfig.getParameter<bool>          ("mu_passFlag");
-   el_passAll                 =         iConfig.getParameter<bool>          ("el_passAll");
-   el_passStandard            =         iConfig.getParameter<bool>          ("el_passStandard");
-   el_passFlag                =         iConfig.getParameter<bool>          ("el_passFlag");
+   elcnt_Prim                 =         iConfig.getParameter<int>             ("elcnt_Prim");
+   elcnt_Loose                =         iConfig.getParameter<int>             ("elcnt_Loose");
+   mucnt_Prim                 =         iConfig.getParameter<int>             ("mucnt_Prim");
+   mucnt_Loose                =         iConfig.getParameter<int>             ("mucnt_Loose");
+   jcnt_tot                   =         iConfig.getParameter<int>             ("jcnt_tot");
+   EvtTotCount                =         iConfig.getParameter<int>             ("EvtTotCount");
+   mu_passAll                 =         iConfig.getParameter<bool>            ("mu_passAll");
+   mu_passStandard            =         iConfig.getParameter<bool>            ("mu_passStandard");
+   mu_passFlag                =         iConfig.getParameter<bool>            ("mu_passFlag");
+   el_passAll                 =         iConfig.getParameter<bool>            ("el_passAll");
+   el_passStandard            =         iConfig.getParameter<bool>            ("el_passStandard");
+   el_passFlag                =         iConfig.getParameter<bool>            ("el_passFlag");
 
    //-----Trigger Variable Inputs
-   mu_passTrigger             =         iConfig.getParameter<bool>          ("mu_passTrigger");
-   el_passTrigger             =         iConfig.getParameter<bool>          ("el_passTrigger");
+   mu_passTrigger             =         iConfig.getParameter<bool>            ("mu_passTrigger");
+   el_passTrigger             =         iConfig.getParameter<bool>            ("el_passTrigger");
 
    //-----Vertex Variable Inputs
-   PVfound                    =         iConfig.getParameter<bool>          ("PVfound");
-   zvtx                       =         iConfig.getParameter<double>        ("zvtx");
-   vtxcnt                     =         iConfig.getParameter<int>           ("vtxcnt");
+   PVfound                    =         iConfig.getParameter<bool>            ("PVfound");
+   zvtx                       =         iConfig.getParameter<double>          ("zvtx");
+   vtxcnt                     =         iConfig.getParameter<int>             ("vtxcnt");
 
    //-----Jet Variable Inputs
-   j_ptMin                    =         iConfig.getParameter<double>        ("j_ptMin");
-   j_aetaMax                  =         iConfig.getParameter<double>        ("j_aetaMax");
-   j_DRelMin                  =         iConfig.getParameter<double>        ("j_DRelMin");
-   muPrim_DRjMin              =         iConfig.getParameter<double>        ("muPrim_DRjMin");
+   j_ptMin                    =         iConfig.getParameter<double>          ("j_ptMin");
+   j_aetaMax                  =         iConfig.getParameter<double>          ("j_aetaMax");
+   j_DRelMin                  =         iConfig.getParameter<double>          ("j_DRelMin");
+   muPrim_DRjMin              =         iConfig.getParameter<double>          ("muPrim_DRjMin");
 
    //-----B-Tag Variable Inputs
-   nBtagSSV                   =         iConfig.getParameter<int>           ("nBtagSSV");
-   nBtagTC                    =         iConfig.getParameter<int>           ("nBtagTC");
-   bDiscriminatorSSVMin       =         iConfig.getParameter<double>        ("bDiscriminatorSSVMin");
-   bDiscriminatorTCMin        =         iConfig.getParameter<double>        ("bDiscriminatorTCMin");
+   nBtagSSV                   =         iConfig.getParameter<int>             ("nBtagSSV");
+   nBtagTC                    =         iConfig.getParameter<int>             ("nBtagTC");
+   bDiscriminatorSSVMin       =         iConfig.getParameter<double>          ("bDiscriminatorSSVMin");
+   bDiscriminatorTCMin        =         iConfig.getParameter<double>          ("bDiscriminatorTCMin");
 
    //-----Muon Variable Inputs
-   muPrim_ptMin               =         iConfig.getParameter<double>        ("muPrim_ptMin");
-   muPrim_aetaMax             =         iConfig.getParameter<double>        ("muPrim_aetaMax");
-   muPrim_dBMax               =         iConfig.getParameter<double>        ("muPrim_dBMax");
-   muPrim_RelIsoMax           =         iConfig.getParameter<double>        ("muPrim_RelIsoMax");
-   muPrim_TrkIsoMax           =         iConfig.getParameter<double>        ("muPrim_TrkIsoMax");
-   isProperlyIsolatedMu       =         iConfig.getParameter<bool>          ("isProperlyIsolatedMu");
-   muLoose_ptMin              =         iConfig.getParameter<double>        ("muLoose_ptMin");
-   muLoose_aetaMax            =         iConfig.getParameter<double>        ("muLoose_aetaMax");
-   muLoose_RelIsoMax          =         iConfig.getParameter<double>        ("muLoose_RelIsoMax");
-   muLoose_TrkIsoMax          =         iConfig.getParameter<double>        ("muLoose_TrkIsoMax");
+   muPrim_ptMin               =         iConfig.getParameter<double>          ("muPrim_ptMin");
+   muPrim_aetaMax             =         iConfig.getParameter<double>          ("muPrim_aetaMax");
+   muPrim_dBMax               =         iConfig.getParameter<double>          ("muPrim_dBMax");
+   muPrim_RelIsoMax           =         iConfig.getParameter<double>          ("muPrim_RelIsoMax");
+   muPrim_TrkIsoMax           =         iConfig.getParameter<double>          ("muPrim_TrkIsoMax");
+   isProperlyIsolatedMu       =         iConfig.getParameter<bool>            ("isProperlyIsolatedMu");
+   muLoose_ptMin              =         iConfig.getParameter<double>          ("muLoose_ptMin");
+   muLoose_aetaMax            =         iConfig.getParameter<double>          ("muLoose_aetaMax");
+   muLoose_RelIsoMax          =         iConfig.getParameter<double>          ("muLoose_RelIsoMax");
+   muLoose_TrkIsoMax          =         iConfig.getParameter<double>          ("muLoose_TrkIsoMax");
 
    //-----Electron Variable Inputs
-   elPrim_ptMin               =         iConfig.getParameter<double>        ("elPrim_ptMin");
-   elPrim_aetaMax             =         iConfig.getParameter<double>        ("elPrim_aetaMax");
-   elPrim_aetascExcludeMax    =         iConfig.getParameter<double>        ("elPrim_aetascExcludeMax");
-   elPrim_aetascExcludeMin    =         iConfig.getParameter<double>        ("elPrim_aetascExcludeMin");
-   elPrim_dBMax               =         iConfig.getParameter<double>        ("elPrim_dBMax");
-   elPrim_RelIsoMax           =         iConfig.getParameter<double>        ("elPrim_RelIsoMax");
-   elPrim_TrkIsoMax           =         iConfig.getParameter<double>        ("elPrim_TrkIsoMax");
+   elPrim_ptMin               =         iConfig.getParameter<double>          ("elPrim_ptMin");
+   elPrim_aetaMax             =         iConfig.getParameter<double>          ("elPrim_aetaMax");
+   elPrim_aetascExcludeMax    =         iConfig.getParameter<double>          ("elPrim_aetascExcludeMax");
+   elPrim_aetascExcludeMin    =         iConfig.getParameter<double>          ("elPrim_aetascExcludeMin");
+   elPrim_dBMax               =         iConfig.getParameter<double>          ("elPrim_dBMax");
+   elPrim_RelIsoMax           =         iConfig.getParameter<double>          ("elPrim_RelIsoMax");
+   elPrim_TrkIsoMax           =         iConfig.getParameter<double>          ("elPrim_TrkIsoMax");
    
-   elPrim_sigmaIetaIetaMaxEB  =         iConfig.getParameter<double>        ("elPrim_sigmaIetaIetaMaxEB");
-   elPrim_aDeltaPhiMaxEB      =         iConfig.getParameter<double>        ("elPrim_aDeltaPhiMaxEB");
-   elPrim_aDeltaEtaMaxEB      =         iConfig.getParameter<double>        ("elPrim_aDeltaEtaMaxEB");
-   elPrim_HoEMaxEB            =         iConfig.getParameter<double>        ("elPrim_HoEMaxEB"); 
-   elPrim_sigmaIetaIetaMaxEE  =         iConfig.getParameter<double>        ("elPrim_sigmaIetaIetaMaxEE");
-   elPrim_aDeltaPhiMaxEE      =         iConfig.getParameter<double>        ("elPrim_aDeltaPhiMaxEE");
-   elPrim_aDeltaEtaMaxEE      =         iConfig.getParameter<double>        ("elPrim_aDeltaEtaMaxEE");
-   elPrim_HoEMaxEE            =         iConfig.getParameter<double>        ("elPrim_HoEMaxEE");
+   elPrim_sigmaIetaIetaMaxEB  =         iConfig.getParameter<double>          ("elPrim_sigmaIetaIetaMaxEB");
+   elPrim_aDeltaPhiMaxEB      =         iConfig.getParameter<double>          ("elPrim_aDeltaPhiMaxEB");
+   elPrim_aDeltaEtaMaxEB      =         iConfig.getParameter<double>          ("elPrim_aDeltaEtaMaxEB");
+   elPrim_HoEMaxEB            =         iConfig.getParameter<double>          ("elPrim_HoEMaxEB"); 
+   elPrim_sigmaIetaIetaMaxEE  =         iConfig.getParameter<double>          ("elPrim_sigmaIetaIetaMaxEE");
+   elPrim_aDeltaPhiMaxEE      =         iConfig.getParameter<double>          ("elPrim_aDeltaPhiMaxEE");
+   elPrim_aDeltaEtaMaxEE      =         iConfig.getParameter<double>          ("elPrim_aDeltaEtaMaxEE");
+   elPrim_HoEMaxEE            =         iConfig.getParameter<double>          ("elPrim_HoEMaxEE");
 
-   elLoose_ptMin              =         iConfig.getParameter<double>        ("elLoose_ptMin");
-   elLoose_RelIsoMax          =         iConfig.getParameter<double>        ("elLoose_RelIsoMax");
-   elLoose_TrkIsoMax          =         iConfig.getParameter<double>        ("elLoose_TrkIsoMax");
+   elLoose_ptMin              =         iConfig.getParameter<double>          ("elLoose_ptMin");
+   elLoose_RelIsoMax          =         iConfig.getParameter<double>          ("elLoose_RelIsoMax");
+   elLoose_TrkIsoMax          =         iConfig.getParameter<double>          ("elLoose_TrkIsoMax");
 
-   elLoose_sigmaIetaIetaMaxEB =         iConfig.getParameter<double>        ("elLoose_sigmaIetaIetaMaxEB");
-   elLoose_aDeltaPhiMaxEB     =         iConfig.getParameter<double>        ("elLoose_aDeltaPhiMaxEB");
-   elLoose_aDeltaEtaMaxEB     =         iConfig.getParameter<double>        ("elLoose_aDeltaEtaMaxEB");
-   elLoose_HoEMaxEB           =         iConfig.getParameter<double>        ("elLoose_HoEMaxEB");
-   elLoose_sigmaIetaIetaMaxEE =         iConfig.getParameter<double>        ("elLoose_sigmaIetaIetaMaxEE");
-   elLoose_aDeltaPhiMaxEE     =         iConfig.getParameter<double>        ("elLoose_aDeltaPhiMaxEE");
-   elLoose_aDeltaEtaMaxEE     =         iConfig.getParameter<double>        ("elLoose_aDeltaEtaMaxEE");
-   elLoose_HoEMaxEE           =         iConfig.getParameter<double>        ("elLoose_HoEMaxEE"); 
+   elLoose_sigmaIetaIetaMaxEB =         iConfig.getParameter<double>          ("elLoose_sigmaIetaIetaMaxEB");
+   elLoose_aDeltaPhiMaxEB     =         iConfig.getParameter<double>          ("elLoose_aDeltaPhiMaxEB");
+   elLoose_aDeltaEtaMaxEB     =         iConfig.getParameter<double>          ("elLoose_aDeltaEtaMaxEB");
+   elLoose_HoEMaxEB           =         iConfig.getParameter<double>          ("elLoose_HoEMaxEB");
+   elLoose_sigmaIetaIetaMaxEE =         iConfig.getParameter<double>          ("elLoose_sigmaIetaIetaMaxEE");
+   elLoose_aDeltaPhiMaxEE     =         iConfig.getParameter<double>          ("elLoose_aDeltaPhiMaxEE");
+   elLoose_aDeltaEtaMaxEE     =         iConfig.getParameter<double>          ("elLoose_aDeltaEtaMaxEE");
+   elLoose_HoEMaxEE           =         iConfig.getParameter<double>          ("elLoose_HoEMaxEE"); 
    
-   el_aetaPass                =         iConfig.getParameter<bool>          ("el_aetaPass");
-   el_convPass_a              =         iConfig.getParameter<bool>          ("el_convPass_a");
-   el_convPass_b              =         iConfig.getParameter<bool>          ("el_convPass_b");
+   el_aetaPass                =         iConfig.getParameter<bool>            ("el_aetaPass");
+   el_convPass_a              =         iConfig.getParameter<bool>            ("el_convPass_a");
+   el_convPass_b              =         iConfig.getParameter<bool>            ("el_convPass_b");
 
    //-----Lepton Variable Inputs
 
    //-----MET Variable Inputs
-   MET_EtMin                  =         iConfig.getParameter<double>        ("MET_EtMin");
+   MET_EtMin                  =         iConfig.getParameter<double>          ("MET_EtMin");
 
    //-----Additional Variable Inputs
-   lTotIso                    =         iConfig.getParameter<double>        ("lTotIso");
-   lecalIso                   =         iConfig.getParameter<double>        ("lecalIso");
-   lhcalIso                   =         iConfig.getParameter<double>        ("lhcalIso");
-   ltrkIso                    =         iConfig.getParameter<double>        ("ltrkIso");
-   lrelIso                    =         iConfig.getParameter<double>        ("lrelIso");
-   Mjj                        =         iConfig.getParameter<double>        ("Mjj");
-   lQ                         =         iConfig.getParameter<int>           ("lQ");
-   lEta                       =         iConfig.getParameter<double>        ("lEta");
+   lTotIso                    =         iConfig.getParameter<double>          ("lTotIso");
+   lecalIso                   =         iConfig.getParameter<double>          ("lecalIso");
+   lhcalIso                   =         iConfig.getParameter<double>          ("lhcalIso");
+   ltrkIso                    =         iConfig.getParameter<double>          ("ltrkIso");
+   lrelIso                    =         iConfig.getParameter<double>          ("lrelIso");
+   Mjj                        =         iConfig.getParameter<double>          ("Mjj");
+   lQ                         =         iConfig.getParameter<int>             ("lQ");
+   lEta                       =         iConfig.getParameter<double>          ("lEta");
 
    //-----Constant Inputs
-   etaBarrelMax               =         iConfig.getParameter<double>        ("etaBarrelMax");
+   etaBarrelMax               =         iConfig.getParameter<double>          ("etaBarrelMax");
 
    InitializeIntMatrix(PassEl);
    InitializeIntMatrix(PassMu);
@@ -574,17 +574,19 @@ void PerformSelection::triggerSelection() {
      
      if (trig->wasRun() && trig->wasAccept()) {
         //
-        // match muon trigger names to our wild card expression                                                         
+        // match muon trigger names to our wild card expression
         //
-        TRegexp  muTrigRegexp(muTrigger);                                                                                
-        bool matchMuTrigName = false;                                                                                
-        for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
-           TString thisTrigPath = iPath->name();
-           matchMuTrigName =  thisTrigPath.Contains(muTrigRegexp);
-           if(matchMuTrigName == true){
-              pat::TriggerPath const * muPath = trig->path(iPath->name());
-              if (muPath != 0 && muPath->wasAccept()) {
-                 mu_passTrigger = true;
+        for (unsigned int iTrig=0; iTrig<muTrigger.size(); iTrig++) {
+           TRegexp  muTrigRegexp(muTrigger[iTrig]);
+           bool matchMuTrigName = false;
+           for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
+              TString thisTrigPath = iPath->name();
+              matchMuTrigName =  thisTrigPath.Contains(muTrigRegexp);
+              if(matchMuTrigName == true){
+                 pat::TriggerPath const * muPath = trig->path(iPath->name());
+                 if (muPath != 0 && muPath->wasAccept()) {
+                    mu_passTrigger = true;
+                 }
               }
            }
         }
@@ -592,15 +594,17 @@ void PerformSelection::triggerSelection() {
         //
         // match electron trigger names to our wild card expression
         //
-        TRegexp  eleTrigRegexp(eleTrigger);
-        bool matchElTrigName = false;
-        for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
-           TString thisTrigPath = iPath->name();
-           matchElTrigName =  thisTrigPath.Contains(eleTrigRegexp);
-           if(matchElTrigName == true){
-              pat::TriggerPath const * elePath = trig->path(iPath->name());
-              if (elePath != 0 && elePath->wasAccept()) {
-                 el_passTrigger = true;
+        for (unsigned int iTrig=0; iTrig<eleTrigger.size(); iTrig++) {
+           TRegexp  eleTrigRegexp(eleTrigger[iTrig]);
+           bool matchElTrigName = false;
+           for(pat::TriggerPathCollection::const_iterator iPath = trig->paths()->begin(); iPath != trig->paths()->end(); ++iPath){
+              TString thisTrigPath = iPath->name();
+              matchElTrigName =  thisTrigPath.Contains(eleTrigRegexp);
+              if(matchElTrigName == true){
+                 pat::TriggerPath const * elePath = trig->path(iPath->name());
+                 if (elePath != 0 && elePath->wasAccept()) {
+                    el_passTrigger = true;
+                 }
               }
            }
         }

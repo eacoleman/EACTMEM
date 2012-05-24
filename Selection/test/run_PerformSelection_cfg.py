@@ -61,8 +61,8 @@ process.PS.rhoSource                  = cms.InputTag("kt6PFJetsChsForIsolationPF
 process.PS.triggerSource              = cms.InputTag('patTriggerEvent')                      # InputTag for trigger collection
 
     #-----Trigger Information
-process.PS.muTrigger                  = cms.string('HLT_IsoMu17_v*')                                # Muon trigger name
-process.PS.eleTrigger                 = cms.string('HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2') # Electron trigger name 
+process.PS.muTrigger                  = cms.vstring('HLT_IsoMu17_v*')                                # Muon trigger name
+process.PS.eleTrigger                 = cms.vstring('HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2') # Electron trigger name 
 
     #-----Program Level Inputs
 process.PS.outtablefilename           = cms.string("outputTable.txt") # name of the file containing the output/efficiency tables

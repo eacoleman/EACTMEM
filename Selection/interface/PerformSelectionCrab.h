@@ -219,8 +219,8 @@ private:
    // trigger variables
    bool mu_passTrigger;
    bool el_passTrigger;
-   string muTrigger;
-   string eleTrigger;
+   vector<string> muTrigger;
+   vector<string> eleTrigger;
    //bool cutOnTrigger;
    bool passTrigger;
    //bool passTrigger;
