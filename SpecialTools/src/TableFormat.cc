@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id:$
+// $Id: TableFormat.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableFormat.hh"
@@ -24,7 +24,7 @@ using std::string;
 // style = "Latex" 
 // style = "Tiki"   
 // style = "Twiki" equivalent to Tiki
-TableFormat TableFormat::getFormat(string style){
+TableFormat TableFormat::getFormat(string style, int numCol){
 
   TableFormat format;
   format.style = "Undefined";
@@ -33,6 +33,7 @@ TableFormat TableFormat::getFormat(string style){
   format.separator = "";
   format.end_row   = "";
   format.end_table = "";
+  format.begin_table = "";
 
   // transform style to uppercase
   std::transform(style.begin(), style.end(), style.begin(),  (int(*)(int)) toupper);
@@ -44,7 +45,12 @@ TableFormat TableFormat::getFormat(string style){
   }else if (style == "LATEX"){
     format.style="LATEX";
     format.separator = "&";
-    format.end_row   = "\\";
+    format.end_row   = "\\\\";
+    format.begin_table = "\\begin{tabular}{";
+    for (int i = 0; i<numCol; i++)
+       format.begin_table+=" c ";
+    format.begin_table+="}\n";
+    format.end_table = "\\end{tabular}";
   } else if (style == "TIKI" || style == "TWIKI") {
     format.style="TIKI";
     format.Row1HeaderPre = "{FANCYTABLE(head=>";

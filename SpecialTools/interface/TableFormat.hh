@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id:$
+// $Id: TableFormat.hh,v 1.1 2011/02/08 21:31:38 eusebi Exp $
 
 #ifndef TABLEFORMAT_DEF
 #define TABLEFORMAT_DEF
@@ -23,8 +23,9 @@ public:
   std::string separator;
   std::string end_row  ;
   std::string end_table;
+  std::string begin_table;
 
-  static TableFormat getFormat(std::string formatName);
+   static TableFormat getFormat(std::string formatName, int numCol);
 
 };
 

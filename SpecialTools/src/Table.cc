@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.5 2012/02/10 04:47:55 aperloff Exp $
+// $Id: Table.cc,v 1.6 2012/02/27 18:14:02 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -70,8 +70,12 @@ void Table::printTable(ostream &out, string style){
   // For neatness find first the max width needed in each column 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  // get the format delimiters
-  TableFormat format  = TableFormat::getFormat(style);
+  // Check is the table is empty
+  if (tableRows.size()==0)
+     return;
+
+  // get the format delimiters (add one to columns for row names)
+  TableFormat format  = TableFormat::getFormat(style,tableRows[0].getCellEntries().size()+1);
 
   // Create and find the max size of each column
   vector<size_t> colWidth;
@@ -114,6 +118,9 @@ void Table::printTable(ostream &out, string style){
 
   // The string to where we print
   ostringstream oss;
+
+  //Print the table prefix, if any
+  oss<<format.begin_table;
 
   //Print the table name followed by the column names of the first row
   oss<< std::setw(colWidth[0]+lpad)<<format.Row1HeaderPre+GetName()<<" "<<format.separator;
@@ -474,7 +481,8 @@ bool Table::parseFromFile(string filename, string cellClass, string style){
   // check that the file is open
   if (inputFile.is_open()){
     
-    TableFormat format  = TableFormat::getFormat(style);
+    //NEEDS TO BE FIXED!!! WON'T WORK WITH LATEX FILES!!!
+    TableFormat format  = TableFormat::getFormat(style,0);
 
     // clear the current table
     tableRows.clear();
