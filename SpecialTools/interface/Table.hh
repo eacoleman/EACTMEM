@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.hh,v 1.4 2011/04/27 17:21:09 aperloff Exp $
+// $Id: Table.hh,v 1.5 2012/02/10 04:47:54 aperloff Exp $
 
 #ifndef TABLE_DEF
 #define TABLE_DEF
@@ -68,6 +68,9 @@ public :
 
   // set the vector of rows
   void setRows(std::vector<TableRow> rows) { tableRows = rows;}
+
+  // get number of rows
+  int getNumRows() {return tableRows.size();}
 
   // get the vector of rows
   std::vector<TableRow> getRows() const { return tableRows;} ;
