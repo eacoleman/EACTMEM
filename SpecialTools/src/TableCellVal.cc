@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCellVal.cc,v 1.1 2011/02/26 19:11:02 eusebi Exp $
+// $Id: TableCellVal.cc,v 1.2 2011/03/01 01:56:46 eusebi Exp $
 
 
 //My libraries
@@ -36,7 +36,7 @@ string TableCellVal::print(TableFormat format){
   ostringstream oss;
 
   if (format.style == "LATEX" ) 
-    oss<< val.value<<" \\pm "<<val.error ;
+    oss<< val.value<<" $\\pm$ "<<val.error ;
   else
     oss<< val.value<<" +/- "<<val.error ;
   return oss.str();
@@ -47,7 +47,7 @@ bool TableCellVal::parseFromFile(string str, TableFormat format){
 
   vector<string> fields ;
   if (format.style == "LATEX" ) 
-    fields = AuxFunctions::splitLineIntoWords(str,"\\pm");
+    fields = AuxFunctions::splitLineIntoWords(str,"$\\pm$");
   else
     fields = AuxFunctions::splitLineIntoWords(str,"+/-");
   if (fields.size() == 2){
