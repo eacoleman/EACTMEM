@@ -1,0 +1,73 @@
+# CrossSections (pb) : QCD taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TWikiTop2011DataMCTrig
+# CrossSections (pb) : Single top taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SingleTopSigma
+# CrossSections (pb) : Other SM processes taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV?skin=drupal
+# CrossSections (pb) : Higgs taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt7TeV
+# On the left is the process name.
+CellClass=TableCellVal
+
+Process     			|      CrossSection     
+Data        			|  1.000  	   +/- 0.00 
+SingleEl_Data			|  1.000  	   +/- 0.00 
+SingleMu_Data			|  1.000  	   +/- 0.00 
+STopS_T    				|  3.790 	   +/- 0.147648
+STopS_Tbar 				|  1.760 	   +/- 0.080623
+STopT_T    				|  56.40  	   +/- 2.370654
+STopT_Tbar 				|  30.70 	   +/- 1.303840
+STopTW_T   				|  11.10  	   +/- 0.761577
+STopTW_Tbar				|  11.10  	   +/- 0.761577
+TTbar     				|  225.197 	   +/- 0.00
+TTbarLJ   				|  0.00   	   +/- 0.00 
+TTbarDil  				|  0.00   	   +/- 0.00  
+Wbb       				|  0.00   	   +/- 0.00 
+Wcc       				|  0.00        +/- 0.00 
+WLight    				|  0.00   	   +/- 0.00 
+WJets     				|  36257.2     +/- 0.00
+WpJ     				|  36257.2     +/- 0.00 
+ZJets     				|  3503.71 	   +/- 0.00
+DYJets                  |  3503.71     +/- 0.00
+ZpJ     				|  3503.71 	   +/- 0.00
+QCD       				|  103334.00   +/- 0.00 
+QCD_Pt20_MuEnriched     |  0.00	       +/- 0.00
+QCD_MuEnriched          |  0.00        +/- 0.00
+QCD_Pt20to30_EMEnriched |  0.00        +/- 0.00
+QCD_Pt30to80_EMEnriched |  0.00        +/- 0.00
+QCD_Pt80to170_EMEnriched|  0.00        +/- 0.00
+QCD_Pt20to30_BCtoE      |  0.00        +/- 0.00
+QCD_Pt30to80_BCtoE      |  0.00        +/- 0.00
+QCD_Pt80to170_BCtoE     |  0.00        +/- 0.00
+WW        				|  57.1097 	   +/- 0.00 
+WZ        				|  32.3161     +/- 0.00
+ZZ        				|  8.25561 	   +/- 0.00
+WH100     				|  1.186  	   +/- 0.04744
+WH105     				|  1.018   	   +/- 0.043774
+WH110     				|  0.8754 	   +/- 0.039393
+WH115     				|  0.7546      +/- 0.0354662
+WH120     				|  0.6561 	   +/- 0.0269001
+WH125     				|  0.5729      +/- 0.0246347
+WH130     				|  0.5008      +/- 0.0215344
+WH135     				|  0.4390      +/- 0.017999
+WH140     				|  0.3857  	   +/- 0.015428
+WH145     				|  0.3406 	   +/- 0.0156676
+WH150     				|  0.3001  	   +/- 0.0123041
+HWW160                  |  9.080       +/- 1.68888
+HWW170                  |  7.729       +/- 1.383491
+HWW180                  |  6.739       +/- 1.219759
+HWW190                  |  5.896       +/- 1.020008
+HWW200     				|  5.249  	   +/- 0.902828
+HWW250     				|  3.312  	   +/- 0.54648
+HWW300     				|  2.422  	   +/- 0.406896
+HWW350     				|  2.306  	   +/- 0.454282
+HWW400     				|  2.032  	   +/- 0.331216
+HWW450     				|  1.3595 	   +/- 0.233834
+HWW500     				|  0.849  	   +/- 0.1502907
+HWW550                  |  0.52765     +/- 0.09780325
+HWW600                  |  0.3267      +/- 0.0633798
+VBFH200        	       	|  0.6371      +/- 0.0216614
+VBFH250        	       	|  0.4304      +/- 0.017216
+VBFH300        	       	|  0.3011      +/- 0.0138506
+VBFH350        	       	|  0.2132      +/- 0.0110864
+VBFH400        	       	|  0.1620      +/- 0.009558
+VBFH450        	       	|  0.12375     +/- 0.00816085
+VBFH500        	       	|  0.09497     +/- 0.00683784
+VBFH550        	       	|  0.07378     +/- 0.00582494
+VBFH600        	       	|  0.05771     +/- 0.00496306
