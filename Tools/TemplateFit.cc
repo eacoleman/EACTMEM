@@ -21,7 +21,7 @@ using namespace std;
 
 #include </uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src/TAMUWW/Tools/BkgPlotTools.cc>
 
-void TemplateFit(const char* TitleName, const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, const char* SaveName = 0, const char* XAxisName=0 )
+void TemplateFit(const char* TitleName, const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, const char* SaveName = 0, const char* XAxisName=0 , bool weightHists=false, const char* wtVar=0)
 //// Plots variable VarName for the given modes. The size (area) of each histogram is proportional to the number of given events. 
 /// inModes should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color[1] modename[2] ... " 
 /// Use AddRest to give additional restrictions)
@@ -50,7 +50,7 @@ void TemplateFit(const char* TitleName, const char* TreeName, const char* VarNam
   ////Define the histograms
   TH1F* h[20];
   //h[0]=Data, h[1]=QCD (from Data, float), h[2]=WpJ (from MC, float), h[3]-h[nModes-1] fixed MC
-  fillHistograms(h,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes,infilenames,true);
+  fillHistograms(h,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes,infilenames,true,false,0,weightHists,wtVar);
 
 
   // Normalize to the data (evtcounts[0]=Lumi in pb^-1)
@@ -194,19 +194,22 @@ void TemplateFit(const char* TitleName, const char* TreeName, const char* VarNam
   label="Events/"+label;
   h[0]->SetYTitle(label);
   cnv->SetLeftMargin(0.17);
+  double max=h[0]->GetMaximum();
+  h[0]->SetMaximum(max*1.15);
+
   h[0]->GetYaxis()->SetTitleOffset(-2.10);
   h[0]->GetYaxis()->Draw("same");
   h[0]->GetYaxis()->SetTicks("+-");
 
   ///Draw chi2/ndof:
   char text[30];
-  double chi2dof=(fit->GetChisquare())/(NBins+1.0);
-  sprintf(text,"#chi^{2}/ndof = %5.2f",chi2dof);
-  TLatex* tl = new TLatex(0.62,0.45,text);
-  tl->SetTextSize(1./25.);
-  tl->SetTextFont(132);
-  tl->SetNDC();
-  tl->Draw();
+  double chi2dof=(fit->GetChisquare())/(NBins-2.0);
+  //sprintf(text,"#chi^{2}/ndof = %5.2f",chi2dof);
+  //TLatex* tl = new TLatex(0.62,0.45,text);
+//   tl->SetTextSize(1./25.);
+//   tl->SetTextFont(132);
+//   tl->SetNDC();
+//   tl->Draw();
 
   lgnd->Draw();
   cnv->Draw();

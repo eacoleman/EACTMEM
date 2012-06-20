@@ -81,7 +81,8 @@ void MEJob::loopOverEvents()
     EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
     outputTree->Branch("EvtTree","EventNtuple",&myntuple);
   }
-  
+
+
   PartonColl partons;
   
   unsigned counter = 1;

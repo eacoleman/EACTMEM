@@ -43,6 +43,7 @@ void ManipulateMultipleCRABJobSets () {
 // _nEvtsOrLumisPerJob =
 // _nReps = 
 // _nJobsPerPart =
+// _pset = 
 // _publishDataName =
 // _availableAtFNAL =
 // "-----------------------------------------------------------------------"
@@ -54,7 +55,7 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
   TString label, token1, valstr, token3;
   int valint;
   bool createAtFNAL=false;
-  TString setName,baseDir,dataset,lumimask,runselection,publishDataName;
+  TString setName,baseDir,dataset,lumimask,runselection,pset,publishDataName;
   int nEvtsPerJob,nEvtsTotal,nReps,nJobsPerPart;
 
   //TString endlog_checkString;
@@ -139,14 +140,22 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
       allSetsLogFile.getline(logline,500);
       istrstream str9(logline);
       str9 >> label >> token1 >> valstr >> token3;
-      if ( label=="_publishDataName" ) {
-	publishDataName=valstr;
+      if ( label=="_pset" ) {
+	pset=valstr;
       } else {
 	cerr << "ERROR : Lines in the input file are not in proper order" << endl;
       }
       allSetsLogFile.getline(logline,500);
       istrstream str10(logline);
       str10 >> label >> token1 >> valstr >> token3;
+      if ( label=="_publishDataName" ) {
+	publishDataName=valstr;
+      } else {
+	cerr << "ERROR : Lines in the input file are not in proper order" << endl;
+      }
+      allSetsLogFile.getline(logline,500);
+      istrstream str11(logline);
+      str11 >> label >> token1 >> valstr >> token3;
       if ( label=="_availableAtFNAL" ) {
 	if ( createAtFNAL_ifPossible&&(valstr=="yes") ) {
 	  createAtFNAL=true;
@@ -156,7 +165,7 @@ void CreateJobs_All(const char* allSetsLogName, bool createAtFNAL_ifPossible)
       } else {
 	cerr << "ERROR : Lines in the input file are not in proper order" << endl;
       }
-      CreateJobs(setName,nEvtsPerJob,nEvtsTotal,baseDir,dataset,lumimask,runselection,nReps,nJobsPerPart,publishDataName,createAtFNAL);
+      CreateJobs(setName,nEvtsPerJob,nEvtsTotal,baseDir,dataset,lumimask,runselection,nReps,nJobsPerPart,pset,publishDataName,createAtFNAL);
     } 
 // else {
 //       endlog_checkString=label;
@@ -490,7 +499,7 @@ void HADDJobsInADirectory(const char* dirName, const char* filePrefix)
       Command="/"+Command;
       Command=subdirectoryName[i]+Command;
       Command=dirName+Command;
-      Command="_CMSSW428.root "+Command;
+      Command=".root "+Command;
       Command=subdirectoryName[i]+Command;
       Command=dirName+Command;
       Command="hadd "+Command;

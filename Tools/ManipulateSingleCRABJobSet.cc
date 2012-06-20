@@ -37,16 +37,20 @@ using namespace std;
 
 const bool isData=false; //use when setting .cfg file parameters.
 const bool isLocalDataset=true; //use to set .cfg file parameters when running on a locally stored dataset.
-//const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet";//Use when working with a local dataset.
-const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.
+const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet";//Use when working with a local dataset.
+//const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.
 const bool useBackupLogs=false; //a feature used to restore logs, if they were damaged or lost (set to true and run CreateJobs, StartJobs and UpdateJobStatus).
+
+//NTuple Generation
 //const TString designation="MC"; //Set to MC or Data for actual runs
 //const TString designation="Data";
 //const TString designation="MCEWKFall11_mu";
-const TString designation="MCEWKFall11_el";
+//const TString designation="MCEWKFall11_el";
 //const TString designation="MCEWKPATSpring12_mu";
 //const TString designation="MCEWKPATSpring12_el";
+const TString designation="FromPAT428";
 
+///PAT Tuple Generation
 //const TString designation="MCVBFPATGen";
 
 /// Set to true for PATTuple generation
@@ -446,13 +450,13 @@ bool returnNJobs(const char* statusLogName, int& NJobs, bool isStatusLog) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////    Main Functions  ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, const char* _publishDataName, bool _createAtFNAL)
+void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobsTotal, const char* _baseDir, const char* _dataset, const char* _lumimask, const char* _runselection, int _nReps, int _nJobsPerPart, const char* _pset, const char* _publishDataName, bool _createAtFNAL)
 ///Creates the config cfgs/_setName.cfg and a log in logs/_setName.log
 ///Each set of jobs can have X Repetitions (i.e. the number of times you launch this set of jobs), Y Parts and version Z (i.e. if your resubmission fails enough time you can recreate).
 ///Log lines are of the form RepX PtY Label = Value
 ///For MC/Data events_per_job/lumis_per_job = _nEvtsOrLumisPerJob, total_number_of_events/number_of_jobs = _nEvtsOrJobsTotal
 {
-  TString Command, tempStr, tempName, processeddir, logFileName, cfgFileName, workingdir, remotedir, remotedir_base, outputdir, joblog, token, runselection, publishDataName;
+  TString Command, tempStr, tempName, processeddir, logFileName, cfgFileName, workingdir, remotedir, remotedir_base, outputdir, joblog, token, runselection, pset, publishDataName;
   int NVersion, NJobsTot, NJobsProcessed, NParts, StartJob, EndJob;
   bool firstJobCreation=false;
   char line[500];
@@ -577,6 +581,10 @@ void CreateJobs (const char* _setName, int _nEvtsOrLumisPerJob, int _nEvtsOrJobs
   remotedir_base="/"+remotedir_base;
   remotedir_base=designation+remotedir_base;
   outCfgFile << "### Start Job Specific Settings ###" << endl;
+  pset=_pset;
+  if ( pset!="NOTJOBSPECIFIC" ) {
+    outCfgFile << "pset = " << pset << endl;
+  }
   if ( isData ) {
     outCfgFile << "lumis_per_job = " << _nEvtsOrLumisPerJob << endl;
     outCfgFile << "number_of_jobs = " << _nEvtsOrJobsTotal << endl;
@@ -1130,6 +1138,40 @@ void CopyJobs(const char* _setName)
   }
 }
 
+//////////////////////////////////
+/////// Generic Copy Function
+void DCCPDirToDir_All(const char* dirIn, const char* dirOut)
+/// Copies (via dccp) all files from dirIn to dirOut
+{
+  TString Command, remotename;
+  char cpline[500];
+  Command=" >& dccpls.txt";
+  Command=dirIn+Command;
+  Command = "ls "+Command;
+  cout << "Command = " << Command << endl;
+  system(Command);
+  // Copy - has to be done line by line:
+  ifstream inCopyFile("dccpls.txt");
+  inCopyFile.getline(cpline,500);
+  istrstream strinit(cpline);
+  strinit >> remotename;
+  while ( inCopyFile.good() ) {
+    remotename="/"+remotename;
+    remotename=dirIn+remotename;
+    Command=dirOut;
+    Command = " "+Command;
+    Command = remotename+Command;
+    Command = "/opt/d-cache/dcap/bin/dccp "+Command;
+    cout << "Command = " << Command << endl;
+    system(Command);
+    inCopyFile.getline(cpline,500);
+    istrstream str(cpline);
+    str >> remotename;
+  }
+}
+/////////////////////////////////
+
+
 void DirectCopy(const char* _setName)
 /// Copies the results to the /res directory
 {
@@ -1141,7 +1183,6 @@ void DirectCopy(const char* _setName)
   logFileName=_setName+logFileName;
   logFileName="logs/"+logFileName;
   int NParts, NReps, NVersion;
-  char cpline[500];
   char I_char[5];
 
   ///Check the status & store it in the jobLog.txt file
@@ -1155,7 +1196,7 @@ void DirectCopy(const char* _setName)
 
   for (Int_t rep=1; rep<(NReps+1);rep++) {
     for (Int_t pt=1; pt<(NParts+1);pt++) {
-      //List the files in a remote directory
+      //Construct the remote directory: remotedir
       sprintf(I_char,"%i",pt);
       remotedir=I_char;
       remotedir="_Pt"+remotedir;
@@ -1166,33 +1207,15 @@ void DirectCopy(const char* _setName)
       sprintf(I_char,"%i",NVersion);
       remotedir=I_char+remotedir;
       remotedir=remotedir_base+remotedir;
-      Command=" >& logs/copyls.txt";
-      Command=remotedir+Command;
-      Command = "ls "+Command;
-      cout << "Command = " << Command << endl;
-      system(Command);
-      // Copy - has to be done line by line
+      //Get the name of the directory to copy files to
       getStrLine(logFileName,rep,pt,"FullDir",FullDir,false);
-      ifstream inCopyFile("logs/copyls.txt");
-      inCopyFile.getline(cpline,500);
-      istrstream strinit(cpline);
-      strinit >> remotename;
-      while ( inCopyFile.good() ) {
-	remotename="/"+remotename;
-	remotename=remotedir+remotename;
-	Command=FullDir+"/res/";
-	Command = " "+Command;
-	Command = remotename+Command;
-	Command = "/opt/d-cache/dcap/bin/dccp "+Command;
-	cout << "Command = " << Command << endl;
-	system(Command);
-	inCopyFile.getline(cpline,500);
-	istrstream str(cpline);
-	str >> remotename;
-      }
+      FullDir=FullDir+"/res/";
+      //DirectCopy:
+      DCCPDirToDir_All(remotedir,FullDir);
     }
   }
 }
+
 
 void DirectRemove(const char* _setName)
 /// Directly (i.e. without relying on CRAB) removes the files in the user_remote_dir

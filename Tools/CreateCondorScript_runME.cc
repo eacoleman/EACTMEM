@@ -105,7 +105,7 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffi
 
   //  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$StartJob.root EvtTree " << NEvtsPerJob_C << " $StartEvt 1" << endl;
 
-  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root EvtTree $NEvtsPerJob $StartEvt 1" << endl;
+  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root EvtTree $NEvtsPerJob $StartEvt 1 1 PS" << endl;
   outscript << "echo \"Finished\"" << endl;
 
   tempStr="chmod +x " + tempStr;
@@ -182,12 +182,16 @@ void CheckCONDOROutput(const char* inFilePrefix, TString & invalidFileStr, int &
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void CreateMultipleCondorScripts_runME(const char* inputmode, const char* ScriptDir, const char* rootInputDir, int StartProcess, int EndProcess, int NEvtsPerJob, bool runOnJESShifted=false, bool checkCompletedJobsInstead=false, const char* completedOutputDir="", bool createCompletionScripts = false)
+void CreateMultipleCondorScripts_runME(const char* inputmode, const char* ScriptDir, const char* rootInputDir, int StartProcess, int EndProcess, int NEvtsPerJob, bool checkCompletedJobsInstead=false, const char* completedOutputDir="", bool createCompletionScripts = false)
 //// Calls CreateCondorScript_runME for each process, with the option of running on JES shifted files as well (runOnJESShifted=true).
-//// ScriptName=LME+PLabel+suffix, OutputName=PLabel+ME+suffix; where suffix="DEF","JESp1s","JESm1s"
-//// rootInputName=PLabel+inputmode+inputsuffix, where inputsuffix="_outfile.root" and potentially "_JESp1s.root", "_JESm1s.root"
+//// ScriptName=LME+PLabel+suffix, OutputName=PLabel+ME+suffix; where suffix="","JESp1s","JESm1s"
+//// rootInputName=inputmode+PLabel+filenameSuffix
 //// Set checkCompletedJobsInstead=true to check completed jobs (in the directory completedOutputDir) and set createCompletionScripts=true to create scripts to rerun the missing jobs.
 {
+  //bool runOnJESShifted=false;//obsolete option
+  TString filenameSuffix="_CMSSW428.root";
+  bool insideTDirectoryFile = true;
+  TString tdirectoryFileName = "PS";
   TString scriptBaseName,rootinputBaseName,outputBaseName;
   int nJobs,nEvtsPerJob;
   double nEntries;
@@ -202,8 +206,16 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
     outputBaseName=inputmode;
     outputBaseName=PLabel[np]+outputBaseName;
 
-    TFile* infile = new TFile(rootInputDir+rootinputBaseName+"_outfile.root");
-    TTree* InTree = (TTree*)infile->Get("EvtTree");
+    TFile* infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
+    TTree* InTree;
+
+    if ( !insideTDirectoryFile ) {
+      InTree = (TTree*)infile->Get("EvtTree");
+    } else {
+      TDirectoryFile *tdf = (TDirectoryFile*)infile->Get(tdirectoryFileName);
+      InTree = (TTree*)tdf->Get("EvtTree");
+    }
+
     nEntries=InTree->GetEntries();
     cout << "nEntries=" << nEntries ;
     nJobs=ceil(nEntries/NEvtsPerJob);
@@ -214,17 +226,18 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
 //     }
 
     cout << ", nJobs=" << nJobs << endl;
-    // cout << "CreateCondorScript_runME(" << ScriptDir << "," << scriptBaseName << "DEF" << "," << rootInputDir << "," << rootinputBaseName << "_outfile.root" << "," << outputBaseName << "DEF" << ",0," << nEvtsPerJob << ",0," << nJobs << ");" << endl;
+    // cout << "CreateCondorScript_runME(" << ScriptDir << "," << scriptBaseName << "" << "," << rootInputDir << "," << rootinputBaseName << filenameSuffix << "," << outputBaseName << "DEF" << ",0," << nEvtsPerJob << ",0," << nJobs << ");" << endl;
 
     if ( !checkCompletedJobsInstead ) {
-      CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",nEvtsPerJob,0,nJobs);
-      if ( runOnJESShifted ) {
-	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESp1s",rootInputDir,rootinputBaseName+"_JESp1s.root",outputBaseName+"JESp1s",nEvtsPerJob,0,nJobs);
-	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",nEvtsPerJob,0,nJobs);
-      }
+      CreateCondorScript_runME(ScriptDir,scriptBaseName,rootInputDir,rootinputBaseName+filenameSuffix,outputBaseName,nEvtsPerJob,0,nJobs);
+//       if ( runOnJESShifted ) {
+// 	//obsolete:
+// 	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESp1s",rootInputDir,rootinputBaseName+"_JESp1s.root",outputBaseName+"JESp1s",nEvtsPerJob,0,nJobs);
+// 	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",nEvtsPerJob,0,nJobs);
+//       }
     } else {
       //cout << "Checking Completed Jobs" << endl;
-      TString infileprefix="DEF";
+      TString infileprefix="";
       infileprefix=inputmode+infileprefix;
       infileprefix=PLabel[np]+infileprefix;
       infileprefix=completedOutputDir+infileprefix;
@@ -235,7 +248,7 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
       CheckCONDOROutput(infileprefix,invalidFileStr,nInvalidFiles,0,nJobs-1,true,false);
       if ( createCompletionScripts && (nInvalidFiles>0) ) {
 	cout << "Creating the completion script" << endl;
-	CreateCondorScript_runME(ScriptDir,scriptBaseName+"DEF"+"Completion",rootInputDir,rootinputBaseName+"_outfile.root",outputBaseName+"DEF",nEvtsPerJob,0,nInvalidFiles,true,invalidFileStr);
+	CreateCondorScript_runME(ScriptDir,scriptBaseName+"Completion",rootInputDir,rootinputBaseName+filenameSuffix,outputBaseName,nEvtsPerJob,0,nInvalidFiles,true,invalidFileStr);
       }
     }
 
@@ -322,4 +335,50 @@ void Merge_runME(const char* rootFilesDir, const char* fileBaseName, const char*
 
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
+void GetEventCounts(const char* rootFilesDir, const char* treeName = "EvtTree", bool insideTDirectoryFile = true, const char* tdirectoryFileName="PS", int divideby=300)
+////Counts the number of events for each file in rootFilesDir
+////The events should be inside the tree 'treeName', which can be inside TDirectoryFile 'tdirectoryFileName'
+////If divideby!=-1, then print out the number of events divided by 'divideby'
+{
+
+  TString Command, filename;
+  char line[500];
+
+  ///Store the subdirectory names
+  Command = "*.root >& templog.txt";
+  Command = rootFilesDir + Command;
+  Command = "ls " + Command;
+  cout << "Command=" << Command << endl;
+  system(Command);
+  ifstream infilelist("templog.txt");
+  while ( infilelist.good() ) {
+    infilelist.getline(line,500);
+    filename = line;
+    TFile* f;
+    if ( filename!="" ) {
+      f = new TFile(filename);
+    }
+    TTree* InTree;
+    if ( f!=0 ) {
+      cout << "filename=" << filename << endl;
+      if ( !insideTDirectoryFile ) {
+	InTree = (TTree*)f->Get(treeName);
+      } else {
+	TDirectoryFile *tdf = (TDirectoryFile*)f->Get(tdirectoryFileName);
+	InTree = (TTree*)tdf->Get(treeName);
+      }
+      if ( InTree!=0 ) {
+	double nentries=InTree->GetEntries();
+	cout << nentries << " Events" << endl;
+	if ( divideby!=-1 ) {
+	  cout << nentries/divideby << " Groups" << endl;
+	}
+      } else {
+	cout << "Unable to open tree : " << treeName << endl;
+      }
+    }
+  }
+
+}

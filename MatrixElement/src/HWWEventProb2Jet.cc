@@ -34,7 +34,7 @@ using std::endl;
 HWWEventProb2Jet::HWWEventProb2Jet(Integrator& integrator,
                                    const TransferFunction& tf, 
 				   double higgsMass) :
-  EventProb2Jet(DEFS::EP::HWW, integrator, 3, 4, tf), 
+  EventProb2Jet(DEFS::EP::HWW, integrator, 3, 2, tf), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   setHiggsMassAndWidth(higgsMass);

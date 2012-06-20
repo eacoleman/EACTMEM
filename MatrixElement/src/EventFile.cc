@@ -48,13 +48,14 @@ EventFile::EventFile(string filename, unsigned nEvents, unsigned nSkip,
 bool EventFile::fillNextEvent(PartonColl& partons)
 {
    do {
-      if (m_nEvents != 0 && m_counter >= m_nEvents * m_nPrescale + m_nSkip)
-         return false;
-
+     if (m_nEvents != 0 && m_counter >= m_nEvents * m_nPrescale + m_nSkip) {
+       return false;
+     }
       do {
          partons.clear();
-         if (!m_fillNextEvent(partons))
-            return false;
+         if (!m_fillNextEvent(partons)) {
+	   return false;
+	 }
 
       } while (m_doCut && !m_cut(partons));
 
@@ -102,9 +103,10 @@ bool TextEventFile::m_fillNextEvent(PartonColl& partons)
 
 RootEventFile::RootEventFile(string filename, string treename,
                              unsigned nEvents, unsigned nSkip,
-                             unsigned nPrescale, bool doCut) :
+                             unsigned nPrescale, bool useTDirectoryFile, string nameTDirectoryFile, bool doCut) :
    EventFile(filename, nEvents, nSkip, nPrescale, doCut),
    m_file(TFile::Open(filename.c_str())),
+   m_tdirectoryfile(0),
    m_tree(0),
    m_counter(0)
 {
@@ -116,6 +118,10 @@ RootEventFile::RootEventFile(string filename, string treename,
    }
 
    m_file->GetObject(treename.c_str(), m_tree);
+   if ( useTDirectoryFile ) {
+     m_file->GetObject(nameTDirectoryFile.c_str(), m_tdirectoryfile);
+     m_tdirectoryfile->GetObject(treename.c_str(), m_tree);
+   }
    if (!m_tree)
    {
       std::ostringstream error;
@@ -140,7 +146,6 @@ bool RootEventFile::m_fillNextEvent(PartonColl& partons)
    setBranches(partons);
    m_tree->GetEntry(m_counter++);
    fillBranches(partons);
-   
 
    return true;
 }
@@ -397,8 +402,8 @@ void RecoRootEventFile::fillBranches(PartonColl& partons)
 
 EventNtupleEventFile::EventNtupleEventFile(string filename, string treename, 
 				       unsigned nEvents, unsigned nSkip, 
-				       unsigned nPrescale, bool doCut) :
-  RootEventFile(filename, treename, nEvents, nSkip, nPrescale, doCut)
+				       unsigned nPrescale, bool useTDirectoryFile, string nameTDirectoryFile, bool doCut) :
+  RootEventFile(filename, treename, nEvents, nSkip, nPrescale, useTDirectoryFile, nameTDirectoryFile, doCut)
 {
   m_ntuple = new EventNtuple();
   getTree()->SetBranchAddress("EvtNtuple", &m_ntuple);
@@ -424,6 +429,7 @@ void EventNtupleEventFile::fillBranches(PartonColl& partons)
   partons.setLepton(m_ntuple->lLV[0]);
   partons.setNeutrino(m_ntuple->METLV[0]);
 
+
   PartonColl::Jet jet1(m_ntuple->jLV[0], m_ntuple->jBtagSSV[0],
 		       true, 0, false, 0, 0, 0, 0, 0);
   PartonColl::Jet jet2(m_ntuple->jLV[1], m_ntuple->jBtagSSV[1],
@@ -431,7 +437,7 @@ void EventNtupleEventFile::fillBranches(PartonColl& partons)
   
   partons.addJet(jet1);
   partons.addJet(jet2);
-  
+
   partons.setLepCharge(m_ntuple->lQ);
   partons.setDetector(m_ntuple->ldetComp);
 

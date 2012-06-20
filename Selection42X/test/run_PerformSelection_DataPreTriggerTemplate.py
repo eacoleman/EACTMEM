@@ -60,11 +60,6 @@ process.PS.METSource                  = cms.InputTag('patMETsPFlow')            
 process.PS.rhoSource                  = cms.InputTag("kt6PFJetsChsForIsolationPFlow", "rho") # InputTag for event rho source
 process.PS.triggerSource              = cms.InputTag('patTriggerEvent')                      # InputTag for trigger collection
 
-    #-----Trigger Information
-##process.PS.muTrigger                  = cms.vstring('HLT_Mu30_v*')  
-process.PS.muTrigger                  = cms.vstring('HLT_IsoMu17_v*','HLT_Mu30_v*')          # Muon trigger name
-process.PS.eleTrigger                 = cms.vstring('HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2') # Electron trigger name 
-
     #-----Program Level Inputs
 process.PS.outtablefilename           = cms.string("outputTable.txt") # name of the file containing the output/efficiency tables
 process.PS.outtablenameEl             = cms.string("ElectronTable")   # name of the event selection table for electrons
@@ -189,13 +184,3 @@ process.PS.lEta                       = cms.double(-1)
 
     #-----Constant Inputs
 process.PS.etaBarrelMax               = cms.double(1.442) # the Maximum value of eta for the Barrel
-
-#!
-#! PATH
-#!
-process.p = cms.Path(
-  process.PS
-)
-
-#process.options.wantSummary = True
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )

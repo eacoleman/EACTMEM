@@ -16,6 +16,7 @@
 
 class PartonColl;
 class TFile;
+class TDirectoryFile;
 class TTree;
 
 class EventFile
@@ -82,7 +83,7 @@ class RootEventFile : public EventFile
    public:
       RootEventFile(std::string filename, std::string treename,
                     unsigned nEvents = 0, unsigned nSkip = 0,
-                    unsigned nPrescale = 1, bool doCut = false);
+                    unsigned nPrescale = 1, bool useTDirectoryFile = false, std::string nameTDirectoryFile="PS", bool doCut = false);
       virtual ~RootEventFile();
 
       virtual std::pair<int, int> getRunEvent() const = 0;
@@ -100,6 +101,7 @@ class RootEventFile : public EventFile
 
    private:
       TFile* m_file;
+      TDirectoryFile* m_tdirectoryfile;
       TTree* m_tree;
       unsigned m_counter;
       unsigned m_size;
@@ -164,7 +166,7 @@ class EventNtupleEventFile : public RootEventFile
    public:
       EventNtupleEventFile(std::string filename, std::string treename,
                       unsigned nEvents = 0, unsigned nSkip = 0,
-                      unsigned nPrescale = 1, bool doCut = false);
+                      unsigned nPrescale = 1, bool useTDirectoryFile = false, std::string nameTDirectoryFile="PS", bool doCut = false);
       virtual ~EventNtupleEventFile();
       
       virtual std::pair<int, int> getRunEvent() const;

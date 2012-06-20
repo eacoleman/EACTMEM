@@ -119,7 +119,7 @@ void fillAHistogram(TH1F* &h, const char* TreeName, const char* VarName, int NBi
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest, int nModes, vector<TString>& infilenames, bool dosumW2 = false, bool useDifferingCuts=false, const char* InDiffCuts=0)
+void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest, int nModes, vector<TString>& infilenames, bool dosumW2 = false, bool useDifferingCuts=false, const char* InDiffCuts=0, bool weightTheHistograms=false, const char* weightVar=0)
 ////Fill in each histogram in the array h from the files in infilenames.
 {
   
@@ -163,6 +163,11 @@ void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int 
   Restrictions=">"+Restrictions;
   Restrictions=VarName+Restrictions;
   Restrictions="("+Restrictions;
+  if ( weightTheHistograms ) {
+    Restrictions=Restrictions+" )";
+    Restrictions="*( "+Restrictions;
+    Restrictions=weightVar+Restrictions;
+  }
   cout << "Restrictions=" << Restrictions << endl;
   
   //Open the files
@@ -171,6 +176,30 @@ void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int 
   for (Int_t n=0; n<nModes; n++) {
     f[n] = new TFile(infilenames[n]);
     InTree[n] = (TTree*)f[n]->Get(TreeName);
+
+//     if ( useMETCorr120530 ) {
+//       if ( n>101.5 ) { //i.e. correct the Data & QCD
+// 	InTree[n]->SetAlias("METx","event_met_pfmet*cos(event_met_pfmetPhi)");
+// 	InTree[n]->SetAlias("METy","event_met_pfmet*sin(event_met_pfmetPhi)");
+// 	InTree[n]->SetAlias("Dx","0.3542+0.2635*event_nPV");
+// 	InTree[n]->SetAlias("Dy","0.1889-0.1664*event_nPV");
+// 	InTree[n]->SetAlias("METcorr","sqrt(METx*METx+METy*METy-2*METx*Dx-2*METy*Dy+Dx*Dx+Dy*Dy)");
+// 	InTree[n]->SetAlias("DMET","sqrt(METx*METx+METy*METy)-METcorr");
+// 	if ( isMuon ) {
+// 	  InTree[n]->SetAlias("lphi","W_muon_phi");
+// 	  InTree[n]->SetAlias("lpt","W_muon_pt");
+// 	} else {
+// 	  InTree[n]->SetAlias("lphi","W_electron_phi");
+// 	  InTree[n]->SetAlias("lpt","W_electron_pt");
+// 	}
+// 	InTree[n]->SetAlias("WmTcorr","sqrt(W_mt*W_mt+2*lpt*(DMET-Dx*cos(lphi)-Dy*sin(lphi)))");
+//       } else {
+// 	InTree[n]->SetAlias("METcorr","event_met_pfmet");
+// 	InTree[n]->SetAlias("WmTcorr","W_mt");
+//       }
+//     }
+
+
   }
   
   //Fill the histograms
@@ -265,7 +294,7 @@ void Plot_ABkg(const char* TitleName, const char* TreeName, const char* VarName,
 //   TLegend* lgnd = new TLegend(0.7,0.75,0.90,0.9);
 //   lgnd->AddEntry(hist,mode_name,"l");
   gStyle->SetOptStat(0);
-  gStyle->SetTitleX(0.2);
+  gStyle->SetTitleX(0.15);
   gStyle->SetTitleY(0.97);
   hist->SetXTitle(VarName);
   if ( XAxisTitle!=0 ) {
@@ -456,7 +485,7 @@ void Plot_CompareShapesAndCuts(const char* TitleName, const char* TreeName, cons
 //   cout <<"entries=" << entries << endl;
 
   gStyle->SetOptStat(0);
-  gStyle->SetTitleX(0.18);
+  gStyle->SetTitleX(0.35);
   gStyle->SetTitleY(0.97);
   h[0]->SetMinimum(0);
   h[0]->SetMaximum(max*1.30);
@@ -473,7 +502,11 @@ void Plot_CompareShapesAndCuts(const char* TitleName, const char* TreeName, cons
     } else {
       h[n]->Draw("same");
     }
+    cout << modenames[0] << " vs. " << modenames[n] << " : Kolmogorov Test = " << h[n]->KolmogorovTest(h[0]) << endl;
   }
+
+  //cout << " Kolmogorov Crosscheck = " << h[0]->KolmogorovTest(h[1]) << endl;
+
   h[0]->SetTitle(TitleName);
   h[0]->SetXTitle(VarName);
   if ( XAxisTitle!=0 ) {
@@ -481,6 +514,7 @@ void Plot_CompareShapesAndCuts(const char* TitleName, const char* TreeName, cons
   }
 
   h[0]->SetYTitle("Normalized Event Count");
+  //h[0]->SetXTitleOffset(0.2);
   lgnd->Draw();
 
   /// Save the output
@@ -1092,9 +1126,9 @@ void Plot_StoreHist(const char* TreeName, const char* VarName, int NBins, double
 
 
 void Save_YieldsAndPulls(const char* TreeName, int NBins, const char* infoFileName, const char* savedirName, const char* inModes, const char* TitleSuffix="", const char* PlotNameSuffix=0)
-//// inModes should be of the form "VN[0] dummystr[0] meanEvt[0] color[0] VN[1] dummystr[1] meanEvt[1] color[1] VN[2] ... " 
-//// 1. Plot&Fit numVN-meanEvt for each variable (VN=VariableName). The Title is of the form "VN_{Observed}-VN_{Expected} TitleSuffix"; saved as "savedirNameVNYield_PlotNameSuffix".
-//// 2. Plot&Fit (numVN-meanEvt)/errVN for each variable. The Title is of the form "VN Pull TitleSuffix"; saved as "savedirNameVNPull_PlotNameSuffix".
+//// inModes should be of the form "VN[0] dummystr[0] dummyEvt[0] color[0] VN[1] dummystr[1] dummyEvt[1] color[1] VN[2] ... " 
+//// 1. Plot&Fit numVN-initVN for each variable (VN=VariableName). The Title is of the form "VN_{Observed}-VN_{Expected} TitleSuffix"; saved as "savedirNameVNYield_PlotNameSuffix".
+//// 2. Plot&Fit (numVN-initVN)/errVN for each variable. The Title is of the form "VN Pull TitleSuffix"; saved as "savedirNameVNPull_PlotNameSuffix".
 {
      
 
@@ -1104,11 +1138,12 @@ void Save_YieldsAndPulls(const char* TreeName, int NBins, const char* infoFileNa
   int nModes = 0;
 
   TString Var;
-  TString numVN, errVN;
+  TString initVN, numVN, errVN;
   TString Title, SaveName;
   double minNum, maxNum, minErr;
+  double minInit, maxInit, avgInit;
   double VarMin, VarMax;
-  char ToChar[10];
+  //char ToChar[10];
 
   readModes(inModes,VN,dummystr,meanEvt,color,nModes);
   TFile* f = new TFile(infoFileName);
@@ -1116,10 +1151,14 @@ void Save_YieldsAndPulls(const char* TreeName, int NBins, const char* infoFileNa
  
  
   for (Int_t n=0; n<nModes; n++) {
+    initVN="init"+VN[n];
     numVN="num"+VN[n];
     errVN="err"+VN[n];
     minNum=InTree->GetMinimum(numVN);
     maxNum=InTree->GetMaximum(numVN);
+    minInit=InTree->GetMinimum(initVN);
+    maxInit=InTree->GetMaximum(initVN);
+    avgInit=(minInit+maxInit)/2;
     minErr=InTree->GetMinimum(errVN);
     ///Draw the Yield_Observed-Yield_Expected
     Title=TitleSuffix;
@@ -1131,13 +1170,13 @@ void Save_YieldsAndPulls(const char* TreeName, int NBins, const char* infoFileNa
     SaveName="Yield_"+SaveName;
     SaveName=VN[n]+SaveName;
     SaveName=savedirName+SaveName;
-    VarMin=floor(minNum-meanEvt[n]);
-    VarMax=ceil(maxNum-meanEvt[n]);
-    sprintf(ToChar,"%i",int(meanEvt[n]));
-    Var=ToChar;
+    VarMin=floor(minNum-avgInit);
+    VarMax=ceil(maxNum-avgInit);
+    //sprintf(ToChar,"%i",int(meanEvt[n]));
+    Var=initVN;
     Var="-"+Var;
     Var=numVN+Var;
-    Plot_ABkg(Title,TreeName,Var,NBins,VarMin,VarMax,infoFileName,0,SaveName,color[n],0,"NToys",5,true,false);
+    Plot_ABkg(Title,TreeName,Var,NBins,VarMin,VarMax,infoFileName,0,SaveName,color[n],0,"NToys",10,true,false);
     ///Draw the Pulls
     Title=TitleSuffix;
     Title=" Pull " +Title;
@@ -1146,17 +1185,17 @@ void Save_YieldsAndPulls(const char* TreeName, int NBins, const char* infoFileNa
     SaveName="Pull_"+SaveName;
     SaveName=VN[n]+SaveName;
     SaveName=savedirName+SaveName;
-    VarMin=(minNum-meanEvt[n])/minErr;
-    VarMax=(maxNum-meanEvt[n])/minErr;
-    sprintf(ToChar,"%i",int(meanEvt[n]));
+    VarMin=(minNum-avgInit)/minErr;
+    VarMax=(maxNum-avgInit)/minErr;
+    //sprintf(ToChar,"%i",int(meanEvt[n]));
     Var=errVN;
     Var=")/"+Var;
-    Var=ToChar+Var;
+    Var=initVN+Var;
     Var="-"+Var;
     Var=numVN+Var;
     Var="("+Var;
     cout << "Var=" << Var << endl;
-    Plot_ABkg(Title,TreeName,Var,NBins,VarMin,VarMax,infoFileName,0,SaveName,color[n],0,"NToys",5,true,false);
+    Plot_ABkg(Title,TreeName,Var,NBins,VarMin,VarMax,infoFileName,0,SaveName,color[n],0,"NToys",10,true,false);
   }
 
 }

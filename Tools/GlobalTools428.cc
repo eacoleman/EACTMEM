@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //// A Common Set of variables and functions.
 
-const int NPROCESSES=18;
+const int NPROCESSES=27;
 const int NCUTS=10;
 const int FINALCUT=5;
 const int NJETS=5;
@@ -21,22 +21,31 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
 {
   pcsLbl[0]="WW";
   pcsLbl[1]="WZ";
-  pcsLbl[2]="WpJ";
-  pcsLbl[3]="ZpJ";
-  pcsLbl[4]="TTbar_MG";
+  pcsLbl[2]="WJets";
+  pcsLbl[3]="ZJets";
+  pcsLbl[4]="TTbar";
   pcsLbl[5]="STopT_T";
   pcsLbl[6]="STopT_Tbar";
   pcsLbl[7]="STopS_T";
   pcsLbl[8]="STopS_Tbar";
   pcsLbl[9]="STopTW_T";
   pcsLbl[10]="STopTW_Tbar";
-  pcsLbl[11]="QCDMu";
-  pcsLbl[12]="QCDEl_Pt30to80";
-  pcsLbl[13]="QCDEl_Pt80to170";
-  pcsLbl[14]="QCDEl_BCtoE30to80";
-  pcsLbl[15]="QCDEl_BCtoE80to170";
-  pcsLbl[16]="SingleMu";
-  pcsLbl[17]="SingleEl";
+  pcsLbl[11]="HWWMH150";
+  pcsLbl[12]="HWWMH160";
+  pcsLbl[13]="HWWMH170";
+  pcsLbl[14]="HWWMH180";
+  pcsLbl[15]="HWWMH190";
+  pcsLbl[16]="HWWMH200";
+  pcsLbl[17]="HWWMH250";
+  pcsLbl[18]="HWWMH300";
+  pcsLbl[19]="HWWMH350";
+  pcsLbl[20]="HWWMH400";
+  pcsLbl[21]="HWWMH450";
+  pcsLbl[22]="HWWMH500";
+  pcsLbl[23]="HWWMH550";
+  pcsLbl[24]="HWWMH600";
+  pcsLbl[25]="Mu_All";
+  pcsLbl[26]="El_All";
 
   ///Matrix Element Selection Labels
   cutLbl[0]="c0:HLT+Kin";
