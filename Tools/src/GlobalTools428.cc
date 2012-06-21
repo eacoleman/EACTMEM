@@ -33,8 +33,9 @@ using namespace std;
 
 
 const int NPROCESSES=18;
-const int NCUTS=10;
-const int FINALCUT=5;
+//const int NCUTS=12;
+const int NCUTS=22;
+const int FINALCUT=7;
 const int NJETS=5; //changed on 02/28/2012 to include more jet bins
 
 //Global Variables
@@ -65,18 +66,44 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
   pcsLbl[16]="SingleMu";
   pcsLbl[17]="SingleEl";
 
-  ///Matrix Element Selection Labels
-  cutLbl[0]="c0:HLT+Kin";
-  cutLbl[1]="c1:NJets";
-  cutLbl[2]="c2:PrimaryEl/Mu";
-  cutLbl[3]="c3:NotLooseMu";
-  cutLbl[4]="c4:NotLooseEl";
-  cutLbl[5]="c5:METE";
-  cutLbl[6]="BTag0";  
-  cutLbl[7]="BTag1";
-  cutLbl[8]="BTag2";
-  cutLbl[9]="BTag3+";
-
+  ///Matrix Element Selection Labels NORMAL
+/*
+  cutLbl[0]  = "NPATtupleEvts";
+  cutLbl[1]  = "c0:NJets";
+  cutLbl[2]  = "c1:HLT+Kin";
+  cutLbl[3]  = "c2:VtxCut";
+  cutLbl[4]  = "c3:PrimaryEl/Mu";
+  cutLbl[5]  = "c4:NotLooseMu";
+  cutLbl[6]  = "c5:NotLooseEl";
+  cutLbl[7]  = "c6:METE";
+  cutLbl[8]  = "BTag0";
+  cutLbl[9]  = "BTag1";
+  cutLbl[10] = "BTag2";
+  cutLbl[11] = "BTag3+";
+*/
+  ///FNAL SYNC
+  cutLbl[0]  = "NPATtupleEvts";
+  cutLbl[1]  = "c0:NJets";
+  cutLbl[2]  = "c1:HLT+Kin";
+  cutLbl[3]  = "c2:VtxCut";
+  cutLbl[4]  = "c3:PrimaryEl/Mu";
+  cutLbl[5]  = "c4:NotLooseMu";
+  cutLbl[6]  = "c5:NotLooseEl";
+  cutLbl[7]  = "c6:METE";
+  cutLbl[8]  = "FNAL:MET";
+  cutLbl[9]  = "FNAL:Mt";
+  cutLbl[10] = "FNAL:LepPt";
+  cutLbl[11] = "FNAL:LepEta";
+  cutLbl[12] = "FNAL:JetPt1";
+  cutLbl[13] = "FNAL:JetPt2";
+  cutLbl[14] = "FNAL:JetEta1";
+  cutLbl[15] = "FNAL:JetEta2";
+  cutLbl[16] = "FNAL:drJetLep";
+  cutLbl[17] = "FNAL:Mjj";
+  cutLbl[18] = "BTag0";
+  cutLbl[19] = "BTag1";
+  cutLbl[20] = "BTag2";
+  cutLbl[21] = "BTag3+";
 
 //   ///V4 Sync Exercise Labels
 //   cutLbl[0]="c0:None";
