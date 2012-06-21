@@ -35,6 +35,8 @@ else
 	cmsenv
 	set CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
 	cvs co -d TAMUWW UserCode/TAMUWW
+	echo "Removing TAMUWW/Selection42X because it is not compatible with the 52X ntuple"
+	rm -r TAMUWW/Selection42X/
 	cvs co -r V06-02-04    TopQuarkAnalysis/Configuration
 	cvs co -r V06-05-01    DataFormats/PatCandidates
 	cvs co -r V08-09-05    PhysicsTools/PatAlgos
