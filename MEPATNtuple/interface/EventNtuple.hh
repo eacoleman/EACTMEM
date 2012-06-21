@@ -66,6 +66,8 @@ public:
    // Grouped Cuts
    //
    bool baseCuts();
+   bool FNALcutsElectron();
+   bool FNALcutsMuon();
 
    //
    // Individual Cuts
@@ -77,6 +79,13 @@ public:
    //
    double getQGLikelihood(unsigned int index, QGLikelihoodCalculator* qglikeli = 0);
    vector < double > getQGLikelihoods(QGLikelihoodCalculator* qglikeli = 0);
+
+   //
+   // Jet Energy Resolution
+   //
+   void doJER();
+   double getJERfactor(double pt, double eta, double ptgen);
+
 
    //Needed for ME
    vector < TLorentzVector > matchedGenParticles, refjLV, rawjLV, jLV, METLV, lLV;
