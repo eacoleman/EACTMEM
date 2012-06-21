@@ -66,8 +66,14 @@ namespace DEFS{
   enum LeptonCat {none, muon, electron, both};
   static const unsigned int nLeptonCat = 4; 
 
-    // A routine that returns the string given the EvtType 
-  std::string getEventCatString(LeptonCat );
+  // A routine that returns the string given the LeptonCat 
+  std::string getLeptonCatString(LeptonCat );
+
+  // for historical reasons
+  std::string getEventCatString(LeptonCat a);
+
+  // A routine that returns the LeptonCat given the string
+  LeptonCat getLeptonCat(std::string type);
 
   // -----------------------------------------------------------
   //            ALL ABOUT THE JET TYPES

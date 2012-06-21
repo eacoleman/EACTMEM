@@ -1,6 +1,7 @@
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include <iostream>
 #include <string>
+#include "TString.h"
 
 namespace DEFS {
 
@@ -344,18 +345,46 @@ namespace DEFS {
 
 
   //---------------------------------------------------------------------------
-  // A routine that returns the string given the Event Category
-  string getEventCatString(LeptonCat type){
+  // A routine that returns the string given the Lepton Category
+  string getLeptonCatString(LeptonCat type){
     if (type == electron)
       return "electron";
     else if (type == muon)
       return "muon";
 
-    cout<<"ERROR in DEFS::getEventCatString type="<<type<<" not defined"<<endl;
+    cout<<"ERROR in DEFS::getLeptonCatString type="<<type<<" not defined"<<endl;
 
     return "";
 
-  }//getEventCatString
+  }//getLeptonCatString
+
+  //---------------------------------------------------------------------------
+  // for historical reasons
+  std::string getEventCatString(LeptonCat a){
+    return  getLeptonCatString(a);
+  }
+
+
+  // A routine that returns the string given the Lepton Category
+  LeptonCat getLeptonCat(string type){
+    TString s = type;
+    s.ToUpper();
+
+    if (s.Contains("NONE"))
+      return none;
+    else if (s.Contains("MUON"))
+      return muon;
+    else if (s.Contains("ELECTRON"))
+      return electron;
+    else if (s.Contains("BOTH"))
+      return both;
+    else
+      cout<<"ERROR in DEFS::getLeptonCatString type="<<type<<" not defined!. Returning none."<<endl;
+
+    return none;
+
+  }//getLeptonCat
+
 
   //---------------------------------------------------------------------------
   string getJetBinString(JetBin jBin){
