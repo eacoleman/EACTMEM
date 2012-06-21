@@ -198,9 +198,9 @@ bool EventNtuple::FNALcutsMuon(){
   if (METEt <= 30)
     return false;
 
-  TLorentzVector ll(lLV[1].Px(),lLV[1].Py(),lLV[1].Pz(),lLV[1].E());
-  TLorentzVector met(METLV[1].Px(),METLV[1].Py(),METLV[1].Py(),METLV[1].E());
-  TLorentzVector mt(lLV[1].Px()+METLV[1].Px(),lLV[1].Py()+METLV[1].Py(),0,lLV[1].E()+METLV[1].E());
+  TLorentzVector ll(lLV[0].Px(),lLV[0].Py(),lLV[0].Pz(),lLV[0].E());
+  TLorentzVector met(METLV[0].Px(),METLV[0].Py(),METLV[0].Py(),METLV[0].E());
+  TLorentzVector mt(lLV[0].Px()+METLV[0].Px(),lLV[0].Py()+METLV[0].Py(),0,lLV[0].E()+METLV[0].E());
 
   if (mt.M() <= 30)
     return false;

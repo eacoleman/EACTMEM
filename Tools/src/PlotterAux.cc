@@ -1,5 +1,7 @@
 // Our libraries
 #include "TAMUWW/Tools/interface/PlotterAux.hh"
+//#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
+
 
 // ROOT libraries
 #include "TROOT.h"
@@ -28,7 +30,7 @@ using namespace std;
 void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range);
 
 //function to get luminosity
-void lumi(double intLum);
+void drawLumi(float intLum);
 
 proc::proc(string procName, string fileName, double cross_section, double lum, 
            unsigned int in_ev, int col, string treeName):
@@ -40,21 +42,44 @@ proc::proc(string procName, string fileName, double cross_section, double lum,
     cout<<"ERROR proc::proc() could not open file "<<fileName<<endl;
     return;
   }
+
+  if (!file->cd("PS")){
+    cout<<"ERROR proc::proc() could not CD into directory PS in file "
+	<<fileName<<endl;
+    return;
+  }
+  
   chain = (TChain*) file->Get(treeName.c_str());
   if (chain == 0)
     cout<<"ERROR proc::proc() could not find tree named "<<treeName
 	<<" in file "<<fileName<<endl;
+
+  //  if (!TString(procName).Contains("Data")){
+  // string puName =(string) TString("/uscms/home/amejia94/CMSSW_5_2_3_patch4/src/")+procName+"_PUDist.root";
+  //  lumiWeights = edm::LumiReWeighting(puName,"pileup12_noTrig.root","h","pileup_IsoMu24_eta2p1");
+  // }
   return;
-  }
+}
 
 
 // Create a new histo here
-void aPlot::prepareToFillProcess(string procName){
-  string n = string(templateHisto->GetName());
-  TH1 * clone = (TH1*) templateHisto->Clone((n+"_"+procName).c_str());
+void aPlot::prepareToFillProcess(proc * process){
+  TString n = templateHisto->GetName();
+  TH1 * clone = (TH1*) templateHisto->Clone(n+"_"+process->name);
+  clone->SetTitle(process->name);
+  clone->SetLineColor(process->color);
+  clone->SetMarkerColor(process->color);
+  clone->SetFillColor(process->color);
+  TString pname = process->name;
+  pname.ToUpper();
+  if (pname.Contains("DATA")){ 
+      clone->SetMarkerStyle(20);
+      clone->SetMarkerSize(0.7);
+  }
   clone->Sumw2();
   histos.push_back(clone);
-}
+
+}//prepareToFillProcess
 
 // Fill the last histo here
 void aPlot::Fill(double h, double w){
@@ -79,488 +104,305 @@ void aPlot::doScaling(vector<proc*> procs){
 
   // First normalize to luminosity, and in case we might need to normalize to data
   // obtain also the total MC and total data
-  double totalMC   = 0;
   double totalData = 0;
-  double WpJ = 0;
-  double allMinWpJ = 0;
-  double higgs = 0;
-  bool foundData = false;
+  double totalMC = 0;
   for (unsigned int p = 0 ; p < procs.size() ; p++){
 
+    // This works for MC and data as well.
     histos[p]->Scale(procs[p]->getScaleFactor());
 
-    //scale all the MC to the data
-/*    if (procs[p]->name.compare("Data") == 0){
-      totalData += histos[p]->Integral();
-      foundData = true;
-    } else{
-      totalMC += histos[p]->Integral();
-    }*/
+    cout<<" histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl;
 
-    //scale WpJ to (data - all others) and higgs to data
-    if (procs[p]->name.compare("WpJ") == 0){
-      WpJ += histos[p]->Integral();
-    } 
-    else if (procs[p]->name.compare("Data") == 0){
+    TString hName = histos[p]->GetTitle();
+    hName.ToUpper();
+    if ( hName.Contains("DATA") )
       totalData += histos[p]->Integral();
-      foundData = true;
-    }
-    else if (procs[p]->name.compare("Higgs") == 0){
-       higgs += histos[p]->Integral();
-    }
-    else{
-      allMinWpJ += histos[p]->Integral();
-    }
+    else 
+      totalMC += histos[p]->Integral();
 
   }// for processes
 
-  // Normalize to data ?
+
+  //If norm to data do the scaling of the all the MC to the data
   if (normToData){
-    
-    // basic sanity checks
-    if (!foundData)
-      cout<<"Error aPlot::doScaling requested normToData is true but \"Data\" process is not found!"<<endl;
+     cout<<" Starts normalizing to data"<<endl;
+
     if (totalData == 0){
-      cout<<"Error aPlot::doScaling requested normToData but Data has 0 entries!"<<endl;
+      cout<<"ERROR  aPlot::doScaling() integral of data is zero, cannot normalize to data."
+	  <<"WILL NOT NORMALIZE"<<endl;
       return;
-      }
+    }
+    ////////////
+    cout<<" totalData = "<<totalData<<"  totalMC = "<<totalMC<<endl;
+      
+    for (unsigned int p = 0 ; p < procs.size() ; p++){
 
-    //Do the scaling of the all the MC to the data
-/*    for (unsigned int p = 0 ; p < procs.size() ; p++)
-      if (procs[p]->name.compare("Data") != 0)
-      histos[p]->Scale(totalData/totalMC);*/
-
-    //do the scaling of the WpJ to (Data - all others)
-    for (unsigned int p = 0 ; p < procs.size() ; p++)
-      if (procs[p]->name.compare("WpJ") == 0)
-         histos[p]->Scale((totalData - allMinWpJ)/WpJ);
+      // This works for MC and data as well.
+      ///histos[p]->Scale(procs[p]->getScaleFactor());
+      
+      TString hName = histos[p]->GetTitle();
+      hName.ToUpper();
+      if (!hName.Contains("DATA") )
+	histos[p]->Scale(totalData/totalMC);
+      ////////
+      cout<<"AfterNorm histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl; 
+    }//for processes
     
   }// normToData
-
-  //do the scaling of the higgs to Data
-  for (unsigned int p = 0 ; p < procs.size() ; p++)
-     if (procs[p]->name.compare("Higgs") == 0)
-        histos[p]->Scale(totalData/higgs);
-
-//this will tell you the area of the process
-/*  double areaTot = 0;
-  for (unsigned int p = 0 ; p < procs.size() ; p++){
-     cout << histos[p]->GetName() << " " << histos[p]->Integral() << endl;
-     areaTot = histos[p]->Integral() + areaTot;
-     cout << areaTot << endl;
-  }
-*/  
-
+  
   //set this flag to true so we won't do the scaling again.
   scaled = true;
 
 }// doScaling
 
-// Make the Canvas here
+// ------------------------------------------------------------
+// This groups all the histograms that need grouping.
+// Typically all the Single tops and Dibosons
+vector<TH1*> aPlot::doGrouping(vector<proc*> procs){
+
+  // The returning vector
+  vector<TH1*> groups;
+  if (procs.size()  != histos.size() ){
+    cout<<"ERROR aPlot::doGrouping procs.size()="<<procs.size()
+	<<" is different than histos.size()="<<histos.size()<<endl;
+    cout<<"\t Returning NO groups!"<<endl;
+    return groups;
+  }
+
+  // The grouped ones
+  TH1 * stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
+  stop->SetTitle("STop");
+  stop->Sumw2();
+  TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
+  dibo->SetTitle("WW+WZ");
+  dibo->Sumw2();
+
+  // Loop over histos grouping around
+  for (unsigned int h=0; h < histos.size(); h ++){
+    
+    TString hName = histos[h]->GetTitle();
+
+    if (hName.Contains("STopT_Tbar")  ||
+	hName.Contains("STopT_T")     ||
+	hName.Contains("STopTW_Tbar") ||
+	hName.Contains("STopTW_T")    ||
+	hName.Contains("STopS_Tbar") ||
+	hName.Contains("STopS_T")     ){
+    
+      // if first time set the attributes
+      if (stop->GetEntries()==0){
+	stop->SetLineColor(histos[h]->GetLineColor());
+	stop->SetFillColor(histos[h]->GetFillColor());
+	stop->SetMarkerColor(histos[h]->GetMarkerColor());
+      }
+
+      // add to single top
+      stop->Add(histos[h]);
+
+    }else if (hName.Contains("WW") ||
+	      hName.Contains("WZ")  ){
+
+      // if first time set the attributes
+      if (dibo->GetEntries()==0){
+	dibo->SetLineColor(histos[h]->GetLineColor());
+	dibo->SetFillColor(histos[h]->GetFillColor());
+	dibo->SetMarkerColor(histos[h]->GetMarkerColor());
+      }
+
+      // add to diboson
+      dibo->Add(histos[h]);
+
+    } else 
+      
+      // add as an independent process.
+      groups.push_back(histos[h]);
+
+  }//for
+
+  // Add the diboson and single top if they were present
+  if (stop->GetEntries() >0)  groups.insert(groups.begin(), stop);
+  if (dibo->GetEntries() >0)  groups.insert(groups.begin(), dibo);
+
+  // return the groupedHistos
+  return groups;
+
+}//doGrouping
+
+// ------------------------------------------------------------
+// Make the Canvas here ala Ricardo Eusebi
+// ------------------------------------------------------------
 TCanvas * aPlot::getCanvas(vector<proc*> procs){
+   
+  // Do the scaling of the histos to lum or to data
+  doScaling(procs);
   
-    //some constants
-    double lum = 0;
+  // Do the grouping of the histos and return the list of histograms to be plotted.
+  // This takes care of putting all the SingleTop Histos together, or diboson together etc.
+  std::vector<TH1*> groupedHistos = doGrouping(procs);
 
-    // do the scaling of the histos to lum or to data
-    doScaling(procs);
+  // Create the total Data and MC histos and Stacks
+  TString tempName = templateHisto->GetName();
+  TH1     * tDa = (TH1*) templateHisto->Clone(tempName+"_TotalData"); tDa->Sumw2();
+  TH1     * tMC = (TH1*) templateHisto->Clone(tempName+"_TotalMC");   tMC->Sumw2();
+  THStack * sMC = new THStack(tempName+"_stackMC",tempName+"_stackMC");
+  THStack * sDa = new THStack(tempName+"_stackData",tempName+"_stackData");
 
-    // Make the canvas
-    TCanvas * c = new TCanvas(templateHisto->GetName());
-    c->SetFillColor(0);
-    c->Divide(1,2);
+  // Make the legend
+  TLegend * l = new TLegend(0.8,0.4,0.96,0.89);
+  l->SetBorderSize(0);
+  l->SetFillColor(0);
+  
+  // Create the totalHistos and Stacks for the MC and Data processes
+  for (unsigned int h = 0 ; h < groupedHistos.size() ; h++){
+                  
+    TString hname = groupedHistos[h]->GetTitle();
+    hname.ToUpper();
 
-    //define the two different pads that go on the canvas
-    //this is the pad with the Data/MC on it
-    TVirtualPad * c1_1 = c->GetPad(2);
-    c1_1->SetPad(0.01,0.01,0.99,0.32);
+    if (hname.Contains("DATA")){ 
+      sDa->Add(groupedHistos[h],"hist");
+      tDa->Add(groupedHistos[h]);
+      l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"lpe");
+    }else{
+      sMC->Add(groupedHistos[h],"hist");
+      tMC->Add(groupedHistos[h]);
+      l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"f");
+    } 
 
-    //this is the pad with the actual histogram on it
-    TVirtualPad *c1_2 = c->GetPad(1);
-    c1_2->SetPad(0.01,0.35,0.99,0.99);
-    c1_2->SetObjectStat(true);
+  }// create stack
 
+  // General Style Formatting
+  gStyle->SetOptTitle(0); 
+  //gStyle->SetOptStat(2211);
 
-    // Make the legend
-    TLegend * l = new TLegend(0.78,0.5,0.89,0.89);
-    l->SetBorderSize(0);
-    l->SetFillColor(0);
+  // Create and Draw the Canvas
+  TCanvas * can = new TCanvas(templateHisto->GetName());
+  can->SetFillColor(0);
+  can->Divide(1,2);
+  
+  // Define the two different pads that go on the canvas
+  // canMain: this is the pad with the actual histogram on it
+  TVirtualPad *canMain = can->GetPad(1);
+  canMain->SetPad(0.01,0.32,0.99,0.99);
+  canMain->SetObjectStat(true);
+  canMain->SetBottomMargin(0.16); 
+  canMain->SetLeftMargin(0.115); 
+  canMain->SetRightMargin(0.03); 
+  canMain->cd();
 
-    //Make the Stacks, sTop, unstacked  and data histograms
-    THStack * s=0;
-    TH1 * totalData=0;
-    TH1 * tData=0;
-    TH1 * stop=0;
-    TH1 * all = 0;
-    TH1 * higgs = 0;
-    gStyle->SetOptStat(2211);
+  //Define the graphics option
+  TString gOption = stacked ? "": "nostack";
+  sMC->Draw(gOption);  
+  sDa->Draw(gOption+"ep,SAME");
 
-    if (stacked){
-       s = new THStack(TString(templateHisto->GetName())+"_stack",TString(templateHisto->GetName())+"_stack");
-    }
-    totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
-    tData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_MyData");
-    stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
-    all = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_All");
-    higgs = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Higgs");
-    totalData->Sumw2();
-    totalData->SetMarkerStyle(8);
-    totalData->SetMarkerSize(0.7);
-    tData->SetMarkerStyle(8);
-    tData->SetMarkerSize(0.7);
-    higgs->SetFillColor(0);
-    higgs->SetLineColor(kMagenta+3);
-    stop->SetFillColor(46);
-    stop->SetLineColor(46);
+  // Format the stacks, make sure to do this after the Draw command.
+  // Set the maximum range for the Y-axis
+  double maxi = max(sMC->GetMaximum(),sDa->GetMaximum())*1.1;
+  formatStack(sMC,maxi);
+  //formatStack(sDa,maxi);
 
-    // Loop over all the histos, drawing them, or add some of them up if needed
-    // eg WW and WZ are usually put together...
-    for (unsigned int h = 0 ; h < histos.size() ; h++){
-      histos[h]->SetLineColor(procs[h]->color);
-      histos[h]->SetFillColor(procs[h]->color);
-      histos[h]->SetMarkerColor(procs[h]->color);
-      try{
-         if (stacked && s!=0 and totalData!=0){
-            //put all the MC into their proper histograms
-            if (procs[h]->name.compare("Data") != 0) {
-               if (procs[h]->name.compare("Higgs") != 0) {
-                  //combine the STop MC into one histogram, stop
-                  if (procs[h]->name.compare("STopT_T") == 0
-                      || procs[h]->name.compare("STopT_Tbar") == 0
-                      || procs[h]->name.compare("STopS_T") == 0
-                      || procs[h]->name.compare("STopS_Tbar") == 0
-                      || procs[h]->name.compare("STopTW_T") == 0
-                      || procs[h]->name.compare("STopTW_Tbar") == 0){
-                     stop->Add(histos[h]);
-                     all->Add(histos[h]);
-                  }
-                  else {
-                     s->Add(histos[h],"hist");
-                     l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
-                     all->Add(histos[h]);
-                  }
-               }
-               //get the higgs MC and put it into the proper histo
-               else {
-                  higgs->Add(histos[h]);
-               }
-            }
-            //put the data into it's proper histograms and get the luminosity
-            else {
-               totalData->Add(histos[h]);
-               tData->Add(histos[h]);
-               lum = procs[h]->intLum;
+  // Add the KS and Chi2 info in the active canvas
+  drawKSandChi2Tests(tDa, tMC, range);
 
-               //add the stop histogram to the stacked histogram and the legend
-               s->Add(stop,"hist");
-               l->AddEntry(stop,"STop","f");
-            }
+  // Add the Legend
+  l->Draw("same");
 
-            if (h == histos.size() -1) {
-               //plot the histograms on the top pad
-               c1_2->cd();
-               //draw and implement the settings for the stacked histogram on the
-               //top pad of the canvas
-               s->Draw();
-               s->SetTitle(templateHisto->GetTitle());
-               for(unsigned int a=0; a<axisTitles.size(); a++){
-                  if (a==0){
-                     s->GetXaxis()->SetTitleOffset(1.1);
-                     s->GetXaxis()->SetTitle(axisTitles[a].c_str());
-                     s->GetXaxis()->SetRangeUser(range.first,range.second);
-                     s->GetXaxis()->SetLabelSize(0.06);
-                     s->GetXaxis()->SetTitleSize(0.06);
-                     s->GetXaxis()->SetLabelFont(42);
-                     s->GetXaxis()->SetTitleFont(42);
-                  }
-                  else if (a==1){
-                     s->GetYaxis()->SetTitleOffset(1.3);
-                     s->GetYaxis()->SetTitle(axisTitles[a].c_str());
-                     s->SetMaximum(max(s->GetMaximum(),totalData->GetMaximum())*1.1);
-                     s->GetYaxis()->SetLabelSize(0.06);
-                     s->GetYaxis()->SetTitleSize(0.06);
-                     s->GetYaxis()->SetLabelFont(42);
-                     s->GetYaxis()->SetTitleFont(42);
-                     s->GetYaxis()->SetTitleOffset(0.85);
-                  }
-               }
-               //add totalData and higgs to the legend and draw the totalData and higgs histograms
-               //on the top pad of the canvas on top of the stacked histogram and draw the legend,
-               //KS and Chi^2, and luminosity on the top pad of the canvas
-               l->AddEntry(higgs,"Higgs","lpe");
-               higgs->Draw("same");
-               l->AddEntry(totalData,"Data","lpe");
-               totalData->Draw("same");
-               l->Draw("same");
-               drawKSandChi2Tests(totalData, all, range);
-               lumi(lum);
-            }
-         }
-         //if the MC is not stacked
-         else {
-            if (h==0){
-               //draw each MC histogram on the top pad of the canvas and implement the settings
-               histos[h]->Draw();
-               for(unsigned int a=0; a<axisTitles.size(); a++){
-                  if (a==0){
-                     histos[h]->GetXaxis()->SetTitleOffset(1.1);
-                     histos[h]->GetXaxis()->SetTitle(axisTitles[a].c_str());
-                     histos[h]->GetXaxis()->SetRangeUser(range.first,range.second);
-                     histos[h]->GetXaxis()->SetLabelSize(0.06);
-                     histos[h]->GetXaxis()->SetTitleSize(0.06);
-                     histos[h]->GetXaxis()->SetLabelFont(42);
-                     histos[h]->GetXaxis()->SetTitleFont(42);
-                  }
-                  else if (a==1){
-                     histos[h]->GetYaxis()->SetTitleOffset(1.3);
-                     histos[h]->GetYaxis()->SetTitle(axisTitles[a].c_str());
-                     histos[h]->SetMaximum(max(histos[h]->GetMaximum(),totalData->GetMaximum())*1.1);
-                     histos[h]->GetYaxis()->SetLabelSize(0.06);
-                     histos[h]->GetYaxis()->SetTitleSize(0.06);
-                     histos[h]->GetYaxis()->SetLabelFont(42);                     
-                     histos[h]->GetYaxis()->SetTitleFont(42);
-                     histos[h]->GetYaxis()->SetTitleOffset(0.85);
-                  }
-                  else if (a==2){
-                     histos[h]->GetZaxis()->SetTitle(axisTitles[a].c_str());
-                  }
-               }
-            } 
-            //draw the data histogram and the legend on the top pad of the canvas
-            else {
-               histos[h]->Draw("same");
-               l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
-            }
-            //draw the KS, Chi^2, and luminosity on the top pad of the canvas
-            drawKSandChi2Tests(totalData, all, range);
-            lumi(lum);
-         }
+  // Add the luminosity
+  drawLumi(1.6);
 
-         //plot the (data-MC)/MC histogram on the bottom pad of the canvas
-         c1_1->cd();
-         c1_1->SetGridy();
-         c1_1->SetObjectStat(false);
-         
-         tData->SetTitle("");
-         tData->Add(all,-1);
-         tData->Divide(all);
-         tData->SetMinimum(-0.99);
-         tData->SetMaximum(0.99);
-         tData->SetLineWidth(2);
+  // canRatio: this is the pad with the Data/MC on it
+  TVirtualPad * canRatio = can->GetPad(2);
+  canRatio->SetPad(0.01,0.01,0.99,0.32);
+  canRatio->SetBottomMargin(0.16);
+  canRatio->SetLeftMargin(0.115); 
+  canRatio->SetRightMargin(0.03);  
+  canRatio->SetGridx();
+  canRatio->SetGridy();
+  canRatio->cd();
+  
+  // Create the Ratio plot
+  TH1* hRatio = (TH1*) tDa->Clone(tempName+"_Ratio");
+  hRatio->SetTitle("#frac{Data - MC}{MC}");
+  hRatio->Add(tMC,-1);
+  hRatio->Divide(tMC);
 
-         tData->GetXaxis()->SetLabelFont(42);
-         tData->GetXaxis()->SetLabelOffset(0.007);
-         tData->GetXaxis()->SetLabelSize(0.11);
-         tData->GetXaxis()->SetTitleSize(0.12);
-         tData->GetXaxis()->SetTitleFont(42);
-         tData->GetXaxis()->SetRangeUser(range.first,range.second);
+  // Format the ratio plot and Draw it
+  formatRatio(hRatio);
+  hRatio->Draw();
 
-         tData->GetYaxis()->SetTitle("#frac{Data - MC}{MC}");
-         tData->GetYaxis()->SetTitleOffset(0.55);
-         tData->GetYaxis()->SetNdivisions(105);
-         tData->GetYaxis()->SetLabelFont(42);
-         tData->GetYaxis()->SetLabelOffset(0.012);
-         tData->GetYaxis()->SetLabelSize(0.11);
-         tData->GetYaxis()->SetTitleSize(0.1);
-         tData->GetYaxis()->SetTitleFont(42);
-
-         tData->SetStats(0);
-         tData->Draw();  
-
-      }//try
-      catch (exception& e){
-         if (s==0)
-            cout << "\tERROR::THStack * s is uninitiallized." << endl;
-         else if (totalData==0)
-            cout << "\tERROR::TH1 * totalData is uninitiallized." << endl;
-         else if (higgs==0)
-            cout << "\tERROR::TH1 * higgs is uninitiallized." << endl;
-         else
-            cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
-      }//catch
-    }//for
-
-    //this will tell you the bin content of the first 20 bins of MC in each plot
-    //used to check if the efficiency is working properly
-/*    cout << all->GetName() << endl;
-    for(int i = 0; i < 20; i++){
-       cout << "bin " << i << " content " << all->GetBinContent(i) << endl;
-    }*/
-
-    //this will save the hisotgrams to a file but it's only saving the last one ...
-/*    TFile * outFile = new TFile("outputFile2.root","RECREATE");
-    s->Add(totalData,"hist");
-    s->Write();
-    outFile->Close();
-*/
-    return c;
+  // Return the Canvas
+  return can;
 
 }//getCanvas
 
-//________________________________________________________________________________
-TH1 * aPlot::getHisto(vector<proc*> procs) {
-    
-    //some constants
-    double lum = 0;
 
-    //make the histogram
-    TH1 * hist = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_hist");
+// ------------------------------------------------------------
+void aPlot::formatRatio(TH1* hRatio){
 
-    // do the scaling of the histos to lum or to data
-    doScaling(procs);
+  hRatio->SetMinimum(-0.99);
+  hRatio->SetMaximum(0.99);
+  hRatio->SetLineWidth(2);
 
-    // Make the legend
-    TLegend * l = new TLegend(0.78,0.5,0.89,0.89);
-    l->SetBorderSize(0);
-    l->SetFillColor(0);
+  hRatio->GetXaxis()->SetLabelFont(42);
+  hRatio->GetXaxis()->SetLabelOffset(0.007);
+  hRatio->GetXaxis()->SetLabelSize(0.11);
+  hRatio->GetXaxis()->SetTitleSize(0.12);
+  hRatio->GetXaxis()->SetTitleFont(42);
+  hRatio->GetXaxis()->SetRangeUser(range.first,range.second);
 
-    //Make the Stacks, sTop, unstacked  and data histograms
-    THStack * s=0;
-    TH1 * totalData=0;
-    TH1 * stop=0;
-    gStyle->SetOptStat(2211);
+  hRatio->GetYaxis()->SetTitle("#frac{Data - MC}{MC}");
+  hRatio->GetYaxis()->SetTitleOffset(0.55);
+  hRatio->GetYaxis()->SetNdivisions(105);
+  hRatio->GetYaxis()->SetLabelFont(42);
+  hRatio->GetYaxis()->SetLabelOffset(0.012);
+  hRatio->GetYaxis()->SetLabelSize(0.11);
+  hRatio->GetYaxis()->SetTitleSize(0.1);
+  hRatio->GetYaxis()->SetTitleFont(42);
 
-    if (stacked){
-       s = new THStack(TString(templateHisto->GetName())+"_stack",TString(templateHisto->GetName())+"_stack");
-    } 
-    totalData = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Data");
-    stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
-    totalData->Sumw2();
-    totalData->SetMarkerStyle(8);
-    totalData->SetMarkerSize(0.7);
-    stop->SetFillColor(12);
-    stop->SetLineColor(12);
- 
+  hRatio->SetStats(0);
 
-    // Loop over all the histos, drawing them, or add some of them up if needed
-    // eg WW and WZ are usually put together...
-    for (unsigned int h = 0 ; h < histos.size() ; h++){
-      histos[h]->SetLineColor(procs[h]->color);
-      histos[h]->SetFillColor(procs[h]->color);
-      histos[h]->SetMarkerColor(procs[h]->color);
-      try{
-         if (stacked && s!=0 and totalData!=0){
-            if (procs[h]->name.compare("Data") != 0){
-               //combine the STop MC into one piece
-               if (procs[h]->name.compare("STopT_T") == 0
-                   || procs[h]->name.compare("STopT_Tbar") == 0
-                   || procs[h]->name.compare("STopS_T") == 0
-                   || procs[h]->name.compare("STopS_Tbar") == 0
-                   || procs[h]->name.compare("STopTW_T") == 0
-                   || procs[h]->name.compare("STopTW_Tbar") == 0){
-                  stop->Add(histos[h]);
-               }
-               else {
-                  s->Add(histos[h],"hist");
-                  hist->Add(histos[h]); 
-                  l->AddEntry(histos[h],(procs[h]->name).c_str(),"f");
-               }
-            }
-            else {
-               s->Add(stop,"hist");
-               hist->Add(stop);
-               l->AddEntry(stop,"STop","f");
-               totalData->Add(histos[h]);
-               hist->Add(histos[h]);
-               lum = procs[h]->intLum;
-            }
-            if (h == histos.size() -1) {
-               hist->Draw();
-               hist->SetTitle(templateHisto->GetTitle());
-               for(unsigned int a=0; a<axisTitles.size(); a++){
-                  if (a==0){
-                     hist->GetXaxis()->SetTitleOffset(1.1);
-                     hist->GetXaxis()->SetTitle(axisTitles[a].c_str());
-                     hist->GetXaxis()->SetRangeUser(range.first,range.second);
-                     hist->GetXaxis()->SetLabelSize(0.06);
-                     hist->GetXaxis()->SetTitleSize(0.06);
-                     hist->GetXaxis()->SetLabelFont(42);
-                     hist->GetXaxis()->SetTitleFont(42);
-                  }
-                  else if (a==1){
-                     hist->GetYaxis()->SetTitleOffset(1.3);
-                     hist->GetYaxis()->SetTitle(axisTitles[a].c_str());
-                     hist->SetMaximum(max(s->GetMaximum(),totalData->GetMaximum())*1.1);
-                     hist->GetYaxis()->SetLabelSize(0.06);
-                     hist->GetYaxis()->SetTitleSize(0.06);
-                     hist->GetYaxis()->SetLabelFont(42);
-                     hist->GetYaxis()->SetTitleFont(42);
-                     hist->GetYaxis()->SetTitleOffset(0.85);
-                  }
-               }
-               l->AddEntry(totalData,"Data","lpe");
-               totalData->Draw("same");
-               hist->Draw("same");
-               l->Draw("same");
-            }
-         } 
-         else {
-            if (h==0){
-               histos[h]->Draw();
-               for(unsigned int a=0; a<axisTitles.size(); a++){
-                  if (a==0){
-                     histos[h]->GetXaxis()->SetTitleOffset(1.1);
-                     histos[h]->GetXaxis()->SetTitle(axisTitles[a].c_str());
-                     histos[h]->GetXaxis()->SetRangeUser(range.first,range.second);
-                     histos[h]->GetXaxis()->SetLabelSize(0.06);
-                     histos[h]->GetXaxis()->SetTitleSize(0.06);
-                     histos[h]->GetXaxis()->SetLabelFont(42);
-                     histos[h]->GetXaxis()->SetTitleFont(42);
-                  }
-                  else if (a==1){
-                     histos[h]->GetYaxis()->SetTitleOffset(1.3);
-                     histos[h]->GetYaxis()->SetTitle(axisTitles[a].c_str());
-                     histos[h]->SetMaximum(max(histos[h]->GetMaximum(),totalData->GetMaximum())*1.1);
-                     histos[h]->GetYaxis()->SetLabelSize(0.06);
-                     histos[h]->GetYaxis()->SetTitleSize(0.06);
-                     histos[h]->GetYaxis()->SetLabelFont(42);                     
-                     histos[h]->GetYaxis()->SetTitleFont(42);
-                     histos[h]->GetYaxis()->SetTitleOffset(0.85);
-                  }
-                  else if (a==2){
-                     histos[h]->GetZaxis()->SetTitle(axisTitles[a].c_str());
-                  }
-               }
-            } 
-            else
-               histos[h]->Draw("same");
-            if (procs[h]->name.compare("STop") == 0)
-               l->AddEntry(stop,"STop","l");
-            else
-               l->AddEntry(histos[h],(procs[h]->name).c_str(),"l");
-         }
-      }//try
-      catch (exception& e){
-         if (s==0)
-            cout << "\tERROR::THStack * s is uninitiallized." << endl;
-         else if (totalData==0)
-            cout << "\tERROR::TH1 * totalData is uninitiallized." << endl;
-         else
-            cout << "\tERROR::The standard exception " << e.what() << " occured." << endl;
-      }//catch
-    }//for
+}//formatRatio
 
-//    hist->Add(totalData);
-//    hist->Add(s);
 
-    return hist;
+// ------------------------------------------------------------
+void aPlot::formatStack(THStack * stack, double maxi){
 
-}//getHisto
+  for(unsigned int a=0; a<axisTitles.size(); a++){
+    if (a==0){ // X axis
+      stack->GetXaxis()->SetTitleOffset(1.1);
+      stack->GetXaxis()->SetTitle(axisTitles[a].c_str());
+      stack->GetXaxis()->SetRangeUser(range.first,range.second);
+      stack->GetXaxis()->SetLabelSize(0.06);
+      stack->GetXaxis()->SetTitleSize(0.06);
+      stack->GetXaxis()->SetLabelFont(42);
+      stack->GetXaxis()->SetTitleFont(42);
+    }
+    else if (a==1){ // Y axis
+      stack->GetYaxis()->SetTitleOffset(1.3);
+      stack->GetYaxis()->SetTitle(axisTitles[a].c_str());
+      stack->SetMaximum(maxi);
+      stack->GetYaxis()->SetLabelSize(0.06);
+      stack->GetYaxis()->SetTitleSize(0.06);
+      stack->GetYaxis()->SetLabelFont(42);
+      stack->GetYaxis()->SetTitleFont(42);
+      stack->GetYaxis()->SetTitleOffset(0.85);
+    }
+  }
+
+}//formatStack
 
 //________________________________________________________________________________
-
 void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
 
    double x = (range.second - range.first)*0.45 + range.first;
-   double y = totalData->GetMaximum()*1.08;
+   double y = max(totalData->GetMaximum(),all->GetMaximum())*1.08;
 
    double chi2;
    int NDF;
    int igood;
 
-   TLatex * ks = new TLatex(x,y,Form("KolmogorovTest = %g",totalData->KolmogorovTest(all)));
-   TLatex * chi2P = new TLatex(x,y*0.92,Form("Chi2Prob = %g",all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
-   TLatex * chi2NDF = new TLatex(x,y*0.84,Form("Chi2/NDF = %g",chi2/NDF));
+   TLatex * ks      = new TLatex(x,y     ,Form("KSTest   = %5.4g",totalData->KolmogorovTest(all)));
+   TLatex * chi2P   = new TLatex(x,y*0.92,Form("Chi2Prob = %5.4g",all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
+   TLatex * chi2NDF = new TLatex(x,y*0.84,Form("Chi2/NDF = %5.4g",chi2/NDF));
 
    ks->Draw();
    chi2P->Draw();
@@ -568,20 +410,22 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
 }//drawKSandChi2Tests
 
 //______________________________________________________________________________
-
-void lumi(double intLum)
-{               
-   const float LUMINOSITY = intLum;                       
+void drawLumi(float intLum)
+{                                
    TLatex latex; 
    latex.SetNDC();                                         
-   latex.SetTextSize(0.04);                                
+   latex.SetTextSize(0.063);                                
    latex.SetTextAlign(31); // align right                  
-   latex.DrawLatex(0.90,0.96,"#sqrt{s} = 7 TeV");          
-   if (LUMINOSITY > 0.) {                                  
-      latex.SetTextAlign(31); // align right                
-      latex.DrawLatex(0.75,0.96,Form("#int #font[12]{L} dt = %d fb^{-1}", (int) 
-                                     LUMINOSITY)); //29/07/2011    
+   latex.DrawLatex(0.97,0.936,"#sqrt{s} = 8 TeV");          
+   if (intLum > 0.) {                                  
+      latex.SetTextAlign(11); // align right       
+      latex.SetTextSize(0.043);                   
+      latex.DrawLatex(0.5,0.936,"#int ");
+      latex.SetTextSize(0.063);                                
+      latex.DrawLatex(0.525,0.936,Form("L dt = %3.2f fb^{-1}",intLum));
    }             
-   //latex.SetTextAlign(11); // align left
-   //latex.DrawLatex(0.18,0.96,"CMS preliminary 2012");
-}//lumi
+   latex.SetTextSize(0.063); 
+   latex.SetTextAlign(11); // align left
+   latex.DrawLatex(0.113,0.936,"CMS preliminary 2012");
+
+}//drawLumi
