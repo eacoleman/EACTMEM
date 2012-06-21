@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.6 2012/02/27 18:14:02 aperloff Exp $
+// $Id: Table.cc,v 1.7 2012/06/07 15:02:13 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -21,6 +21,8 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::ostringstream;
+
+using namespace std;
 
 //----------------------------------------------------------------------------
 Table::Table(string tableName) {
@@ -118,11 +120,13 @@ void Table::printTable(ostream &out, string style){
 
   // The string to where we print
   ostringstream oss;
+  oss << std::setprecision (4);
 
   //Print the table prefix, if any
   oss<<format.begin_table;
 
-  //Print the table name followed by the column names of the first row
+  //Print the table name followed by the column names of the first row. In between lines.
+  oss << format.line;
   oss<< std::setw(colWidth[0]+lpad)<<format.Row1HeaderPre+GetName()<<" "<<format.separator;
   
   if (tableRows.size()>0){
@@ -137,7 +141,8 @@ void Table::printTable(ostream &out, string style){
 	oss << std::setw(colWidth[col+1]+lpad)<< cells[col]->GetName();
       }
     }// for cells
-    oss<<format.end_row+format.Row1HeaderPos<<endl;    
+    oss<<format.end_row+format.Row1HeaderPos<<endl;   
+    oss << format.line;
 
     //Loop over all rows printing their info
     for (tableRows_it it=tableRows.begin();it!=tableRows.end(); it++) {
@@ -159,6 +164,7 @@ void Table::printTable(ostream &out, string style){
 
   } 
 
+  oss << format.line;
   oss<<format.end_table<<endl;
 
   //Start from a fresh line
@@ -166,7 +172,7 @@ void Table::printTable(ostream &out, string style){
 
   // Print the string stream to the default output
   out<<oss.str()<<endl;
-
+  
 }//printTable
 
 //----------------------------------------------------------------------------

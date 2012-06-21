@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableFormat.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: TableFormat.cc,v 1.2 2012/06/07 15:02:13 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableFormat.hh"
@@ -34,6 +34,9 @@ TableFormat TableFormat::getFormat(string style, int numCol){
   format.end_row   = "";
   format.end_table = "";
   format.begin_table = "";
+  format.line="";
+  format.precision = 7;
+  format.noError = false;
 
   // transform style to uppercase
   std::transform(style.begin(), style.end(), style.begin(),  (int(*)(int)) toupper);
@@ -43,14 +46,28 @@ TableFormat TableFormat::getFormat(string style, int numCol){
     format.separator = "|";
     format.end_row   = " ";
   }else if (style == "LATEX"){
+    format.line = "\\hline\n";
     format.style="LATEX";
     format.separator = "&";
     format.end_row   = "\\\\";
-    format.begin_table = "\\begin{tabular}{";
+    format.begin_table = "\\begin{tabular}{|";
     for (int i = 0; i<numCol; i++)
        format.begin_table+=" c ";
-    format.begin_table+="}\n";
+    format.begin_table+="|}\n";
     format.end_table = "\\end{tabular}";
+    format.precision = 7;
+  }else if (style == "LATEXINT"){
+    format.line = "\\hline\n";
+    format.style="LATEX";
+    format.separator = "&";
+    format.end_row   = "\\\\";
+    format.begin_table = "\\begin{tabular}{|";
+    for (int i = 0; i<numCol; i++)
+       format.begin_table+=" c ";
+    format.begin_table+="|}\n";
+    format.end_table = "\\end{tabular}";
+    format.precision = 7;
+    format.noError = true;
   } else if (style == "TIKI" || style == "TWIKI") {
     format.style="TIKI";
     format.Row1HeaderPre = "{FANCYTABLE(head=>";

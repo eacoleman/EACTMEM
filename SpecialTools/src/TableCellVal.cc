@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCellVal.cc,v 1.2 2011/03/01 01:56:46 eusebi Exp $
+// $Id: TableCellVal.cc,v 1.3 2012/06/08 14:28:24 aperloff Exp $
 
 
 //My libraries
@@ -11,6 +11,7 @@
 //C++ libraries
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <sstream>
 #include <cstdlib> // atof
@@ -20,7 +21,7 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::ostringstream;
-
+using std::setprecision;
 
 TableCellVal::TableCellVal(){
   SetName("CellVal");
@@ -35,10 +36,19 @@ TableCellVal::TableCellVal(string name){
 string TableCellVal::print(TableFormat format){
   ostringstream oss;
 
+  oss << setprecision(format.precision);
   if (format.style == "LATEX" ) 
-    oss<< val.value<<" $\\pm$ "<<val.error ;
+  {
+     oss<< val.value;
+     if(!format.noError)
+        oss <<" $\\pm$ " << val.error ;
+  }
   else
-    oss<< val.value<<" +/- "<<val.error ;
+  {
+    oss<< val.value;
+    if(!format.noError)
+       oss << " +/- " << val.error;
+  }
   return oss.str();
 }
 //----------------------------------------------------------------------------
