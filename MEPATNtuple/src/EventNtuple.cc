@@ -33,6 +33,16 @@ EventNtuple::EventNtuple() {}
 
 EventNtuple::~EventNtuple() {}
 
+bool EventNtuple::baseCuts()
+{
+   return (METEtMin());
+}
+
+bool EventNtuple::METEtMin(double EtMin)
+{
+   return METLV[0].Et()>EtMin;
+}
+
 double EventNtuple::getQGLikelihood(unsigned int index, QGLikelihoodCalculator* qglikeli)
 {
    if(index >= jLV.size())
