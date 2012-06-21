@@ -1,0 +1,114 @@
+\documentclass[compress,10pt]{beamer}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[tight,hang,nooneline,scriptsize]{subfigure}
+\usepackage{wrapfig}
+\usepackage{epsfig}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{cancel}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{colortbl}
+\usetheme{Warsaw}
+\usepackage{comment} 
+\usepackage{caption}
+\usepackage[absolute]{textpos}
+\usepackage{changepage}
+\usepackage{tikz}
+\usetikzlibrary{arrows,shapes,backgrounds}
+\usepackage{overpic}
+
+%
+% Define some new commands
+%
+\newcommand{\unit}[1]{\ensuremath{\mathrm{\:#1}}}
+\newcommand{\smallmargin}{\setbeamersize{text margin left=0.25cm, text
+    margin right=0.25cm}}
+\newcommand{\bigmargin}{\setbeamersize{text margin left=1.0cm, text
+    margin right=1.0cm}}
+\newcommand{\myitem}{\item[$\blacktriangleright$]}
+\newcommand{\myitemtwo}{\item[$\bullet$]}
+\newcommand{\myitemthree}{\item[$\diamond$]}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+\newcolumntype{C}{>{\centering\arraybackslash}X}%
+
+%
+% Set the beamer template style
+%
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{bibliography item}[text]
+\captionsetup[figure]{labelformat=empty}%
+
+%
+% Set some length shortcuts
+%
+\setlength{\columnsep}{0cm}
+\setlength{\floatsep}{-2em} 
+\setlength{\TPHorizModule}{1.0cm}
+\setlength{\TPVertModule}{\TPHorizModule}
+\smallmargin
+
+%
+% To insert the total number of frames into the footer
+%
+\newcommand*\oldmacro{}%
+\let\oldmacro\insertshorttitle%
+\renewcommand*\insertshorttitle{%
+  \oldmacro\hfill%
+  \insertframenumber\,/\,\inserttotalframenumber}
+
+%
+% Title page information
+%
+\title[Short Title]{Title}
+%%\subtitle[short subtitle]{subtitle}
+\author[Short Name]{Name\inst{1}}
+\institute[TAMU]
+{
+  \inst{1}%
+  Department of Physics and Astronomy\\
+  Texas A{\&}M University\\
+  College Station, Texas 77843\\[1ex]
+  \texttt{email}
+}
+\date{\today}
+
+\begin{document}
+
+\beamertemplatenavigationsymbolsempty
+
+\frame {
+  \begin{figure}
+    \vspace{-0.7cm}
+    \centering
+    \subfigure
+        {
+          \includegraphics[width=0.45in]{Tamu-system-logo.png}
+          \label{TAMU_logo}
+        }\hspace{3.62in}
+        \subfigure
+            {
+              \includegraphics[width=0.45in]{CMS_exp.png}
+              \label{CMS_logo}
+            }
+            \label{logos}
+            \vspace{-1.0cm}
+  \end{figure}
+  %
+  \titlepage
+}
+
+\section{Section Name}
+\subsection{Subsection Name}
+
+\frame[allowframebraks] {
+   \frametitle{Frame Title}
+%%%%%CODEGOESHERE%%%%%
+   \note {Note if needed}
+}
+
+\end{document}
