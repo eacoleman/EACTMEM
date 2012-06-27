@@ -119,6 +119,8 @@ public:
    double        ltrkIso;
    double        ldetIso;
    double        lpfIso;
+   double        lmvaTrig;
+   double        lmvaNonTrig;
 
    double        METEt;
    double        lPhi;
@@ -130,7 +132,7 @@ public:
 
    map<string,bool> triggerMap;
 
-   ClassDef(EventNtuple,6)
+   ClassDef(EventNtuple,7)
 
 };
 
