@@ -2,13 +2,10 @@
 echo "Have you run 'kserver_init' in the last 24 hrs? (y/n) "
 set KS = $<
 if ( $KS != y ) then
-	echo "ERROR::Cannot continue without running that command being run first!"	
-	echo "//////////////"
-	echo "// FINISHED //"
-	echo "//////////////"
-	exit
-else
+	echo "WARNING::Cannot continue without running that command being run first!"
+	echo "Running kserver_init ... "
 	kserver_init
+	echo "DONE"
 endif
 
 echo " Type 428 for CMSSW_4_2_8, 525 for CMSSW_5_2_5 (Default = 525) "
