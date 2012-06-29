@@ -27,10 +27,10 @@
 using namespace std;
 
 //function to get chi2 and KS
-void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range);
+void drawKSandChi2TestsOld(TH1* totalData, TH1* all, pair<double, double> range);
 
 //function to get luminosity
-void drawLumi(float intLum);
+void drawLumiOld(float intLum);
 
 proc::proc(string procName, string fileName, double cross_section, double lum, 
            unsigned int in_ev, int col, string treeName):
@@ -301,13 +301,13 @@ TCanvas * aPlot::getCanvas(vector<proc*> procs){
   //formatStack(sDa,maxi);
 
   // Add the KS and Chi2 info in the active canvas
-  drawKSandChi2Tests(tDa, tMC, range);
+  drawKSandChi2TestsOld(tDa, tMC, range);
 
   // Add the Legend
   l->Draw("same");
 
   // Add the luminosity
-  drawLumi(1.6);
+  drawLumiOld(1.6);
 
   // canRatio: this is the pad with the Data/MC on it
   TVirtualPad * canRatio = can->GetPad(2);
@@ -391,7 +391,7 @@ void aPlot::formatStack(THStack * stack, double maxi){
 }//formatStack
 
 //________________________________________________________________________________
-void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
+void drawKSandChi2TestsOld(TH1* totalData, TH1* all, pair<double, double> range){
 
    double x = (range.second - range.first)*0.45 + range.first;
    double y = max(totalData->GetMaximum(),all->GetMaximum())*1.08;
@@ -407,10 +407,10 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
    ks->Draw();
    chi2P->Draw();
    chi2NDF->Draw();
-}//drawKSandChi2Tests
+}//drawKSandChi2TestsOld
 
 //______________________________________________________________________________
-void drawLumi(float intLum)
+void drawLumiOld(float intLum)
 {                                
    TLatex latex; 
    latex.SetNDC();                                         
@@ -428,4 +428,4 @@ void drawLumi(float intLum)
    latex.SetTextAlign(11); // align left
    latex.DrawLatex(0.113,0.936,"CMS preliminary 2012");
 
-}//drawLumi
+}//drawLumiOld

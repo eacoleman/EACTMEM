@@ -15,30 +15,6 @@ using namespace std;
 //#####################################################################
 //#####################################################################
 
-Plot PlotMap::operator[](string name)
-{
-   if(end() == find(name))
-   {
-      cout << endl << "##### WARNING #####" << endl;
-      cout << "Element: " << name << " could not be found in PlotMap." << endl;
-      cout << "Aborting..." << endl;
-      cout << "###################" << endl << endl;
-      
-      throw;
-   }
-   
-   return map<string, Plot>::operator[](name);
-}
-
-Plot PlotMap::set(string name, Plot plot)
-{
-   return map<string, Plot>::operator[](name) = plot;
-}
-
-//#####################################################################
-//#####################################################################
-//#####################################################################
-
 PlotFiller::PlotFiller(PlotMap &plotsTemp,
                                vector<PhysicsProcessNEW*> &procsTemp,
                                void (*userFillFuncTemp) (PlotMap &, EventNtuple*, double)):
@@ -46,11 +22,10 @@ PlotFiller::PlotFiller(PlotMap &plotsTemp,
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
 {
-   //userPUWeightFunc = &defaultPUWeightFunc;
-   //userTrigEffWeightFunc = &defaultTrigEffWeightFunc;
    userWeightFunc = &defaultWeightFunc;
    userCutFunc = &defaultCutFunc;
    
+   numberOfEvents = 0;
 }
 
 PlotFiller::~PlotFiller()
@@ -71,6 +46,12 @@ void PlotFiller::setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const Phy
 void PlotFiller::setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
 {
    userProcessFunc = userProcessFuncTemp;
+}
+
+void PlotFiller::setMaximumEventsDEBUG(unsigned int maxEvts)
+{
+   numberOfEvents = maxEvts;
+   debug = true;
 }
 
 void PlotFiller::run()
@@ -96,12 +77,13 @@ void PlotFiller::run()
       double weight = 1.0;
 
       // Loop over events in the process
-      unsigned int nev = c->GetEntries();
+      if(!debug)
+         numberOfEvents = c->GetEntries();
       
       // This runs once for each process before the events are run.
       userProcessFunc(ntuple, processes[i]);
 
-      for (unsigned int ev = 0 ; ev < nev ; ev++)
+      for (unsigned int ev = 0 ; ev < numberOfEvents ; ev++)
       {
          // Report every now and then
          if ((ev % 10000) == 0)

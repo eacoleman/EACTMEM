@@ -1,7 +1,5 @@
 // Our libraries
 #include "TAMUWW/Tools/interface/Plots.hh"
-//#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
-
 
 // ROOT libraries
 #include "TROOT.h"
@@ -449,3 +447,4 @@ void drawLumi(float intLum)
    latex.SetTextAlign(11); // align left
    latex.DrawLatex(0.113,0.936,"CMS preliminary 2012");
 }
+

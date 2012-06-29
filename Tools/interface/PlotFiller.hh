@@ -7,6 +7,7 @@
 
 // Our libraries
 #include "TAMUWW/Tools/interface/Plots.hh"
+#include "TAMUWW/Tools/interface/PlotMap.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "TAMUWW/Tools/interface/TriggerEfficiency.hh"
@@ -16,14 +17,6 @@
 #include <string>
 #include <vector>
 #include <map>
-
-class PlotMap: public std::map<string, Plot>
-{
-public:
-   Plot operator[](string name);
-   
-   Plot set(std::string name, Plot plot);
-};
 
 // PlotFiller is a modular solution to extracting plots from root files.
 // It allows the user to customize how he/she wants to produce the plots.
@@ -42,6 +35,9 @@ public:
    void setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    void setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    
+   // Debug functions
+   void setMaximumEventsDEBUG(unsigned int maxEvts);
+   
    // Runs the events and produces the output.
    void run();
    
@@ -49,6 +45,8 @@ private:
    // NOTE That the plots and processes are references.
    PlotMap &plots;
    std::vector<PhysicsProcessNEW*> &processes;
+   unsigned int numberOfEvents;
+   bool debug;
    
    // These are the custom functions.
    // Fills the plots
