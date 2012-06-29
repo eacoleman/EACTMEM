@@ -10,4 +10,3 @@
 <bin   name="plotter_x"   file="plotter_x.cc" />
 <bin   name="TableProduction_x" file="TableProduction_x.cc" />
 <bin   name="BackgroundEstimator_x" file="BackgroundEstimator_x.cc" />
-<bin   name="FillPlotsTester_x" file="FillPlotsTester_x.cc" />
