@@ -43,6 +43,7 @@ else
 	cvs co -r V00-03-11    CommonTools/ParticleFlow
 	cvs co -r V00-01-04 -d SQWaT UserCode/SQWaT
 	cvs co -d PhysicsTools/NtupleUtils UserCode/Bicocca/PhysicsTools/NtupleUtils
+	cvs co -d Muon/MuonAnalysisTools/ UserCode/sixie/Muon/MuonAnalysisTools
 	cvs co -r V00-00-08 -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools
 	cd EGamma/EGammaAnalysisTools/data
 	cat download.url | xargs wget
