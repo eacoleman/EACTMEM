@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCell.hh,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: TableCell.hh,v 1.2 2011/02/26 19:10:07 eusebi Exp $
 
 #ifndef TABLECELL_DEF
 #define TABLECELL_DEF
@@ -46,6 +46,13 @@ public:
 
   virtual TableCell & operator*=(const Value & rhs) {return *this;}
   virtual TableCell & operator/=(const Value & rhs) {return *this;}
+  virtual TableCell & operator=(Value rhs) {return *this;}
+
+  virtual TableCell & operator*=(const int & rhs) {return *this;}
+  virtual TableCell & operator/=(const int & rhs) {return *this;}
+  virtual TableCell & operator=(const int & rhs) {return *this;}
+
+  virtual TableCell & operator++(int unused) {return *this;}
 
   // provide a virtual clone method to all the derived classes.
   virtual TableCell * clone() const = 0;

@@ -1,10 +1,11 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.7 2012/06/07 15:02:13 aperloff Exp $
+// $Id: Table.cc,v 1.8 2012/06/21 19:20:48 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
@@ -29,6 +30,41 @@ Table::Table(string tableName) {
 
   SetName(tableName.c_str());
   tableOrigin = "Created by Hand.";
+
+}//Default C'tor
+
+//----------------------------------------------------------------------------
+Table::Table(std::string tableName, std::vector<std::string> rowNames, std::vector<std::string> colNames, std::string cellType) {
+
+  SetName(tableName.c_str());
+  tableOrigin = "Created by Hand.";
+
+  TableRow* tableRow;
+  TableCell* cell;
+
+  for (unsigned int r = 0; r<rowNames.size(); r++) {
+     tableRow = new TableRow(rowNames[r]);
+     for (unsigned int c = 0; c<colNames.size(); c++) {
+        if (cellType.compare("TableCellInt")==0) {
+           cell = new TableCellInt(colNames[c]);
+        }
+        else if (cellType.compare("TableCellVal") == 0) {
+           cell = new TableCellVal(colNames[c]);
+        }
+        else if (cellType.compare("TableCellText") == 0)
+           cell = new TableCellText(colNames[c]);
+        else {
+           cout << "ERROR  Table::Could not determine the cell type" << endl
+                << "\tReturning without initializing the entire table" << endl;
+           reset();
+           return;
+        }
+
+        tableRow->addCellEntries(cell);
+     }//for columns
+     addRow(*tableRow);
+     delete tableRow;
+  }//for rows
 
 }//C'tor
  
@@ -385,6 +421,28 @@ Table & Table::operator/=(Value rhs) {
 }//operator/=
 
 //----------------------------------------------------------------------------
+TableCell* Table::operator()(std::string row, std::string col) {
+
+   return getCellRowColumn(row,col);
+
+}//operator()
+
+//----------------------------------------------------------------------------
+TableRow Table::operator[](std::string row) {
+
+   for (unsigned int r=0; r<tableRows.size(); r++) {
+      if (string(tableRows[r].GetName()).compare(row)==0)
+         return tableRows[r];
+   }
+   
+   cout << "ERROR  Table::Sprecified row (" << row << ") not found" << endl
+        << "\tReturning empty table row" << endl;
+   TableRow e;
+   return e;
+
+}//operator[]
+
+//----------------------------------------------------------------------------
 void Table::addTable(Table & table2, unsigned int omitFirstCuts){
 
   vector<TableRow> table2Rows = table2.getRows();
@@ -475,6 +533,9 @@ void Table::fillWithTest(){
   }//for rows
 
   tableRows = rows;
+
+  cout << "Value at (*this)(\"cut 1\",\"1jets\")=" << ((TableCellVal*)(*this)("cut 1","1jets"))->val.value << endl;
+  cout << "Value at (*this)[\"cut 1\"][\"1jets\"]=" << ((TableCellVal*)(*this)["cut 1"]["1jets"])->val.value << endl;
 }
 
 //----------------------------------------------------------------------------

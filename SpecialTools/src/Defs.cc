@@ -433,8 +433,7 @@ namespace DEFS {
 
   }
 
-
-
+  //---------------------------------------------------------------------------
   // A routine that returns a string given the type
   string getTagCatString(TagCat type){
 
@@ -462,9 +461,71 @@ namespace DEFS {
     if (str == "ge1TSV")  return ge1TSV;
     if (str == "ge2TSV")  return ge2TSV;
 
-    cout<<"ERROR  PhysicsProcess::getTagCatString cannot find the given type"<<endl;
+    cout<<"ERROR  PhysicsProcess::getTagCat cannot find the given string"<<endl;
     return pretag;
     
   }
+
+  //---------------------------------------------------------------------------
+  string getCutLevelString(CutLevel type) {
+     
+    if (type == NPATtupleEvts)  return "NPATtupleEvts";
+    if (type == c0)             return "c0:NJets";
+    if (type == c1)             return "c1:HLT+Kin";
+    if (type == c2)             return "c2:VtxCut";
+    if (type == c3)             return "c3:PrimaryEl/Mu";
+    if (type == c4)             return "c4:NotLooseMu";
+    if (type == c5)             return "c5:NotLooseEl";
+    if (type == c6)             return "c6:METE";
+    if (type == FNAL1)          return "FNAL:MET";
+    if (type == FNAL2)          return "FNAL:Mt";
+    if (type == FNAL3)          return "FNAL:LepPt";
+    if (type == FNAL4)          return "FNAL:LepEta";
+    if (type == FNAL5)          return "FNAL:JetPt1";
+    if (type == FNAL6)          return "FNAL:JetPt2";
+    if (type == FNAL7)          return "FNAL:JetEta1";
+    if (type == FNAL8)          return "FNAL:JetEta2";
+    if (type == FNAL9)          return "FNAL:drJetLep";
+    if (type == FNAL10)         return "FNAL:Mjj";
+    if (type == BTag0)          return "BTag0";
+    if (type == BTag1)          return "BTag1";
+    if (type == BTag2)          return "BTag2";
+    if (type == BTag3p)         return "BTag3+";
+
+    cout <<"ERROR  PhysicsProcess::getCutLevelString cannot find the given type"<<endl;
+    return "ERROR";
+
+   }
+
+   DEFS::CutLevel getCutLevel(std::string str) {
+
+    if (str == "NPATtupleEvts")    return NPATtupleEvts;
+    if (str == "c0:NJets")         return c0;
+    if (str == "c1:HLT+Kin")       return c1;
+    if (str == "c2:VtxCut")        return c2;
+    if (str == "c3:PrimaryEl/Mu")  return c3;
+    if (str == "c4:NotLooseMu")    return c4;
+    if (str == "c5:NotLooseEl")    return c5;
+    if (str == "c6:METE")          return c6;
+    if (str == "FNAL:MET")         return FNAL1;
+    if (str == "FNAL:Mt")          return FNAL2;
+    if (str == "FNAL:LepPt")       return FNAL3;
+    if (str == "FNAL:LepEta")      return FNAL4;
+    if (str == "FNAL:JetPt1")      return FNAL5;
+    if (str == "FNAL:JetPt2")      return FNAL6;
+    if (str == "FNAL:JetEta1")     return FNAL7;
+    if (str == "FNAL:JetEta2")     return FNAL8;
+    if (str == "FNAL:drJetLep")    return FNAL9;
+    if (str == "FNAL:Mjj")         return FNAL10;
+    if (str == "BTag0")            return BTag0;
+    if (str == "BTag1")            return BTag1;
+    if (str == "BTag2")            return BTag2;
+    if (str == "BTag3+")           return BTag3p;
+
+
+    cout<<"ERROR  PhysicsProcess::getCutLevel cannot find the given string"<<endl;
+    return NPATtupleEvts;
+
+   }
   
 }// end of namespace DEFS

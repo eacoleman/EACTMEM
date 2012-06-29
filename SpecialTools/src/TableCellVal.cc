@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCellVal.cc,v 1.3 2012/06/08 14:28:24 aperloff Exp $
+// $Id: TableCellVal.cc,v 1.4 2012/06/21 19:20:48 aperloff Exp $
 
 
 //My libraries
@@ -25,11 +25,13 @@ using std::setprecision;
 
 TableCellVal::TableCellVal(){
   SetName("CellVal");
+  val = Value(0.0,0.0);
 }
 
 //----------------------------------------------------------------------------
 TableCellVal::TableCellVal(string name){
   SetName(name.c_str());
+  val = Value(0.0,0.0);
 }
 
 //----------------------------------------------------------------------------
@@ -154,5 +156,30 @@ TableCellVal TableCellVal::operator/(Value rhs) const {
   return res;
 }
 
+//----------------------------------------------------------------------------
+TableCell & TableCellVal::operator++(int unused) {
+   val++;
+   return *this;
+}
+
+//----------------------------------------------------------------------------
+TableCellVal & TableCellVal::operator++(int unused) const {
+   TableCellVal res = *this;
+   res++;
+   return res;
+}
+
+//----------------------------------------------------------------------------
+TableCell & TableCellVal::operator=(Value rhs) {
+   val = rhs;
+   return *this;
+}
+
+//----------------------------------------------------------------------------
+TableCellVal & TableCellVal::operator=(Value rhs) const {
+   TableCellVal res = *this;
+   res = rhs;
+   return res;
+}
 
 ClassImp(TableCellVal)

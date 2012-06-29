@@ -75,15 +75,18 @@ namespace DEFS{
   // A routine that returns the LeptonCat given the string
   LeptonCat getLeptonCat(std::string type);
 
-  // -----------------------------------------------------------
+  // ---------------------------------------------------------------
   //            ALL ABOUT THE JET TYPES
   // ---------------------------------------------------------------
   enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};
+  
+  // for historical reasons
+  static const unsigned int NJETS = 5;
 
   // A routine that returns a string given the type
   std::string getJetBinString(JetBin type);
 
-  // A routine that returns a jetBin given
+  // A routine that returns a JetBin given
   JetBin getJetBin(std::string str);
 
 
@@ -132,6 +135,20 @@ namespace DEFS{
 
   // A routine that returns a jetBin given a string
   TagCat getTagCat(std::string str);
+
+  // ---------------------------------------------------------------
+  //            ALL ABOUT THE CUT LEVELS
+  // ---------------------------------------------------------------
+
+   enum CutLevel {NPATtupleEvts, c0, c1, c2, c3, c4, c5, c6, FNAL1, FNAL2, FNAL3, FNAL4, FNAL5, FNAL6, FNAL7, FNAL8, FNAL9, FNAL10, BTag0, BTag1, BTag2, BTag3p};
+   static const unsigned int nCutLevel = 22;
+   static const unsigned int nFinalCutLevel = 7;
+
+  // A routine that returns a string given the type
+  std::string getCutLevelString(CutLevel type);
+
+  // A routine that returns a CutLevel given
+  CutLevel getCutLevel(std::string str);
 
 }
 

@@ -75,12 +75,13 @@
 // User Defined Includes
 //
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/Value.hh"
-#include "TAMUWW/Tools/src/GlobalTools428.cc"
 #include "TAMUWW/Selection/bin/RunEventSet.h"
 
 //
@@ -157,12 +158,6 @@ private:
    // additional (local) functions
    void getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup);
    void makeTPUDist();
-   void setlp4LV();
-   void setlp3();
-   void setj1p4LV();
-   void setj2p4LV();
-   void setjjp3();
-   void setMETp4LV();
    void setDRlj1();
    void setDRlj2();
    void setThetalj1pj2();
@@ -170,12 +165,11 @@ private:
    bool matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2);
    /// matches jets to generator level objects
    pair<int, TLorentzVector> matchToGen(double eta, double phi);
-   /// increments the specified counters: either El&Lp or Mu&Lp depending on whether MuPresent or ElPresent = 1 (the other counter should = 0 )
-   void ptSort(vector<math::XYZTLorentzVector> & vec);
-   void swap(math::XYZTLorentzVector & x, math::XYZTLorentzVector & y);
-   int  max_position(vector<math::XYZTLorentzVector> & vec, int from, int to);
-   void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[NCUTS][NJETS],
-                         int LpPass[NCUTS][NJETS], int MuPresent, int ElPresent);
+   void ptSort(vector<TLorentzVector> & vec);
+   void swap(TLorentzVector & x, TLorentzVector & y);
+   int  max_position(vector<TLorentzVector> & vec, int from, int to);
+   /// increments the specified tables
+   void incrementCounter(int nCut, unsigned int nJets, Table* t1, Table* t2, Table* t3 = 0);
    void printEventInformation(bool print, int cLevel, bool muon);
    void printJetInformation(); vector<string> jstreams; stringstream jstream;
    void printLeptonInformation(); vector<string> lstreams; stringstream lstream;
@@ -210,20 +204,19 @@ private:
    TString outtablenameEl;
    TString outtablenameMu;
    TString outtablenameLp;
-   TString runtype;
-   int PassEl[NCUTS][NJETS];
-   int PassMu[NCUTS][NJETS];
-   int PassLp[NCUTS][NJETS];
    // tree variables
-   TTree* EvtTree;
+   TTree* EvtTree_0Jets;
+   TTree* EvtTree_1Jets;
+   TTree* EvtTree_2Jets;
+   TTree* EvtTree_3Jets;
+   TTree* EvtTree_4Jets;
    EventNtuple* EvtNtuple;
    // histogram variables
    TH1D* TPUDist;
+   TH1D* PFIsoDist;
    // handle InputTags/sources
    edm::InputTag triggerSource;
    edm::InputTag vtxSource;
-   edm::InputTag bsSource;
-   edm::InputTag convSource;
    edm::InputTag genParticleSource;
    edm::InputTag pfJetSource;
    edm::InputTag electronSource;
@@ -234,8 +227,6 @@ private:
    // handles
    edm::Handle<pat::TriggerEvent> triggerHandle;
    edm::Handle<reco::VertexCollection> vtxHandle;
-   edm::Handle<reco::BeamSpot> bsHandle;
-   edm::Handle<reco::ConversionCollection> convHandle;
    edm::Handle<reco::GenParticleCollection> genParticleHandle;
    edm::Handle<vector<pat::Jet> > pfJetHandle;
    edm::Handle<vector<pat::Electron> > electronHandle;
@@ -279,10 +270,11 @@ private:
    double zvtx;
    int vtxcnt;
    // jet variables
-   vector <math::XYZTLorentzVector> jp4, jp4_temp;
-   vector <TLorentzVector> refjp4, rawjp4;
+   vector <math::XYZTLorentzVector> jp4_temp;
+   vector <TLorentzVector> refjp4, rawjp4, jp4;
    vector <double> JEta, JEta_temp, JPhi, JPhi_temp;
    vector <int> refpdgid;
+   TVector3 jjp3;
    double j_pt;
    double j_ptMin;
    double j_eta;
@@ -353,6 +345,8 @@ private:
    double el_TrkIso;
    double el_DetIso;
    double el_PFIso;
+   double el_mvaTrig;
+   double el_mvaNonTrig;
    double elDetIsoConeSize;
    double elPFIsoConeSize;
 
@@ -411,17 +405,16 @@ private:
    bool el_PassLoose;
 
    // lepton variables
-   vector<double> l_Eta;
-   vector<double> l_Phi;
-   vector<int> l_Type; //0 for electrons, 1 for muons
+   vector<TLorentzVector> lp4;
+   TVector3 lp3;
+   vector<double> l_Eta, l_Phi;
+   vector<DEFS::LeptonCat> l_Type; //muon or electron
    // MET variables
+   vector<TLorentzVector> METp4;
    double MET_Et;
    double MET_EtMin;
    bool MET_Pass;
    // additional variables
-   math::XYZTLorentzVector lp4, METp4;
-   TLorentzVector lp4LV, j1p4LV, j2p4LV, METp4LV;
-   TVector3 lp3, jjp3;
    double Thetalj1pj2, DRlj1, DRlj2;
    double lTotIso;
    double lecalIso;

@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.hh,v 1.5 2012/02/10 04:47:54 aperloff Exp $
+// $Id: Table.hh,v 1.6 2012/06/07 21:09:58 aperloff Exp $
 
 #ifndef TABLE_DEF
 #define TABLE_DEF
@@ -29,6 +29,7 @@ class  Table : public TNamed {
 public :
   
   Table(std::string tableName = "default_Table");  
+   Table(std::string tableName, std::vector<std::string> rowNames, std::vector<std::string> colNames, std::string cellType);
 
   ~Table();
   
@@ -50,6 +51,10 @@ public :
 
   Table operator/(Value rhs) const;
   Table & operator/=(Value rhs);
+
+  TableCell* operator()(std::string row, std::string col);
+
+  TableRow operator[](std::string row);
 
   // Reset the contents of the table. Keep the name and structure. 
   void reset();
@@ -75,7 +80,7 @@ public :
   // get the vector of rows
   std::vector<TableRow> getRows() const { return tableRows;} ;
 
-  // get the tableCell object for a given Row and Column
+  // get the TableCell object for a given Row and Column
   TableCell* getCellRowColumn(std::string row, std::string col);
       
   // A test to fill the table
@@ -109,7 +114,7 @@ public :
   // - Automatic otherwise.
   std::string tableOrigin;
 
-  // Provide an interator for code simplification.
+  // Provide an iterator for code simplification.
   typedef  std::vector<TableRow>::iterator tableRows_it;
 
    ClassDef (Table,1)

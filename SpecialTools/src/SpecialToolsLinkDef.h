@@ -5,6 +5,7 @@
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
 #include "TAMUWW/SpecialTools/interface/TableCell.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
 
@@ -23,6 +24,7 @@
 #pragma link C++ class TableRow+;
 #pragma link C++ class TableCell+;
 #pragma link C++ class TableCellVal+;
+#pragma link C++ class TableCellInt+;
 #pragma link C++ class TableCellText+;
 
 #endif

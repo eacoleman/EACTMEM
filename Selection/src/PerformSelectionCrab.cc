@@ -32,8 +32,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    //-----Input Tags For Handles
    triggerSource              =         iConfig.getParameter<edm::InputTag>   ("triggerSource");
    vtxSource                  =         iConfig.getParameter<edm::InputTag>   ("vtxSource");
-   //bsSource                   =         iConfig.getParameter<edm::InputTag> ("bsSource");;
-   //convSource                 =         iConfig.getParameter<edm::InputTag> ("convSource");;
    genParticleSource          =         iConfig.getParameter<edm::InputTag>   ("genParticleSource");
    pfJetSource                =         iConfig.getParameter<edm::InputTag>   ("pfJetSource");
    electronSource             =         iConfig.getParameter<edm::InputTag>   ("electronSource");
@@ -51,7 +49,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    outtablenameEl             = TString(iConfig.getParameter<string>          ("outtablenameEl"));
    outtablenameMu             = TString(iConfig.getParameter<string>          ("outtablenameMu"));
    outtablenameLp             = TString(iConfig.getParameter<string>          ("outtablenameLp"));
-   runtype                    = TString(iConfig.getParameter<string>          ("runtype"));
 
    printEventInfo             =         iConfig.getParameter<bool>            ("printEventInfo");
    printJetInfo               =         iConfig.getParameter<bool>            ("printJetInfo");
@@ -197,10 +194,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    //-----Constant Inputs
    etaBarrelMax               =         iConfig.getParameter<double>          ("etaBarrelMax");
 
-   InitializeIntMatrix(PassEl);
-   InitializeIntMatrix(PassMu);
-   InitializeIntMatrix(PassLp);
-
 }
 
 
@@ -217,16 +210,34 @@ void PerformSelection::beginJob() {
    edm::Service<TFileService> fs;
    if (!fs) throw edm::Exception(edm::errors::Configuration,
                                  "TFileService missing from configuration!");
+   
+   vector<string> cuts;
+   for (unsigned int c = 0; c<DEFS::nCutLevel; c++) {
+      cuts.push_back(DEFS::getCutLevelString((DEFS::CutLevel)c));
+   }
+   vector<string> jets;
+   for (unsigned int j = 0; j<DEFS::NJETS; j++) {
+      jets.push_back(DEFS::getJetBinString((DEFS::JetBin)j));
+   }
 
    // create the tree
-   tableEl = fs->make<Table>(string(outtablenameEl));
-   tableMu = fs->make<Table>(string(outtablenameMu));
-   tableLp = fs->make<Table>(string(outtablenameLp));
-   EvtTree = fs->make<TTree>("EvtTree", "Output tree for matrix element");
+   tableEl = fs->make<Table>(string(outtablenameEl),cuts,jets,"TableCellVal");
+   tableMu = fs->make<Table>(string(outtablenameMu),cuts,jets,"TableCellVal");
+   tableLp = fs->make<Table>(string(outtablenameLp),cuts,jets,"TableCellVal");
+   EvtTree_0Jets = fs->make<TTree>(getJetBinString(DEFS::jets0).c_str(), "Output tree");
+   EvtTree_1Jets = fs->make<TTree>(getJetBinString(DEFS::jet1).c_str(), "Output tree");
+   EvtTree_2Jets = fs->make<TTree>(getJetBinString(DEFS::jets2).c_str(), "Output tree for matrix element");
+   EvtTree_3Jets = fs->make<TTree>(getJetBinString(DEFS::jets3).c_str(), "Output tree");
+   EvtTree_4Jets = fs->make<TTree>(getJetBinString(DEFS::jets4).c_str(), "Output tree");
    EvtNtuple = new EventNtuple();
-   EvtTree->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   EvtTree_0Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   EvtTree_1Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   EvtTree_2Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   EvtTree_3Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   EvtTree_4Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
    if (!Data)
       TPUDist = fs->make<TH1D>("TPUDist","TPUDist",600,0,60);
+   PFIsoDist = fs->make<TH1D>("PFIsoDist","PFIsoDist",1000,-1,1);
 }
 
 
@@ -305,28 +316,6 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    // Using PF Jets
    //
    jetClear();
-   /*
-   //
-   // JES Uncertainty : tested & works
-   //
-   double uncer;
-   j_pt=25.5;
-   j_eta=1.3;
-   cout << "JES UNCERTAINTY" << endl;
-   string JEC_PATH("CondFormats/JetMETObjects/data/");
-   //edm::FileInPath fip(JEC_PATH+"Spring10_Uncertainty_AK5Calo.txt");
-   edm::FileInPath fip(JEC_PATH+"Spring10_Uncertainty_AK5PF.txt");
-   // edm::FileInPath fip(JEC_PATH+"Spring10_Uncertainty_AK5JPT.txt");
-   JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(fip.fullPath());
-   jecUnc->setJetEta(j_eta); // Give rapidity of jet you want uncertainty on
-   jecUnc->setJetPt(j_pt);// Also give the corrected pt of the jet you want the uncertainty on
-   //
-   // The following function gives the relative uncertainty in the jet Pt.
-   // i.e. ptCorSmeared = (1 +- uncer) * ptCor  
-   //
-   uncer = jecUnc->getUncertainty(true); // In principle, boolean controls if uncertainty on +ve or -ve side is returned (asymmetric errors) but not yet implemented.
-   cout << "pt=" << j_pt << " eta=" << j_eta << " : uncer=" << uncer << endl;
-   */
    jetSelection();
      
    //
@@ -353,92 +342,81 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 
    printEventInformation(printEventInfo, -1, true);
-   for(Int_t Nj=0; Nj<NJETS;Nj++) {
-      if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) {
-         PassLp[1][Nj]++;
-         PassMu[1][Nj]++;
-         PassEl[1][Nj]++;
+   for(unsigned int Nj=0; Nj<DEFS::NJETS; Nj++) {
+      if((unsigned int)jcnt_tot==Nj || (Nj==(DEFS::NJETS-1) && (unsigned int)jcnt_tot>(DEFS::NJETS-1))) {
+         incrementCounter(1,Nj,tableEl,tableMu,tableLp);
          printEventInformation(printEventInfo, 0, true);
          
          if (el_passTrigger) {
-            incrementCounter(2,Nj,PassEl,PassMu,PassLp,0,el_passTrigger);
-            //PassLp[2][Nj]++;
-            //PassMu[2][Nj]++;
-            //PassEl[2][Nj]++;
+            incrementCounter(2,Nj,tableEl,tableLp);
             printEventInformation(printEventInfo, 1, true);
 
             if (PVfound) {
-               incrementCounter(3,Nj,PassEl,PassMu,PassLp,0,el_passTrigger);
-               //PassLp[3][Nj]++;
-               //PassMu[3][Nj]++;
-               //PassEl[3][Nj]++;
+               incrementCounter(3,Nj,tableEl,tableLp);
                printEventInformation(printEventInfo, 2, true);
                //
                // Record the electron info
                //
                if (elcnt_Prim>=1) {
-                  incrementCounter(4,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                  incrementCounter(4,Nj,tableEl,tableLp);
                   if (!muONLY) printEventInformation(printEventInfo, 3, false);
                   if (mucnt_Loose==0) {
-                     incrementCounter(5,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                     incrementCounter(5,Nj,tableEl,tableLp);
                      if (!muONLY) printEventInformation(printEventInfo, 4, false);
                      if (elcnt_Loose==1) {
-                        incrementCounter(6,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                        incrementCounter(6,Nj,tableEl,tableLp);
                         if (!muONLY) printEventInformation(printEventInfo, 5, false);
                         el_passStandard=true;
                         if (MET_Pass) {
-                           incrementCounter(7,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                           incrementCounter(7,Nj,tableEl,tableLp);
                            if (!muONLY) printEventInformation(printEventInfo, 6, false);
                            el_passAll=true;
                            //
                            // Record the Btag info
                            //
                            if (nBtagSSV==0)
-                              incrementCounter(18,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                              incrementCounter(18,Nj,tableEl,tableLp);
                            else {
                               if (nBtagSSV==1)
-                                 incrementCounter(19,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                 incrementCounter(19,Nj,tableEl,tableLp);
                               else {
                                  if (nBtagSSV==2)
-                                    incrementCounter(20,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                    incrementCounter(20,Nj,tableEl,tableLp);
                                  else
-                                    incrementCounter(21,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                    incrementCounter(21,Nj,tableEl,tableLp);
                               }
                            }//BTags
 
                            /////////////FNAL CUTs
                            if (MET_Et > 30) {
-                              incrementCounter(8,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                              TLorentzVector ll(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
-                              TLorentzVector met(METp4.Px(),METp4.Py(),METp4.Py(),METp4.E());
-                              TLorentzVector mt(lp4.Px()+METp4.Px(),lp4.Py()+METp4.Py(),0,lp4.Et()+METp4.Et());
-                              //TLorentzVector mt(lp4.Px()+METp4.Px(),lp4.Py()+METp4.Py(),0,lp4.Pt()+METp4.Pt());
+                              incrementCounter(8,Nj,tableEl,tableLp);
+                              TLorentzVector mt(lp4[0].Px()+METp4[0].Px(),lp4[0].Py()+METp4[0].Py(),0,lp4[0].Et()+METp4[0].Et());
                               if (mt.M() > 30) {
-                                 incrementCounter(9,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                                 if (lp4.Pt() > 30) {
-                                    incrementCounter(10,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
-                                    if (abs(lp4.Eta()) < 2.5) {
-                                       incrementCounter(11,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                 incrementCounter(9,Nj,tableEl,tableLp);
+                                 if (lp4[0].Pt() > 30) {
+                                    incrementCounter(10,Nj,tableEl,tableLp);
+                                    if (abs(lp4[0].Eta()) < 2.5) {
+                                       incrementCounter(11,Nj,tableEl,tableLp);
                                        if (jp4.size()>1)
                                           ptSort(jp4);
                                        if (jp4.size()!=0 && jp4[0].Pt() > 30) {
-                                          incrementCounter(12,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                          incrementCounter(12,Nj,tableEl,tableLp);
                                           if (jp4.size() > 1 && jp4[1].Pt() > 30) {
-                                             incrementCounter(13,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                             incrementCounter(13,Nj,tableEl,tableLp);
                                              if (abs(jp4[0].Eta()) < 2.4) {
-                                                incrementCounter(14,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                                incrementCounter(14,Nj,tableEl,tableLp);
                                                 if (abs(jp4[1].Eta()) < 2.4) {
-                                                   incrementCounter(15,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                                   incrementCounter(15,Nj,tableEl,tableLp);
                                                    bool dr = true;
-                                                   for (int i = 0; i<Nj; i++){
+                                                   for (unsigned int i = 0; i<Nj; i++){
                                                       TLorentzVector j(jp4[i].Px(),jp4[i].Py(),jp4[i].Pz(),jp4[i].E());
-                                                      if (j.DeltaR(ll) <= 0.5)
+                                                      if (j.DeltaR(lp4[0]) <= 0.3)
                                                          dr = false;
                                                       else
                                                          continue;
                                                    }
                                                    if (dr) {
-                                                      incrementCounter(16,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                                      incrementCounter(16,Nj,tableEl,tableLp);
                                                       TLorentzVector jj(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz(),jp4[0].E()+jp4[1].E());
                                                       TLorentzVector j4;
                                                       if (jp4.size()>3) {
@@ -454,7 +432,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                                          j4.SetE(0);
                                                       }
                                                       if (j4.Pt()<30 && jj.M()>65 && jj.M()<95) {
-                                                         incrementCounter(17,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
+                                                         incrementCounter(17,Nj,tableEl,tableLp);
                                                       }
                                                    }
                                                 }
@@ -475,79 +453,76 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
          } //if (el_passTrigger)
 
          if (mu_passTrigger) {
-            incrementCounter(2,Nj,PassEl,PassMu,PassLp,mu_passTrigger,0);
+            incrementCounter(2,Nj,tableMu,tableLp);
             printEventInformation(printEventInfo, 1, true);
             if (PVfound) {
                //printEventInformation(true, -1, true);
                //printEventInformation(true, 7, true);
-               incrementCounter(3,Nj,PassEl,PassMu,PassLp,mu_passTrigger,0);
+               incrementCounter(3,Nj,tableMu,tableLp);
                printEventInformation(printEventInfo, 2, true);
                //
                // Record the muon info
                //
                if (mucnt_Prim>=1) {
-                  incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                  incrementCounter(4,Nj,tableMu,tableLp);
                   if (!elONLY) printEventInformation(printEventInfo, 3, true);
                   if (mucnt_Loose==1) {
-                     incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                     incrementCounter(5,Nj,tableMu,tableLp);
                      if (!elONLY)printEventInformation(printEventInfo, 4, true);
                      if (elcnt_Loose==0) {
-                        incrementCounter(6,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                        incrementCounter(6,Nj,tableMu,tableLp);
                         if (!elONLY) printEventInformation(printEventInfo, 5, true);
                         mu_passStandard=true;
                         if (MET_Pass) {
-                           incrementCounter(7,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                           incrementCounter(7,Nj,tableMu,tableLp);
                            if (!elONLY) printEventInformation(printEventInfo, 6, true);
                            mu_passAll=true;
                            //
                            // Record the Btag info
                            //
                            if (nBtagSSV==0 )
-                              incrementCounter(18,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                              incrementCounter(18,Nj,tableMu,tableLp);
                            else {
                               if (nBtagSSV==1) 
-                                 incrementCounter(19,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                 incrementCounter(19,Nj,tableMu,tableLp);
                               else {
                                  if (nBtagSSV==2)
-                                    incrementCounter(20,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                    incrementCounter(20,Nj,tableMu,tableLp);
                                  else
-                                    incrementCounter(21,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                    incrementCounter(21,Nj,tableMu,tableLp);
                               }
                            }//BTags
                            
                            /////////////FNAL CUTs
                            if (MET_Et > 30) {
-                              incrementCounter(8,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                              TLorentzVector ll(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
-                              TLorentzVector met(METp4.Px(),METp4.Py(),METp4.Py(),METp4.E());
-                              TLorentzVector mt(lp4.Px()+METp4.Px(),lp4.Py()+METp4.Py(),0,lp4.Et()+METp4.Et());
-                              //TLorentzVector mt(lp4.Px()+METp4.Px(),lp4.Py()+METp4.Py(),0,lp4.Pt()+METp4.Pt());
+                              incrementCounter(8,Nj,tableMu,tableLp);
+                              TLorentzVector mt(lp4[0].Px()+METp4[0].Px(),lp4[0].Py()+METp4[0].Py(),0,lp4[0].Et()+METp4[0].Et());
                               if (mt.M() > 30) {
-                                 incrementCounter(9,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                                 if (lp4.Pt() > 25) {
-                                    incrementCounter(10,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
-                                    if (abs(lp4.Eta()) < 2.1) {
-                                       incrementCounter(11,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                 incrementCounter(9,Nj,tableMu,tableLp);
+                                 if (lp4[0].Pt() > 25) {
+                                    incrementCounter(10,Nj,tableMu,tableLp);
+                                    if (abs(lp4[0].Eta()) < 2.1) {
+                                       incrementCounter(11,Nj,tableMu,tableLp);
                                        if (jp4.size()>1)
                                           ptSort(jp4);
                                        if (jp4.size()!=0 && jp4[0].Pt() > 30) {
-                                          incrementCounter(12,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                          incrementCounter(12,Nj,tableMu,tableLp);
                                           if (jp4.size() > 1 && jp4[1].Pt() > 30) {
-                                             incrementCounter(13,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                             incrementCounter(13,Nj,tableMu,tableLp);
                                              if (abs(jp4[0].Eta()) < 2.4) {
-                                                incrementCounter(14,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                                incrementCounter(14,Nj,tableMu,tableLp);
                                                 if (abs(jp4[1].Eta()) < 2.4) {
-                                                   incrementCounter(15,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                                   incrementCounter(15,Nj,tableMu,tableLp);
                                                    bool dr = true;
-                                                   for (int i = 0; i<Nj; i++){
+                                                   for (unsigned int i = 0; i<Nj; i++){
                                                       TLorentzVector j(jp4[i].Px(),jp4[i].Py(),jp4[i].Pz(),jp4[i].E());
-                                                      if (j.DeltaR(ll) <= 0.5)
+                                                      if (j.DeltaR(lp4[0]) <= 0.3)
                                                          dr = false;
                                                       else
                                                          continue;
                                                    }
                                                    if (dr) {
-                                                      incrementCounter(16,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                                      incrementCounter(16,Nj,tableMu,tableLp);
                                                       TLorentzVector jj(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz(),jp4[0].E()+jp4[1].E());
                                                       TLorentzVector j4;
                                                       if (jp4.size()>3) {
@@ -563,7 +538,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                                          j4.SetE(0);
                                                       }
                                                       if (j4.Pt()<30 && jj.M()>65 && jj.M()<95) {
-                                                         incrementCounter(17,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
+                                                         incrementCounter(17,Nj,tableMu,tableLp);
                                                       }
                                                    }
                                                 }
@@ -581,8 +556,8 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                } //if(mucnt_Prim>=1 && PVfound)
             } //if (PVfound)
          } //if (mu_passTrigger||el_passTrigger)
-      } //if(jcnt_tot==Nj || (Nj==(NJETS-1) && jcnt_tot>(NJETS-1))) 
-   } //for(Int_t Nj=0; Nj<NJETS;Nj++)
+      } //if(jcnt_tot==Nj || (Nj==(DEFS::NJETS-1) && jcnt_tot>(DEFS::NJETS-1))) 
+   } //for(Int_t Nj=0; Nj<DEFS::NJETS;Nj++)
    printEventInformation(printEventInfo, 7, true);
    if (printJetInfo)
       printJetInformation();
@@ -591,23 +566,18 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    
    //
    // Fill the Ntuple to be used in Matrix Element computations
-   //    (requiring two jets & a lepton passing all of the cuts)
+   //    and the other ntuples for future analysis
+   //    (requiring 2 jets and 1 tight lepton passing all of the cuts)
    // Usual option: fill in the elements which pass all of the cuts, *except* the MET cut
    //
    setFlags();
-
-   if ((el_passFlag || mu_passFlag) && jcnt_tot==2) {
-      setlp4LV();
-      setlp3();
+   PFIsoDist->Fill(lpfIso);
+   if ((el_passFlag || mu_passFlag)) {
       EvtNtuple->lLV.clear();
-      EvtNtuple->lLV.push_back(lp4LV);
+      EvtNtuple->lLV = lp4;
 
-      setj1p4LV();
-      setj2p4LV();
-      setjjp3();
       EvtNtuple->jLV.clear();
-      EvtNtuple->jLV.push_back(j1p4LV);
-      EvtNtuple->jLV.push_back(j2p4LV);
+      EvtNtuple->jLV = jp4;
       EvtNtuple->rawjLV = rawjp4;
 
       //
@@ -623,12 +593,12 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //
       EvtNtuple->triggerMap = triggerMap;
 
-      setMETp4LV();
       EvtNtuple->METLV.clear();
-      EvtNtuple->METLV.push_back(METp4LV);
+      EvtNtuple->METLV = METp4;
 
-      EvtNtuple->lPhi=lp4.Phi();
-      EvtNtuple->METEt=METp4LV.Et();
+      EvtNtuple->lPhi=lp4[0].Phi();
+      //EvtNtuple->METEt=METp4.Et();
+      EvtNtuple->METEt = MET_Et;
 
       EvtNtuple->jBtagSSV.clear();
       EvtNtuple->jBtagTC.clear();
@@ -666,14 +636,12 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //
       pair<int, TLorentzVector> matchedPair;
       if (!Data) {
-         matchedPair = matchToGen(j1p4LV.Eta(),j1p4LV.Phi());
-         EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
-         EvtNtuple->matchedpdgId.push_back(matchedPair.first);
-         EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j1p4LV.Eta(), j1p4LV.Phi()));
-         matchedPair = matchToGen(j2p4LV.Eta(),j2p4LV.Phi());
-         EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
-         EvtNtuple->matchedpdgId.push_back(matchedPair.first);
-         EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), j2p4LV.Eta(), j2p4LV.Phi()));
+         for (unsigned int j = 0; j<jp4.size(); j++) {
+            matchedPair = matchToGen(jp4[j].Eta(),jp4[j].Phi());
+            EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
+            EvtNtuple->matchedpdgId.push_back(matchedPair.first);
+            EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), jp4[j].Eta(), jp4[j].Phi()));
+         }
          EvtNtuple->refjLV = refjp4;
          EvtNtuple->refpdgid = refpdgid;
       }
@@ -689,6 +657,8 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       EvtNtuple->ltrkIso=ltrkIso;
       EvtNtuple->ldetIso=ldetIso;
       EvtNtuple->lpfIso=lpfIso;
+      EvtNtuple->lmvaTrig=el_mvaTrig;
+      EvtNtuple->lmvaNonTrig=el_mvaNonTrig;
       EvtNtuple->Mjj=Mjj;
       EvtNtuple->leptonCat=DEFS::none;
       EvtNtuple->leptonCat_passAll=DEFS::none;
@@ -730,8 +700,33 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //
       // Fill The Tree
       //
-      EvtTree->Fill();
-   } //if((el_passFlag || mu_passFlag) && jcnt_tot==2)
+      //EvtTree_2Jets->Fill();
+      
+      int treeSwitch = jcnt_tot;
+      if (treeSwitch > 4)
+         treeSwitch = 4;
+      switch (treeSwitch) {
+         case 0:
+            EvtTree_0Jets->Fill();
+            break;
+         case 1:
+            EvtTree_1Jets->Fill();
+            break;
+         case 2:
+            EvtTree_2Jets->Fill();
+            break;
+         case 3:
+            EvtTree_3Jets->Fill();
+            break;
+         case 4:
+            EvtTree_4Jets->Fill();
+            break;
+         default:
+            cout << "WARNING::Value of jcnt_tot does not correspond to a known tree." << endl
+                 << "\tNo tree will be filled with event " << eventNumber << "." << endl;
+      }
+
+   } //if((el_passFlag || mu_passFlag)) //&& jcnt_tot==2)
 
    EvtTotCount++;
 
@@ -742,24 +737,10 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 //______________________________________________________________________________
 void PerformSelection::endJob()
 {
-   for (Int_t Nj=0; Nj<NJETS;Nj++) {
-      PassLp[0][Nj]=EvtTotCount;
-      PassMu[0][Nj]=EvtTotCount;
-      PassEl[0][Nj]=EvtTotCount;
-   }
-   InitializeLabels(PLabel,CLabel);
-   
-   //getProcessTable(table,PassEl,PassMu,PassLp);
-   getProcessTable(tableEl,PassEl);
-   getProcessTable(tableMu,PassMu);
-   getProcessTable(tableLp,PassLp);
-   if (runtype.CompareTo("cmsRun")==0) {
-      //
-      // won't work for CRAB
-      // only use if running using cmsRun
-      //
-      outtablefile.open(outtablefilename,ios::out);
-      writeIntProcessTable(outtablefile,PassEl,PassMu,PassLp);
+   for (unsigned int Nj=0; Nj<DEFS::NJETS;Nj++) {
+      (*(*tableLp)(DEFS::getCutLevelString((DEFS::CutLevel)0),DEFS::getJetBinString((DEFS::JetBin)Nj))) = Value(EvtTotCount,0.0);
+      (*(*tableMu)(DEFS::getCutLevelString((DEFS::CutLevel)0),DEFS::getJetBinString((DEFS::JetBin)Nj))) = Value(EvtTotCount,0.0);
+      (*(*tableEl)(DEFS::getCutLevelString((DEFS::CutLevel)0),DEFS::getJetBinString((DEFS::JetBin)Nj))) = Value(EvtTotCount,0.0);
    }
 }
 
@@ -927,7 +908,7 @@ void PerformSelection::jetSelection() {
          
          j_DRlepton=pow((j_eta-l_Eta[i])*(j_eta-l_Eta[i])+adphi*adphi,0.5);
          
-         if ((l_Type[i]==0 && j_DRlepton<j_DRelMin) || (l_Type[i]==1 && j_DRlepton<muPrim_DRjMin))
+         if ((l_Type[i]==DEFS::electron && j_DRlepton<j_DRelMin) || (l_Type[i]==DEFS::muon && j_DRlepton<muPrim_DRjMin))
             jDR = false;
          else
             continue;
@@ -952,8 +933,7 @@ void PerformSelection::jetSelection() {
          if (!Data) {
             if (jetIter->genJet()) {
                math::XYZTLorentzVector v = jetIter->genJet()->p4();
-               TLorentzVector lv(v.Px(),v.Py(),v.Pz(),v.E());
-               refjp4.push_back(lv);
+               refjp4.push_back(TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E()));
                refpdgid.push_back(jetIter->genJet()->pdgId());
             }
             else {
@@ -967,13 +947,13 @@ void PerformSelection::jetSelection() {
          // Uncorrected (raw) jet
          //
          math::XYZTLorentzVector vv = jetIter->correctedJet("Uncorrected").p4();
-         TLorentzVector lvv(vv.Px(),vv.Py(),vv.Pz(),vv.E());
-         rawjp4.push_back(lvv);
+         rawjp4.push_back(TLorentzVector(vv.Px(),vv.Py(),vv.Pz(),vv.E()));
 
          //
          // Corrected (reco) jet
          //
-         jp4.push_back(jetIter->p4());
+         math::XYZTLorentzVector vvv = jetIter->p4();
+         jp4.push_back(TLorentzVector(vvv.Px(),vvv.Py(),vvv.Pz(),vvv.E()));
          JEta.push_back(j_eta); 
          JPhi.push_back(j_phi);
          JChargedMultiplicity.push_back(jetIter->chargedMultiplicity());
@@ -1132,13 +1112,15 @@ void PerformSelection::muonSelection() {
          //
          if (isProperlyIsolatedMu) {
             mucnt_Prim++;
-            lp4=muIter->p4();
+            math::XYZTLorentzVector lv = muIter->p4();
+            lp4.push_back(TLorentzVector(lv.Px(),lv.Py(),lv.Pz(),lv.E()));
             lQ=muIter->charge();
             l_Eta.push_back(mu_eta);
             l_Phi.push_back(mu_phi);
-            l_Type.push_back(1);
+            l_Type.push_back(DEFS::muon);
             ltrkIso=mu_TrkIso;
             ldetIso=mu_DetIso;
+            lpfIso=mu_PFIso;
             if (doDetectorIso)
                lTotIso=mu_DetIso;
             else
@@ -1179,6 +1161,7 @@ void PerformSelection::eleClear() {
    l_Phi.clear();
    l_Type.clear();
    lstreams.clear();
+   lp4.clear();
 }
 
 //______________________________________________________________________________
@@ -1238,13 +1221,15 @@ void PerformSelection::eleSelection() {
          // Record the electron quantities:
          //
          elcnt_Prim++;
-         lp4=elIter->p4();
+         math::XYZTLorentzVector lv = elIter->p4();
+         lp4.push_back(TLorentzVector(lv.Px(),lv.Py(),lv.Pz(),lv.E()));
          lQ=elIter->charge();
          l_Eta.push_back(el_eta);
          l_Phi.push_back(el_phi);
-         l_Type.push_back(0);
+         l_Type.push_back(DEFS::electron);
          ltrkIso=el_TrkIso;
          ldetIso=el_DetIso;
+         lpfIso=el_PFIso;
          if (doDetectorIso)
             lTotIso=el_DetIso;
          else
@@ -1357,6 +1342,8 @@ bool PerformSelection::CutBasedEID(vector< pat::Electron >::const_iterator elIte
 
 //______________________________________________________________________________
 bool PerformSelection::MVABasedEID(vector< pat::Electron >::const_iterator elIter, bool tight){
+   el_mvaTrig = elIter->electronID("mvaTrigV0");
+   el_mvaNonTrig = elIter->electronID("mvaNonTrigV0");
    if (tight) {
       if (invertEID) {
          if (el_PFIso>elPrim_PFIsoMin_invertEID && elIter->electronID("mvaTrigV0") > -1.0)
@@ -1448,9 +1435,11 @@ bool PerformSelection::eleEP(vector< pat::Electron >::const_iterator elIter) {
 //______________________________________________________________________________
 void PerformSelection::metSelection() {
    MET_Pass = false;
+   METp4.clear();
 
-   METp4=METHandle->front().p4();
-   MET_Et=METp4.E();
+   math::XYZTLorentzVector v = METHandle->front().p4();
+   METp4.push_back(TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E()));
+   MET_Et = METp4[0].Et();
 
    MET_Pass = MET_Et > MET_EtMin;
 }
@@ -1467,12 +1456,6 @@ void PerformSelection::getCollections(const edm::Event& iEvent, const edm::Event
 
    iEvent.getByLabel(vtxSource, vtxHandle);
    assert ( vtxHandle.isValid() ); 
-
-   //iEvent.getByLabel(bsSource, bsHandle);
-   //assert ( bsHandle.isValid() );
-
-   //iEvent.getByLabel(convSource, convHandle);
-   //assert ( convHandle.isValid() ); 
 
    if ( !Data ) {
       iEvent.getByLabel(genParticleSource, genParticleHandle);
@@ -1504,48 +1487,19 @@ void PerformSelection::makeTPUDist() {
 }
 
 //______________________________________________________________________________
-void PerformSelection::setlp4LV() {
-   lp4LV.SetPxPyPzE(lp4.Px(),lp4.Py(),lp4.Pz(),lp4.E());
-}
-
-//______________________________________________________________________________
-void PerformSelection::setlp3()
-{
-   lp3.SetXYZ(lp4.Px(),lp4.Py(),lp4.Pz());
-}
-
-//______________________________________________________________________________
-void PerformSelection::setj1p4LV() {
-   j1p4LV.SetPxPyPzE(jp4[0].Px(),jp4[0].Py(),jp4[0].Pz(),jp4[0].E());
-}
-
-//______________________________________________________________________________
-void PerformSelection::setj2p4LV() {
-   j2p4LV.SetPxPyPzE(jp4[1].Px(),jp4[1].Py(),jp4[1].Pz(),jp4[1].E());
-}
-
-//______________________________________________________________________________
-void PerformSelection::setjjp3() {
-   jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
-}
-
-//______________________________________________________________________________
-void PerformSelection::setMETp4LV() {
-   METp4LV.SetPxPyPzE(METp4.Px(),METp4.Py(),METp4.Pz(),METp4.E());
-}
-
-//______________________________________________________________________________
 void PerformSelection::setDRlj1() {
-   DRlj1=lp4LV.DeltaR(j1p4LV);
+   DRlj1=lp4[0].DeltaR(jp4[0]);
 }
 
 //______________________________________________________________________________
 void PerformSelection::setDRlj2() {
-   DRlj2=lp4LV.DeltaR(j2p4LV);
+   DRlj2=lp4[0].DeltaR(jp4[1]);
 }
 
 //______________________________________________________________________________
 void PerformSelection::setThetalj1pj2() {
+   lp3.SetXYZ(lp4[0].Px(),lp4[0].Py(),lp4[0].Pz());
+   jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
    Thetalj1pj2=lp3.Dot(jjp3)/(lp3.Mag()*jjp3.Mag());
 }
 
@@ -1640,7 +1594,7 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
 }
 
 //______________________________________________________________________________
-void PerformSelection::ptSort(vector<math::XYZTLorentzVector> & vec) {
+void PerformSelection::ptSort(vector<TLorentzVector> & vec) {
    for (unsigned int next = 0; next < vec.size()-1; next++) {
       unsigned int max_pos = (unsigned int)max_position(vec, next, vec.size()-1);
       if (max_pos != next)
@@ -1649,14 +1603,14 @@ void PerformSelection::ptSort(vector<math::XYZTLorentzVector> & vec) {
 }
 
 //______________________________________________________________________________
-void PerformSelection::swap(math::XYZTLorentzVector & x, math::XYZTLorentzVector & y) {
-   math::XYZTLorentzVector temp = x;
+void PerformSelection::swap(TLorentzVector & x, TLorentzVector & y) {
+   TLorentzVector temp = x;
    x = y;
    y = temp;
 }
 
 //______________________________________________________________________________
-int PerformSelection::max_position(vector<math::XYZTLorentzVector> & vec, int from, int to) {
+int PerformSelection::max_position(vector<TLorentzVector> & vec, int from, int to) {
    int max_pos = from;
    int i;
    for (i = from + 1; i <= to; i++)
@@ -1665,24 +1619,11 @@ int PerformSelection::max_position(vector<math::XYZTLorentzVector> & vec, int fr
 }
 
 //______________________________________________________________________________
-void PerformSelection::incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS],
-                                        int MuPass[NCUTS][NJETS], int LpPass[NCUTS][NJETS], 
-                                        int MuPresent, int ElPresent) {
-   if ( (MuPresent>=1)&&(ElPresent==0) ) {
-      MuPass[nCut][nJets]++;
-      LpPass[nCut][nJets]++;
-   }
-   if ( (MuPresent==0)&&(ElPresent>=1) ) {
-      ElPass[nCut][nJets]++;
-      LpPass[nCut][nJets]++;
-   }
-   /*
-   if ( (MuPresent>=1)&&(ElPresent>=1) ) {
-      MuPass[nCut][nJets]++;
-      ElPass[nCut][nJets]++;
-      LpPass[nCut][nJets]++;
-   }
-   */
+void PerformSelection::incrementCounter(int nCut, unsigned int nJets, Table* t1, Table* t2, Table* t3) {
+   (*(*t1)(DEFS::getCutLevelString((DEFS::CutLevel)nCut),DEFS::getJetBinString((DEFS::JetBin)nJets)))++;
+   (*(*t2)(DEFS::getCutLevelString((DEFS::CutLevel)nCut),DEFS::getJetBinString((DEFS::JetBin)nJets)))++;   
+   if (t3 != 0)
+      (*(*t3)(DEFS::getCutLevelString((DEFS::CutLevel)nCut),DEFS::getJetBinString((DEFS::JetBin)nJets)))++;   
 }
 
 //______________________________________________________________________________

@@ -72,8 +72,6 @@ process.PS = cms.EDAnalyzer('PerformSelection')
     # From PF2PAT, standard postfix=PFlow
     #
 process.PS.vtxSource         = cms.InputTag('offlinePrimaryVertices')               # InputTag for vertex collection
-#process.PS.bsSource          = cms.InputTag('offlineBeamSpot')                      # InputTag for beam spot collection
-#process.PS.convSource        = cms.InputTag('patConversions')                       # InputTag for conversion collection
 process.PS.genParticleSource = cms.InputTag('genParticles')                         # InputTag for genParticle collection
 process.PS.pfJetSource       = cms.InputTag('selectedPatJetsPFlow')                 # InputTag for jet collection
 process.PS.electronSource    = cms.InputTag('selectedPatElectronsPFlow')            # InputTag for electron collection
@@ -92,9 +90,7 @@ process.PS.outtablefilename  = cms.string("outputTable.txt") # name of the file 
 process.PS.outtablenameEl    = cms.string("ElectronTable")   # name of the event selection table for electrons
 process.PS.outtablenameMu    = cms.string("MuonTable")       # name of the event selection table for muons
 process.PS.outtablenameLp    = cms.string("LeptonTable")     # name of the event selection table for leptons
-process.PS.runtype           = cms.string("crab")            # tells the program if it will be run through cmsRun or CRAB
-                                                             # - crab - the event table will be saved in the root file only
-							     # - cmsRun - the event table will be printed to a text file as well
+
 process.PS.printEventInfo    = cms.bool(False)               # tells the program to cout which cuts the events passed and what objects they contained
 process.PS.printJetInfo      = cms.bool(False)               # tells the program to cout the relevant information for the jets (for debugging purposes)
 process.PS.printLeptonInfo   = cms.bool(False)               # tells the program to cout the relevant information for the leptons (for debugging purposes)
@@ -197,7 +193,7 @@ process.PS.elPrim_nMissingHits        = cms.int32(0)
 process.PS.elPrim_TrkIsoMax           = cms.double(0.1)
 process.PS.elPrim_DetIsoMax           = cms.double(0.05)
 process.PS.elPrim_PFIsoMax            = cms.double(0.1)
-process.PS.elPrim_PFIsoMin_invertEID  = cms.double(0.3)
+process.PS.elPrim_PFIsoMin_invertEID  = cms.double(0.15)
 
 process.PS.elLoose_ptMin              = cms.double(15.0)
 process.PS.elLoose_sigmaIetaIetaMaxEB = cms.double(0.01)
@@ -223,7 +219,7 @@ process.PS.elPFIsoConeSize            = cms.double(0.3)
 
     #-----MET Variable Inputs
 process.PS.MET_EtMin                  = cms.double(25)
-process.PS.MET_EtMin_invertedEID      = cms.double(20)
+process.PS.MET_EtMin_invertEID        = cms.double(20)
 
     #-----Additional Variable Inputs
 process.PS.lTotIso                    = cms.double(-1)

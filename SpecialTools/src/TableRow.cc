@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableRow.cc,v 1.1 2011/02/08 21:31:38 eusebi Exp $
+// $Id: TableRow.cc,v 1.2 2011/02/26 19:10:07 eusebi Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
@@ -83,3 +83,17 @@ TableRow & TableRow::operator=(const TableRow & rhs){
   return *this;
 
 }//operator=
+
+//----------------------------------------------------------------------------
+TableCell* TableRow::operator[](std::string col) {
+
+   for (unsigned int c=0; c<cellEntries.size(); c++) {
+      if (string(cellEntries[c]->GetName()).compare(col)==0)
+         return cellEntries[c];
+   }
+   
+   cout << "ERROR  Table::Sprecified column (" << col << ") not found" << endl
+        << "\tReturning NULL pointer" << endl;
+   return 0;
+
+}//operator[]

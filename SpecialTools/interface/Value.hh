@@ -25,6 +25,9 @@ public:
       double value;
       double error;
 
+      inline Value& operator++ (int);
+      inline Value operator++ (int) const;
+
       inline Value& operator+= (double);
       inline Value operator+ (double) const;
       inline Value& operator-= (double);
@@ -50,6 +53,18 @@ public:
 
 
 std::ostream& operator<< (std::ostream&, const Value&);
+
+inline Value& Value::operator++ (int)
+{
+   value++;
+   return *this;
+}
+
+inline Value Value::operator++ (int) const
+{
+   Value response(value,error);
+   return response++;
+}
 
 inline Value& Value::operator+= (double input)
 {
