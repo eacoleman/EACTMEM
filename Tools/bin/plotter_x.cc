@@ -272,7 +272,7 @@ void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProce
    pFill.setWeightFunction(&UserFunctions::weightFunc);
    pFill.setProcessFunction(&UserFunctions::processFunc);
    pFill.setInitializeEventFunction(&UserFunctions::initEventFunc);
-   pFill.setMaximumEventsDEBUG(2000); // TEST
+   //pFill.setMaximumEventsDEBUG(5000); // TEST
    pFill.run();
 
    // Will all the info in the plots get the canvas and write it to file
@@ -342,7 +342,7 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120621_NTUPLES/";
   vector <PhysicsProcessNEW*> procs;
   
-  
+
   procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root", getCrossSection("WJets"),
 		   intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
   procs.push_back(new ColoredPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
