@@ -40,24 +40,23 @@ void Plot::prepareToFillProcess(PhysicsProcessNEW * process)
    TString n = templateHisto->GetName();
    TH1 * clone = (TH1*) templateHisto->Clone(n+"_"+process->name);
    clone->SetTitle(process->name);
-   clone->SetLineColor(1);
-   clone->SetMarkerColor(1);
-   clone->SetFillColor(1);
-   TString pname = process->name;
-   pname.ToUpper();
-   if (pname.Contains("DATA"))
-   { 
-      clone->SetMarkerStyle(20);
-      clone->SetMarkerSize(0.7);
-   }
+   
    clone->Sumw2();
    histos.push_back(clone);
 }
 
 // Fill the last histo here
-void Plot::Fill(double h, double w){
+void Plot::Fill(double x, double w){
    if (histos.size()>0) 
-      histos.back()->Fill(h,w);
+      histos.back()->Fill(x,w);
+   else
+      cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
+}
+
+// Fill the last histo here
+void Plot::Fill(double x, double y, double w){
+   if (histos.size()>0) 
+      ((TH2*)histos.back())->Fill(x,y,w);
    else
       cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
 }
@@ -223,32 +222,14 @@ void Plot::saveHistogramsToFile(TString histoFile)
 // ############## FORMATTED PLOT CLASS ##############
 // ##################################################
 
-// Create a new histo here
-void FormattedPlot::prepareToFillProcess(ColoredPhysicsProcessNEW * process)
-{
-   TString n = templateHisto->GetName();
-   TH1 * clone = (TH1*) templateHisto->Clone(n+"_"+process->name);
-   clone->SetTitle(process->name);
-   clone->SetLineColor(process->color);
-   clone->SetMarkerColor(process->color);
-   clone->SetFillColor(process->color);
-   TString pname = process->name;
-   pname.ToUpper();
-   if (pname.Contains("DATA"))
-   { 
-      clone->SetMarkerStyle(20);
-      clone->SetMarkerSize(0.7);
-   }
-   clone->Sumw2();
-   histos.push_back(clone);
-
-}
-
 // ------------------------------------------------------------
 // Make the Canvas here ala Ricardo Eusebi
 // ------------------------------------------------------------
 TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 {
+   // Format the colors
+   formatColors(procs); // TEMP
+   
    // Do the scaling of the histos to lum or to data
    scaleToData(procs);
   
@@ -307,11 +288,18 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    canMain->SetLeftMargin(0.115); 
    canMain->SetRightMargin(0.03); 
    canMain->cd();
-
+   
    //Define the graphics option
    TString gOption = stacked ? "": "nostack";
    sMC->Draw(gOption);  
    sDa->Draw(gOption+"ep,SAME");
+   
+   // Set display range
+   cout << "TEST1" << endl; // TEST
+   sMC->GetXaxis()->SetRangeUser(range.first, range.second);
+   cout << "TEST2" << endl; // TEST
+   sDa->GetXaxis()->SetRangeUser(range.first, range.second);
+   cout << "TEST3" << endl; // TEST
 
    // Format the stacks, make sure to do this after the Draw command.
    // Set the maximum range for the Y-axis
@@ -351,6 +339,24 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    // Return the Canvas
    return can;
 
+}
+
+void FormattedPlot::formatColors(vector<PhysicsProcessNEW*> procs)
+{
+   for(unsigned int i = 0; i < procs.size(); i++)
+   {
+      histos[i]->SetLineColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetMarkerColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetFillColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
+      
+      TString pname = procs[i]->name;
+      pname.ToUpper();
+      if (pname.Contains("DATA"))
+      { 
+         histos[i]->SetMarkerStyle(20);
+         histos[i]->SetMarkerSize(0.7);
+      }
+   }
 }
 
 // ------------------------------------------------------------

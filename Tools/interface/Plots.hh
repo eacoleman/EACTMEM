@@ -3,6 +3,7 @@
 
 // ROOT libraries
 #include "TH1.h"
+#include "TH2.h"
 #include "TChain.h"
 #include "TCanvas.h"
 #include "THStack.h"
@@ -31,7 +32,8 @@ public :
    void prepareToFillProcess(PhysicsProcessNEW* proc);
       
    // Fill the last histo here
-   void Fill(double h, double w = 1);
+   void Fill(double x, double w = 1);
+   void Fill(double x, double y, double w);
 
    // Do the scaling to luminosity or data.
    void scaleToData(std::vector<PhysicsProcessNEW*> procs);
@@ -52,7 +54,7 @@ public :
    bool stacked;
    bool normToData;
 
-private:
+protected:
    bool scaled;
    
    ClassDef (Plot,1);
@@ -69,15 +71,14 @@ public:
    // Make the canvas here
    TCanvas* getCanvas(std::vector<PhysicsProcessNEW*> procs);
    
-   // Create a new histo here
-   void prepareToFillProcess(ColoredPhysicsProcessNEW* proc);
-   
-   // Take care of the formatting
-   void formatRatio(TH1* hRatio);
-   void formatStack(THStack * stack, double maxi);
-   
    std::vector<std::string> axisTitles;
    std::pair<double,double> range;
+
+private:
+   // Take care of the formatting
+   void formatColors(std::vector<PhysicsProcessNEW*> procs);
+   void formatRatio(TH1* hRatio);
+   void formatStack(THStack * stack, double maxi);
    
    ClassDef (FormattedPlot,1);
 };

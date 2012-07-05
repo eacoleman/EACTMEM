@@ -47,9 +47,9 @@ private:
    string inRootFileLocation;
    //write location
    string outRootFileLocation;
-   // The lepton and category we will perform on
+   // The lepton and object we will perform on
    string leptonName;
-   string categoryName;
+   string objectName;
    
    //names of the histograms
    vector<string> histNames;
@@ -58,7 +58,7 @@ private:
    THStack* resultStack;
    
 public:
-   BackgroundEstimator(string lepton, string category, string inFileLoc, string outFileLoc);
+   BackgroundEstimator(string lepton, string object, string inFileLoc, string outFileLoc);
    ~BackgroundEstimator();
    
    //reads histograms from inRootFileLocation
@@ -89,10 +89,36 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
    BackgroundEstimator histFit(lep, cat, inFileLoc, outFileLoc);
    
    histFit.readHistograms();
-   histFit.fitHistograms();
-   histFit.writeHistograms();
    
-   //DRAW HISTOGRAMS
+   // DEBUG
+   double sumYay = 0;
+   cout << "Data Integral: ";
+   cout << dataHistogram->Integral() << endl;
+   for(map<string, TH1D*>::iterator mapit = monteCarloHistograms.begin(); mapit != monteCarloHistograms.end(); mapit++)
+   {
+      cout << mapit->first << " Integral: ";
+      cout << mapit->second->Integral() << endl;
+      
+      sumYay += mapit->second->Integral();
+   }
+   cout << "SUM: " << sumYay << endl;
+   
+   histFit.fitHistograms();
+   
+   // DEBUG
+   sumYay = 0;
+   cout << "Data Integral: ";
+   cout << dataHistogram->Integral() << endl;
+   for(map<string, TH1D*>::iterator mapit = monteCarloHistograms.begin(); mapit != monteCarloHistograms.end(); mapit++)
+   {
+      cout << mapit->first << " Integral: ";
+      cout << mapit->second->Integral() << endl;
+      
+      sumYay += mapit->second->Integral();
+   }
+   cout << "SUM: " << sumYay << endl;
+   
+   histFit.writeHistograms();
    
    return 0;
 }
@@ -101,15 +127,15 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
 //################ PUBLIC FUNCTIONS ################
 //##################################################
 
-BackgroundEstimator::BackgroundEstimator(string lepton, string category, string inFileLoc, string outFileLoc)
+BackgroundEstimator::BackgroundEstimator(string lepton, string object, string inFileLoc, string outFileLoc)
 {
    leptonName = lepton;
-   categoryName = category;
+   objectName = object;
    
    initializeFileLocations(inFileLoc, outFileLoc);
    initializeHistNames();
    
-   resultStack = new THStack((categoryName + "_MonteCarlo").c_str(), (categoryName + "_MonteCarlo").c_str());
+   resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
 }
 
 BackgroundEstimator::~BackgroundEstimator()
@@ -126,12 +152,12 @@ void BackgroundEstimator::readHistograms()
    for(unsigned int i = 0; i < histNames.size(); i++)
    {
       string name = histNames[i];
-      string prefix = categoryName + "_" + leptonName + "_";
+      string prefix = objectName + "_" + leptonName + "_";
       
          monteCarloHistograms[name] = (TH1D*)gDirectory->Get((prefix + name).c_str());
    }
    
-   string prefix = categoryName + "_" + leptonName + "_";
+   string prefix = objectName + "_" + leptonName + "_";
    // Data histogram
    dataHistogram = (TH1D*)gDirectory->Get((prefix + "SingleEl_Data").c_str());
    
@@ -169,7 +195,7 @@ void BackgroundEstimator::writeHistograms()
 void BackgroundEstimator::initializeFileLocations(string inFileLoc, string outFileLoc)
 {
    //inRootFileLocation = "/uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/Tools/bin/" + leptonName + ".root";
-   //outRootFileLocation = "/uscms_data/d3/travlamb/BackgroundEstimation_" + leptonName + "_" + categoryName + ".root";
+   //outRootFileLocation = "/uscms_data/d3/travlamb/BackgroundEstimation_" + leptonName + "_" + objectName + ".root";
    inRootFileLocation = inFileLoc;
    outRootFileLocation = outFileLoc;
 }
@@ -194,11 +220,20 @@ const double* BackgroundEstimator::fitAndReturnParameters()
    ROOT::Math::Functor funcFit(&fitFunc,2);
    Minuit2Minimizer* minFit = new Minuit2Minimizer(kMigrad);
    
+   //Tolerance and printouts
+   minFit->SetPrintLevel(3);
+   minFit->SetStrategy(2);
+   minFit->SetMaxFunctionCalls(8000);
+   minFit->SetMaxIterations(8000);
+   minFit->SetTolerance(0.1);
+   minFit->SetErrorDef(0.5);
+   minFit->SetValidError(true);
+
    // Fitting
    minFit->SetFunction(funcFit);
    
-   double parameter[2] = {1.0, 1.0};
-   double step[2] = {0.1, 0.1};
+   double parameter[2] = {1.0, 10.0};
+   double step[2] = {0.01, 0.01};
    //double lower[2] = {0.0, 0.0};
    
    minFit->SetVariable(0, "Par0", parameter[0], step[0]);
@@ -264,9 +299,9 @@ double BackgroundEstimator::fitFunc(const double *par)
       
       data += dataHistogram->GetBinContent(bin);
    
-      for(map<string,TH1D*>::iterator it = monteCarloHistograms.begin(); it != monteCarloHistograms.end(); it++)
+      for(map<string, TH1D*>::iterator it = monteCarloHistograms.begin(); it != monteCarloHistograms.end(); it++)
       {
-         if( ((*it).first != "QCD") || ((*it).first != "WJets") )
+         if( ((*it).first != "QCD") && ((*it).first != "WJets") )
          {
             mc += (*it).second->GetBinContent(bin);
             mcError += (*it).second->GetBinError(bin);
@@ -293,7 +328,7 @@ int main(int argc,char**argv)
    if (!cl.parse(argc,argv)) return 0;
 
    string leptonCL = cl.getValue<string> ("lepton", "");
-   string categoryCL = cl.getValue<string> ("category", "");
+   string objectCL = cl.getValue<string> ("object", "");
    string inFileLocCL = cl.getValue<string> ("readLocation", "/uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/Tools/bin/electron.root");
    string outFileLocCL = cl.getValue<string> ("writeLocation", "/uscms_data/d3/travlamb/BackgroundEstimation_electron_MET.root");
    
@@ -305,11 +340,11 @@ int main(int argc,char**argv)
       cout << "ERROR: lepton was not properly set. Options are electron and muon." << endl;
       return 1;
    }
-   if(!(categoryCL == "MET" || categoryCL == "WmT"))
+   if(!(objectCL == "MET" || objectCL == "WmT"))
    {
-      cout << "ERROR: category was not properly set. Options are MET and WmT." << endl;
+      cout << "ERROR: object was not properly set. Options are MET and WmT." << endl;
       return 1;
    }
    
-   return BackgroundEstimator_x(leptonCL, categoryCL, inFileLocCL, outFileLocCL);
+   return BackgroundEstimator_x(leptonCL, objectCL, inFileLocCL, outFileLocCL);
 }

@@ -1159,7 +1159,7 @@ int main(int argc, char** argv)
    string latexTitleCL              = cl.getValue<string>  ("latexTitle", "Monte Carlo Acceptances and Yields");
    string latexAuthorCL             = cl.getValue<string>  ("latexAuthors", "Ricardo Eusebi, Travis Lamb, Alexx Perloff");
    string latexEmailCL              = cl.getValue<string>  ("latexEmails", "eusebi@physics.tamu.edu, travis.t.lamb@gmail.com, aperloff@physics.tamu.edu");
-   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ");
+   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ:::H125:::H160");
    double muonLuminosityCL          = cl.getValue<double>  ("muonLuminosity", 1606);
    double electronLuminosityCL      = cl.getValue<double>  ("electronLuminosity", 1599);
    bool writeToLatexCL              = cl.getValue<bool>    ("writeToLatex", true);

@@ -7,7 +7,8 @@
 
 // Our libraries
 #include "TAMUWW/Tools/interface/Plots.hh"
-#include "TAMUWW/Tools/interface/PlotMap.hh"
+//#include "TAMUWW/Tools/interface/PlotMap.hh"
+//#include "TAMUWW/SpecialTools/interface/ProtectedMap.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "TAMUWW/Tools/interface/TriggerEfficiency.hh"
@@ -25,15 +26,16 @@ class PlotFiller
 {
 public:
    // NOTE That the user must provide the fill function at construction (because it is a required function).
-   PlotFiller(PlotMap &plotsTemp,
-                  std::vector<PhysicsProcessNEW*> &procsTemp,
-                  void (*userFillFuncTemp) (PlotMap &, EventNtuple*, double) );
+   PlotFiller(map<string, Plot*> &plotsTemp,
+              std::vector<PhysicsProcessNEW*> &procsTemp,
+              void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, double) );
    ~PlotFiller();
    
    // Simple functions to change the functionality of the code.
    void setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    void setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    void setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
+   void setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    
    // Debug functions
    void setMaximumEventsDEBUG(unsigned int maxEvts);
@@ -43,20 +45,23 @@ public:
    
 private:
    // NOTE That the plots and processes are references.
-   PlotMap &plots;
+   map<string, Plot*> &plots;
    std::vector<PhysicsProcessNEW*> &processes;
    unsigned int numberOfEvents;
+   unsigned int debugNumberOfEvents;
    bool debug;
    
    // These are the custom functions.
    // Fills the plots
-   void (*userFillFunc) (PlotMap &, EventNtuple*, double);
+   void (*userFillFunc) (map<string, Plot*> &, EventNtuple*, double);
    // Returns a double that will multiply the weight
    double (*userWeightFunc) (EventNtuple*, const PhysicsProcessNEW*);
    // Returns true if the event passes the cut
    bool (*userCutFunc) (EventNtuple*, const PhysicsProcessNEW*);
    // This function is called once for each process before the events are run
    void (*userProcessFunc) (EventNtuple*, const PhysicsProcessNEW*);
+   // This function is called once for each event before any cuts are made
+   void (*userInitEventFunc) (EventNtuple*, const PhysicsProcessNEW*);
    
    // These default functions allow the user to only have to create functions for weights etc that he/she wants to add.
    static bool defaultCutFunc(EventNtuple*, const PhysicsProcessNEW*)
@@ -68,6 +73,10 @@ private:
       return 1.0;
    }
    static void defaultProcessFunc (EventNtuple*, const PhysicsProcessNEW*)
+   {
+      return;
+   }
+   static void defaultInitEventFunc (EventNtuple*, const PhysicsProcessNEW*)
    {
       return;
    }

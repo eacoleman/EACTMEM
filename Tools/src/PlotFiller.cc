@@ -1,3 +1,4 @@
+
 // Title:     PlotFiller.cc
 // Author:    Travis Lamb
 // Started:   22nd of June, 2012
@@ -15,17 +16,21 @@ using namespace std;
 //#####################################################################
 //#####################################################################
 
-PlotFiller::PlotFiller(PlotMap &plotsTemp,
-                               vector<PhysicsProcessNEW*> &procsTemp,
-                               void (*userFillFuncTemp) (PlotMap &, EventNtuple*, double)):
+PlotFiller::PlotFiller(map<string, Plot*> &plotsTemp,
+                       vector<PhysicsProcessNEW*> &procsTemp,
+                       void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, double)):
    plots(plotsTemp),
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
 {
    userWeightFunc = &defaultWeightFunc;
    userCutFunc = &defaultCutFunc;
+   userProcessFunc = &defaultProcessFunc;
+   userInitEventFunc = &defaultInitEventFunc;
    
    numberOfEvents = 0;
+   
+   debug = false;
 }
 
 PlotFiller::~PlotFiller()
@@ -48,9 +53,14 @@ void PlotFiller::setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, c
    userProcessFunc = userProcessFuncTemp;
 }
 
+void PlotFiller::setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+{
+   userInitEventFunc = userInitEventFuncTemp;
+}
+
 void PlotFiller::setMaximumEventsDEBUG(unsigned int maxEvts)
 {
-   numberOfEvents = maxEvts;
+   debugNumberOfEvents = maxEvts;
    debug = true;
 }
 
@@ -61,8 +71,8 @@ void PlotFiller::run()
       cout << "\nDoing Process " << processes[i]->name << endl;
       
       // Tell all plots to prepare for filling 
-      for (PlotMap::iterator p = plots.begin() ; p != plots.end() ; p++)
-         p->second.prepareToFillProcess(processes[i]);
+      for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++)
+         p->second->prepareToFillProcess(processes[i]);
       
       // Create the eventntuple and set the branch address
       EventNtuple * ntuple = new EventNtuple();
@@ -77,8 +87,14 @@ void PlotFiller::run()
       double weight = 1.0;
 
       // Loop over events in the process
-      if(!debug)
+      if(debug && debugNumberOfEvents < c->GetEntries())
+      {
+         numberOfEvents = debugNumberOfEvents;
+      }
+      else
+      {
          numberOfEvents = c->GetEntries();
+      }
       
       // This runs once for each process before the events are run.
       userProcessFunc(ntuple, processes[i]);
@@ -91,6 +107,9 @@ void PlotFiller::run()
          
          // Get the given entry
          c->GetEntry(ev);
+         
+         // Runs before any cuts are made
+         userInitEventFunc(ntuple, processes[i]);
          
          // Cut events here
          if(!userCutFunc(ntuple, processes[i]))
