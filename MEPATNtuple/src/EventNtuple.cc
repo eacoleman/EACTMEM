@@ -140,119 +140,81 @@ bool EventNtuple::FNALcutsElectron(){
   if (METEt <= 30)
     return false;
   
-  TLorentzVector ll(lLV[0].Px(),lLV[0].Py(),lLV[0].Pz(),lLV[0].E());
-  TLorentzVector met(METLV[0].Px(),METLV[0].Py(),METLV[0].Py(),METLV[0].E());
-  TLorentzVector mt(lLV[0].Px()+METLV[0].Px(),lLV[0].Py()+METLV[0].Py(),0,lLV[0].E()+METLV[0].E());
+  TLorentzVector ll = lLV[0];
+  TLorentzVector met = METLV[0];
+  TLorentzVector mt(ll.Px() + met.Px(),ll.Py() + met.Py(),0,ll.E() + met.E());
 
   if (mt.M() <= 30)
     return false;
 
-  if (lLV[0].Pt() <= 35)
+  if (ll.Pt() <= 35)
     return false;
   
-  if (abs(lLV[0].Eta()) >= 2.5)
+  if (fabs(ll.Eta()) >= 2.5)
     return false;
 
-  int h = 0;
-  int nh = 0;
-  int Nj = jLV.size();
-	
-  for (int i = 0; i<Nj; i++) {
-    if (jLV[i].Pt() >= jLV[h].Pt()) {
-      nh = h;
-      h = i;
-    }
-    else if (jLV[i].Pt() < jLV[h].Pt() && jLV[i].Pt() >= jLV[nh].Pt()) {
-      nh = i;
-    }
-    else
-      continue;
-  }
-  if ((int)jLV.size() > h && jLV[h].Pt() <= 30)
+
+  if ((int)jLV.size() > 0 && jLV[0].Pt() <= 30)
     return false;
-  if ((int)jLV.size() > nh && jLV[nh].Pt() <= 30)
+  if ((int)jLV.size() > 1 && jLV[1].Pt() <= 30)
     return false;
-  if (abs(jLV[h].Eta()) >= 2.4)
+  if (abs(jLV[0].Eta()) >= 2.4)
     return false;
-  if (abs(jLV[nh].Eta()) >= 2.4)
+  if (abs(jLV[1].Eta()) >= 2.4)
     return false;
 
-  bool dr = true;
-  for (int i = 0; i<Nj; i++){
-    TLorentzVector j(jLV[i].Px(),jLV[i].Py(),jLV[i].Pz(),jLV[i].E());
-    if (j.DeltaR(ll) <= 0.5)
-      dr = false;
-    else
-      continue;
-  }
-  if (dr) {
-    TLorentzVector jj = jLV[h] + jLV[nh];
-    if (jj.M()<=65 || jj.M()>=95)
+  for (unsigned int i = 0; i < jLV.size(); i++){
+    if (jLV[i].DeltaR(ll) <= 0.3)
       return false;
   }
-  return true;
-}//First FNAL Cut (electron)
+  TLorentzVector jj = jLV[0] + jLV[1];
+    if (jj.M() <= 65 || jj.M() >= 95)
+      return false;
 
+    return true;
+}
+//First FNAL Cut (electron)
 bool EventNtuple::FNALcutsMuon(){
 
   if (METEt <= 30)
     return false;
 
-  TLorentzVector ll(lLV[0].Px(),lLV[0].Py(),lLV[0].Pz(),lLV[0].E());
-  TLorentzVector met(METLV[0].Px(),METLV[0].Py(),METLV[0].Py(),METLV[0].E());
-  TLorentzVector mt(lLV[0].Px()+METLV[0].Px(),lLV[0].Py()+METLV[0].Py(),0,lLV[0].E()+METLV[0].E());
+  TLorentzVector ll = lLV[0];
+  TLorentzVector met = METLV[0];
+  TLorentzVector mt(ll.Px() + met.Px(),ll.Py() + met.Py(),0,ll.E() + met.E());
 
   if (mt.M() <= 30)
     return false;
  
-  if (lLV[0].Pt() <= 25)
+  if (ll.Pt() <= 25)
     return false;
 
-  if (abs(lLV[0].Eta()) >= 2.1)
+  if (fabs(ll.Eta()) >= 2.1)
     return false;
 
-  int h = 0;
-  int nh = 0;
-  int Nj = jLV.size();
-  
-  for (int i = 0; i<Nj; i++) {
-    if (jLV[i].Pt() >= jLV[h].Pt()) {
-      nh = h;
-      h = i;
-    }
-    else if (jLV[i].Pt() < jLV[h].Pt() && jLV[i].Pt() >= jLV[nh].Pt()) {
-      nh = i;
-    }
-    else
-      continue;
-  }
 
-  if ((int)jLV.size() > h && jLV[h].Pt() <= 30)
+  if ((int)jLV.size() > 0 && jLV[0].Pt() <= 30)
     return false;
 
-  if ((int)jLV.size() > nh && jLV[nh].Pt() <= 30)
+  if ((int)jLV.size() > 1 && jLV[1].Pt() <= 30)
     return false;
 
-  if (abs(jLV[h].Eta()) >= 2.4)
+  if (abs(jLV[0].Eta()) >= 2.4)
     return false;
 
-  if (abs(jLV[nh].Eta()) >= 2.4)
+  if (abs(jLV[1].Eta()) >= 2.4)
     return false;
   
-  bool dr = true;
-  for (int i = 0; i<Nj; i++){
-    TLorentzVector j(jLV[i].Px(),jLV[i].Py(),jLV[i].Pz(),jLV[i].E());
-    if (j.DeltaR(ll) <= 0.5)
-      dr = false;
-    else
-      continue;
-  }
-  if (dr) {
-    TLorentzVector jj = jLV[h] + jLV[nh];
-    if (jj.M()<65 || jj.M()>=95)
+  for (unsigned int i = 0; i < jLV.size(); i++){
+    if (jLV[i].DeltaR(ll) <= 0.3)
       return false;
   }
+  TLorentzVector jj = jLV[0] + jLV[1];
+  if (jj.M() < 65 || jj.M() >= 95)
+    return false;
+
   return true;
+
 }//First FNAL Cut muon
 
 ClassImp(EventNtuple)
