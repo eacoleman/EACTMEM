@@ -68,8 +68,11 @@ protected:
 class FormattedPlot: public Plot
 {
 public:
+   FormattedPlot();
+   
    TH1* overlaySignal;
    double overlaySignalFactor;
+   TString overlaySignalName;
    
    // Make the canvas here
    TCanvas* getCanvas(std::vector<PhysicsProcessNEW*> procs);

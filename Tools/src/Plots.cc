@@ -18,6 +18,7 @@
 
 // C++ libraries
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <string>
 #include <vector>
@@ -222,13 +223,19 @@ void Plot::saveHistogramsToFile(TString histoFile)
 // ############## FORMATTED PLOT CLASS ##############
 // ##################################################
 
+FormattedPlot::FormattedPlot()
+{
+   overlaySignalFactor = 1.0;
+   overlaySignalName = "";
+}
+
 // ------------------------------------------------------------
 // Make the Canvas here ala Ricardo Eusebi
 // ------------------------------------------------------------
 TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 {
    // Format the colors
-   formatColors(procs); // TEMP
+   formatColors(procs);
    
    // Do the scaling of the histos to lum or to data
    scaleToData(procs);
@@ -239,8 +246,9 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 
    // Create the total Data and MC histos and Stacks
    TString tempName = templateHisto->GetName();
-   TH1     * tDa = (TH1*) templateHisto->Clone(tempName+"_TotalData"); tDa->Sumw2();
    TH1     * tMC = (TH1*) templateHisto->Clone(tempName+"_TotalMC");   tMC->Sumw2();
+   TH1     * tDa = (TH1*) templateHisto->Clone(tempName+"_TotalData"); tDa->Sumw2();
+   TH1     * signal = 0;
    THStack * sMC = new THStack(tempName+"_stackMC",tempName+"_stackMC");
    THStack * sDa = new THStack(tempName+"_stackData",tempName+"_stackData");
 
@@ -256,7 +264,7 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
       hname.ToUpper();
 
       if (hname.Contains("DATA"))
-      { 
+      {
          sDa->Add(groupedHistos[h],"hist");
          tDa->Add(groupedHistos[h]);
          l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"lpe");
@@ -266,19 +274,34 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
          sMC->Add(groupedHistos[h],"hist");
          tMC->Add(groupedHistos[h]);
          l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"f");
-      } 
-
+      }
+      
+      if (overlaySignalName.Length() > 0)
+      {
+         if (hname.Contains(overlaySignalName))
+         {
+            signal = (TH1*)groupedHistos[h]->Clone();
+            signal->SetFillColor(0);
+            signal->Scale(overlaySignalFactor);
+            
+            ostringstream legendTitleStream;
+            legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
+            string legendTitle = legendTitleStream.str();
+            
+            l->AddEntry(signal,legendTitle.c_str(),"lp0");
+         }
+      }
    }
 
    // General Style Formatting
-   gStyle->SetOptTitle(0); 
+   gStyle->SetOptTitle(0);
    //gStyle->SetOptStat(2211);
 
    // Create and Draw the Canvas
    TCanvas * can = new TCanvas(templateHisto->GetName());
    can->SetFillColor(0);
    can->Divide(1,2);
-  
+   
    // Define the two different pads that go on the canvas
    // canMain: this is the pad with the actual histogram on it
    TVirtualPad *canMain = can->GetPad(1);
@@ -291,15 +314,19 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    
    //Define the graphics option
    TString gOption = stacked ? "": "nostack";
-   sMC->Draw(gOption);  
+   sMC->Draw(gOption);
    sDa->Draw(gOption+"ep,SAME");
+   if (signal != 0)
+   {
+      signal->SetLineWidth(2);
+      signal->Draw("hist,SAME");
+   }
    
    // Set display range
-   cout << "TEST1" << endl; // TEST
    sMC->GetXaxis()->SetRangeUser(range.first, range.second);
-   cout << "TEST2" << endl; // TEST
    sDa->GetXaxis()->SetRangeUser(range.first, range.second);
-   cout << "TEST3" << endl; // TEST
+   if (signal != 0)
+      signal->GetXaxis()->SetRangeUser(range.first, range.second);
 
    // Format the stacks, make sure to do this after the Draw command.
    // Set the maximum range for the Y-axis
@@ -314,7 +341,7 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    l->Draw("same");
 
    // Add the luminosity
-   drawLumi(1.6);
+   drawLumi(3.6);
 
    // canRatio: this is the pad with the Data/MC on it
    TVirtualPad * canRatio = can->GetPad(2);
@@ -338,7 +365,6 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 
    // Return the Canvas
    return can;
-
 }
 
 void FormattedPlot::formatColors(vector<PhysicsProcessNEW*> procs)
@@ -418,15 +444,15 @@ void FormattedPlot::formatStack(THStack * stack, double maxi)
 void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range)
 {
    double x = (range.second - range.first)*0.45 + range.first;
-   double y = max(totalData->GetMaximum(),all->GetMaximum())*1.08;
+   double y = max(totalData->GetMaximum(),all->GetMaximum());
 
    double chi2;
    int NDF;
    int igood;
 
-   TLatex * ks      = new TLatex(x,y     ,Form("KSTest   = %5.4g",totalData->KolmogorovTest(all)));
-   TLatex * chi2P   = new TLatex(x,y*0.92,Form("Chi2Prob = %5.4g",all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
-   TLatex * chi2NDF = new TLatex(x,y*0.84,Form("Chi2/NDF = %5.4g",chi2/NDF));
+   TLatex * ks      = new TLatex(x, y     , Form("KSTest   = %5.4g", totalData->KolmogorovTest(all)));
+   TLatex * chi2P   = new TLatex(x, y*0.92, Form("Chi2Prob = %5.4g", all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
+   TLatex * chi2NDF = new TLatex(x, y*0.84, Form("Chi2/NDF = %5.4g", chi2/NDF));
 
    ks->Draw();
    chi2P->Draw();
@@ -440,16 +466,16 @@ void drawLumi(float intLum)
    latex.SetNDC();                                         
    latex.SetTextSize(0.063);                                
    latex.SetTextAlign(31); // align right                  
-   latex.DrawLatex(0.97,0.936,"#sqrt{s} = 8 TeV");          
+   latex.DrawLatex(0.97,0.936,"#sqrt{s} = 8 TeV");
    if (intLum > 0.)
-   {                                  
-      latex.SetTextAlign(11); // align right       
-      latex.SetTextSize(0.043);                   
+   {
+      latex.SetTextAlign(11); // align right
+      latex.SetTextSize(0.043);
       latex.DrawLatex(0.5,0.936,"#int ");
-      latex.SetTextSize(0.063);                                
+      latex.SetTextSize(0.063);
       latex.DrawLatex(0.525,0.936,Form("L dt = %3.2f fb^{-1}",intLum));
-   }             
-   latex.SetTextSize(0.063); 
+   }
+   latex.SetTextSize(0.063);
    latex.SetTextAlign(11); // align left
    latex.DrawLatex(0.113,0.936,"CMS preliminary 2012");
 }
