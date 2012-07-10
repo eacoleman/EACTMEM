@@ -68,7 +68,7 @@ void PlotFiller::run()
 {
    for(unsigned int i = 0; i < processes.size(); i++)
    {
-      cout << "\nDoing Process " << processes[i]->name << endl;
+      cout << "\nDoing Process " << processes[i]->name;
       
       // Tell all plots to prepare for filling 
       for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++)
@@ -95,6 +95,8 @@ void PlotFiller::run()
       {
          numberOfEvents = c->GetEntries();
       }
+      
+      cout << " with " << numberOfEvents << " events." << endl;
       
       // This runs once for each process before the events are run.
       userProcessFunc(ntuple, processes[i]);
