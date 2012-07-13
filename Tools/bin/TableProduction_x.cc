@@ -3,13 +3,14 @@
 //TEMP FOR FERMILAB
 //TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120621_NTUPLES/ -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051
 
+//FOR ALEXX'S HIGGS SAMPLES
+//TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051 -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120709_MC_20/ -processNames WJets ggH125
+
 //This file contains the functions to read several input files,
 //and display yield tables, tables with added FracPass and EventsPerInvpb rows ("Enhanced Tables"),
 //and FracPass and EventsPerInvpb tables
 //
 //Made by Travis Lamb
-//Started May 30, 2012
-//Last Edit Jun 12, 2012
 //
 //TODO: If I am given the time, more code cleanup. Seperate TableProduction into multiple classes.
 
@@ -57,7 +58,7 @@ Table EnhancedTableProduction::produce(Table &input, double crossSect, double ev
 {
    //If we weren't given an events value, we take it from the top row of the table
    if (eventsFromMC == 0)
-      eventsFromMC = ((TableCellVal*)input.getCellRowColumn("NPATtupleEvts", "0 Jet(s)"))->val.value;
+      eventsFromMC = ((TableCellVal*)input.getCellRowColumn("NPATtupleEvts", "jets0"))->val.value;
    
    //Copy the input table to our new table
    Table enhancedTable = input;
@@ -83,15 +84,15 @@ void EnhancedTableProduction::addFracPassRow(Table &enhancedTable, double events
       double mete = 0;
       
       //grabs the mete from the table. Renames the cell.
-      if(i != 4)
+      if(i != 1)
       {
-         mete = ((TableCellVal*)enhancedTable.getCellRowColumn("c6:METE", to_string(i)+" Jet(s)"))->val.value;
-         tempCell->SetName((to_string(i)+" Jet(s)").c_str());
+         mete = ((TableCellVal*)enhancedTable.getCellRowColumn("c6:METE", "jets"+to_string(i)))->val.value;
+         tempCell->SetName(("jets"+to_string(i)).c_str());
       }
       else
       {
-         mete = ((TableCellVal*)enhancedTable.getCellRowColumn("c6:METE", "4+ Jet(s)"))->val.value;
-         tempCell->SetName("4+ Jet(s)");
+         mete = ((TableCellVal*)enhancedTable.getCellRowColumn("c6:METE", "jet"+to_string(i)))->val.value;
+         tempCell->SetName(("jet"+to_string(i)).c_str());
       }
       
       //FracPass is MissingTransverseEnergy times EventsFromMC. The error is the binomial error.
@@ -131,15 +132,15 @@ void EnhancedTableProduction::addEvtsPerInvpbRow(Table &enhancedTable, double cr
       TableCellVal* tempCell = new TableCellVal;
       
       //grabs the mete from the table. Renames the cell.
-      if(i != 4)
+      if(i != 1)
       {
-         tempValue = ((TableCellVal*)enhancedTable.getCellRowColumn("FracPass", to_string(i)+" Jet(s)"))->val;
-         tempCell->SetName((to_string(i)+" Jet(s)").c_str());
+         tempValue = ((TableCellVal*)enhancedTable.getCellRowColumn("FracPass", "jets"+to_string(i)))->val;
+         tempCell->SetName(("jets"+to_string(i)).c_str());
       }
       else
       {
-         tempValue = ((TableCellVal*)enhancedTable.getCellRowColumn("FracPass", "4+ Jet(s)"))->val;
-         tempCell->SetName("4+ Jet(s)");
+         tempValue = ((TableCellVal*)enhancedTable.getCellRowColumn("FracPass", "jet"+to_string(i)))->val;
+         tempCell->SetName(("jet"+to_string(i)).c_str());
       }
       
       //FracPass is MissingTransverseEnergy times EventsFromMC
@@ -490,7 +491,7 @@ void TableProduction::readInputTables()
    for(unsigned int i = 0; i < processNames.size(); i++)
    {
       //Open root folder and cd to directory containing folders
-      TFile* rootFile = new TFile((rootFoldersFileLocation + processNames[i] + "/PS.root").c_str());
+      TFile* rootFile = new TFile((rootFoldersFileLocation + processNames[i] + "/PS/PS.root").c_str());
       gROOT->ProcessLine("PS->cd()");
       
       //Save input tables to their respective maps
@@ -514,8 +515,8 @@ void TableProduction::readEventsFromMC()
    for(unsigned int i = 0; i < processNames.size(); i++)
    {
       //store the NPATtuplesEvts into tempVal
-      tempVal = ((TableCellVal*)(muonTables[processNames[i]]).getCellRowColumn("NPATtupleEvts", "0 Jet(s)"))->val.value;
-      tempErr = ((TableCellVal*)(muonTables[processNames[i]]).getCellRowColumn("NPATtupleEvts", "0 Jet(s)"))->val.error;
+      tempVal = ((TableCellVal*)(muonTables[processNames[i]]).getCellRowColumn("NPATtupleEvts", "jets0"))->val.value;
+      tempErr = ((TableCellVal*)(muonTables[processNames[i]]).getCellRowColumn("NPATtupleEvts", "jets0"))->val.error;
       
       //Stores tempVal into the eventsFromMC map
       eventsFromMC[processNames[i]] = tempVal;
@@ -590,20 +591,18 @@ void TableProduction::calculateAndApplyError(map<string, Table> &tables)
          for(int i = 0; i <= 4; i++)
          {
             double acceptance;
-            if(i < 4)
+            if(i != 1)
             {
-               acceptance = ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, to_string(i) + " Jet(s)"))->val.value;
+               acceptance = ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "jets" + to_string(i)))->val.value;
                
-               ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, to_string(i) + " Jet(s)"))->val.error = sqrt((acceptance*(1 - acceptance)) / eventsFromMC[process]);
+               ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "jets" + to_string(i)))->val.error = sqrt((acceptance*(1 - acceptance)) / eventsFromMC[process]);
             }
             else
             {
-               acceptance = ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "4+ Jet(s)"))->val.value;
+               acceptance = ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "jet" + to_string(i)))->val.value;
                
-               ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "4+ Jet(s)"))->val.error = sqrt((acceptance*(1 - acceptance)) / eventsFromMC[process]);
+               ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "jet" + to_string(i)))->val.error = sqrt((acceptance*(1 - acceptance)) / eventsFromMC[process]);
             }
-            
-            ((TableCellVal*)(tables[process]).getCellRowColumn(rowName, "4+ Jet(s)"))->val.error = sqrt((acceptance*(1 - acceptance)) / eventsFromMC[process]);
          }
       }
    }
@@ -861,29 +860,29 @@ void TableProduction::add2PlusJetsColumnToTable(Table &table)
       string rowName = oldRows[i].GetName();
       Value tempValue;
       TableCellVal* tempCell = new TableCellVal;
-      tempValue = ((TableCellVal*)table.getCellRowColumn(rowName, "2 Jet(s)"))->val;
+      tempValue = ((TableCellVal*)table.getCellRowColumn(rowName, "jets2"))->val;
       if(rowName != "NPATtupleEvts")
       {
-         tempValue += ((TableCellVal*)table.getCellRowColumn(rowName, "3 Jet(s)"))->val;
-         tempValue += ((TableCellVal*)table.getCellRowColumn(rowName, "4+ Jet(s)"))->val;
+         tempValue += ((TableCellVal*)table.getCellRowColumn(rowName, "jets3"))->val;
+         tempValue += ((TableCellVal*)table.getCellRowColumn(rowName, "jets4"))->val;
       }
       
       tempCell->val=(tempValue);
-      tempCell->SetName("2+ Jet(s)");
+      tempCell->SetName("jets2+");
       
       newRows[i].addCellEntries(tempCell);
       
       // For Fermilab syncing
       Value tempValue2;
       TableCellVal* tempCell2 = new TableCellVal;
-      tempValue2 = ((TableCellVal*)table.getCellRowColumn(rowName, "2 Jet(s)"))->val;
+      tempValue2 = ((TableCellVal*)table.getCellRowColumn(rowName, "jets2"))->val;
       if(rowName != "NPATtupleEvts")
       {
-         tempValue2 += ((TableCellVal*)table.getCellRowColumn(rowName, "3 Jet(s)"))->val;
+         tempValue2 += ((TableCellVal*)table.getCellRowColumn(rowName, "jets3"))->val;
       }
       
       tempCell2->val=(tempValue2);
-      tempCell2->SetName("2+3 Jet(s)");
+      tempCell2->SetName("jets2+3");
       
       newRows[i].addCellEntries(tempCell2);
       
@@ -1159,7 +1158,7 @@ int main(int argc, char** argv)
    string latexTitleCL              = cl.getValue<string>  ("latexTitle", "Monte Carlo Acceptances and Yields");
    string latexAuthorCL             = cl.getValue<string>  ("latexAuthors", "Ricardo Eusebi, Travis Lamb, Alexx Perloff");
    string latexEmailCL              = cl.getValue<string>  ("latexEmails", "eusebi@physics.tamu.edu, travis.t.lamb@gmail.com, aperloff@physics.tamu.edu");
-   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ:::H125:::H160");
+   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ:::ggH125");
    double muonLuminosityCL          = cl.getValue<double>  ("muonLuminosity", 1606);
    double electronLuminosityCL      = cl.getValue<double>  ("electronLuminosity", 1599);
    bool writeToLatexCL              = cl.getValue<bool>    ("writeToLatex", true);
