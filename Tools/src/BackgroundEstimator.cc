@@ -14,7 +14,7 @@
 #include "TAMUWW/Tools/interface/Plots.hh"
 
 // Root Libraries
-#include "TROOT.h"
+
 #include "TFile.h"
 #include "TMinuit.h"
 #include "Minuit2/Minuit2Minimizer.h"
@@ -42,6 +42,11 @@ BackgroundEstimator::BackgroundEstimator(string lepton, string object, string in
    
    resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
    
+   // The default values (before fitting) of Chi2 and parameters
+   scaleParameters.first = 1.0;
+   scaleParameters.second = 1.0;
+   reducedChiSquared = 0.0;
+   
    // Set default debug options
    rebinSizeDEBUG = 1;
    debug = false;
@@ -68,51 +73,114 @@ void BackgroundEstimator::readHistograms()
    TFile rootInFile;
    rootInFile.Open(inRootFileLocation.c_str(), "READ");
    
+   string prefix = objectName + "_" + leptonName;
+   
+   TCanvas* testCanCopy = (TCanvas*)gDirectory->Get(prefix.c_str());
+   canvas = (TCanvas*)testCanCopy->Clone();
+   
+   pad = (TPad *) canvas->GetPrimitive((prefix + "_1").c_str());
+   mcStack = (THStack*) pad->GetPrimitive((prefix + "_stackMC").c_str());
+   dataStack = (THStack*) pad->GetPrimitive((prefix + "_stackData").c_str());
+   mcList = mcStack->GetHists();
+   dataList = dataStack->GetHists();
+   
    // MC Histograms
    for(unsigned int i = 0; i < histNames.size(); i++)
    {
       string name = histNames[i];
-      string prefix = objectName + "_" + leptonName + "_";
       
-      Histograms::monteCarloHistograms[name] = (TH1D*)gDirectory->Get((prefix + name).c_str());
+      Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
+      
       if (debug)
          Histograms::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
    }
    
-   string prefix = objectName + "_" + leptonName + "_";
    // Data histogram
-   Histograms::dataHistogram = (TH1D*)gDirectory->Get((prefix + "SingleEl_Data").c_str());
+   if(leptonName == "electron")
+      Histograms::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (el)").c_str());
+   else
+      Histograms::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (mu)").c_str());
    if (debug)
       Histograms::dataHistogram->Rebin(rebinSizeDEBUG);
    
    rootInFile.Close();
 }
 
-const double* BackgroundEstimator::fitHistograms()
+void BackgroundEstimator::fitHistograms()
 {
    const double* parameters = fitAndReturnParameters();
    
-   colorMonteCarlo();
-   produceResultStacks(parameters);
+   Histograms::monteCarloHistograms["QCD"]->Scale(parameters[0]);
+   Histograms::monteCarloHistograms["WJets"]->Scale(parameters[1]);
    
-   return parameters;
+   mcStack->Modified();
 }
 
 void BackgroundEstimator::writeHistograms()
 {
+   if (outRootFileLocation == "")
+   {
+      cout << "ERROR: writeLocation has not been set. Cannot write Histograms." << endl;
+      return;
+   }
+   
+   TFile rootInFile;
+   rootInFile.Open(inRootFileLocation.c_str());
+   
+   vector<string> plotPrefixes = getPlotNames();
+   
+   vector<TCanvas*> inputCanvases;
+   
+   TCanvas* inputCanvas;
+   TPad* inputPad;
+   THStack* inputMCStack;
+   TList* inputMCList;
+   TH1D* histQCD;
+   TH1D* histWJets;
+   
+   for(unsigned int i = 0; i < plotPrefixes.size(); i++)
+   {
+      string prefix = plotPrefixes[i] + "_" + leptonName;
+      
+      inputCanvas = (TCanvas*)(gDirectory->Get((prefix).c_str()))->Clone();
+      inputPad = (TPad *) inputCanvas->GetPrimitive((prefix + "_1").c_str());
+      inputMCStack = (THStack*) inputPad->GetPrimitive((prefix + "_stackMC").c_str());
+      inputMCList = inputMCStack->GetHists();
+      
+      histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD").c_str());
+      histWJets = (TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str());
+      
+      histQCD->Scale(scaleParameters.first);
+      histWJets->Scale(scaleParameters.second);
+      
+      inputMCStack->Modified();
+      
+      inputCanvases.push_back(inputCanvas);
+   }
+   
+   rootInFile.Close();
+   
    TFile rootOutFile;
    rootOutFile.Open(outRootFileLocation.c_str(), "RECREATE");
    
-   for(unsigned int i = 0; i < histNames.size(); i++)
+   //canvas->Write();
+   
+   for(unsigned int i = 0; i < inputCanvases.size(); i++)
    {
-      Histograms::monteCarloHistograms[histNames[i]]->Write();
+      inputCanvases[i]->Write();
    }
    
-   resultStack->Write();
-   
-   Histograms::dataHistogram->Write();
-   
    rootOutFile.Close();
+}
+
+void BackgroundEstimator::setWriteLocation(string outFileLoc)
+{
+   outRootFileLocation = outFileLoc;
+}
+
+void BackgroundEstimator::setReadLocation(string inFileLoc)
+{
+   inRootFileLocation = inFileLoc;
 }
 
 void BackgroundEstimator::setRebinSizeDEBUG(unsigned int rebinSize)
@@ -121,38 +189,41 @@ void BackgroundEstimator::setRebinSizeDEBUG(unsigned int rebinSize)
    rebinSizeDEBUG = rebinSize;
 }
 
+pair<double, double> BackgroundEstimator::getParameters()
+{
+   return scaleParameters;
+}
+
+double BackgroundEstimator::getReducedChiSquared()
+{
+   return reducedChiSquared;
+}
+
 //##################################################
 //############### PRIVATE FUNCTIONS ################
 //##################################################
 
 void BackgroundEstimator::initializeFileLocations(string inFileLoc, string outFileLoc)
 {
-   //inRootFileLocation = "/uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/Tools/bin/" + leptonName + ".root";
-   //outRootFileLocation = "/uscms_data/d3/travlamb/BackgroundEstimation_" + leptonName + "_" + objectName + ".root";
    inRootFileLocation = inFileLoc;
    outRootFileLocation = outFileLoc;
 }
 
 void BackgroundEstimator::initializeHistNames()
 {
+   histNames.push_back("Diboson");
+   histNames.push_back("STop");
    histNames.push_back("WJets");
-   histNames.push_back("WW");
-   histNames.push_back("WZ");
    histNames.push_back("DYJets");
    histNames.push_back("TTbar");
-   histNames.push_back("STopT_T");
-   histNames.push_back("STopS_T");
-   histNames.push_back("STopS_Tbar");
    histNames.push_back("QCD");
-   histNames.push_back("STopTW_T");
-   histNames.push_back("STopTW_Tbar");
+   histNames.push_back("H125");
 }
 
 const double* BackgroundEstimator::fitAndReturnParameters()
 {
    ROOT::Math::Functor funcFit(&fitFunc,2);
    Minuit2Minimizer* minFit = new Minuit2Minimizer(kMigrad);
-   //Minuit2Minimizer* minFit = new Minuit2Minimizer();
    
    // Tolerance and printouts
    minFit->SetPrintLevel(3);
@@ -184,115 +255,52 @@ const double* BackgroundEstimator::fitAndReturnParameters()
    cout << endl << "##### FIT RESULTS #####" << endl;
    minFit->PrintResults();
    
+   reducedChiSquared = minFit->MinValue() / (Histograms::dataHistogram->GetNbinsX() - 2);
+   
    cout << "Chi2\t  = " << minFit->MinValue() << endl;
    cout << "NDF\t  = " << Histograms::dataHistogram->GetNbinsX() - 2 << endl;
-   cout << "Chi2/NDF\t  = " << minFit->MinValue() / (Histograms::dataHistogram->GetNbinsX() - 2) << endl;
+   cout << "Chi2/NDF\t  = " << reducedChiSquared << endl;
+   
+   scaleParameters.first = minFit->X()[0];
+   scaleParameters.second = minFit->X()[1];
    
    return minFit->X();
 }
 
-void BackgroundEstimator::colorMonteCarlo()
+vector<string> BackgroundEstimator::getPlotNames()
 {
-   for(unsigned int i = 0; i < histNames.size(); i++)
-   {
-      string name = histNames[i];
-      if (name == "WJets")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kTeal+2);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kTeal+2);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kTeal+2);
-      }
-      else if (name == "WW")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kPink);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kPink);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kPink);
-      }
-      else if (name == "WZ")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kBlue);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kBlue);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kBlue);
-      }
-      else if (name == "DYJets")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kViolet+5);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kViolet+5);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kViolet+5);
-      }
-      else if (name == "TTbar")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kAzure-2);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kAzure-2);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kAzure-2);
-      }
-      else if (name == "STopT_T")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kOrange+1);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kOrange+1);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kOrange+1);
-      }
-      else if (name == "STopS_T")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kBlue);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kBlue);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kBlue);
-      }
-      else if (name == "STopS_Tbar")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kBlue+3);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kBlue+3);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kBlue+3);
-      }
-      else if (name == "QCD")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kCyan);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kCyan);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kCyan);
-      }
-      else if (name == "STopTW_T")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kMagenta);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kMagenta);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kMagenta);
-      }
-      else if (name == "STopTW_Tbar")
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kGreen+3);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kGreen+3);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kGreen+3);
-      }
-      else
-      {
-         Histograms::monteCarloHistograms[name]->SetFillColor(kYellow);
-         Histograms::monteCarloHistograms[name]->SetMarkerColor(kYellow);
-         Histograms::monteCarloHistograms[name]->SetLineColor(kYellow);
-      }
-   }
+   vector<string> names;
    
-   Histograms::dataHistogram->SetLineColor(kBlack);
-   Histograms::dataHistogram->SetMarkerColor(kBlack);
-   Histograms::dataHistogram->SetFillColor(kBlack);
-   Histograms::dataHistogram->SetMarkerStyle(8);
-}
-
-void BackgroundEstimator::produceResultStacks(const double* pars)
-{
-   // results
-   for(unsigned int i = 0; i < histNames.size(); i++)
-   {
-      string name = histNames[i];
-      if(name == "QCD")
-      {
-         Histograms::monteCarloHistograms[name]->Scale(pars[0]);
-      }
-      if(name == "WJets")
-      {
-         Histograms::monteCarloHistograms[name]->Scale(pars[1]);
-      }
-      
-      resultStack->Add(Histograms::monteCarloHistograms[name], "hist");
-   }
+   names.push_back("AngleJ1J2");
+   names.push_back("BetaJ1BetaJ2");
+   names.push_back("DeltaEtaJ1J2");
+   names.push_back("DeltaPhi_J1J2");
+   names.push_back("DeltaPhi_LJ1");
+   names.push_back("DeltaPhi_LJ1_vs_J1J2");
+   names.push_back("DeltaRJ1J2");
+   names.push_back("DeltaRLepMET");
+   names.push_back("EJ1EJ2");
+   names.push_back("Jet1Eta");
+   names.push_back("Jet1Phi");
+   names.push_back("Jet1Pt");
+   names.push_back("Jet2Eta");
+   names.push_back("Jet2Phi");
+   names.push_back("Jet2Pt");
+   names.push_back("LeptEta");
+   names.push_back("LeptPhi");
+   names.push_back("LeptPt");
+   names.push_back("MET");
+   names.push_back("Mjj");
+   names.push_back("MjjmWmT");
+   names.push_back("Mlvjj");
+   names.push_back("Ptjj");
+   names.push_back("WmT");
+   names.push_back("j1Pt_Mjj");
+   names.push_back("j2Pt_Mjj");
+   names.push_back("jjlvPhi");
+   names.push_back("npv");
+   
+   return names;
 }
 
 //##################################################

@@ -232,7 +232,7 @@ FormattedPlot::FormattedPlot()
 // ------------------------------------------------------------
 // Make the Canvas here ala Ricardo Eusebi
 // ------------------------------------------------------------
-TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
+TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 {
    // Format the colors
    formatColors(procs);
@@ -254,6 +254,7 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 
    // Make the legend
    TLegend * l = new TLegend(0.8,0.4,0.96,0.89);
+   l->SetName(tempName+"_legend");
    l->SetBorderSize(0);
    l->SetFillColor(0);
   
@@ -278,7 +279,9 @@ TCanvas * FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
       
       if (overlaySignalName.Length() > 0)
       {
-         if (hname.Contains(overlaySignalName))
+         TString tempOverlaySignalName = overlaySignalName;
+         tempOverlaySignalName.ToUpper();
+         if (hname.Contains(tempOverlaySignalName))
          {
             signal = (TH1*)groupedHistos[h]->Clone();
             signal->SetFillColor(0);
@@ -444,15 +447,18 @@ void FormattedPlot::formatStack(THStack * stack, double maxi)
 void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range)
 {
    double x = (range.second - range.first)*0.45 + range.first;
-   double y = max(totalData->GetMaximum(),all->GetMaximum());
+   double y = max(totalData->GetMaximum(),all->GetMaximum())*1.1;
 
    double chi2;
    int NDF;
    int igood;
 
    TLatex * ks      = new TLatex(x, y     , Form("KSTest   = %5.4g", totalData->KolmogorovTest(all)));
+   ks->SetName("ks");
    TLatex * chi2P   = new TLatex(x, y*0.92, Form("Chi2Prob = %5.4g", all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
+   chi2P->SetName("chi2P");
    TLatex * chi2NDF = new TLatex(x, y*0.84, Form("Chi2/NDF = %5.4g", chi2/NDF));
+   chi2NDF->SetName("chi2NDF");
 
    ks->Draw();
    chi2P->Draw();

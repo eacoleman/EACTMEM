@@ -7,12 +7,10 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
 {
    BackgroundEstimator histFit(lep, cat, inFileLoc, outFileLoc);
    
-   cout << inFileLoc << endl;
-   
    histFit.readHistograms();
    
    // DEBUG
-   double sumYay = 0;
+   double sum = 0;
    cout << "Data Integral: ";
    cout << Histograms::dataHistogram->Integral() << endl;
    for(map<string, TH1D*>::iterator mapit = Histograms::monteCarloHistograms.begin(); mapit != Histograms::monteCarloHistograms.end(); mapit++)
@@ -20,14 +18,14 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
       cout << mapit->first << " Integral: ";
       cout << mapit->second->Integral() << endl;
       
-      sumYay += mapit->second->Integral();
+      sum += mapit->second->Integral();
    }
-   cout << "SUM: " << sumYay << endl;
+   cout << "SUM: " << sum << endl;
    
    histFit.fitHistograms();
    
    // DEBUG
-   sumYay = 0;
+   sum = 0;
    cout << "Data Integral: ";
    cout << Histograms::dataHistogram->Integral() << endl;
    for(map<string, TH1D*>::iterator mapit = Histograms::monteCarloHistograms.begin(); mapit != Histograms::monteCarloHistograms.end(); mapit++)
@@ -35,9 +33,9 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
       cout << mapit->first << " Integral: ";
       cout << mapit->second->Integral() << endl;
       
-      sumYay += mapit->second->Integral();
+      sum += mapit->second->Integral();
    }
-   cout << "SUM: " << sumYay << endl;
+   cout << "SUM: " << sum << endl;
    
    histFit.writeHistograms();
    
@@ -76,7 +74,7 @@ int main(int argc,char**argv)
    }
    
    if(inFileLocCL == "")
-      inFileLocCL = leptonCL + ".root";
+      inFileLocCL = "outputFile_" + leptonCL + ".root";
    
    if(outFileLocCL == "")
       outFileLocCL = "BackgroundEstimation_" + leptonCL + "_" + objectCL + ".root";
