@@ -39,6 +39,7 @@ namespace UserFunctions
    PUreweight* puweight;
    bool doJER;
    bool doPUreweight;
+   bool doFNAL;
 
    // Is run once for each process before events are cut (initialize)
    void initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
@@ -107,7 +108,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
   // Kill onlye electron-muon combinations, nothing else
   if ( ntuple->leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->leptonCat != DEFS::both) )
     return false;
-  
+
  /* if (ntuple->leptonCat == DEFS::muon)
     if ((ntuple->lLV[0].Pt()) <= 25.0 || (ntuple->METLV[0].Et()) <= 30.0)
       return false;
@@ -117,6 +118,18 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
       return false;
  */
 
+  //Implement FNAL cuts
+  if (doFNAL){
+    if (ntuple->leptonCat == DEFS::muon){
+      if(!ntuple->FNALcutsMuon())
+	return false;
+    }
+    else if(ntuple->leptonCat == DEFS::electron)
+      if (!ntuple->FNALcutsElectron())
+	return false;
+  }
+
+  //X axis cuts
   if (cutRegion.Contains("signal")){
     if(ntuple->jLV[0].Et() < 30 || ntuple->jLV[1].Et() < 30)
       return false;
@@ -130,19 +143,9 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
 	(ntuple->jLV[0].Et() < 30 && ntuple->jLV[1].Et() < 30))
       return false;
   }
-  else if (cutRegion.Contains("all")){
+  else if (cutRegion.Contains("all"))
     return true;
-  }
 
-  //Implement FNAL cuts
-
-  if (ntuple->leptonCat == DEFS::muon)
-    return ntuple->FNALcutsMuon();
-  else if(ntuple->leptonCat == DEFS::electron)
-    return ntuple->FNALcutsElectron();
- 
-
-  // return true otherwise
   return true;  
 
 }// eventPassCuts
@@ -192,10 +195,13 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
 }
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt);
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
+
+/// returns the branching ratio for the given process
+double getBranchingRatio(TString channelName);
 
 /// returns the number of Monte Carlo events for the given process
 double getNumMCEvts(TString channelName);
@@ -228,7 +234,8 @@ int main(int argc,char**argv) {
    string         lepCat            = cl.getValue<string>  ("lep",         "both");
    UserFunctions::doJER             = cl.getValue<bool>    ("doJer",         true);
    UserFunctions::doPUreweight      = cl.getValue<bool>    ("doPUrewt",      true);
-   UserFunctions::cutRegion         = cl.getValue<string>  ("cutRegion", "signal");
+   UserFunctions::doFNAL            = cl.getValue<bool>    ("doFNAL",       false);
+   UserFunctions::cutRegion         = cl.getValue<string>  ("cutRegion",    "all");
    UserFunctions::outDir            = cl.getValue<string>  ("outDir",         ".");
    UserFunctions::leptonCat         = DEFS::getLeptonCat   (lepCat);
 
@@ -251,9 +258,9 @@ int main(int argc,char**argv) {
    // Make all the plots and store to outputFile
    TString outFileName = "outputFile_";
    outFileName += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
-   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight);
+   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL);
    
-   plots["DeltaPhi_LJ1_vs_J1J2"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_signal.root");
+   plots["DeltaPhi_LJ1_vs_J1J2"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_all.root");
 
    return 0;
 
@@ -265,7 +272,7 @@ int main(int argc,char**argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt) {
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
    pFill.setCutFunction(&UserFunctions::eventPassCuts);
@@ -306,11 +313,31 @@ double getCrossSection(TString channelName)
          cout << "WARNING::getCrossSection::The cross section for " << channelName << " is 0.0 +/- 0.0" << endl;
       return xsec;
    } else{
-      cout << "WARNING::getCrossSection::channelName not recognized. Returning -1 for the cross section." << endl << "The events will have the same scale as the MC sample, but on a negative scale." << endl << "Please check channel names." << endl;
+      cout << "WARNING::getCrossSection::channelName " << channelName << " not recognized. Returning -1 for the cross section." << endl << "The events will have the same scale as the MC sample, but on a negative scale." << endl << "Please check channel names." << endl;
       return -1.;
    }
 }//getCrossSection
 
+//______________________________________________________________________________
+double getBranchingRatio(TString channelName)
+{
+   Table table;
+   double xsec;
+
+   string basePath = gSystem->pwd();
+   basePath = basePath.substr(0,basePath.find("TAMUWW"));
+   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt"),"TableCellVal");
+   TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
+   if(cell){
+      xsec = ((TableCellVal*)cell)->val.value;
+      if (xsec==0)
+         cout << "WARNING::getBranchingRatio::The branching ratio for " << channelName << " is 0.0 +/- 0.0" << endl;
+      return xsec;
+   } else{
+      cout << "WARNING::getBranchingRatio::channelName " << channelName << " not recognized. Returning -1 for the branching ratio." << endl << "The events will have the same scale as the MC sample, but on a negative scale." << endl << "Please check channel names." << endl;
+      return -1.;
+   }
+}//getBranchingRatio
 
 //______________________________________________________________________________
 double getNumMCEvts(TString channelName)
@@ -328,7 +355,7 @@ double getNumMCEvts(TString channelName)
          cout << "WARNING::getNumMCEvts::There are 0 events in the " << channelName << " MC." << endl;
       return value;
    } else{
-      cout << "WARNING::getNumMCEvts::channelName not recognized. Returning -1 event from MC." << endl << "Please check channel names." << endl;
+      cout << "WARNING::getNumMCEvts::channelName " << channelName << " not recognized. Returning -1 event from MC." << endl << "Please check channel names." << endl;
       return -1.;
    }
 }//getNumMCEvts
@@ -343,39 +370,39 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   vector <PhysicsProcessNEW*> procs;
   
 
-  procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root", getCrossSection("WJets"),
-					       1.045*intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
+  procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root",1.075*getCrossSection("WJets"),
+                                               intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
   procs.push_back(new ColoredPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
-					       intLum, getNumMCEvts("WW"), getProcessColor("WW")));
+                                               intLum, getNumMCEvts("WW"), getProcessColor("WW")));
   procs.push_back(new ColoredPhysicsProcessNEW("WZ",basePath+"WZ/PS.root", getCrossSection("WZ"),
-					       intLum, getNumMCEvts("WZ"), getProcessColor("WZ")));
+                                               intLum, getNumMCEvts("WZ"), getProcessColor("WZ")));
   procs.push_back(new ColoredPhysicsProcessNEW("DYJets",basePath+"DYJets/PS.root", getCrossSection("DYJets"),
-					       intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
+                                               intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
   procs.push_back(new ColoredPhysicsProcessNEW("TTbar",basePath+"TTbar/PS.root", getCrossSection("TTbar"),
-					       intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
+                                               intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
   //here 
   ///////////////   QCD new code
-  procs.push_back(new ColoredPhysicsProcessNEW("QCD", basePath+"QCD/PS.root", getCrossSection("QCD_Pt20_MuEnriched"),
-					       0.754*intLum, getNumMCEvts("QCD"), getProcessColor("QCD"))); //QCD_Pt20_MuEnriched
+  procs.push_back(new ColoredPhysicsProcessNEW("QCD", basePath+"QCD/PS.root", 0.5*getCrossSection("QCD_Pt20_MuEnriched"),
+                                               intLum, getNumMCEvts("QCD"), getProcessColor("QCD")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopT_T",basePath+"STopT_T/PS.root", getCrossSection("STopT_T"),
-					       intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
+                                               intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
   //   procs.push_back(new ColoredPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
   //                            getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
   //                            getProcessColor("STopT_Tbar")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopS_T",basePath+"STopS_T/PS.root", getCrossSection("STopS_T"),
-			   intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T")));
+                                               intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar/PS.root",
-			   getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
-			   getProcessColor("STopS_Tbar")));
+                                               getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
+                                               getProcessColor("STopS_Tbar")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T/PS.root",
-			   getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
-			   getProcessColor("STopTW_T")));
+                                               getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
+                                               getProcessColor("STopTW_T")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar/PS.root", 
-			   getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
-			   getProcessColor("STopTW_Tbar")));
-  procs.push_back(new ColoredPhysicsProcessNEW("H125",basePath+"H125/PS.root", 
-                                               getCrossSection("WH125"), intLum, getNumMCEvts("WH125"),
-                                               getProcessColor("H125"), "PS/jets2"));
+                                               getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
+                                               getProcessColor("STopTW_Tbar")));
+  procs.push_back(new ColoredPhysicsProcessNEW("ggH125",basePath+"ggH125/PS.root", 
+                                               getCrossSection("ggH125")*getBranchingRatio("ggH125"), intLum, getNumMCEvts("ggH125"),
+                                               getProcessColor("ggH125"), "PS/jets2"));
   
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
@@ -384,17 +411,17 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // FOR DATA, to guarrantee the proper normalization, we set
   // sigma  = 1 / collected luminosity
   // initial_events = 1;
-
+  
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
-    procs.push_back(new ColoredPhysicsProcessNEW("Data (el)",basePath+"SingleEl_Data/PS.root",
-			     1./intLum, intLum, 1,
-			     getProcessColor("SingleEl_Data"))); 
-
+     procs.push_back(new ColoredPhysicsProcessNEW("Data (el)",basePath+"SingleEl_Data/PS.root",
+                                                  1./intLum, intLum, 1,
+                                                  getProcessColor("SingleEl_Data"))); 
+  
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
-    procs.push_back(new ColoredPhysicsProcessNEW("Data (mu)",basePath+"SingleMu_Data/PS.root",
-			     1./intLum, intLum, 1,
-			     getProcessColor("SingleMu_Data")));
- 
+     procs.push_back(new ColoredPhysicsProcessNEW("Data (mu)",basePath+"SingleMu_Data/PS.root",
+                                                  1./intLum, intLum, 1,
+                                                  getProcessColor("SingleMu_Data")));
+  
   return procs;
   
 }//getProcesses
@@ -458,7 +485,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,400.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Mjj"] = a;
 
@@ -471,7 +498,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-100.,250.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["MjjmWmT"] = a;
    
@@ -483,7 +510,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(20.,150.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["LeptPt"] = a;
 
@@ -496,7 +523,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.,3.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["LeptEta"] = a;
 
@@ -509,7 +536,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.5,3.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["LeptPhi"] = a;
 
@@ -522,7 +549,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(30.,150.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["MET"] = a;
 
@@ -535,7 +562,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,150.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["WmT"] = a;
 
@@ -548,7 +575,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(20.,200.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet1Pt"] = a;
 
@@ -561,7 +588,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.,3.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet1Eta"] = a;
 
@@ -574,7 +601,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.5,3.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet1Phi"] = a;
 
@@ -587,7 +614,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(20.,100.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet2Pt"] = a;
 
@@ -600,7 +627,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.,3.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet2Eta"] = a;
 
@@ -613,7 +640,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.5,3.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Jet2Phi"] = a;
 
@@ -626,7 +653,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,5.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaEtaJ1J2"] = a;
 
@@ -639,7 +666,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,250.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Ptjj"] = a;
 
@@ -652,7 +679,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,2.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["j1Pt_Mjj"] = a;
 
@@ -665,7 +692,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,1.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["j2Pt_Mjj"] = a;
 
@@ -678,7 +705,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(50.,800.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["Mlvjj"] = a;
 
@@ -691,7 +718,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,7.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaRLepMET"] = a;
 
@@ -704,7 +731,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,5000.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["EJ1EJ2"] = a;
 
@@ -717,7 +744,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.9,1.03);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["BetaJ1BetaJ2"] = a;
 
@@ -730,7 +757,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0.,7.);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaRJ1J2"] = a;
 
@@ -743,7 +770,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-0.5,3.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["AngleJ1J2"] = a;
 
@@ -756,7 +783,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-3.5,3.5);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["jjlvPhi"] = a;
 
@@ -769,7 +796,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-pi,pi);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaPhi_LJ1"] = a;
 
@@ -782,7 +809,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-pi,pi);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaPhi_J1J2"] = a;
 
@@ -795,7 +822,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(0,40);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["npv"] = a;
 
@@ -808,7 +835,7 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->range = make_pair(-pi,pi);
    a->normToData = norm_data;
    a->stacked = true;
-   a->overlaySignalName = "H125";
+   a->overlaySignalName = "ggH125";
    a->overlaySignalFactor = signalFactor;
    plots["DeltaPhi_LJ1_vs_J1J2"] = a;
 
@@ -850,7 +877,7 @@ Color_t getProcessColor(TString channelName){
     return kGreen+3;
    else if (channelName.CompareTo("TTbar") == 0)
      return kAzure-2; 
-   else if (channelName.CompareTo("H125") == 0)
+   else if (channelName.CompareTo("ggH125") == 0)
      return kRed+2; 
   
   //these are still being used
