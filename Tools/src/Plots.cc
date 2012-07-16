@@ -234,6 +234,11 @@ FormattedPlot::FormattedPlot()
 // ------------------------------------------------------------
 TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 {
+   // These flags are to determine if this FormattedPlot contains data or Monte Carlo histograms
+   // With these flags, it is possible for the user to create canvases with only data or only Monte Carlo
+   bool areMCHists = false;
+   bool areDataHists = false;
+   
    // Format the colors
    formatColors(procs);
    
@@ -269,12 +274,16 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
          sDa->Add(groupedHistos[h],"hist");
          tDa->Add(groupedHistos[h]);
          l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"lpe");
+         
+         areDataHists = true;
       }
       else
       {
          sMC->Add(groupedHistos[h],"hist");
          tMC->Add(groupedHistos[h]);
          l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"f");
+         
+         areMCHists = true;
       }
       
       if (overlaySignalName.Length() > 0)
@@ -283,19 +292,23 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
          tempOverlaySignalName.ToUpper();
          if (hname.Contains(tempOverlaySignalName))
          {
-            signal = (TH1*)groupedHistos[h]->Clone();
-            signal->SetFillColor(0);
-            signal->Scale(overlaySignalFactor);
-            
-            ostringstream legendTitleStream;
-            legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
-            string legendTitle = legendTitleStream.str();
-            
-            l->AddEntry(signal,legendTitle.c_str(),"lp0");
+            TString className = tMC->ClassName(); 
+            if (!className.Contains("TH2"))
+            {
+               signal = (TH1*)groupedHistos[h]->Clone();
+               signal->SetFillColor(0);
+               signal->Scale(overlaySignalFactor);
+               
+               ostringstream legendTitleStream;
+               legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
+               string legendTitle = legendTitleStream.str();
+               
+               l->AddEntry(signal,legendTitle.c_str(),"lp0");
+            }
          }
       }
    }
-
+   
    // General Style Formatting
    gStyle->SetOptTitle(0);
    //gStyle->SetOptStat(2211);
@@ -317,8 +330,16 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    
    //Define the graphics option
    TString gOption = stacked ? "": "nostack";
-   sMC->Draw(gOption);
-   sDa->Draw(gOption+"ep,SAME");
+   if (areDataHists)
+      sMC->Draw(gOption);
+   else
+      sMC->Draw(gOption+"colz");
+   
+   if (areMCHists)
+      sDa->Draw(gOption+"ep,SAME");
+   else
+      sDa->Draw(gOption+"ep");
+   
    if (signal != 0)
    {
       signal->SetLineWidth(2);
@@ -326,19 +347,23 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    }
    
    // Set display range
-   sMC->GetXaxis()->SetRangeUser(range.first, range.second);
-   sDa->GetXaxis()->SetRangeUser(range.first, range.second);
+   if (areMCHists)
+      sMC->GetXaxis()->SetRangeUser(range.first, range.second);
+   if (areDataHists)
+      sDa->GetXaxis()->SetRangeUser(range.first, range.second);
    if (signal != 0)
       signal->GetXaxis()->SetRangeUser(range.first, range.second);
 
    // Format the stacks, make sure to do this after the Draw command.
    // Set the maximum range for the Y-axis
    double maxi = max(sMC->GetMaximum(),sDa->GetMaximum())*1.1;
-   formatStack(sMC,maxi);
+   if (areMCHists)
+      formatStack(sMC,maxi);
    //formatStack(sDa,maxi);
-
+   
    // Add the KS and Chi2 info in the active canvas
-   drawKSandChi2Tests(tDa, tMC, range);
+   if (areMCHists && areDataHists)
+      drawKSandChi2Tests(tDa, tMC, range);
 
    // Add the Legend
    l->Draw("same");
