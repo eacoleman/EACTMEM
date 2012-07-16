@@ -1,10 +1,10 @@
 //ReadTable_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120621_NTUPLES/ -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex
 
 //TEMP FOR FERMILAB
-//TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120621_NTUPLES/ -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051
+//TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -branchingRatiosFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120621_NTUPLES/ -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051
 
 //FOR ALEXX'S HIGGS SAMPLES
-//TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051 -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120709_MC_20/ -processNames WJets ggH125
+//TableProduction_x -crossSectionFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt -branchingRatiosFilePath /uscms/home/travlamb/CMSSW_5_2_5/src/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt -latexTemplateFilePath /uscms_data/d3/travlamb/Tables/TEMPLATE.tex -latexOutputFilePath /uscms_data/d3/travlamb/Tables/Tables.tex -muonLuminosity 3575.666 -electronLuminosity 3568.051 -rootFoldersFileLocation /uscms_data/d3/travlamb/PS_outfiles_20120709_MC_20/ -processNames WJets ggH125
 
 //This file contains the functions to read several input files,
 //and display yield tables, tables with added FracPass and EventsPerInvpb rows ("Enhanced Tables"),
@@ -179,6 +179,7 @@ class TableProduction
 private:
    //Stores file locations
    string crossSectionFilePath;
+   string branchingRatiosFilePath;
    string rootFoldersFileLocation;
    string latexTemplatePath;
    string writeRootPath;
@@ -231,6 +232,7 @@ public:
    TableProduction();
    TableProduction(
       string crossSectionFilePathTEMP,
+      string branchingRatiosFilePathTEMP,
       string rootFoldersFileLocationTEMP,
       string textOutputFilePathTEMP,
       string rootOutputFilePathTEMP,
@@ -245,6 +247,7 @@ public:
    
    //Basic set functions
    void setCrossSectionFilePath(string filePath);
+   void setBranchingRatiosFilePath(string filePath);
    void setRootFoldersLocation(string fileLoc);
    void setWriteRootPath(string filePath);
    void setWriteFilePath(string filePath);
@@ -360,6 +363,7 @@ TableProduction::TableProduction()
 
 TableProduction::TableProduction(
    string crossSectionFilePathTEMP,
+   string branchingRatiosFilePathTEMP,
    string rootFoldersFileLocationTEMP,
    string textOutputFilePathTEMP,
    string rootOutputFilePathTEMP,
@@ -370,6 +374,7 @@ TableProduction::TableProduction(
    double ElectronLuminosityTEMP)
 {
    setCrossSectionFilePath(crossSectionFilePathTEMP);
+   setBranchingRatiosFilePath(branchingRatiosFilePathTEMP);
    setRootFoldersLocation(rootFoldersFileLocationTEMP);
    setWriteRootPath(rootOutputFilePathTEMP);
    setWriteFilePath(textOutputFilePathTEMP);
@@ -390,6 +395,11 @@ TableProduction::~TableProduction()
 void TableProduction::setCrossSectionFilePath(string filePath)
 {
    crossSectionFilePath = filePath;
+}
+
+void TableProduction::setBranchingRatiosFilePath(string filePath)
+{
+   branchingRatiosFilePath = filePath;
 }
 
 void TableProduction::setRootFoldersLocation(string fileLoc)
@@ -450,6 +460,9 @@ void TableProduction::readCrossSections()
    //This fills the crossSections Table
    //First we store the entire table
    crossSectionsTable.parseFromFile(crossSectionFilePath, "TableCellVal");
+   //Save the branching ratios
+   Table branchingRatiosTable;
+   branchingRatiosTable.parseFromFile(branchingRatiosFilePath,"TableCellVal");
    //tempRows are the current rows in the table, newRows will only store the processes that we want
    vector<TableRow> tempRows = crossSectionsTable.getRows();
    vector<TableRow> newRows;
@@ -463,6 +476,18 @@ void TableProduction::readCrossSections()
          //we will store the row if it is a process we want
          if(process == tempRows[j].GetName())
          {
+            // Add a branching ratios column
+            TableCellVal* branchRatiosCell = new TableCellVal;
+            branchRatiosCell->val = ((TableCellVal*)branchingRatiosTable.getCellRowColumn(process, "BranchingRatio"))->val;
+            branchRatiosCell->SetName("BranchingRatios");
+            tempRows[j].addCellEntries(branchRatiosCell);
+            
+            //Add a combined column
+            TableCellVal* combinedCell = new TableCellVal;
+            combinedCell->val = (branchRatiosCell->val) * (((TableCellVal*)crossSectionsTable.getCellRowColumn(process, "CrossSection"))->val);
+            combinedCell->SetName("CombinedCrossSection");
+            tempRows[j].addCellEntries(combinedCell);
+            
             newRows.push_back(tempRows[j]);
          }
       }
@@ -477,8 +502,8 @@ void TableProduction::readCrossSections()
    for(unsigned int i = 0; i < processNames.size(); i++)
    {
       //We store the double value associated with that process name into tempVal
-      tempVal = ((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CrossSection"))->val.value;
-      tempErr = ((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CrossSection"))->val.error;
+      tempVal = ((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CombinedCrossSection"))->val.value;
+      tempErr = ((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CombinedCrossSection"))->val.error;
       //Place tempVal into our map of CrossSections
       crossSections[processNames[i]] = tempVal;
       crossSectionErrors[processNames[i]] = tempErr;
@@ -620,9 +645,9 @@ void TableProduction::formInvpbTables()
       leptonInvpbTables[process] = leptonAcceptanceTables[process];
       
       //multiplies Acceptance tables by required value
-      muonInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CrossSection"))->val);
-      electronInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CrossSection"))->val);
-      leptonInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CrossSection"))->val);
+      muonInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CombinedCrossSection"))->val);
+      electronInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CombinedCrossSection"))->val);
+      leptonInvpbTables[process] *= (((TableCellVal*)crossSectionsTable.getCellRowColumn(processNames[i], "CombinedCrossSection"))->val);
       
       //Names new yield tables
       muonInvpbTables[process].SetName(("MuInvpb_" + process).c_str());
@@ -1150,6 +1175,7 @@ int main(int argc, char** argv)
       return 0;
    
    string crossSectionFilePathCL    = cl.getValue<string>  ("crossSectionFilePath", "CrossSections_8TeV.txt");
+   string branchingRatiosFilePathCL = cl.getValue<string>  ("branchingRatiosFilePath", "BranchingRatios_8TeV.txt");
    string rootFoldersFileLocationCL = cl.getValue<string>  ("rootFoldersFileLocation", "");
    string textOutputFilePathCL      = cl.getValue<string>  ("textOutputFilePath", "Tables.txt");
    string rootOutputFilePathCL      = cl.getValue<string>  ("rootOutputFilePath", "PS.root");
@@ -1158,7 +1184,7 @@ int main(int argc, char** argv)
    string latexTitleCL              = cl.getValue<string>  ("latexTitle", "Monte Carlo Acceptances and Yields");
    string latexAuthorCL             = cl.getValue<string>  ("latexAuthors", "Ricardo Eusebi, Travis Lamb, Alexx Perloff");
    string latexEmailCL              = cl.getValue<string>  ("latexEmails", "eusebi@physics.tamu.edu, travis.t.lamb@gmail.com, aperloff@physics.tamu.edu");
-   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ:::ggH125");
+   vector<string> processNamesCL    = cl.getVector<string> ("processNames", "DYJets:::QCD:::SingleEl_Data:::SingleMu_Data:::STopS_T:::STopS_Tbar:::STopT_T:::STopTW_T:::STopTW_Tbar:::TTbar:::WJets:::WW:::WZ");
    double muonLuminosityCL          = cl.getValue<double>  ("muonLuminosity", 1606);
    double electronLuminosityCL      = cl.getValue<double>  ("electronLuminosity", 1599);
    bool writeToLatexCL              = cl.getValue<bool>    ("writeToLatex", true);
@@ -1168,16 +1194,16 @@ int main(int argc, char** argv)
       return 1;
    cl.print();
    
-   TableProduction tabProd = TableProduction(
-      crossSectionFilePathCL,
-      rootFoldersFileLocationCL,
-      textOutputFilePathCL,
-      rootOutputFilePathCL,
-      latexOutputFilePathCL,
-      latexTemplateFilePathCL,
-      processNamesCL,
-      muonLuminosityCL,
-      electronLuminosityCL);
+   TableProduction tabProd = TableProduction(crossSectionFilePathCL,
+                                             branchingRatiosFilePathCL,
+                                             rootFoldersFileLocationCL,
+                                             textOutputFilePathCL,
+                                             rootOutputFilePathCL,
+                                             latexOutputFilePathCL,
+                                             latexTemplateFilePathCL,
+                                             processNamesCL,
+                                             muonLuminosityCL,
+                                             electronLuminosityCL);
    
    tabProd.readAllInputs();
    
