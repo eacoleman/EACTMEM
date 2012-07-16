@@ -217,7 +217,7 @@ void BackgroundEstimator::initializeHistNames()
    histNames.push_back("DYJets");
    histNames.push_back("TTbar");
    histNames.push_back("QCD");
-   histNames.push_back("H125");
+   histNames.push_back("ggH125");
 }
 
 const double* BackgroundEstimator::fitAndReturnParameters()
