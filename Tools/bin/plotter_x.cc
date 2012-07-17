@@ -197,9 +197,6 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
 	 int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
 	 weight *= wJetsWeight->GetBinContent(bin);
        }
-       else{
-	 cout << " ERROR:: WJweight not applied aux.Name does not contain WJETS " << endl;
-       }
      }
    }
    return weight;
@@ -220,18 +217,20 @@ void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* 
 void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
 {
   TString auxName = proc->name;
+  auxName.ToUpper();
 
   if (WJweight){
     TFile* Subs;
-    if(auxName.Contains("WJETS") && (Subs = TFile::Open(TString("/uscms/home/amejia94/CMSSW_5_2_3_patch4/src/substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root")))){
+    if(auxName.Contains("WJETS")){
+      Subs = TFile::Open(TString("/uscms/home/amejia94/CMSSW_5_2_5/src/subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root"));
       if (!Subs->IsOpen()) {
-	cout << "\tERROR::Weight file (substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root) was not opened" << endl
+	cout << "\tERROR::Weight file (subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root) was not opened" << endl
 	     << "\tWJets histograms will not be filled" << endl;
 	return;
       }
-      TH2D* auxh  = (TH2D*) Subs->Get("hdSubstract");
+      TH2D* auxh  = (TH2D*) Subs->Get("hdSubtract");
       if (!auxh) {
-	cout << "\tERROR::Weight hist hdSubstract could not be found int substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root" << endl
+	cout << "\tERROR::Weight hist hdSubtract could not be found int subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root" << endl
 	     << "\tWJets histograms will not be filled" << endl;
 	return;
       }
