@@ -1,4 +1,4 @@
-// Our libraries
+//Our libraries
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
@@ -27,6 +27,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 using namespace std;
 using DEFS::LeptonCat;
@@ -40,6 +41,8 @@ namespace UserFunctions
    bool doJER;
    bool doPUreweight;
    bool doFNAL;
+   bool WJweight;
+   TH2D* wJetsWeight = 0;
 
    // Is run once for each process before events are cut (initialize)
    void initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
@@ -51,6 +54,13 @@ namespace UserFunctions
    double weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
    // Is run once for each process before events (initializes PU Reweighting
    void processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
+   // returns the charge of a particle based on its pdgId
+   double charge(int x);
+   // returns the mass of the hadronic W and the leptonic W
+   pair<double,double> onVsOffShell(EventNtuple * ntuple);
+   // returns a number rounded away from zero
+   double round(double r);
+   int round_int(double r);
 }
 
 //______________________________________________________________________________
@@ -86,7 +96,22 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
    plots["DeltaPhi_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
    plots["npv"]->Fill(ntuple->npv,weight);
    plots["jjlvPhi"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
+   pair<double,double> leptVsHadWMass = onVsOffShell(ntuple);
+   plots["MWjjVsMWlv"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
+   if (ntuple->lQ == 1)
+     plots["DeltaPhi_LJ1_vs_J1J2_Positive"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+   if (ntuple->lQ == -1)
+     plots["DeltaPhi_LJ1_vs_J1J2_Negative"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+   plots["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lQ)*weight);
 
+/*
+   TFile* comb = new TFile(comb, "RECREATE");
+   TH2D* Subtracted = (TH2D*) comb->Get(DeltaPhi_LJ1_vs_J1J2_Positive);
+   DeltaPhi_LJ1_vs_J1J2_Subtracted = (TH2D*) comb->Clone();
+   DeltaPhi_LJ1_vs_J1J2_Subtracted->Add(DeltaPhi_LJ1_vs_J1J2_Negative, -1);
+   plots["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->Fill()
+TFile * outFile = new TFile(fileName,"RECREATE");
+*/
 }//fillPlots
 
 //______________________________________________________________________________
@@ -162,10 +187,22 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
    double weight = 1.0;
 
    // Pileup reweighting
-   if (doPUreweight)
-   weight *= puweight->getWeight(ntuple->tnpus[1]);
+   if (doPUreweight){
+     weight *= puweight->getWeight(ntuple->tnpus[1]);
+     
+     if (WJweight){
+       if (auxName.Contains("WJETS")){
+	 double dpLJ = ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]);
+	 double dpJJ = ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]);
+	 int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
+	 weight *= wJetsWeight->GetBinContent(bin);
+       }
+       else{
+	 cout << " ERROR:: WJweight not applied aux.Name does not contain WJETS " << endl;
+       }
+     }
+   }
    return weight;
-   
 }
 
 void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
@@ -182,8 +219,33 @@ void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* 
 
 void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
 {
- 
   TString auxName = proc->name;
+
+  if (WJweight){
+    TFile* Subs;
+    if(auxName.Contains("WJETS") && (Subs = TFile::Open(TString("/uscms/home/amejia94/CMSSW_5_2_3_patch4/src/substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root")))){
+      if (!Subs->IsOpen()) {
+	cout << "\tERROR::Weight file (substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root) was not opened" << endl
+	     << "\tWJets histograms will not be filled" << endl;
+	return;
+      }
+      TH2D* auxh  = (TH2D*) Subs->Get("hdSubstract");
+      if (!auxh) {
+	cout << "\tERROR::Weight hist hdSubstract could not be found int substracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root" << endl
+	     << "\tWJets histograms will not be filled" << endl;
+	return;
+      }
+      wJetsWeight = (TH2D*) auxh->Clone();
+      if (!wJetsWeight) {
+	cout << "\tERROR::Weight hist wJetsWeight was not cloned properly" << endl
+	     << "\tWJets histograms will not be filled" << endl;
+	return;
+      }
+      wJetsWeight->SetDirectory(0);
+      Subs->Close();
+    }
+  }
+  
   auxName.ToUpper();
   if(auxName.Contains("DATA") || auxName.Contains("QCD"))
     return;
@@ -194,8 +256,113 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
   puweight = new PUreweight(dataname,MCname,"pileup_IsoMu24_eta2p1","PS/TPUDist");
 }
 
+double UserFunctions::charge(int x) {
+   int absx = abs(x);
+   if (absx==2 || absx==4 || absx==6)
+      return (x > 0) ? (2./3.) : ((x < 0) ? -(2./3.) : 0);
+   else if (absx==1 || absx==3 || absx==5)
+      return (x > 0) ? (-1./3.) : ((x < 0) ? (1./3.) : 0);
+   else if (absx==11 || absx==13 || absx==15)
+      return (x > 0) ? -1 : ((x < 0) ? 1 : 0);
+   else if (absx==24)
+      return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
+   else
+      return 0;
+}//charge
+
+pair<double,double> UserFunctions::onVsOffShell(EventNtuple * ntuple) {
+   if (ntuple->genParticleCollection.size()==0) {
+      //cout << "WARNING::No genParticleCollection present." << endl;
+      return make_pair(0.0,0.0);
+   }
+
+   pair<int,int> fW = make_pair(0,0); //first = sign, second = position                                     
+   pair<int,int> sW = make_pair(0,0);
+   int sl  = 0;
+   double cj1 = 0;
+   double cj2 = 0;
+   int sjj = 0;
+
+   for (unsigned int i=0; i<ntuple->genParticleCollection.size(); i++) {
+      if (abs(ntuple->genParticleCollection[i].pdgId)==24) {
+         if (fW.first==0) {
+            fW.first = charge(ntuple->genParticleCollection[i].pdgId);
+            fW.second = i;
+         }
+         else {
+            sW.first = charge(ntuple->genParticleCollection[i].pdgId);
+            sW.second = i;
+         }
+      }
+      if (abs(ntuple->genParticleCollection[i].pdgId)==11 || abs(ntuple->genParticleCollection[i].pdgId)==13 ||
+          abs(ntuple->genParticleCollection[i].pdgId)==15) {
+         sl = charge(ntuple->genParticleCollection[i].pdgId);
+         if (sl==0)
+            cout << "sl==0 and lept pdgId = " << (ntuple->genParticleCollection[i].pdgId) << endl;
+      }
+      if (abs(ntuple->genParticleCollection[i].pdgId)>0 && abs(ntuple->genParticleCollection[i].pdgId)<9) {
+         if (cj1!=0.0 && cj2!=0.0)
+            cout << "WARNING::There were more than two jets found. Both cj1 and cj2 are non-zero." << endl;
+         /*
+         cout << "pdgId" << i << " = " << ntuple->genParticleCollection[i].pdgId << "\tmother_pdgIds = ";
+         for (int j=0; j<ntuple->genParticleCollection[i].numberOfMothers; j++) {
+            cout << ntuple->genParticleCollection[ntuple->genParticleCollection[i].motherPositions[j]].pdgId << ", ";
+         }
+         cout << endl;
+         */
+         bool Wjet = true;
+         for (int j=0; j<ntuple->genParticleCollection[i].numberOfMothers; j++) {
+            if (abs(ntuple->genParticleCollection[ntuple->genParticleCollection[i].motherPositions[j]].pdgId)!=24)
+               Wjet = false;
+         }
+
+         if (Wjet) {
+            if (cj1==0)
+               cj1 = charge(ntuple->genParticleCollection[i].pdgId);
+            else {
+               cj2 = charge(ntuple->genParticleCollection[i].pdgId);
+            }
+         }
+      }
+   }
+
+   if (cj1!=0.0 && cj2!=0.0) {
+      sjj = round_int(cj1 + cj2);
+      //cout << "sjj = " << sjj << "\tcj1 = " << cj1 << "\tcj2 = " << cj2 << "\tcj1+cj2 = " << cj1+cj2 
+      //     << "\tround_int(cj1+cj2) = " << round_int(cj1+cj2) << endl;
+   }
+
+   if (fW.first==sl && sW.first==sjj) {
+      //h->Fill(ntuple->genParticleCollection[sW.second].p4.M(),
+      //        ntuple->genParticleCollection[fW.second].p4.M());
+      return make_pair(ntuple->genParticleCollection[sW.second].p4.M(),
+                       ntuple->genParticleCollection[fW.second].p4.M());
+   }
+   else if (fW.first==sjj && sW.first==sl) {
+      //h->Fill(ntuple->genParticleCollection[fW.second].p4.M(),
+      //        ntuple->genParticleCollection[sW.second].p4.M());
+      return make_pair(ntuple->genParticleCollection[fW.second].p4.M(),
+                       ntuple->genParticleCollection[sW.second].p4.M());
+   }
+   else {
+     //cout << "WARNING::Unable to determine which W is hadronic and which W is leptonic." << endl
+     //      << "fW.first = " << fW.first << "\tsW.first = " << sW.first << "\tsl = " << sl << "\tcj1 = "
+     //      << cj1 << "\tcj2 = " << cj2 << "\tsjj = " << sjj << endl;
+      return make_pair(0.0,0.0);
+   }
+
+}//onVsOffShell
+
+double UserFunctions::round(double r) {
+   return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
+}//round
+
+int UserFunctions::round_int(double r) {
+   return (r > 0.0) ? (r + 0.5) : (r - 0.5); 
+}//round
+
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL);
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
@@ -238,6 +405,8 @@ int main(int argc,char**argv) {
    UserFunctions::cutRegion         = cl.getValue<string>  ("cutRegion",    "all");
    UserFunctions::outDir            = cl.getValue<string>  ("outDir",         ".");
    UserFunctions::leptonCat         = DEFS::getLeptonCat   (lepCat);
+   UserFunctions::WJweight          = cl.getValue<bool>    ("WJweight",     false);
+   int            maxEvts           = cl.getValue<int>     ("maxEvts",          0);
 
    if (!cl.check()) return 0;
    cl.print();
@@ -258,9 +427,13 @@ int main(int argc,char**argv) {
    // Make all the plots and store to outputFile
    TString outFileName = "outputFile_";
    outFileName += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
-   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL);
+   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight);
    
    plots["DeltaPhi_LJ1_vs_J1J2"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_all.root");
+   if (UserFunctions::leptonCat == DEFS::muon)
+   plots["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_Subtracted_muon.root");
+   else 
+      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_Subtracted_electron.root");
 
    return 0;
 
@@ -272,14 +445,15 @@ int main(int argc,char**argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL) {
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
    pFill.setCutFunction(&UserFunctions::eventPassCuts);
    pFill.setWeightFunction(&UserFunctions::weightFunc);
    pFill.setProcessFunction(&UserFunctions::processFunc);
    pFill.setInitializeEventFunction(&UserFunctions::initEventFunc);
-   //pFill.setMaximumEventsDEBUG(1000); // TEST
+   if (maxEvts>0)
+      pFill.setMaximumEventsDEBUG(maxEvts); // TEST
    pFill.run();
 
    // Will all the info in the plots get the canvas and write it to file
@@ -289,6 +463,8 @@ void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProce
      TCanvas* can = ((FormattedPlot*) p->second)->getCanvas(procs);
      can->Write();			
      
+     if(!UserFunctions::outDir.EndsWith("/")) UserFunctions::outDir+="/";
+     if(!gSystem->OpenDirectory(UserFunctions::outDir)) gSystem->mkdir(UserFunctions::outDir);
      can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".png");
      can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".eps");
    }
@@ -370,8 +546,6 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   vector <PhysicsProcessNEW*> procs;
   
 
-  procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root",1.075*getCrossSection("WJets"),
-                                               intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
   procs.push_back(new ColoredPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
                                                intLum, getNumMCEvts("WW"), getProcessColor("WW")));
   procs.push_back(new ColoredPhysicsProcessNEW("WZ",basePath+"WZ/PS.root", getCrossSection("WZ"),
@@ -380,10 +554,6 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
                                                intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
   procs.push_back(new ColoredPhysicsProcessNEW("TTbar",basePath+"TTbar/PS.root", getCrossSection("TTbar"),
                                                intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
-  //here 
-  ///////////////   QCD new code
-  procs.push_back(new ColoredPhysicsProcessNEW("QCD", basePath+"QCD/PS.root", 0.5*getCrossSection("QCD_Pt20_MuEnriched"),
-                                               intLum, getNumMCEvts("QCD"), getProcessColor("QCD")));
   procs.push_back(new ColoredPhysicsProcessNEW("STopT_T",basePath+"STopT_T/PS.root", getCrossSection("STopT_T"),
                                                intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
   //   procs.push_back(new ColoredPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
@@ -412,16 +582,29 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // sigma  = 1 / collected luminosity
   // initial_events = 1;
   
-  if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
+  if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
+    procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root",1.075*getCrossSection("WJets"),
+						 intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
      procs.push_back(new ColoredPhysicsProcessNEW("Data (el)",basePath+"SingleEl_Data/PS.root",
                                                   1./intLum, intLum, 1,
                                                   getProcessColor("SingleEl_Data"))); 
-  
-  if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
+     procs.push_back(new ColoredPhysicsProcessNEW("QCD_ElEnriched", basePath+"QCD_ElEnriched/PS.root",
+						  0.5*getCrossSection("QCD_ElEnriched"), intLum,
+						  getNumMCEvts("QCD_ElEnriched"),
+						  getProcessColor("QCD_ElEnriched")));
+  }  
+
+  if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
+     procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root",1.168*getCrossSection("WJets"),
+                                               intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
      procs.push_back(new ColoredPhysicsProcessNEW("Data (mu)",basePath+"SingleMu_Data/PS.root",
                                                   1./intLum, intLum, 1,
                                                   getProcessColor("SingleMu_Data")));
-  
+     procs.push_back(new ColoredPhysicsProcessNEW("QCD_MuEnriched", basePath+"QCD_MuEnriched/PS.root",
+                                                  5.046*getCrossSection("QCD_MuEnriched"), intLum,
+                                                  getNumMCEvts("QCD_MuEnriched"),
+                                                  getProcessColor("QCD_MuEnriched"),"PS/jets2"));
+  }
   return procs;
   
 }//getProcesses
@@ -839,6 +1022,58 @@ map<string, Plot*> getPlots(string leptonCatString){
    a->overlaySignalFactor = signalFactor;
    plots["DeltaPhi_LJ1_vs_J1J2"] = a;
 
+   a = new FormattedPlot;
+   
+   a->templateHisto = new TH2D(("MWjjVsMWlv_" + suffix),("MWjjVsMWlv_" + lep + cuts),200,0,200,200,0,200);
+   a->axisTitles.push_back("M_{W_{jj}}");
+   a->axisTitles.push_back("M_{W_{l#nu}}");
+   a->range = make_pair(0,200);
+   a->normToData = norm_data;
+   a->stacked = true;
+   a->overlaySignalName = "ggH125";
+   a->overlaySignalFactor = signalFactor;
+   plots["MWjjVsMWlv"] = a;
+
+
+   a = new FormattedPlot;
+
+   a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Positive_" + suffix),("DeltaPhi_LJ1_vs_J1J2_Positive__" + lep + cuts),15,-pi,pi,15,-pi,pi);
+   a->axisTitles.push_back("Positive #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+   a->axisTitles.push_back("Number of Events / .2 Radians");
+   a->range = make_pair(-pi,pi);
+   a->normToData = norm_data;
+   a->stacked = true;
+   a->overlaySignalName = "ggH125";
+   a->overlaySignalFactor = signalFactor;
+   plots["DeltaPhi_LJ1_vs_J1J2_Positive"] = a;
+
+
+   a = new FormattedPlot;
+
+   a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Negative_" + suffix),("DeltaPhi_LJ1_vs_J1J2_Negative__" + lep + cuts),15,-pi,pi,15,-pi,pi);
+   a->axisTitles.push_back("Negative #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+   a->axisTitles.push_back("Number of Events / .2 Radians");
+   a->range = make_pair(-pi,pi);
+   a->normToData = norm_data;
+   a->stacked = true;
+   a->overlaySignalName = "ggH125";
+   a->overlaySignalFactor = signalFactor;
+   plots["DeltaPhi_LJ1_vs_J1J2_Negative"] = a;
+
+
+   a = new FormattedPlot;
+
+   a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Subtracted_" + suffix),("DeltaPhi_LJ1_vs_J1J2_Subtracted__" + lep + cuts),15,-pi,pi,15,-pi,pi);
+   a->axisTitles.push_back("Subtracted #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+   a->axisTitles.push_back("Number of Events / .2 Radians");
+   a->range = make_pair(-pi,pi);
+   a->normToData = norm_data;
+   a->stacked = true;
+   a->overlaySignalName = "ggH125";
+   a->overlaySignalFactor = signalFactor;
+   plots["DeltaPhi_LJ1_vs_J1J2_Subtracted"] = a;
+
+
    // return all the plots to be made
    return plots;
 
@@ -855,33 +1090,30 @@ Color_t getProcessColor(TString channelName){
   else if (channelName.CompareTo("WJets") == 0)
     return kTeal+2;
   else if (channelName.CompareTo("DYJets") == 0)
-    return kPink-8; //kViolet-5;
-  //   else if (channelName.CompareTo("TTbar")==0)
-  //      return kCyan;
-  else if (channelName.CompareTo("QCD") == 0)
-    return kYellow+1;  
+    return kPink-8;
+  else if (channelName.CompareTo("QCD_ElEnriched") == 0)
+    return kYellow+1;
+  else if (channelName.CompareTo("QCD_MuEnriched") == 0)
+    return kYellow+1;
   //right now these aren't being used because we are combining all the STop's in PlotterAux.cc
   else if (channelName.CompareTo("STopT_T") == 0)
     return kOrange+1;
   else if (channelName.CompareTo("STopT_Tbar") == 0)
-    return kCyan+3;
+    return kOrange+1; //kCyan+3;
   else if (channelName.CompareTo("STopS_T") == 0)
-     return kBlue;
+    return kOrange+1; //kBlue;
   else if (channelName.CompareTo("STopS_Tbar") == 0)
-    return kBlue+3;
+    return kOrange+1; //kBlue+3;
   else if (channelName.CompareTo("STopTW_T") == 0)
-    return kMagenta;
+    return kOrange+1; //kMagenta;
   else if (channelName.CompareTo("STopTW_Tbar") == 0)
-    return kGreen+3;
+    return kOrange+1; //kGreen+3;
   else if (channelName.CompareTo("STopTW_Tbar") == 0)
-    return kGreen+3;
+    return kOrange+1; //kGreen+3;
    else if (channelName.CompareTo("TTbar") == 0)
      return kAzure-2; 
    else if (channelName.CompareTo("ggH125") == 0)
      return kRed+2; 
-  
-  //these are still being used
-  
    else if (channelName.CompareTo("SingleEl_Data") == 0)
      return kBlack;
    else if (channelName.CompareTo("SingleMu_Data") == 0)
