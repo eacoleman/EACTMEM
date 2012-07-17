@@ -18,7 +18,7 @@ using namespace std;
 
 int main()
 {
-   BackgroundEstimator testBGEst("electron", "MET", "electron.root", "RebinTest_el_MET.root");
+   BackgroundEstimator testBGEst("muon", "MET", "outputFile_muon.root", "RebinTest_el_MET.root");
    
    vector<double> parameterZero;
    vector<double> parameterOne;
