@@ -10,7 +10,7 @@
 #pragma link off all nestedclasses;
 
 #pragma link C++ class PhysicsProcessNEW+;
-#pragma link C++ class ColoredPhysicsProcessNEW+;
+#pragma link C++ class PlotterPhysicsProcessNEW+;
 #pragma link C++ class Plot+;
 #pragma link C++ class FormattedPlot+;
 #pragma link C++ class PlotMap+;
