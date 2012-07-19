@@ -234,29 +234,54 @@ int main(int argc, char* argv[]){
 
 
   ///HWW:
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 170));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 180));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 190));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 200));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 250));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 300));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 350));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 400));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 450));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 500));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 550));
-  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 600));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 110));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 115));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 120));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 122));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 123));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 124));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 125));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 126));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 127));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 128));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 130));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 135));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 140));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 170));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 180));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 190));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 200));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 250));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 300));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 350));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 400));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 450));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 500));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 550));
+  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 600));
 
 
-//   ///WH:
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 115));
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 120));
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 125));
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 130));
-//   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
-
+  ///WH:
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 110));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 115));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 120));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 122));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 123));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 124));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 125));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 126));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 127));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 128));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 130));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 140));
+  //eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 150));
+  
+  ///VBF H:
+  //eventProbs2jet.push_back();
+  
 
   // ***************************
   // **** Loading into MEJob
