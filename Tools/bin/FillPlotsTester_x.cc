@@ -194,37 +194,37 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   vector <PhysicsProcessNEW*> procs;
   
 
-  procs.push_back(new ColoredPhysicsProcessNEW("WJets",basePath+"WJets/PS.root", getCrossSection("WJets"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WJets",basePath+"WJets/PS.root", getCrossSection("WJets"),
 					       1.045*intLum, getNumMCEvts("WJets"), getProcessColor("WJets")));
-  procs.push_back(new ColoredPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
 					       intLum, getNumMCEvts("WW"), getProcessColor("WW")));
-  procs.push_back(new ColoredPhysicsProcessNEW("WZ",basePath+"WZ/PS.root", getCrossSection("WZ"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WZ",basePath+"WZ/PS.root", getCrossSection("WZ"),
 					       intLum, getNumMCEvts("WZ"), getProcessColor("WZ")));
-  procs.push_back(new ColoredPhysicsProcessNEW("DYJets",basePath+"DYJets/PS.root", getCrossSection("DYJets"),
+  procs.push_back(new PlotterPhysicsProcessNEW("DYJets",basePath+"DYJets/PS.root", getCrossSection("DYJets"),
 					       intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
-  procs.push_back(new ColoredPhysicsProcessNEW("TTbar",basePath+"TTbar/PS.root", getCrossSection("TTbar"),
+  procs.push_back(new PlotterPhysicsProcessNEW("TTbar",basePath+"TTbar/PS.root", getCrossSection("TTbar"),
 					       intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
   //here 
   ///////////////   QCD new code
-  procs.push_back(new ColoredPhysicsProcessNEW("QCD", basePath+"QCD/PS.root", getCrossSection("QCD_Pt20_MuEnriched"),
+  procs.push_back(new PlotterPhysicsProcessNEW("QCD", basePath+"QCD/PS.root", getCrossSection("QCD_Pt20_MuEnriched"),
 					       0.754*intLum, getNumMCEvts("QCD"), getProcessColor("QCD"))); //QCD_Pt20_MuEnriched
-  procs.push_back(new ColoredPhysicsProcessNEW("STopT_T",basePath+"STopT_T/PS.root", getCrossSection("STopT_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T",basePath+"STopT_T/PS.root", getCrossSection("STopT_T"),
 					       intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
-  //   procs.push_back(new ColoredPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
+  //   procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
   //                            getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
   //                            getProcessColor("STopT_Tbar")));
-  procs.push_back(new ColoredPhysicsProcessNEW("STopS_T",basePath+"STopS_T/PS.root", getCrossSection("STopS_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T",basePath+"STopS_T/PS.root", getCrossSection("STopS_T"),
 			   intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T")));
-  procs.push_back(new ColoredPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar/PS.root",
+  procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar/PS.root",
 			   getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
 			   getProcessColor("STopS_Tbar")));
-  procs.push_back(new ColoredPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T/PS.root",
+  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T/PS.root",
 			   getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
 			   getProcessColor("STopTW_T")));
-  procs.push_back(new ColoredPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar/PS.root", 
+  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar/PS.root", 
 			   getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
 			   getProcessColor("STopTW_Tbar")));
-  procs.push_back(new ColoredPhysicsProcessNEW("H125",basePath+"H125/PS.root", 
+  procs.push_back(new PlotterPhysicsProcessNEW("H125",basePath+"H125/PS.root", 
                                                getCrossSection("WH125"), intLum, getNumMCEvts("WH125"),
                                                getProcessColor("H125"), "PS/jets2"));
   
@@ -237,12 +237,12 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
 
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
-    procs.push_back(new ColoredPhysicsProcessNEW("SingleEl_Data",basePath+"SingleEl_Data/PS.root",
+    procs.push_back(new PlotterPhysicsProcessNEW("SingleEl_Data",basePath+"SingleEl_Data/PS.root",
 			     1./intLum, intLum, 1,
 			     getProcessColor("SingleEl_Data"))); 
 
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
-    procs.push_back(new ColoredPhysicsProcessNEW("SingleMu_Data",basePath+"SingleMu_Data/PS.root",
+    procs.push_back(new PlotterPhysicsProcessNEW("SingleMu_Data",basePath+"SingleMu_Data/PS.root",
 			     1./intLum, intLum, 1,
 			     getProcessColor("SingleMu_Data")));
  

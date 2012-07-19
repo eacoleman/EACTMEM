@@ -11,11 +11,13 @@
 
 #include <iostream>
 
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
+
 class PhysicsProcessNEW
 {
 public:
    PhysicsProcessNEW(std::string procName,
-                     std::string fileName,
+                     std::string fileNameTEMP,
                      double cross_section,
                      double lum, 
                      unsigned int in_ev,
@@ -25,6 +27,8 @@ public:
    
    // The given name of the process
    TString  name;
+   // The file path of the process
+   TString  fileName;
    // The pointer to the file's TChain
    TChain* chain;
    // The production cross section
@@ -35,19 +39,22 @@ public:
    unsigned int initial_events;
 };
 
-class ColoredPhysicsProcessNEW: public PhysicsProcessNEW
+class PlotterPhysicsProcessNEW: public PhysicsProcessNEW
 {
 public:
-   ColoredPhysicsProcessNEW(std::string procName,
-                            std::string fileName,
+   PlotterPhysicsProcessNEW(std::string procName,
+                            std::string fileNameTEMP,
                             double cross_section,
                             double lum, 
                             unsigned int in_ev,
                             int col,
-                            std::string treeName = "PS/EvtTree");
+                            std::string treeName = "PS/EvtTree",
+                            DEFS::LeptonCat lepCat = DEFS::both);
    
    // the color used to draw this process
    int color;
+   // The lepton this process is for (default is both)
+   DEFS::LeptonCat leptonCat;
 };
 
 #endif

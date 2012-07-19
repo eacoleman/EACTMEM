@@ -14,19 +14,19 @@ using namespace std;
 // ##################################################
 
 PhysicsProcessNEW::PhysicsProcessNEW (string procName,
-                                      string fileName,
+                                      string fileNameTEMP,
                                       double cross_section,
                                       double lum, 
                                       unsigned int in_ev,
                                       string treeName):
    name(procName),
+   fileName(fileNameTEMP),
    chain (0),
    sigma(cross_section),
    intLum(lum),
    initial_events(in_ev)
 {
-  
-   TFile * file = TFile::Open(fileName.c_str());
+   TFile * file = TFile::Open(fileName);
    if (!file->IsOpen())
    {
       cout << "ERROR proc::proc() could not open file " << fileName << endl;
@@ -51,15 +51,17 @@ PhysicsProcessNEW::PhysicsProcessNEW (string procName,
 // ############ COLORED PHYSICS PROCESS #############
 // ##################################################
 
-ColoredPhysicsProcessNEW::ColoredPhysicsProcessNEW (string procName,
-                                                    string fileName,
+PlotterPhysicsProcessNEW::PlotterPhysicsProcessNEW (string procName,
+                                                    string fileNameTEMP,
                                                     double cross_section,
                                                     double lum, 
                                                     unsigned int in_ev,
                                                     int col,
-                                                    string treeName):
-   PhysicsProcessNEW(procName, fileName, cross_section, lum, in_ev, treeName),
-   color(col)
+                                                    string treeName,
+                                                    DEFS::LeptonCat lepCat):
+   PhysicsProcessNEW(procName, fileNameTEMP, cross_section, lum, in_ev, treeName),
+   color(col),
+   leptonCat(lepCat)
 {
    
 }
