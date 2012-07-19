@@ -351,6 +351,8 @@ namespace DEFS {
       return "electron";
     else if (type == muon)
       return "muon";
+    else if (type == both)
+       return "both";
 
     cout<<"ERROR in DEFS::getLeptonCatString type="<<type<<" not defined"<<endl;
 
