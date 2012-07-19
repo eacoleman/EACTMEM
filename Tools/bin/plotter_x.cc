@@ -444,70 +444,69 @@ pair<double,double> UserFunctions::onVsOffShellInclusive(EventNtuple * ntuple)
    vector<pair<int,int> > W;  //first = category, second = position
    int lc = 0; //lepton counter
    int qc = 0; //quark counter
-   
    for (unsigned int i=0; i<ntuple->genParticleCollection.size(); i++) {
       if (abs(ntuple->genParticleCollection[i].pdgId)!=25)
-         continue;
+	continue;
       else {
-         if (verbose) 
-            cout << "H->";
-         for (unsigned int j=0; j<ntuple->genParticleCollection[i].daughterPositions.size(); j++) {
-            if (abs(ntuple->genParticleCollection[ntuple->genParticleCollection[i].daughterPositions[j]].pdgId)==24) {
-               if (verbose) 
-                  cout << "W";
-               W.push_back(make_pair(3,ntuple->genParticleCollection[i].daughterPositions[j]));
-            }
-         } //loop through the daughters of the Higgs
-         if (verbose)
-            cout << "->";
-         for (unsigned int j=0; j<W.size() && W.size()==2; j++) {
-            lc = 0;
-            qc = 0;
-            for (unsigned int k=0; k<ntuple->genParticleCollection[W[j].second].daughterPositions.size(); k++) {
-               if (W[j].first==2)
-                  continue;
-               else if (leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==0) {
-                  lc++;
-               }
-               else if (leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==1) {
-                  qc++;
-               }
-               if (ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId!=0)
-                  if (verbose)
-                     cout << ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId \
-                          << ",";
-            } //loop through the daughters of the W
-            if (lc==2 && qc==0)
-               W[j].first = 0;
-            else if (lc==0 && qc==2)
-               W[j].first = 1;
-            else if (lc>0 && qc>0)
-               W[j].first = 2;
-            else {
-               cout << "Something is wonky!!!" << endl;
-               W[j].first = 3;
-            }
-         } //loop through all of the W
-         if (verbose)
-            cout << endl;
+	if (verbose) 
+	  cout << "H->";
+	for (unsigned int j=0; j<ntuple->genParticleCollection[i].daughterPositions.size(); j++) {
+	  if (ntuple->genParticleCollection[i].daughterPositions[j]<=500 && abs(ntuple->genParticleCollection[ntuple->genParticleCollection[i].daughterPositions[j]].pdgId)==24) {
+	    if (verbose) 
+	      cout << "W";
+	    W.push_back(make_pair(3,ntuple->genParticleCollection[i].daughterPositions[j]));
+	  }
+	} //loop through the daughters of the Higgs
+	if (verbose)
+	  cout << "->";
+	for (unsigned int j=0; j<W.size() && W.size()==2; j++) {
+	  lc = 0;
+	  qc = 0;
+	  for (unsigned int k=0; k<ntuple->genParticleCollection[W[j].second].daughterPositions.size(); k++) {
+	    if (W[j].first==2)
+	      continue;
+	    else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==0) {
+	      lc++;
+	    }
+	    else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==1) {
+	      qc++;
+	    }
+	    if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId!=0)
+	      if (verbose)
+		cout << ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId
+		     << ",";
+	  } //loop through the daughters of the W
+	  if (lc==2 && qc==0)
+	    W[j].first = 0;
+	  else if (lc==0 && qc==2)
+	    W[j].first = 1;
+	  else if (lc>0 && qc>0)
+	    W[j].first = 2;
+	  else {
+	    cout << "Something is wonky!!!" << endl;
+	    W[j].first = 3;
+	  }
+	} //loop through all of the W
+	if (verbose)
+	  cout << endl;
       } //find the Higgs
    } //loop through the gen particles
    
    if (W.size()==0) {
-      //cout << "WARNING::No W decaying from a Higgs was found." << endl;
-      return make_pair(0.0,0.0);
+     //cout << "WARNING::No W decaying from a Higgs was found." << endl;
+     return make_pair(0.0,0.0);
    }
    else if (W[0].first==0 && W[1].first==1)
-      return make_pair(ntuple->genParticleCollection[W[1].second].p4.M(),
-                       ntuple->genParticleCollection[W[0].second].p4.M());
+     return make_pair(ntuple->genParticleCollection[W[1].second].p4.M(),
+		      ntuple->genParticleCollection[W[0].second].p4.M());
    else if (W[0].first==1 && W[1].first==0)
-      return make_pair(ntuple->genParticleCollection[W[0].second].p4.M(),
-                       ntuple->genParticleCollection[W[1].second].p4.M());
+     return make_pair(ntuple->genParticleCollection[W[0].second].p4.M(),
+		      ntuple->genParticleCollection[W[1].second].p4.M());
    else {
-      cout << "WARNING::Unable to determine which W is hadronic and which W is leptonic." << endl
-           << "W[0].first = " << W[0].first << "\tW1[].first = " << W[1].first << endl
-           << "W[0].second = " << W[0].second << "\tW1[].second = " << W[1].second << endl;
-      return make_pair(0.0,0.0);
+     cout << "WARNING::Unable to determine which W is hadronic and which W is leptonic." << endl
+	  << "W[0].first = " << W[0].first << "\tW1[].first = " << W[1].first << endl
+	  << "W[0].second = " << W[0].second << "\tW1[].second = " << W[1].second << endl;
+     return make_pair(0.0,0.0);
    }
 }
 
@@ -738,6 +737,7 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar/PS.root", 
                                                getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
                                                getProcessColor("STopTW_Tbar")));
+
   procs.push_back(new PlotterPhysicsProcessNEW("ggH125",basePath+"ggH125/PS.root", 
                                                getCrossSection("ggH125")*getBranchingRatio("ggH125"), intLum, getNumMCEvts("ggH125"),
                                                getProcessColor("ggH125"), "PS/jets2"));
