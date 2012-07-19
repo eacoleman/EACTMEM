@@ -9,6 +9,7 @@
 
 // TAMU Libraries
 #include "TAMUWW/Tools/interface/BackgroundEstimator.hh"
+#include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 
 // Root Libraries
 #include "TH1.h"
@@ -16,9 +17,21 @@
 
 using namespace std;
 
-int main()
+int main(int argc,char**argv)
 {
-   BackgroundEstimator testBGEst("muon", "MET", "outputFile_muon.root", "RebinTest_el_MET.root");
+   CommandLine cl;
+   if (!cl.parse(argc,argv)) return 0;
+
+   string leptonCL     = cl.getValue<string> ("lepton",        "");
+   string objectCL     = cl.getValue<string> ("object",        "");
+   string inFileLocCL  = cl.getValue<string> ("readLocation",  "");
+   string outFileLocCL = cl.getValue<string> ("writeLocation", "");
+   
+   if (!cl.check()) 
+      return 0;
+   cl.print();
+   
+   BackgroundEstimator testBGEst(leptonCL, objectCL, inFileLocCL, outFileLocCL);
    
    vector<double> parameterZero;
    vector<double> parameterOne;

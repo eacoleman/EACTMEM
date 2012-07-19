@@ -89,7 +89,15 @@ void BackgroundEstimator::readHistograms()
    {
       string name = histNames[i];
       
-      Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
+      if(name == "QCD")
+      {
+         if(leptonName == "electron")
+            Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_ElEnriched").c_str());
+         else
+            Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_MuEnriched").c_str());
+      }
+      else
+         Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
       
       if (debug)
          Histograms::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
@@ -110,7 +118,7 @@ void BackgroundEstimator::fitHistograms()
 {
    const double* parameters = fitAndReturnParameters();
    
-   Histograms::monteCarloHistograms["QCD_MuEnriched"]->Scale(parameters[0]);
+   Histograms::monteCarloHistograms["QCD"]->Scale(parameters[0]);
    Histograms::monteCarloHistograms["WJets"]->Scale(parameters[1]);
    
    mcStack->Modified();
@@ -135,7 +143,7 @@ void BackgroundEstimator::writeHistograms()
    TPad* inputPad;
    THStack* inputMCStack;
    TList* inputMCList;
-   TH1D* histQCD_MuEnriched;
+   TH1D* histQCD;
    TH1D* histWJets;
    
    for(unsigned int i = 0; i < plotPrefixes.size(); i++)
@@ -147,10 +155,15 @@ void BackgroundEstimator::writeHistograms()
       inputMCStack = (THStack*) inputPad->GetPrimitive((prefix + "_stackMC").c_str());
       inputMCList = inputMCStack->GetHists();
       
-      histQCD_MuEnriched = (TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched").c_str());
+      if(leptonName == "electron")
+         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched").c_str());
+      else if (leptonName == "muon")
+         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched").c_str());
+      else
+         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD").c_str());
       histWJets = (TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str());
       
-      histQCD_MuEnriched->Scale(scaleParameters.first);
+      histQCD->Scale(scaleParameters.first);
       histWJets->Scale(scaleParameters.second);
       
       inputMCStack->Modified();
@@ -216,7 +229,7 @@ void BackgroundEstimator::initializeHistNames()
    histNames.push_back("WJets");
    histNames.push_back("DYJets");
    histNames.push_back("TTbar");
-   histNames.push_back("QCD_MuEnriched");
+   histNames.push_back("QCD");
    histNames.push_back("ggH125");
 }
 
@@ -319,10 +332,10 @@ double BackgroundEstimator::fitFunc(const double *par)
       double data = 0;
       double dataError2 = 0;
       
-      mc += par[0]*Histograms::monteCarloHistograms["QCD_MuEnriched"]->GetBinContent(bin);
+      mc += par[0]*Histograms::monteCarloHistograms["QCD"]->GetBinContent(bin);
       mc += par[1]*Histograms::monteCarloHistograms["WJets"]->GetBinContent(bin);
       
-      mcError2 += pow(par[0]*Histograms::monteCarloHistograms["QCD_MuEnriched"]->GetBinError(bin), 2);
+      mcError2 += pow(par[0]*Histograms::monteCarloHistograms["QCD"]->GetBinError(bin), 2);
       mcError2 += pow(par[1]*Histograms::monteCarloHistograms["WJets"]->GetBinError(bin), 2);
       
       data += Histograms::dataHistogram->GetBinContent(bin);
@@ -330,7 +343,7 @@ double BackgroundEstimator::fitFunc(const double *par)
    
       for(map<string, TH1D*>::iterator it = Histograms::monteCarloHistograms.begin(); it != Histograms::monteCarloHistograms.end(); it++)
       {
-         if( ((*it).first != "QCD_MuEnriched") && ((*it).first != "WJets") )
+         if( ((*it).first != "QCD") && ((*it).first != "WJets") )
          {
             mc += (*it).second->GetBinContent(bin);
             mcError2 += pow((*it).second->GetBinError(bin), 2);
