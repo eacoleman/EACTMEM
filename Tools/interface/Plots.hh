@@ -11,6 +11,7 @@
 
 // Our libraries
 #include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/Defs.hh"
 
 // C++ libraries
 #include <string>
@@ -76,8 +77,16 @@ public:
    // Make the canvas here
    TCanvas* getCanvas(std::vector<PhysicsProcessNEW*> procs);
    
+   // Do the grouping of the histograms according to some rules.
+   // For example join all histos for singleTop into a single one, 
+   // also WW and WZ are usually put together...
+   std::vector<TH1*> doGrouping(std::vector<PhysicsProcessNEW*> procs);
+   
    std::vector<std::string> axisTitles;
    std::pair<double,double> range;
+   
+   // The lepton that this plot is for
+   DEFS::LeptonCat leptonCat;
 
 private:
    // Take care of the formatting

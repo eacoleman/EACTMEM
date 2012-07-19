@@ -82,12 +82,12 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
    double totalMC = 0;
    for (unsigned int p = 0 ; p < procs.size() ; p++)
    {
-      cout << "Normalizing to luminosity and cross section..." << endl;
+      //cout << "Normalizing to luminosity and cross section..." << endl;
       
       // This works for MC and data as well.
       histos[p]->Scale(procs[p]->getScaleFactor());
 
-      cout<<" histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl;
+      //cout<<" histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl;
 
       TString hName = histos[p]->GetTitle();
       hName.ToUpper();
@@ -100,7 +100,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
    // If norm to data do the scaling of the all the MC to the data
    if (normToData)
    {
-      cout<<"Normalizing to data..."<<endl;
+      //cout<<"Normalizing to data..."<<endl;
       
       if (totalData == 0)
       {
@@ -109,7 +109,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
          return;
       }
       
-      cout<<" totalData = "<<totalData<<"  totalMC = "<<totalMC<<endl;
+      //cout<<" totalData = "<<totalData<<"  totalMC = "<<totalMC<<endl;
       
       for (unsigned int p = 0 ; p < procs.size() ; p++)
       {
@@ -121,7 +121,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
          if (!hName.Contains("DATA") )
             histos[p]->Scale(totalData/totalMC);
          
-         cout<<"AfterNorm histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl; 
+         //cout<<"AfterNorm histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl; 
       }
     
    }
@@ -157,7 +157,7 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
    for (unsigned int h=0; h < histos.size(); h ++)
    {
       TString hName = histos[h]->GetTitle();
-
+      
       if (hName.Contains("STopT_Tbar")  ||
           hName.Contains("STopT_T")     ||
           hName.Contains("STopTW_Tbar") ||
@@ -395,13 +395,98 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    return can;
 }
 
+// ------------------------------------------------------------
+// This groups all the histograms that need grouping.
+// Typically all the Single tops and Dibosons
+vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
+{
+   // The returning vector
+   vector<TH1*> groups;
+   if (procs.size()  != histos.size() )
+   {
+      cout<<"ERROR Plot::doGrouping procs.size()="<<procs.size()
+          <<" is different than histos.size()="<<histos.size()<<endl;
+      cout<<"\t Returning NO groups!"<<endl;
+      return groups;
+   }
+
+   // The grouped ones
+   TH1 * stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
+   stop->SetTitle("STop");
+   stop->Sumw2();
+   TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
+   dibo->SetTitle("WW+WZ");
+   dibo->Sumw2();
+   
+   // Loop over histos grouping around
+   for (unsigned int h=0; h < histos.size(); h ++)
+   {
+      TString hName = histos[h]->GetTitle();
+      
+      // Skip this histogram if it is the wrong lepton category
+      if(hName.Contains("electron") && leptonCat == DEFS::muon)
+         continue;
+      if(hName.Contains("muon") && leptonCat == DEFS::electron)
+         continue;
+      
+      if (hName.Contains("STopT_Tbar")  ||
+          hName.Contains("STopT_T")     ||
+          hName.Contains("STopTW_Tbar") ||
+          hName.Contains("STopTW_T")    ||
+          hName.Contains("STopS_Tbar")  ||
+          hName.Contains("STopS_T")     )
+      {
+         // if first time set the attributes
+         if (stop->GetEntries()==0)
+         {
+            stop->SetLineColor(histos[h]->GetLineColor());
+            stop->SetFillColor(histos[h]->GetFillColor());
+            stop->SetMarkerColor(histos[h]->GetMarkerColor());
+         }
+         
+         // add to single top
+         stop->Add(histos[h]);
+         
+      }
+      else if (hName.Contains("WW") ||
+                hName.Contains("WZ")  )
+      {
+
+         // if first time set the attributes
+         if (dibo->GetEntries()==0)
+         {
+            dibo->SetLineColor(histos[h]->GetLineColor());
+            dibo->SetFillColor(histos[h]->GetFillColor());
+            dibo->SetMarkerColor(histos[h]->GetMarkerColor());
+         }
+
+         // add to diboson
+         dibo->Add(histos[h]);
+
+      }
+      else
+      {
+         // add as an independent process.
+         groups.push_back(histos[h]);
+      }
+   }
+
+   // Add the diboson and single top if they were present
+   if (stop->GetEntries() >0)  groups.insert(groups.begin(), stop);
+   if (dibo->GetEntries() >0)  groups.insert(groups.begin(), dibo);
+
+   // return the groupedHistos
+   return groups;
+
+}
+
 void FormattedPlot::formatColors(vector<PhysicsProcessNEW*> procs)
 {
    for(unsigned int i = 0; i < procs.size(); i++)
    {
-      histos[i]->SetLineColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
-      histos[i]->SetMarkerColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
-      histos[i]->SetFillColor(((ColoredPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetLineColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetMarkerColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetFillColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
       
       TString pname = procs[i]->name;
       pname.ToUpper();
