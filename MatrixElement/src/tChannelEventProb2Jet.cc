@@ -279,6 +279,25 @@ void tChannelEventProb2Jet::setPartonTypes() const
    }
 }
 
+void tChannelEventProb2Jet::setJetTypes()
+{
+
+  if ( getPartonColl()->getLepCharge() > 0 ) {
+    m_JetType[0]=kBottom;
+    m_JetType[1]=kDown;
+  } else {
+    m_JetType[0]=kAntiBottom;
+    m_JetType[1]=kUp;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
 // ------------------------------------------------------------------
 void tChannelEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
@@ -320,15 +339,18 @@ bool tChannelEventProb2Jet::onSwitch()
   case 0:
     //swapPartonMom=true; //when testing alternate functions
     swapPartonMom=false; 
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

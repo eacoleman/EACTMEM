@@ -323,6 +323,25 @@ void WLgSubleadingEventProb2Jet::setPartonTypes() const
 
 }
 
+void WLgSubleadingEventProb2Jet::setJetTypes()
+{
+
+  if ( getPartonColl()->getLepCharge() > 0 ) {
+    m_JetType[0]=kAntiUp;
+    m_JetType[1]=kGluon;
+  } else {
+    m_JetType[0]=kAntiDown;
+    m_JetType[1]=kGluon;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
 // ------------------------------------------------------------------
 void WLgSubleadingEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
@@ -352,16 +371,19 @@ bool WLgSubleadingEventProb2Jet::onSwitch()
   switch (getLoop()) {
   case 0:
     //swapPartonMom=true; //when testing alternate functions
-    swapPartonMom=false; 
+    swapPartonMom=false;
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

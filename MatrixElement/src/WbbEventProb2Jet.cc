@@ -242,8 +242,20 @@ void WbbEventProb2Jet::setPartonTypes() const
       getMeasuredColl()->setParton1Type(kAntiUp);
       getMeasuredColl()->setParton2Type(kDown);
     }
-
    }
+
+}
+
+void WbbEventProb2Jet::setJetTypes()
+{
+  m_JetType[0]=kBottom;
+  m_JetType[1]=kAntiBottom;
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
 }
 
 // ------------------------------------------------------------------
@@ -264,16 +276,19 @@ bool WbbEventProb2Jet::onSwitch()
   switch (getLoop()) {
   case 0:
     //swapPartonMom=true; //when testing alternate functions
-    swapPartonMom=false; 
+    swapPartonMom=false;
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

@@ -227,6 +227,27 @@ void sChannelEventProb2Jet::setPartonTypes() const
   }
 }
 
+void sChannelEventProb2Jet::setJetTypes()
+{
+
+  if ( getPartonColl()->getLepCharge() > 0 ) {
+    m_JetType[0]=kBottom;
+    m_JetType[1]=kAntiBottom;
+  } else {
+    m_JetType[0]=kAntiBottom;
+    m_JetType[1]=kBottom;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
+
+
 void sChannelEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
 //   scale1 = scale2 = m_massTop;
@@ -245,15 +266,18 @@ bool sChannelEventProb2Jet::onSwitch()
   case 0:
     //swapPartonMom=true; //when testing alternate functions
     swapPartonMom=false; 
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

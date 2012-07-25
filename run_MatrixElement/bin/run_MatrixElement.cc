@@ -202,9 +202,11 @@ int main(int argc, char* argv[]){
 //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
 //   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
 //   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+//   ////Tests:
+//   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
+//   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
 
-
-  ///Diboson:
+  //Diboson:
   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));
@@ -247,20 +249,28 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 130));
   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 135));
   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 140));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 170));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 180));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 190));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 200));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 250));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 300));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 350));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 400));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 450));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 500));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 550));
-  //eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 600));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 170));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 180));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 190));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 200));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 250));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 300));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 350));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 400));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 450));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 500));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 550));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 600));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 650));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 700));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 750));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 800));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 850));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 900));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 950));
+  eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 1000));
 
 
   ///WH:
@@ -277,7 +287,7 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 130));
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 140));
-  //eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 150));
+  eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 150));
   
   ///VBF H:
   //eventProbs2jet.push_back();

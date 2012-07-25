@@ -638,6 +638,41 @@ void WLLEventProb2Jet::setPartonTypes() const
 
 }
 
+void WLLEventProb2Jet::setJetTypes()
+{
+  if ( initialStateConfiguration==1 ) {
+    if ( getPartonColl()->getLepCharge() > 0 ) {
+      m_JetType[0]=kAntiUp;
+      m_JetType[1]=kDown;
+    } else {
+      m_JetType[0]=kUp;
+      m_JetType[1]=kAntiDown;
+    }
+  } else {
+    if ( initialStateConfiguration==2 ) {
+      m_JetType[0]=kUp;
+      m_JetType[1]=kDown;
+    } else {
+      if ( initialStateConfiguration==3 ) {
+	if ( getPartonColl()->getLepCharge() > 0 ) {
+	  m_JetType[0]=kDown;
+	  m_JetType[1]=kDown;
+	} else {
+	  m_JetType[0]=kUp;
+	  m_JetType[1]=kUp;
+	}
+      }
+    }
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
 
 // ------------------------------------------------------------------
 void WLLEventProb2Jet::getScale(double& scale1, double& scale2) const
@@ -658,15 +693,18 @@ bool WLLEventProb2Jet::onSwitch()
   case 0:
     //swapPartonMom=true; //when testing alternate functions
     initialStateConfiguration=1;
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     initialStateConfiguration=2;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   case 4:
     initialStateConfiguration=3;
@@ -674,12 +712,14 @@ bool WLLEventProb2Jet::onSwitch()
     break;
   case 5:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 6:
     swapPartonMom=true;
     break;
   case 7:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

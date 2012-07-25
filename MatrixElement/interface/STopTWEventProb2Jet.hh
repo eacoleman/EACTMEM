@@ -17,6 +17,7 @@ class STopTWEventProb2Jet : public EventProb2Jet, public topEventProb
       virtual double matrixElement() const;
       virtual double phaseSpace() const;
       virtual void setPartonTypes() const;
+      virtual void setJetTypes();
       virtual void getScale(double& scale1, double& scale2) const;
       virtual bool onSwitch();
   //virtual double totalTF() const;

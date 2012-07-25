@@ -255,7 +255,26 @@ void WZEventProb2Jet::setPartonTypes() const
        getMeasuredColl()->setParton2Type(kDown);
      }
    }
+
 }
+
+void WZEventProb2Jet::setJetTypes()
+{
+  if ( swapQuarkFlavor==false ) {
+    m_JetType[0]=kUp;
+    m_JetType[1]=kAntiUp;
+  } else {
+    m_JetType[0]=kDown;
+    m_JetType[1]=kAntiDown;
+  }
+  
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+}
+
 
 void WZEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
@@ -272,18 +291,21 @@ bool WZEventProb2Jet::onSwitch()
   switch (getLoop()) {
   case 0:
     swapQuarkFlavor=false;
-    swapPartonMom=false; 
+    swapPartonMom=false;
+    setSwapJet0Jet1Status(false);
     //swapPartonMom=true; //when testing alternate functions
     //swapQuarkFlavor=true; //when testing with dd~ instead of uu~
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   case 4:
     swapQuarkFlavor=true;
@@ -291,12 +313,14 @@ bool WZEventProb2Jet::onSwitch()
     break;
   case 5:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 6:
     swapPartonMom=true;
     break;
   case 7:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

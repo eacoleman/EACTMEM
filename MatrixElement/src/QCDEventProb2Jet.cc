@@ -34,7 +34,7 @@ using std::endl;
 #ifdef MADGRAPH_TEST
 extern "C"
 {
-  void* ggggm_(double[][4], const double*, const double*, double*); // lepQ>0 or lepQ<0 ( g u -> e+ e- u g  )
+  void* ggggm_(double[][4], const double*, const double*, double*); // lepQ>0 or lepQ<0 
 }
 #endif
 
@@ -154,6 +154,21 @@ void QCDEventProb2Jet::setPartonTypes() const
   getMeasuredColl()->setParton2Type(kGluon);
 }
 
+void QCDEventProb2Jet::setJetTypes()
+{
+
+  m_JetType[0]=kGluon;
+  m_JetType[1]=kGluon;
+
+//   if ( getSwappedJet0Jet1Status() ) {
+//     int tempType=m_JetType[0];
+//     m_JetType[0]=m_JetType[1];
+//     m_JetType[1]=tempType;
+//   }
+
+}
+
+
 void QCDEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
    double scale = getPartonColl()->sHat();
@@ -168,9 +183,11 @@ bool QCDEventProb2Jet::onSwitch()
 
   switch (getLoop()) {
   case 0:
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   default:
     return false;
