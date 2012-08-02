@@ -54,42 +54,42 @@ void modifyEPDCoefficients(ProbsForEPD & EPDcoeffs, double maxPower,
     EPDcoeffs.hww    *= multiplier; 
     break;
   case 2:
-    EPDcoeffs.schan  *= multiplier;
+    EPDcoeffs.stop  *= multiplier;
     break;
   case 3:
-    EPDcoeffs.tchan  *= multiplier;
+    EPDcoeffs.twchan  *= multiplier;
     break;
+//   case 4:
+//     EPDcoeffs.tchan2 *= multiplier;
+//     break;
   case 4:
-    EPDcoeffs.tchan2 *= multiplier;
-    break;
-  case 5:
     EPDcoeffs.tt     *= multiplier;
     break;
+  case 5:
+    EPDcoeffs.wjets *= multiplier; 
+    break;
   case 6:
-    EPDcoeffs.wlight *= multiplier; 
+    EPDcoeffs.zjets *= multiplier;
     break;
+//   case 8:
+//     EPDcoeffs.wbb    *= multiplier;
+//     break;
+//   case 9:
+//     EPDcoeffs.wc     *= multiplier;
+//     break;
+//   case 10:
+//     EPDcoeffs.wgg    *= multiplier;
+//     break;
   case 7:
-    EPDcoeffs.zlight *= multiplier;
-    break;
-  case 8:
-    EPDcoeffs.wbb    *= multiplier;
-    break;
-  case 9:
-    EPDcoeffs.wc     *= multiplier;
-    break;
-  case 10:
-    EPDcoeffs.wgg    *= multiplier;
-    break;
-  case 11:
     EPDcoeffs.ww     *= multiplier;
     break;
-  case 12:
+  case 8:
     EPDcoeffs.wz     *= multiplier;
     break;
-  case 13:
-    EPDcoeffs.zz     *= multiplier;
-    break;
-  case 14:
+//   case 13:
+//     EPDcoeffs.zz     *= multiplier;
+//     break;
+  case 9:
     EPDcoeffs.qcd    *= multiplier;
     break;
 
@@ -157,18 +157,18 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
   ProbsForEPD normEPDcoeffs(
 			    1./0.35e-09, // wh    115 GeV 
 			    1./0.50e-10, // hww    
-			    1./0.22e-07, // schan  
-			    1./0.45e-06, // tchan  
-			    0,           // tchan2 
+			    1./0.45e-06, // stop  
+			    1./0.22e-07, // twchan  
+			    //			    0,           // tchan2 
 			    1./0.003,    // tt     
-			    1./0.25e-03, // wlight  
-			    1./0.28e-05, // zlight 
-			    0,           // wbb    
-			    0,           // wc     
-			    0,           // wgg    
+			    1./0.25e-03, // wjets  
+			    1./0.28e-05, // zjets 
+// 			    0,           // wbb    
+// 			    0,           // wc     
+// 			    0,           // wgg    
 			    1./0.35e-06, // ww     
 			    1./0.35e-07, // wz     
-			    0,           // zz     
+			    //			    0,           // zz     
 			    1./0.1       // qcd    
 			    );
 

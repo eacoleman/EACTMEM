@@ -66,6 +66,7 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets,
   TTree* outputTree = chain.CloneTree(0);
   outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
 
+
   // Get the entries and report if zero
   unsigned nentries = static_cast<unsigned>(chain.GetEntries());
   cout << "\tOriginal chain has " << nentries << " entries" << endl;
@@ -82,6 +83,7 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets,
   for (unsigned ientry = 0; ientry < nentries; ++ientry){
 
     // get the entry
+    //cout << "Processing Entry Number " << ientry << endl;
     chain.GetEntry(ientry);
 
     // clear the microNtuple
@@ -90,47 +92,51 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets,
     // First copy all the event probabilities
     for (int i = 0; i < meNtuple->getNProbStat(); ++i){
       microNtuple->eventProb[i]    = meNtuple->getProbStat(i)->tEventProb;
-      microNtuple->eventMaxProb[i] = meNtuple->getProbStat(i)->tEventMaxProb;  
-    }    
+      //cout << "eventProb[i]=" << microNtuple->eventProb[i] << endl;
+      microNtuple->eventMaxProb[i] = meNtuple->getProbStat(i)->tEventMaxProb;
+      //cout << "eventMaxProb[i]=" << microNtuple->eventMaxProb[i] << endl;
+    } 
+    
     
     // Get the b-probabilites for each jet.
-    for (unsigned int bb = 0; bb < eventNtuple->jBtag.size(); bb++)
-      microNtuple->bProb[bb] = eventNtuple->jBtag[bb];
+    for (unsigned int bb = 0; bb < eventNtuple->jBtagSSV.size(); bb++)
+      microNtuple->bProb[bb] = eventNtuple->jBtagSSV[bb];
     
     // WWandWZ EPD, for 
     //      DEFS::pretag is calculated ignoring the number of tags or bProb's   
     //      DEFS::eqxTSV is calculated using the number of tags or bProb's,
     //                   and the only diff between them is the coefficients.
     microNtuple->epdPretagWWandWZ = microNtuple->calcWZEPD(DEFS::pretag);
-    microNtuple->epd0tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq0TSV);
-    microNtuple->epd1tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq1TSV);
-    microNtuple->epd2tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq2TSV);
 
-    // Make sure to do these last!
-    microNtuple->epd1tag      = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kCombined);
-    microNtuple->epd2tag      = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kCombined);
-    microNtuple->epd1tagSchan = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kSchan);
-    microNtuple->epd2tagSchan = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kSchan);
-    microNtuple->epd1tagTchan = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kTchan);
-    microNtuple->epd2tagTchan = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kTchan);
+//     microNtuple->epd0tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq0TSV);
+//     microNtuple->epd1tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq1TSV);
+//     microNtuple->epd2tagWWandWZ   = microNtuple->calcWZEPD(DEFS::eq2TSV);
 
-    // Loop over the WH masses
-    unsigned auxI = 0;
-    for (MicroNtuple::indexMap1::const_iterator it = indexMapWH.begin(); 
-	 it != indexMapWH.end(); it++){
-      microNtuple->epd1tagWH[auxI] = microNtuple->calcWHEPD(DEFS::eq1TSV, it->first);
-      microNtuple->epd2tagWH[auxI] = microNtuple->calcWHEPD(DEFS::eq2TSV, it->first);
-      auxI ++;
-    }//for 
+//     // Make sure to do these last!
+//     microNtuple->epd1tag      = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kCombined);
+//     microNtuple->epd2tag      = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kCombined);
+//     microNtuple->epd1tagSchan = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kSchan);
+//     microNtuple->epd2tagSchan = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kSchan);
+//     microNtuple->epd1tagTchan = microNtuple->calcSingleTopEPD(DEFS::eq1TSV, MicroNtuple::kTchan);
+//     microNtuple->epd2tagTchan = microNtuple->calcSingleTopEPD(DEFS::eq2TSV, MicroNtuple::kTchan);
 
-    // Loop over the H->WW masses
-    auxI = 0;
-    for (MicroNtuple::indexMap1::const_iterator it = indexMapHWW.begin(); 
-	 it != indexMapHWW.end(); it++){
-      microNtuple->epd1tagHWW[auxI] = microNtuple->calcHWWEPD(DEFS::eq1TSV, it->first);
-      microNtuple->epd2tagHWW[auxI] = microNtuple->calcHWWEPD(DEFS::eq2TSV, it->first);
-      auxI++;
-    }//for 
+//     // Loop over the WH masses
+//     unsigned auxI = 0;
+//     for (MicroNtuple::indexMap1::const_iterator it = indexMapWH.begin(); 
+// 	 it != indexMapWH.end(); it++){
+//       microNtuple->epd1tagWH[auxI] = microNtuple->calcWHEPD(DEFS::eq1TSV, it->first);
+//       microNtuple->epd2tagWH[auxI] = microNtuple->calcWHEPD(DEFS::eq2TSV, it->first);
+//       auxI ++;
+//     }//for 
+
+//     // Loop over the H->WW masses
+//     auxI = 0;
+//     for (MicroNtuple::indexMap1::const_iterator it = indexMapHWW.begin(); 
+// 	 it != indexMapHWW.end(); it++){
+//       microNtuple->epd1tagHWW[auxI] = microNtuple->calcHWWEPD(DEFS::eq1TSV, it->first);
+//       microNtuple->epd2tagHWW[auxI] = microNtuple->calcHWWEPD(DEFS::eq2TSV, it->first);
+//       auxI++;
+//     }//for 
 
     /*
     // Make sure this is not a duplicated event
@@ -143,12 +149,33 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets,
       outputTree->Fill();
     }
     */
+
     outputTree->Fill();
+
 
   }//for entries
 
 
-  // Report some results
+//   // Report some results
+//   TTree* flatTree;
+//   TObjArray *li = tempTree->GetListOfLeaves();
+//   int nent = li->GetSize();
+//   cout << "nent=" << nent << endl;
+//   for ( int i = 0; i<nent; i++ ) {
+//     if ( li->At(i)!=0 ) {
+//       cout << "i=" << i << " Name=" << li->At(i)->GetName() << endl;
+//       cout << "i=" << i << " Title=" << li->At(i)->GetTitle() << endl;
+//     //<< " Name=" << li->At(i)->GetName() << " Title=" << li->At(i)->GetTitle << endl;
+//       TString name=li->At(i)->GetName();
+//       TString title=li->At(i)->GetTitle();
+//       TObject *obj=li->At(i);
+//       cout << "x" << endl;
+//       flatTree->Branch(name,title, &name );
+//       cout << "y" << endl;
+//     }
+//   }
+
+  // outputTree = tempTree;
   cout << "\tWrote " << output << " with " << outputTree->GetEntries()
        << " entries" << endl;
   outputFile.Write();
@@ -363,7 +390,7 @@ public:
 // WARNING!!! is the microNtuple as bigger than 2Gs the code crashes
 void createAllMicroNtuples(){
 
-  string basePath="/uscms_data/d3/ilyao/Summer11/428Full/MEResults/";
+  string basePath="/uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/";
 
   //Input files for 2-jet bin
   string inputPath=basePath+"rootOutput/";
@@ -379,85 +406,48 @@ void createAllMicroNtuples(){
   //Create the list of MicroNtuples
   vector<MyStr> listOfMicroNtuples;
 
-//   /// Test Ntuples:
-//   listOfMicroNtuples.push_back(MyStr("WW_FullCutsV01DEF*","testmicroWW_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WpJ_FullCutsV01JESp1s*","testmicroWpJ_FullCutsV01JESp1s",false,false,false));
-
   ////Diboson
-  listOfMicroNtuples.push_back(MyStr("WW_StandardCutsDEF*","microWW_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WW_StandardCutsJESp1s*","microWW_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WW_StandardCutsJESm1s*","microWW_StandardCutsJESm1s",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsDEF*","microWZ_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsJESp1s*","microWZ_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WZ_StandardCutsJESm1s*","microWZ_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WW*","microWW_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WZ*","microWZ_EPDv01",false,false,false));
   
+
   //// Wjets, Zjets
-  listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsDEF*","microWpJ_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsJESp1s*","microWpJ_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WpJ_StandardCutsJESm1s*","microWpJ_StandardCutsJESm1s",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsDEF*","microZpJ_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsJESp1s*","microZpJ_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("ZpJ_StandardCutsJESm1s*","microZpJ_StandardCutsJESm1s",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("WJets*","microWJets_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("ZJets*","microZJets_EPDv01",false,false,false));
 
 
-  //// Top
-  listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsDEF*","microTTbar_MG_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsJESp1s*","microTTbar_MG_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("TTbar_MG_StandardCutsJESm1s*","microTTbar_MG_StandardCutsJESm1s",false,false,false));
-
-  listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsDEF*","microSTopT_T_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsJESp1s*","microSTopT_T_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_T_StandardCutsJESm1s*","microSTopT_T_StandardCutsJESm1s",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsDEF*","microSTopT_Tbar_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsJESp1s*","microSTopT_Tbar_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopT_Tbar_StandardCutsJESm1s*","microSTopT_Tbar_StandardCutsJESm1s",false,false,false));
-
-  listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsDEF*","microSTopS_T_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsJESp1s*","microSTopS_T_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_T_StandardCutsJESm1s*","microSTopS_T_StandardCutsJESm1s",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsDEF*","microSTopS_Tbar_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsJESp1s*","microSTopS_Tbar_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopS_Tbar_StandardCutsJESm1s*","microSTopS_Tbar_StandardCutsJESm1s",false,false,false));
-
-  listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsDEF*","microSTopTW_T_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsJESp1s*","microSTopTW_T_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_T_StandardCutsJESm1s*","microSTopTW_T_StandardCutsJESm1s",false,false,false));
-  listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsDEF*","microSTopTW_Tbar_StandardCutsDEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsJESp1s*","microSTopTW_Tbar_StandardCutsJESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("STopTW_Tbar_StandardCutsJESm1s*","microSTopTW_Tbar_StandardCutsJESm1s",false,false,false));
+  //// Top & QCD
+  listOfMicroNtuples.push_back(MyStr("TTbar*","microTTbar_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopT_T*","microSTopT_T_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("TbarSamples/STopT_Tbar*","microSTopT_Tbar_EPDv01",false,false,false));//The _Tbar samples need to be moved to a different directory in order to avoid merging them with the _T samples
+  listOfMicroNtuples.push_back(MyStr("STopS_T*","microSTopS_T_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("TbarSamples/STopS_Tbar*","microSTopS_Tbar_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("STopTW_T*","microSTopTW_T_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("TbarSamples/STopTW_Tbar*","microSTopTW_Tbar_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("QCD_Mu*","microQCD_Mu_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("QCD_El*","microQCD_El_EPDv01",false,false,false));
 
 
-
-//   //// QCD
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01DEF*","micro_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01JESp1s*","micro_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01JESm1s*","micro_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01DEF*","micro_FullCutsV01DEF",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01JESp1s*","micro_FullCutsV01JESp1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("_FullCutsV01JESm1s*","micro_FullCutsV01JESm1s",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("QCDMu_1472Evt*","micro_QCDMu_1472Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("QCDEl_Pt30to80_268Evt*","micro_QCDEl_Pt30to80_268Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("QCDEl_Pt80to170_29Evt*","micro_QCDEl_Pt80to170_29Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("QCDEl_BCtoE30to80_90Evt*","micro_QCDEl_BCtoE30to80_90Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("QCDEl_BCtoE80to170_75Evt*","micro_QCDEl_BCtoE80to170_75Evt",false,false,false));
-
-//   //// Data
-//   listOfMicroNtuples.push_back(MyStr("SingleMu_77100Evt*","micro_SingleMu_77100Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("SingleEl_51900Evt*","micro_SingleEl_51900Evt",false,false,false));
+  //// Data
+  listOfMicroNtuples.push_back(MyStr("Mu_All*","microMu_All_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("El_All*","microEl_All_EPDv01",false,false,false));
 
 
-//   //// Higgs 
-//   listOfMicroNtuples.push_back(MyStr("HWWMH120_600Evt*","micro_HWWMH120_600Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("HWWMH130_800Evt*","micro_HWWMH130_800Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("HWWMH140_1100Evt*","micro_HWWMH140_1100Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("HWWMH150_1600Evt*","micro_HWWMH150_1600Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("HWWMH160_2700Evt*","micro_HWWMH160_2700Evt",false,false,false));
-
-//   listOfMicroNtuples.push_back(MyStr("WHMH115_3000Evt*","micro_WHMH115_3000Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WHMH120_3000Evt*","micro_WHMH120_3000Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WHMH125_3000Evt*","micro_WHMH125_3000Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WHMH130_3000Evt*","micro_WHMH130_3000Evt",false,false,false));
-//   listOfMicroNtuples.push_back(MyStr("WHMH135_3000Evt*","micro_WHMH135_3000Evt",false,false,false));
+  //// Higgs 
+  listOfMicroNtuples.push_back(MyStr("HWWMH150*","microHWWMH150_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH160*","microHWWMH160_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH170*","microHWWMH170_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH180*","microHWWMH180_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH190*","microHWWMH190_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH200*","microHWWMH200_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH250*","microHWWMH250_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH300*","microHWWMH300_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH350*","microHWWMH350_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH400*","microHWWMH400_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH450*","microHWWMH450_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH500*","microHWWMH500_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH550*","microHWWMH550_EPDv01",false,false,false));
+  listOfMicroNtuples.push_back(MyStr("HWWMH600*","microHWWMH600_EPDv01",false,false,false));
 
 
   //
@@ -512,10 +502,11 @@ void createAllMicroNtuples(){
 void createAFlatMicroNtuple (const char* inFileName, const char* outFileName, const char* treeName) 
 //// Takes specified elements of branches METree, EvtTree, mnt and writes them into a flat tree with the same (treeName) name.
 {
+  double pi_=TMath::Pi();
   double in_Mjj, in_DRlj1, in_DRlj2;
   double in_leptonCat;
   vector <TLorentzVector> lLV, jLV, METLV;
-  double out_Mjj, out_WmT, out_lEta, out_lPt, out_DRlj1, out_DRlj2, out_j1pT, out_j2pT, out_j1Eta, out_j2Eta, out_MET, out_DEtajj, out_Ptjj, out_EPD;
+  double out_Mjj, out_WmT, out_lEta, out_lPt, out_lrelIso, out_DRlj1, out_DRlj2, out_j1pT, out_j2pT, out_j1Eta, out_j2Eta, out_MET, out_DEtajj, out_Ptjj, out_dPhijMET, out_j1BtagDiscriminatorSSV, out_j2BtagDiscriminatorSSV, out_j1BtagDiscriminatorTC, out_j2BtagDiscriminatorTC, out_j1QGLikelihood, out_j2QGLikelihood, out_logEPD;
   int out_leptonCat;
 
   TFile* infile = new TFile(inFileName,"READ");
@@ -525,12 +516,14 @@ void createAFlatMicroNtuple (const char* inFileName, const char* outFileName, co
   MicroNtuple * InMNT = new MicroNtuple(2);
   InTree->SetBranchAddress("mnt", &InMNT);
 
+
   TFile *outfile = new TFile(outFileName, "RECREATE");
   TTree *OutTree = new TTree("FlatTree","FlatTree");
   OutTree->Branch("Mjj",&out_Mjj,"Mjj/D");
   OutTree->Branch("WmT",&out_WmT,"WmT/D");
   OutTree->Branch("lEta",&out_lEta,"lEta/D");
   OutTree->Branch("lPt",&out_lPt,"lPt/D");
+  OutTree->Branch("lrelIso",&out_lrelIso,"lrelIso/D");
   OutTree->Branch("DRlj1",&out_DRlj1,"DRlj1/D");
   OutTree->Branch("DRlj2",&out_DRlj2,"DRlj2/D");
   OutTree->Branch("j1pT",&out_j1pT,"j1pT/D");
@@ -538,25 +531,35 @@ void createAFlatMicroNtuple (const char* inFileName, const char* outFileName, co
   OutTree->Branch("j1Eta",&out_j1Eta,"j1Eta/D");
   OutTree->Branch("j2Eta",&out_j2Eta,"j2Eta/D");
   OutTree->Branch("MET",&out_MET,"MET/D");
+  OutTree->Branch("j1BtagDiscriminatorSSV",&out_j1BtagDiscriminatorSSV,"j1BtagDiscriminatorSSV/D");
+  OutTree->Branch("j2BtagDiscriminatorSSV",&out_j2BtagDiscriminatorSSV,"j2BtagDiscriminatorSSV/D");
+  OutTree->Branch("j1BtagDiscriminatorTC",&out_j1BtagDiscriminatorTC,"j1BtagDiscriminatorTC/D");
+  OutTree->Branch("j2BtagDiscriminatorTC",&out_j2BtagDiscriminatorTC,"j2BtagDiscriminatorTC/D");
+  OutTree->Branch("j1QGLikelihood",&out_j1QGLikelihood,"j1QGLikelihood/D");
+  OutTree->Branch("j2QGLikelihood",&out_j2QGLikelihood,"j2QGLikelihood/D");
+
   OutTree->Branch("DEtajj",&out_DEtajj,"DEtajj/D");
   OutTree->Branch("Ptjj",&out_Ptjj,"Ptjj/D");
+  OutTree->Branch("dPhijMET",&out_dPhijMET,"dPhijMET/D");
   OutTree->Branch("leptonCat",&out_leptonCat,"leptonCat/I");
-  OutTree->Branch("EPD",&out_EPD,"EPD/D");
+  OutTree->Branch("logEPD",&out_logEPD,"logEPD/D");
 
   int nEntries;
   nEntries=InTree->GetEntries();
   cout << "nEntries=" << nEntries << endl;
 
-  for (unsigned i=0; i<nEntries; i++) {
+  QGLikelihoodCalculator* qglikeli = new QGLikelihoodCalculator();
+
+  for (int i=0; i<nEntries; i++) {
     //cout << "1" << endl;
     InTree->GetEntry(i);
+    //cout << "Processing Entry " << i << endl;
     //cout << "2" << endl;
     out_Mjj=InEvtTree->Mjj;
     out_leptonCat=InEvtTree->leptonCat;
     lLV=InEvtTree->lLV;
     jLV=InEvtTree->jLV;
     METLV=InEvtTree->METLV;
-
     
     out_lEta=lLV[0].Eta();
     out_lPt=lLV[0].Pt();
@@ -567,12 +570,31 @@ void createAFlatMicroNtuple (const char* inFileName, const char* outFileName, co
     out_j1Eta=jLV[0].Eta();
     out_j2Eta=jLV[1].Eta();
     out_MET=METLV[0].Et();
+    out_j1BtagDiscriminatorSSV=InEvtTree->jBtagDiscriminatorSSV[0];
+    out_j2BtagDiscriminatorSSV=InEvtTree->jBtagDiscriminatorSSV[1];
+    out_j1BtagDiscriminatorTC=InEvtTree->jBtagDiscriminatorTC[0];
+    out_j2BtagDiscriminatorTC=InEvtTree->jBtagDiscriminatorTC[1];
+    out_lrelIso=InEvtTree->lrelIso;
+
+    /// Store the QG discriminators for the two leading jets; QG_QCD_Pt_15to3000_TuneZ2_Flat_7TeV_pythia6_Spring11-PU_S1_START311_V1G1-v1.root should be in the directory this macro is ran in.
+    out_j1QGLikelihood=InEvtTree->getQGLikelihood(0,qglikeli); 
+    out_j2QGLikelihood=InEvtTree->getQGLikelihood(1,qglikeli); 
+
 
     out_WmT=sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()) );
     out_DEtajj=fabs(jLV[0].Eta()-jLV[1].Eta());
     out_Ptjj=sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()));
 
-    out_EPD=log(InMNT->epdPretagWWandWZ);
+    out_dPhijMET=jLV[0].Phi()-METLV[0].Phi();
+    if ( out_dPhijMET > pi_ ) {
+      out_dPhijMET=2*pi_-out_dPhijMET;
+    }
+    if ( out_dPhijMET < -pi_ ) {
+      out_dPhijMET=-out_dPhijMET-2*pi_;
+    }
+
+
+    out_logEPD=log(InMNT->epdPretagWWandWZ);
     //cout << "Mjj=" << out_Mjj << endl;
     //out_Mjj=in_Mjj;
     OutTree->Fill();
@@ -591,49 +613,40 @@ void createAFlatMicroNtuple (const char* inFileName, const char* outFileName, co
 void createMultipleFlatMicroNtuples () 
 //// Converts Intput Files into flatones (to be used with RooFit) in the same directory
 {
-  const int NFiles=23;
-  TString dirName = "/uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/";
+  const int NFiles=1;
+  TString dirName = "/uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/";
   TString fileName[NFiles];
   TString infileName, outfileName;
 
-//   ///Test:
-//   fileName[0]="testmicroWW_FullCutsV01DEF.root";
-//   fileName[1]="testmicroWpJ_FullCutsV01JESp1s.root";
-
-//   fileName[0]="microWW_FullCutsV01DEF.root";
-//   fileName[1]="microWW_FullCutsV01JESp1s.root";
-//   fileName[2]="microWW_FullCutsV01JESm1s.root";
-//   fileName[0]="microWZ_FullCutsV01DEF.root";
-//   fileName[1]="microWZ_FullCutsV01JESp1s.root";
-//   fileName[2]="microWZ_FullCutsV01JESm1s.root";
-//   fileName[3]="microWpJ_FullCutsV01DEF.root";
-//   fileName[4]="microWpJ_FullCutsV01JESp1s.root";
-//   fileName[5]="microWpJ_FullCutsV01JESm1s.root";
-  fileName[0]="microZpJ_FullCutsV01DEF.root";
-  fileName[1]="microZpJ_FullCutsV01JESp1s.root";
-  fileName[2]="microZpJ_FullCutsV01JESm1s.root";
-  // fileName[6]="microTTbar_MG_FullCutsV01DEF.root";
-  fileName[3]="microTTbar_MG_FullCutsV01JESp1s.root";
-  fileName[4]="microTTbar_MG_FullCutsV01JESm1s.root";
-  fileName[5]="microSTopT_T_FullCutsV01DEF.root";
-  fileName[6]="microSTopT_T_FullCutsV01JESp1s.root";
-  fileName[7]="microSTopT_T_FullCutsV01JESm1s.root";
-  fileName[8]="microSTopT_Tbar_FullCutsV01DEF.root";
-  fileName[9]="microSTopT_Tbar_FullCutsV01JESp1s.root";
-  fileName[10]="microSTopT_Tbar_FullCutsV01JESm1s.root";
-  fileName[11]="microSTopS_T_FullCutsV01DEF.root";
-  fileName[12]="microSTopS_T_FullCutsV01JESp1s.root";
-  fileName[13]="microSTopS_T_FullCutsV01JESm1s.root";
-  fileName[14]="microSTopS_Tbar_FullCutsV01DEF.root";
-  fileName[15]="microSTopS_Tbar_FullCutsV01JESp1s.root";
-  fileName[16]="microSTopS_Tbar_FullCutsV01JESm1s.root";
-  fileName[17]="microSTopTW_T_FullCutsV01DEF.root";
-  fileName[18]="microSTopTW_T_FullCutsV01JESp1s.root";
-  fileName[19]="microSTopTW_T_FullCutsV01JESm1s.root";
-  fileName[20]="microSTopTW_Tbar_FullCutsV01DEF.root";
-  fileName[21]="microSTopTW_Tbar_FullCutsV01JESp1s.root";
-  fileName[22]="microSTopTW_Tbar_FullCutsV01JESm1s.root";
-
+  fileName[0]="microWW_EPDv01.root";
+//   fileName[1]="microWZ_EPDv01.root";
+//   fileName[2]="microWJets_EPDv01.root";
+//   fileName[3]="microZJets_EPDv01.root";
+//   fileName[4]="microTTbar_EPDv01.root";
+//   fileName[5]="microSTopT_T_EPDv01.root";
+//   fileName[6]="microSTopT_Tbar_EPDv01.root";
+//   fileName[7]="microSTopS_T_EPDv01.root";
+//   fileName[8]="microSTopS_Tbar_EPDv01.root";
+//   fileName[9]="microSTopTW_T_EPDv01.root";
+//   fileName[10]="microSTopTW_Tbar_EPDv01.root";
+//   fileName[11]="microQCD_Mu_EPDv01.root";
+//   fileName[12]="microQCD_El_EPDv01.root";
+//   fileName[13]="microMu_All_EPDv01.root";
+//   fileName[14]="microEl_All_EPDv01.root";
+//   fileName[15]="microHWWMH150_EPDv01.root";
+//   fileName[16]="microHWWMH160_EPDv01.root";
+//   fileName[17]="microHWWMH170_EPDv01.root";
+//   fileName[18]="microHWWMH180_EPDv01.root";
+//   fileName[19]="microHWWMH190_EPDv01.root";
+//   fileName[20]="microHWWMH200_EPDv01.root";
+//   fileName[21]="microHWWMH250_EPDv01.root";
+//   fileName[22]="microHWWMH300_EPDv01.root";
+//   fileName[23]="microHWWMH350_EPDv01.root";
+//   fileName[24]="microHWWMH400_EPDv01.root";
+//   fileName[25]="microHWWMH450_EPDv01.root";
+//   fileName[26]="microHWWMH500_EPDv01.root";
+//   fileName[27]="microHWWMH550_EPDv01.root";
+//   fileName[28]="microHWWMH600_EPDv01.root";
 
   for (Int_t i=0; i<NFiles; i++) {
     outfileName="flat"+fileName[i];

@@ -15,6 +15,7 @@ class WLbEventProb2Jet : public EventProb2Jet, public topEventProb
       virtual void changeVars(const std::vector<double>& parameters);
       virtual double matrixElement() const;
       virtual void setPartonTypes() const;
+      virtual void setJetTypes();
       virtual void getScale(double& scale1, double& scale2) const;
       virtual double totalTF() const;
       virtual void setTopMassAndWidth(double mTop);

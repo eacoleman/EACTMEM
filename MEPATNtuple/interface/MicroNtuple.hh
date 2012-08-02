@@ -22,7 +22,7 @@ public:
   MicroNtuple& operator=(const MicroNtuple&);
   ~MicroNtuple();
       
-  enum {nEventProb = 18};
+  enum {nEventProb = 29};
 
   // ===================================
   //  Member Variables
@@ -51,7 +51,7 @@ public:
   Double_t epd1tagWH[nWHmasses];
   Double_t epd2tagWH[nWHmasses];
  
-  enum {nHWWmasses = 11};
+  enum {nHWWmasses = 14};
   Double_t epd1tagHWW[nHWWmasses];
   Double_t epd2tagHWW[nHWWmasses];
 

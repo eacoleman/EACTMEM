@@ -54,6 +54,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    printJetInfo               =         iConfig.getParameter<bool>            ("printJetInfo");
    printLeptonInfo            =         iConfig.getParameter<bool>            ("printLeptonInfo");
    Data                       =         iConfig.getParameter<bool>            ("Data");
+   QCDcuts                    =         iConfig.getParameter<bool>            ("QCDcuts");
    saveGenParticles           =         iConfig.getParameter<bool>            ("saveGenParticles");
    noMETCut                   =         iConfig.getParameter<bool>            ("noMETCut");
    invertEID                  =         iConfig.getParameter<bool>            ("invertEID");
@@ -330,7 +331,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                   incrementCounter(4,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                   printEventInformation(printEventInfo, 4, false);
                   el_passStandard=true;
-                  if (MET_Et>MET_EtMin) {
+                  if ( MET_Et>MET_EtMin||(QCDcuts&&(MET_Et>20.0)) ) {
                      incrementCounter(5,Nj,PassEl,PassMu,PassLp,0,elcnt_Prim);
                      printEventInformation(printEventInfo, 5, false);
                      el_passAll=true;
@@ -367,7 +368,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                   incrementCounter(4,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                   printEventInformation(printEventInfo, 4, true);
                   mu_passStandard=true;
-                  if (MET_Et>MET_EtMin) {
+                  if ( MET_Et>MET_EtMin||(QCDcuts&&(MET_Et>20.0)) ) {
                      incrementCounter(5,Nj,PassEl,PassMu,PassLp,mucnt_Prim,0);
                      printEventInformation(printEventInfo, 5, true);
                      mu_passAll=true;
@@ -870,7 +871,10 @@ void PerformSelection::muonSelection() {
           muIter->numberOfMatches()>1) {
          isProperlyIsolatedMu=false;
          
-         if (((doRelIso && mu_RelIso<muPrim_RelIsoMax)||(!doRelIso && mu_TrkIso<muPrim_TrkIsoMax)))
+         if (((doRelIso && mu_RelIso<muPrim_RelIsoMax)||(!doRelIso && mu_TrkIso<muPrim_TrkIsoMax))&&(!QCDcuts))
+            isProperlyIsolatedMu=true;
+
+         if ( (mu_RelIso>0.1)&&(QCDcuts))
             isProperlyIsolatedMu=true;
             
          //
@@ -878,6 +882,10 @@ void PerformSelection::muonSelection() {
          //
          if (isProperlyIsolatedMu) {
             mucnt_Prim++;
+	    if ( QCDcuts&&(mu_RelIso>muLoose_RelIsoMax) ) {
+	      //Account for the fact that if we are inverting the isolation, the tight muon may no longer pass the default loose cuts.
+	      mucnt_Loose++;
+	    }
             lp4=muIter->p4();
             lQ=muIter->charge();
             l_Eta.push_back(mu_eta);
@@ -994,12 +1002,16 @@ void PerformSelection::eleSelection() {
       // Apply The Primary Cuts
       //
       if (el_pt>elPrim_ptMin && el_aetaPass && 
-         ((doRelIso && el_RelIso<elPrim_RelIsoMax)||(!doRelIso && el_TrkIso<elPrim_TrkIsoMax)) && 
+	  ((!QCDcuts && doRelIso && el_RelIso<elPrim_RelIsoMax)||(!QCDcuts && !doRelIso && el_TrkIso<elPrim_TrkIsoMax)||(QCDcuts && el_RelIso>0.1)) && 
          el_PassEID  &&
          abs(elIter->dB())<elPrim_dBMax &&
          elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits()==0 &&
          !((abs(elIter->convDist())<0.02)&&(abs(elIter->convDcot())<0.02))) {
          elcnt_Prim++;
+	 if ( QCDcuts && (el_RelIso>elLoose_RelIsoMax) ){
+	   //Account for the fact that if we are inverting the isolation and the tight electron may no longer pass the default loose cuts.
+	   elcnt_Loose++;
+	 }
          lp4=elIter->p4();
          lQ=elIter->charge();
          l_Eta.push_back(el_eta);

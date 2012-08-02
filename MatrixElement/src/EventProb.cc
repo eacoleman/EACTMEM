@@ -56,9 +56,15 @@ EventProb::EventProb(DEFS::EP::Type ept, Integrator& integrator, unsigned nVars,
    m_volume(1)
 {
   m_name = DEFS::EP::getTypeString(m_epType);
-   debug= 0;
-   int pdfset = 3;
-   setctq6_(pdfset);
+  m_JetType[0]=-999;
+  m_JetType[1]=-999;
+  m_JetType[2]=-999;
+  m_JetType[3]=-999;
+  m_JetType[4]=-999;
+  m_JetType[5]=-999;
+  debug= 0;
+  int pdfset = 3;
+  setctq6_(pdfset);
 }
 
 void EventProb::setBounds(unsigned param, double lower, double upper)
@@ -110,7 +116,7 @@ void EventProb::prepareForIntegral()
 {
 
    setPartonTypes();
-
+   setJetTypes();
    setupIntegral();
 
 }
@@ -390,6 +396,12 @@ void EventProb::swapJets(unsigned jet1, unsigned jet2)
    getMeasuredColl()->swapJets(jet1, jet2);
 }
 
+void EventProb::setSwapJet0Jet1Status(bool status)
+{
+  m_swappedJets=status;
+}
+
+
 void EventProb::adjustBounds(vector<double>& vec) const
 {
    for (unsigned i = 0; i < vec.size(); ++i)
@@ -397,6 +409,18 @@ void EventProb::adjustBounds(vector<double>& vec) const
       vec[i] = m_bounds[i].first + m_bounds[i].second * vec[i];
    }
 }
+
+
+void EventProb::setJetTypes()
+{
+  m_JetType[0]=-999;
+  m_JetType[1]=-999;
+  m_JetType[2]=-999;
+  m_JetType[3]=-999;
+  m_JetType[4]=-999;
+  m_JetType[5]=-999;
+}
+
 
 void EventProb::m_changeVars(const double parameters[])
 {
@@ -471,6 +495,7 @@ double EventProb::matrixElementCorrelated(const vector<double> & trueParams){
     // set the quark Id's,
     // (i.e. initial partons are supposed to be quarks, gluons, etc)
     setPartonTypes();
+    setJetTypes();
     me_pdf += matrixElement()*pdf(x1,x2);
     cout << "me_pdf=" << me_pdf << endl;
     counter ++;

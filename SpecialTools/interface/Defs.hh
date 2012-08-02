@@ -32,11 +32,9 @@ namespace DEFS{
 	       WH130 , WH135 , WH140 , WH145 , WH150 ,
 	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
 	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
-	       STopS, STopT, STopTW, Wcc, WJets, WLg, Wgg, WLL, WLb, Wbb,
-	       WW, WZbb, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
-	       QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
-	       Data};
- 
+	       HWW180, HWW190, HWW200, HWW250, HWW300, HWW350, HWW400, HWW450, HWW500, HWW550, HWW600,
+	       STopS_T, STopS_Tbar, STopT_T, STopT_Tbar, STopTW_T, STopTW_Tbar, Wcc, WJets, ZJets, WW, WZ, TTbar, 
+	       QCDMu, QCDEl, Data};
 
     // A routine that returns the type given a string 
     Type getProcessType(std::string str);///

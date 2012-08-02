@@ -170,6 +170,7 @@ private:
    //
    // program variables
    bool Data;
+   bool QCDcuts;
    bool saveGenParticles;
    bool noMETCut;
    bool invertEID;

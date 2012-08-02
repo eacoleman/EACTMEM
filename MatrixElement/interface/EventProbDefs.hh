@@ -1,7 +1,7 @@
 // Author: Ricardo Eusebi
 // TAMU, eusebi@physics.tamu.edu
 // Created: March 13, 2011.
-// $Id: EventProbDefs.hh,v 1.3 2012/04/30 03:41:38 ilyao Exp $
+// $Id: EventProbDefs.hh,v 1.4 2012/05/11 04:55:32 ilyao Exp $
 
 #ifndef EVENTPROBDEFS_HH
 #define EVENTPROBDEFS_HH
@@ -36,10 +36,11 @@ namespace DEFS {
       // Related to single vector boson production
       WJets   = 300,
       WLg     = 301,
-      Wgg     = 302,
+      WLgSubleading     = 302,
       WLL     = 303,
-      WLb     = 304,
-      Wbb     = 305,
+      Wgg     = 304,
+      WLb     = 305,
+      Wbb     = 306,
       Wc      = 310,
       ZLight  = 350,
       WLight  = 399,

@@ -62,6 +62,8 @@ public:
   // This is useful counter to have when debugging  
   int debug;
 
+  int *getJetType() {return m_JetType;}
+
 protected:
 
   virtual void setupIntegral() {}
@@ -81,6 +83,7 @@ protected:
 
   double pdf(double x1, double x2) const;
   virtual void setPartonTypes() const = 0;
+  virtual void setJetTypes();
   virtual void getScale(double& scale1, double& scale2) const = 0;
 
   virtual double totalTF() const = 0;
@@ -91,7 +94,12 @@ protected:
 
   void swapJets(unsigned jet1, unsigned jet2);
 
+  void setSwapJet0Jet1Status(bool status);
+  bool getSwappedJet0Jet1Status() { return m_swappedJets;}
+  bool m_swappedJets;
+
   void adjustBounds(std::vector<double>&) const;
+
 
   enum PDFTypes
     {
@@ -113,6 +121,11 @@ protected:
   double m_maxProbNumber;
 
   // End of variables for Ricardo's test
+
+  // Define the parton content of the jets
+  int m_JetType[6];
+
+
 
 private:
   // Parton level quantities that change during the integration

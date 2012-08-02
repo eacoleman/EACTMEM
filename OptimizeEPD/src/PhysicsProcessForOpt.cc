@@ -115,8 +115,9 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
       ProbsForEPD probs = MicroNtuple::getProbsForEPD(meProbs, coeffs, bProb, tagcat);
       
       // Return the WW+WZ probability
-      double epd = (probs.wz+probs.ww) / (probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-					  probs.wc + probs.qcd + probs.tt +
+      double epd = (probs.wz+probs.ww) / (probs.stop + probs.twchan + 
+					  probs.wjets + probs.zjets + 
+					  probs.qcd + probs.tt +
 					  probs.ww + probs.wz);    
 
       // Do a basic check to make sure the category is within bounds. Otherwise complain heavily.

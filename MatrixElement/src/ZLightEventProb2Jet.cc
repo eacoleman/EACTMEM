@@ -375,6 +375,25 @@ void ZLightEventProb2Jet::setPartonTypes() const
 
 }
 
+void ZLightEventProb2Jet::setJetTypes()
+{
+
+  if ( !swapQuarkFlavor ) {
+    m_JetType[0]=kUp;
+    m_JetType[1]=kGluon;
+  } else {
+    m_JetType[0]=kDown;
+    m_JetType[1]=kGluon;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
 
 void ZLightEventProb2Jet::AssignOrdering(int o_vec[NOutputP1][NVec], int output_vecidx, const char* order) const
 //// Store the ordering pattern in o_vec
@@ -477,18 +496,21 @@ bool ZLightEventProb2Jet::onSwitch()
   switch (getLoop()) {
   case 0:
     swapQuarkFlavor=false;
-    swapPartonMom=false; 
+    swapPartonMom=false;
+    setSwapJet0Jet1Status(false);
     //swapPartonMom=true; //when testing alternate functions
     //swapQuarkFlavor=true; //when testing with d instead of u
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   case 4:
     swapQuarkFlavor=true;
@@ -496,12 +518,14 @@ bool ZLightEventProb2Jet::onSwitch()
     break;
   case 5:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 6:
     swapPartonMom=true;
     break;
   case 7:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   default:
     return false;

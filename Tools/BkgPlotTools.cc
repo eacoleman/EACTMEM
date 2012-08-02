@@ -965,70 +965,161 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 //// Makes validation plots for all of the variables
 //// the SaveName=savePrefix+VarName+.png
 {
-  const int NVars=5;
+  TString saveDir = "~ilyao/public_html/MEValidation/";
+  const int NVars=9;
   TString VarName[NVars];
+  TString VarTitle[NVars];
   double VarMin[NVars];
   double VarMax[NVars];
 
-
+//   ///Diboson:
 //   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
 //   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
-//   eventProbs2jet.push_back(new WLightEventProb2Jet(rootInt, lightTF));
+//   eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));
+
+
+//   ///W or Z backgrounds:
+//   eventProbs2jet.push_back(new WLgEventProb2Jet(rootInt, lightTF, gluonTF));
+//   eventProbs2jet.push_back(new WLgSubleadingEventProb2Jet(rootInt, lightTF, gluonTF));
+//   eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
+//   eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));
+//   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
 //   eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
+
+
+//   ///Top and QCD:
 //   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
 //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
 //   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
 //   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
 //   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
 //   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
+//   eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt_reduceComputingTime, lightTF));
+//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
 //   eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
+
+
+//   ///HWW:
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 150));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 160));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 170));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 180));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 190));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 200));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 250));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 300));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 350));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 400));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 450));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 500));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 550));
+//   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF, 600));
 
   //Initialize
   VarName[0]="Mjj";
+  VarTitle[0]="M_{jj}";
   VarMin[0]=40.0;
   VarMax[0]=300.0;
   VarName[1]="log(m_tProbStat.tEventProb[0])";
+  VarTitle[1]="logWWEventProb";
   VarMin[1]=-35;
-  VarMax[1]=-10;
-  VarName[2]="log(m_tProbStat.tEventProb[2])";
-  VarMin[2]=-30;
-  VarMax[2]=-8;
-  VarName[3]="log(m_tProbStat.tEventProb[3])";
-  VarMin[3]=-30;
-  VarMax[3]=-10;
+  VarMax[1]=-0.0;
+  VarName[2]="log(m_tProbStat.tEventProb[3])";
+  VarTitle[2]="logWLgEventProb";
+  VarMin[2]=-35;
+  VarMax[2]=-0.0;
+  VarName[3]="log(m_tProbStat.tEventProb[4])";
+  VarTitle[3]="logWLgSubleadingEventProb";
+  VarMin[3]=-35;
+  VarMax[3]=-0.0;
   VarName[4]="log(m_tProbStat.tEventProb[5])";
+  VarTitle[4]="logWLLEventProb";
   VarMin[4]=-35;
-  VarMax[4]=-10;
+  VarMax[4]=-0.0;
+  VarName[5]="log(m_tProbStat.tEventProb[6])";
+  VarTitle[5]="logWLbEventProb";
+  VarMin[5]=-35;
+  VarMax[5]=-0.0;
+  VarName[6]="log(m_tProbStat.tEventProb[7])";
+  VarTitle[6]="logWbbEventProb";
+  VarMin[6]=-35;
+  VarMax[6]=-0.0;
+  VarName[7]="log(m_tProbStat.tEventProb[8])";
+  VarTitle[7]="logZLightEventProb";
+  VarMin[7]=-35;
+  VarMax[7]=-0.0;
+  VarName[8]="log(m_tProbStat.tEventProb[9])";
+  VarTitle[8]="logttEventProb";
+  VarMin[8]=-35;
+  VarMax[8]=-0.0;
+//   VarName[]="log(m_tProbStat.tEventProb[])";
+//   VarTitle[]="log";
+//   VarMin[]=-35;
+//   VarMax[]=-10;
 //   VarName[1]="log(epdPretagWWandWZ)";
 //   VarMin[1]=-15.0;
 //   VarMax[1]=5.0;
 
-  TString inModes_mu = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleMu_77100Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_StandardCutsDEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_StandardCutsDEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_StandardCutsDEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_StandardCutsDEF.root 0.0000101753087377979123 4";
-  TString inModes_el = "Data /uscms/home/ilyao/nobackup/Summer11/428Full/MEResults/microNtuples/micro_SingleEl_51900Evt.root 990.0 1 WpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWpJ_StandardCutsDEF.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microZpJ_StandardCutsDEF.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microTTbar_MG_StandardCutsDEF.root 0.00004254518 5 WW /uscms_data/d3/ilyao/Summer11/428Full/MEResults/microNtuples/microWW_StandardCutsDEF.root 0.0000101753087377979123 4";
+
+
+////Cross-Section/NGenerated
+//18.2/4265243=4.22015814808206740e-06 for WZ
+//   double STopWeight = 3.19/259971;
+//   double STopBarWeight = 1.44/137980;
+//   double TTopWeight = 41.92/3900171;
+//   double TTopBarWeight = 22.65/1944826;
+//   double TWTopWeight = 7.87/795379;
+//   double TWTopBarWeight = 7.87/787629;
+// QCD Fractions: double rel2jet = 0.0663, rel3jet = 0.0229, rmu2jet = 0.001625, rmu3jet = 0.;
+
+
+  TString inModes_mu = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microMu_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
+
+
+  TString inModes_el = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microEl_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
 
   ///// FullCutsV01
 //   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
 //   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
 
-  TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
-  TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
 
+//   ///// StandarCuts
+//   TString cutstrName="StandardCuts_";
+//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+
+  ///// Diboson Analysis-like cuts
+  TString cutstrName="DibosonAnaLikeCuts_";
+  TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>25.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
+  TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.5)&&(lLV[0].Pt()>30.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>30.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
+
+
+//   ///// SelectionLevelCuts
+//   TString cutstrName="SelectionLevelCuts_";
+//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0) )";
+//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0) )";
 
 
   for (Int_t n=0; n<NVars; n++) {
+    ///Muons:
     TString SaveName="_mu.png";
     //TString SaveName="_mu.root";
-    SaveName=VarName[n]+SaveName;
-    SaveName="~ilyao/public_html/MEValidation/StandardCuts_"+SaveName;
-    TString Title = VarName[n];
+    SaveName=VarTitle[n]+SaveName;
+    SaveName=cutstrName+SaveName;
+    SaveName=saveDir+SaveName;
+    TString Title = VarTitle[n];
     Title = " Muons : " + Title;
     Title = TitleName + Title;
     Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_mu,inModes_mu,SaveName,scaleMCtoData,drawMCwithErrors);
+    ///Electrons:
     SaveName="_el.png";
     //SaveName="_el.root";
-    SaveName=VarName[n]+SaveName;
-    SaveName="~ilyao/public_html/MEValidation/StandardCuts_"+SaveName;
-    Title = VarName[n];
+    SaveName=VarTitle[n]+SaveName;
+    SaveName=cutstrName+SaveName;
+    SaveName=saveDir+SaveName;
+    Title = VarTitle[n];
     Title = " Electrons : " + Title;
     Title = TitleName + Title;
     Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_el,inModes_el,SaveName,scaleMCtoData,drawMCwithErrors);

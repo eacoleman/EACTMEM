@@ -214,6 +214,7 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WLgEventProb2Jet(rootInt, lightTF, gluonTF));
   eventProbs2jet.push_back(new WLgSubleadingEventProb2Jet(rootInt, lightTF, gluonTF));
   eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WggEventProb2Jet(rootInt, gluonTF));
   eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));
   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
   eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
@@ -256,6 +257,9 @@ int main(int argc, char* argv[]){
 //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 125));
 //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 130));
 //   eventProbs2jet.push_back(new WHEventProb2Jet(rootInt, bTF, 135));
+
+
+  //Completion:
 
 
   // ***************************

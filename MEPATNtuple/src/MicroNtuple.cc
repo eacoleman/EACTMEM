@@ -115,30 +115,55 @@ void MicroNtuple::fillIndexMap(){
   
   // Map all the processes, except those with Higgs. 
   //NOTE that I'm not putting the top mass as I should... 
-  indexMap[DEFS::EP::STopS  ].insert ( make_pair (0,6));
-  indexMap[DEFS::EP::STopT  ].insert ( make_pair (0,5));
-  indexMap[DEFS::EP::TTbar ].insert ( make_pair (0,4));
-  indexMap[DEFS::EP::WLight].insert ( make_pair (0,2));
-  indexMap[DEFS::EP::ZLight].insert ( make_pair (0,3));
+  // Diboson:
   indexMap[DEFS::EP::WW    ].insert ( make_pair (0,0));
   indexMap[DEFS::EP::WZ    ].insert ( make_pair (0,1));
-  indexMap[DEFS::EP::QCD   ].insert ( make_pair (0,7));	
+  indexMap[DEFS::EP::WZbb  ].insert ( make_pair (0,2));
+
+  //W or Z backgrounds:
+  indexMap[DEFS::EP::WLg].insert ( make_pair (0,3));
+  indexMap[DEFS::EP::WLgSubleading].insert ( make_pair (0,4));
+  indexMap[DEFS::EP::WLL].insert ( make_pair (0,5));
+  indexMap[DEFS::EP::Wgg].insert ( make_pair (0,28));//Missed in the original run and has to be added at the end
+  indexMap[DEFS::EP::WLb].insert ( make_pair (0,6));
+  indexMap[DEFS::EP::Wbb].insert ( make_pair (0,7));
+  indexMap[DEFS::EP::ZLight].insert ( make_pair (0,8));
+
+  //Top and QCD:
+  indexMap[DEFS::EP::TTbar ].insert ( make_pair (0,9));
+  indexMap[DEFS::EP::STopT  ].insert ( make_pair (0,10));
+  indexMap[DEFS::EP::STopS  ].insert ( make_pair (0,11));
+  indexMap[DEFS::EP::STopTW ].insert ( make_pair (0,12));
+  indexMap[DEFS::EP::QCD   ].insert ( make_pair (0,13));	
   
   // Map the HWW ME's
   indexMap.insert (make_pair (DEFS::EP::WH, indexMap1 ()));
-  indexMap[DEFS::EP::WH].insert ( make_pair (115, 8));
-  indexMap[DEFS::EP::WH].insert ( make_pair (120, 9));
-  indexMap[DEFS::EP::WH].insert ( make_pair (125, 10));
-  indexMap[DEFS::EP::WH].insert ( make_pair (130, 11));
-  indexMap[DEFS::EP::WH].insert ( make_pair (135, 12));	
+  indexMap[DEFS::EP::WH].insert ( make_pair (150, 14));
+  indexMap[DEFS::EP::WH].insert ( make_pair (160, 15));
+  indexMap[DEFS::EP::WH].insert ( make_pair (170, 16));
+  indexMap[DEFS::EP::WH].insert ( make_pair (180, 17));
+  indexMap[DEFS::EP::WH].insert ( make_pair (190, 18));
+  indexMap[DEFS::EP::WH].insert ( make_pair (200, 19));
+  indexMap[DEFS::EP::WH].insert ( make_pair (250, 20));
+  indexMap[DEFS::EP::WH].insert ( make_pair (300, 21));
+  indexMap[DEFS::EP::WH].insert ( make_pair (350, 22));
+  indexMap[DEFS::EP::WH].insert ( make_pair (400, 23));
+  indexMap[DEFS::EP::WH].insert ( make_pair (450, 24));
+  indexMap[DEFS::EP::WH].insert ( make_pair (500, 25));
+  indexMap[DEFS::EP::WH].insert ( make_pair (550, 26));
+  indexMap[DEFS::EP::WH].insert ( make_pair (600, 27));
+
+
+
+
   
   // Map the WH ME's
   indexMap.insert (make_pair (DEFS::EP::HWW, indexMap1 ()));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (120, 13));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (130, 14));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (140, 15));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (150, 16));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (160, 17));
+  indexMap[DEFS::EP::HWW].insert ( make_pair (120, 113));
+  indexMap[DEFS::EP::HWW].insert ( make_pair (130, 114));
+  indexMap[DEFS::EP::HWW].insert ( make_pair (140, 115));
+  indexMap[DEFS::EP::HWW].insert ( make_pair (150, 116));
+  indexMap[DEFS::EP::HWW].insert ( make_pair (160, 117));
   
   
   // get the index like this
@@ -161,13 +186,14 @@ ProbsForEPD  MicroNtuple::getEventProbs(double mhiggs, const double evtProb[nEve
   res.wh    = evtProb[indexMap[DEFS::EP::WH][mhiggs]];
 
   // The rest which don't depend on the higgs mass
-  res.schan  = evtProb[indexMap[DEFS::EP::STopS][0]];
-  res.tchan  = evtProb[indexMap[DEFS::EP::STopT][0]];
-  res.tt     = evtProb[indexMap[DEFS::EP::TTbar][0]];
-  res.wlight = evtProb[indexMap[DEFS::EP::WLight][0]]; 
-  res.zlight = evtProb[indexMap[DEFS::EP::ZLight][0]];
   res.ww     = evtProb[indexMap[DEFS::EP::WW][0]];
-  res.wz     = evtProb[indexMap[DEFS::EP::WZ][0]];
+  res.wz     = evtProb[indexMap[DEFS::EP::WZ][0]]+evtProb[indexMap[DEFS::EP::WZbb][0]];
+
+  res.stop   = evtProb[indexMap[DEFS::EP::STopT][0]]+evtProb[indexMap[DEFS::EP::STopS][0]];
+  res.twchan = evtProb[indexMap[DEFS::EP::STopTW][0]];
+  res.tt     = evtProb[indexMap[DEFS::EP::TTbar][0]];
+  res.wjets  = evtProb[indexMap[DEFS::EP::WLg][0]]+evtProb[indexMap[DEFS::EP::WLgSubleading][0]]+evtProb[indexMap[DEFS::EP::WLL][0]]+evtProb[indexMap[DEFS::EP::WLb][0]]+evtProb[indexMap[DEFS::EP::Wbb][0]];//+evtProb[indexMap[DEFS::EP::W][0]]; 
+  res.zjets  = evtProb[indexMap[DEFS::EP::ZLight][0]];
   res.qcd    = evtProb[indexMap[DEFS::EP::QCD][0]];
 
   return res;
@@ -185,6 +211,7 @@ ProbsForEPD MicroNtuple::getEventProbs(double mhiggs) const {
 
 //------------------------------------------------------------------------------
 // This is the core of the code where all the parameters are mixed to obtain the EPD
+// We take the meProbs, weigh them by corresponding coefficients and if needed by the bProbs (currently turned off)
 ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs, 
 					const ProbsForEPD & coeffs,
 					const double bProb[], DEFS::TagCat tagcat){
@@ -211,21 +238,21 @@ ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs,
   //   0 => multiply by (1 - bProb[0]) * (1 - bProb[1]);
   //   1 => multiply by bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]);
   //   2 => multiply by bProb[0] * bProb[1];
-  probs.wh     *=      bProb[0]  *  bProb[1];
-  probs.hww    *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.schan  *=      bProb[0]  *  bProb[1];
-  probs.tchan  *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
-  probs.tchan2 *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
-  probs.tt     *=       bProb[0] * bProb[1];
-  probs.wlight *= (1 - bProb[0]) * (1 - bProb[1]); 
-  probs.zlight *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.wbb    *=       bProb[0] * bProb[1];
-  probs.wc     *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.wgg    *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.ww     *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.wz     *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.zz     *= (1 - bProb[0]) * (1 - bProb[1]);
-  probs.qcd    *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.wh     *=      bProb[0]  *  bProb[1];
+//   probs.hww    *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.schan  *=      bProb[0]  *  bProb[1];
+//   probs.tchan  *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
+//   probs.tchan2 *=  0.5*(bProb[0] * (1 - bProb[1]) + bProb[1] * (1 - bProb[0]));
+//   probs.tt     *=       bProb[0] * bProb[1];
+//   probs.wlight *= (1 - bProb[0]) * (1 - bProb[1]); 
+//   probs.zlight *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.wbb    *=       bProb[0] * bProb[1];
+//   probs.wc     *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.wgg    *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.ww     *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.wz     *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.zz     *= (1 - bProb[0]) * (1 - bProb[1]);
+//   probs.qcd    *= (1 - bProb[0]) * (1 - bProb[1]);
 
   return probs;
 
@@ -264,8 +291,8 @@ Double_t MicroNtuple::calcWHEPD(DEFS::TagCat tagcat, double mass,
   if (probs.wh == 0) return 0;
   
   // Return the wh probability
-  return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		     probs.wc + probs.qcd + probs.tt +
+  return probs.wh / (probs.wh + probs.stop + probs.twchan + probs.wjets + 
+		     probs.zjets + probs.qcd + probs.tt +
 		     probs.ww + probs.wz);      
 
 }// calcWHEPD
@@ -279,27 +306,27 @@ const ProbsForEPD MicroNtuple::getWHEPDCoefficients(double mhiggs, DEFS::TagCat 
 
   if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
   
-    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
     
   }else if (tagcat ==  DEFS::eq1TSV){
 
-    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
 
   } else if (tagcat == DEFS::eq2TSV){
 
-    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
 
   } else
     throw std::runtime_error("ERROR MicroNtuple::getWHEPDCoefficients. Invalid tag requested");
@@ -351,8 +378,8 @@ Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mass,
    if (probs.wh == 0) return 0;
 
    // Return the wh probability
-   return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-		      probs.wc + probs.qcd + probs.tt +
+   return probs.wh / (probs.wh + probs.stop + probs.twchan + probs.wjets + 
+		      probs.zjets + probs.qcd + probs.tt +
 		      probs.ww + probs.wz);      
 
 }// calcHWWEPD
@@ -365,27 +392,27 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
 
   if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
   
-    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
  
   }else if (tagcat ==  DEFS::eq1TSV){   
 
-    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
 
   } else if (tagcat == DEFS::eq2TSV){
 
-    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
 
   } else
     throw std::runtime_error("ERROR MicroNtuple::getWHEPDCoefficients. Invalid tag requested");
@@ -401,6 +428,7 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
 Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat) const
 {
 
+  //cout << "Computing WZ EPD" << endl;
   // Get the meProbs
   ProbsForEPD meProbs = getEventProbs(0);
   return calcWZEPD(tagcat, meProbs, bProb, nJets);
@@ -412,16 +440,20 @@ Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat) const
 Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat, const ProbsForEPD & meProbs,
 				const double bProb[], Int_t nJets){
 
-  
-  // Get the WZ Coefficients.
+  //cout << "Computing Diboson EPD" << endl;
+  // Get the diboson Coefficients.
   ProbsForEPD coeffs = getWZEPDCoefficients(tagcat, nJets);  
   
   // Get the probabilities for the EPD
   ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
 
-  // Return the wh probability
-  return (probs.wz+probs.ww) / (probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
-				probs.wc + probs.qcd + probs.tt +
+  // Return the diboson probability
+  //cout << "DibosonProb=" << (probs.wz+probs.ww) / (probs.stop + probs.twchan + probs.wjets + 
+// 				probs.zjets + probs.qcd + probs.tt +
+// 						   probs.ww + probs.wz) << endl;
+
+  return (probs.wz+probs.ww) / (probs.stop + probs.twchan + probs.wjets + 
+				probs.zjets + probs.qcd + probs.tt +
 				probs.ww + probs.wz);    
         
 }//calcWZEPD 
@@ -433,15 +465,15 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJe
   ProbsForEPD coeffs;
 
   if(tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV)
-    return ProbsForEPD(2.85714e+09,2e+10,1.20062e+08,1.36023e+07,0,110.948,4000,357143,0,0,0,2.80857e+06,182765,0,3.99459); // DEFS::TagCat=0 figOfMerit=0.136722
+    return ProbsForEPD(2.85714e+09,2e+10,1.20062e+08,1.36023e+07,110.948,4000,357143,2.80857e+06,182765,3.99459); // DEFS::TagCat=0 figOfMerit=0.136722
   else if (tagcat == DEFS::eq1TSV)
-    return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
   else if (tagcat != DEFS::eq2TSV)
     throw std::runtime_error("ERROR MicroNtuple::getWZEPDCoefficients. Invalid tag requested");
 
 
   // the two tag case
-  return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+  return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0);
 
 }//getWZEPDCoefficients
 
@@ -464,13 +496,13 @@ Double_t MicroNtuple::calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type) const 
 //------------------------------------------------------------------------------
 const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (DEFS::TagCat tagcat, EPDType type){
   
-  static const ProbsForEPD params1tag[3] = {ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
-					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
-					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0)};
+  static const ProbsForEPD params1tag[3] = {ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0),
+					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0),
+					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0)};
   
-  static const ProbsForEPD params2tag[3] = {ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
-					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
-					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0)};
+  static const ProbsForEPD params2tag[3] = {ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0),
+					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0),
+					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0)};
 
   if (tagcat == DEFS::eq1TSV)
     return params1tag[type];
@@ -497,11 +529,11 @@ Double_t MicroNtuple::calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type,
     
     // There is less than three events per MC sample in which all the probabilities are zero. 
     // To avoid returning a NaN just return zero for those
-    if (probs.schan + probs.tchan + probs.tchan2 == 0) return 0;
+    if (probs.stop + probs.twchan == 0) return 0;
 
     // Return the wh probability. Interestingly there is not diboson here
-    return (probs.schan+probs.tchan+probs.tchan2)/ (probs.schan +  probs.tchan + probs.tchan2 + probs.wbb + 
-						    probs.wc + probs.qcd + probs.tt );       
+    return (probs.stop+probs.twchan)/ (probs.stop +  probs.twchan + probs.wjets + 
+						    probs.zjets + probs.qcd + probs.tt );       
    
    
   }//njets==2

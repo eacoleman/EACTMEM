@@ -464,6 +464,25 @@ void STopTWEventProb2Jet::setPartonTypes() const
 
 }
 
+void STopTWEventProb2Jet::setJetTypes()
+{
+
+  if ( getPartonColl()->getLepCharge() > 0 ) {
+    m_JetType[0]=kAntiUp;
+    m_JetType[1]=kDown;
+  } else {
+    m_JetType[0]=kUp;
+    m_JetType[1]=kAntiDown;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
 
 // ------------------------------------------------------------------
 void STopTWEventProb2Jet::getScale(double& scale1, double& scale2) const
@@ -498,15 +517,18 @@ bool STopTWEventProb2Jet::onSwitch()
     //swapPartonMom=true; //when testing alternate functions
     decTWjj=false;
     swapPartonMom=false; 
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 2:
     swapPartonMom=true;
     break;
   case 3:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
   case 4:
     decTWjj=true;
@@ -514,12 +536,14 @@ bool STopTWEventProb2Jet::onSwitch()
     break;
   case 5:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   case 6:
     swapPartonMom=true;
     break;
   case 7:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(false);
     break;
 
   default:

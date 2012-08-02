@@ -18,8 +18,7 @@ public:
   ProbsForEPD(double , double , double ,
 	      double , double , double ,
 	      double , double , double ,
-	      double , double , double ,
-	      double , double , double );
+	      double );
  
   
   // The multiplication operator
@@ -31,18 +30,18 @@ public:
   // The members of the 
   double wh     ; // for whatever mass we want
   double hww    ; // for whatever mass we want
-  double schan  ;
-  double tchan  ;
-  double tchan2 ;
+  double stop   ;
+  double twchan ;
+  //  double tchan2 ;
   double tt     ;
-  double wlight ; 
-  double zlight ;
-  double wbb    ;
-  double wc     ;
-  double wgg    ;
+  double wjets ; 
+  double zjets ;
+  //  double wbb    ;
+  //  double wc     ;
+  //  double wgg    ;
   double ww     ;
   double wz     ;
-  double zz     ;
+  //  double zz     ;
   double qcd    ;
 
   // This just print all the elements to screen

@@ -343,6 +343,18 @@ void MEJob::m_doEvent(PartonColl& partons){
       // save the fail, Prob and MaxProbs
       probstat.tIfail  [counter] = *failPtr;
       probstat.tProb   [counter] = returnVal[0];
+//       std::cout << "Jet0Energy=" << sm_eventProb->getMeasuredColl()->getJet(0).E() << std::endl;
+//       std::cout << "Jet1Energy=" << sm_eventProb->getMeasuredColl()->getJet(1).E() << std::endl;
+//       std::cout << "Jet0Type=" << sm_eventProb->getJetType()[0] << std::endl;
+//       std::cout << "Jet1Type=" << sm_eventProb->getJetType()[1] << std::endl;
+//       std::cout << "Jet2Type=" << sm_eventProb->getJetType()[2] << std::endl;
+      probstat.tJet0Type[counter] = sm_eventProb->getJetType()[0];
+      probstat.tJet1Type[counter] = sm_eventProb->getJetType()[1];
+      probstat.tJet2Type[counter] = sm_eventProb->getJetType()[2];
+      probstat.tJet3Type[counter] = sm_eventProb->getJetType()[3];
+      probstat.tJet4Type[counter] = sm_eventProb->getJetType()[4];
+      probstat.tJet5Type[counter] = sm_eventProb->getJetType()[5];
+
       probstat.tMaxProb[counter] = sm_eventProb->getMaxProbNumber();
 
       // Calculate the total Prob, error and the max Prob

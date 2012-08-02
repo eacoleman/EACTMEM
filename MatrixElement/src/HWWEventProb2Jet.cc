@@ -219,6 +219,26 @@ void HWWEventProb2Jet::setPartonTypes() const
       getMeasuredColl()->setParton2Type(kGluon);
 }
 
+void HWWEventProb2Jet::setJetTypes()
+{
+
+  if ( getPartonColl()->getLepCharge() > 0 ) {
+    m_JetType[0]=kAntiUp;
+    m_JetType[1]=kDown;
+  } else {
+    m_JetType[0]=kUp;
+    m_JetType[1]=kAntiDown;
+  }
+
+  if ( getSwappedJet0Jet1Status() ) {
+    int tempType=m_JetType[0];
+    m_JetType[0]=m_JetType[1];
+    m_JetType[1]=tempType;
+  }
+
+}
+
+
 // ------------------------------------------------------------------
 void HWWEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
@@ -245,9 +265,11 @@ bool HWWEventProb2Jet::onSwitch()
   
   switch (getLoop()) {
   case 0:
+    setSwapJet0Jet1Status(false);
     break;
   case 1:
     swapJets(0, 1);
+    setSwapJet0Jet1Status(true);
     break;
   default:
     return false;

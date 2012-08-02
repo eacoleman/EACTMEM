@@ -34,12 +34,18 @@ public:
   Double_t  tRealTime;
   Double_t  tCpuTime;
   Double_t* tProb;    //[tN]
+  Double_t* tJet0Type;    //[tN]
+  Double_t* tJet1Type;    //[tN]
+  Double_t* tJet2Type;    //[tN]
+  Double_t* tJet3Type;    //[tN]
+  Double_t* tJet4Type;    //[tN]
+  Double_t* tJet5Type;    //[tN]
   Double_t* tMaxProb; //[tN]
   Double_t  tEventProb;
   Double_t  tEventErr;
   Double_t  tEventMaxProb; 
   
-  ClassDef(ProbStat, 3)
+  ClassDef(ProbStat, 4)
 
 };
 
