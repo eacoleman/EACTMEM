@@ -20,6 +20,11 @@
 using std::cout;
 using std::endl;
 
+////////////////////////////////////////////////////////////////////////////////
+// construction/destruction
+////////////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
 GenParticle::GenParticle() {
    charge = 0;
    pdgId = 0;
@@ -29,63 +34,94 @@ GenParticle::GenParticle() {
    numberOfDaughters = -1;
 }
 
+
+//______________________________________________________________________________
 GenParticle::~GenParticle() {}
 
+
+//______________________________________________________________________________
 EventNtuple::EventNtuple() {}
 
+
+//______________________________________________________________________________
 EventNtuple::~EventNtuple() {}
 
+
+////////////////////////////////////////////////////////////////////////////////
+// implementation of member functions
+////////////////////////////////////////////////////////////////////////////////
+
+//______________________________________________________________________________
 bool EventNtuple::baseCuts()
 {
    return (METEtMin());
 }
 
+
+//______________________________________________________________________________
 bool EventNtuple::METEtMin(double EtMin)
 {
    return METLV[0].Et()>EtMin;
 }
 
+
+//______________________________________________________________________________
+/*
+//Minimal Example:
+EventNtuple* ntuple = new EventNtuple();
+jets2p->SetBranchAddress("EvtNtuple", &ntuple);
+jets2p->GetEntry(9)
+ntuple->getQGLikelihood(0,new QGLikelihoodCalculator())
+ */
 double EventNtuple::getQGLikelihood(unsigned int index, QGLikelihoodCalculator* qglikeli)
 {
-   if(index >= jLV.size())
+   if (qglikeli==0) {
+      cout << "\tERROR::EventNtuple::getQGLikelihood The QGLikelihoodCalculator is NULL" << endl
+           << "\tPlease fix this. The program will now terminate." << endl;
+      assert(qglikeli);
+   }
+   if(index >= jLV.size()) {
+      cout << "\tERROR::EventNtuple::getQGLikelihood The requested jet index is out of range" << endl
+           << "\tReturning -1.0 as the QGLikelihood" << endl; 
       return -1.0;
-
-   double qglikelihood = 0.0;
-   bool del = false;
-
-   if (!qglikeli) {
-      qglikeli = new QGLikelihoodCalculator();
-      del = true;
    }
 
-   qglikelihood = qglikeli->computeQGLikelihoodPU(jLV[index].Pt(), rho, jChargedMultiplicity[index],
-                                                  jNeutralMultiplicity[index], jPtD[index]);
-   if (del)
-      delete qglikeli;
-   
+   double qglikelihood = 0.0;
+   qglikelihood = qglikeli->computeQGLikelihoodPU(jLV[index].Pt(), rho, jLV[index].jChargedMultiplicity,
+                                                  jLV[index].jNeutralMultiplicity, jLV[index].jPtD);
+ 
    return qglikelihood;
 }
 
+
+//______________________________________________________________________________
+/*
+//Minimal Example:
+EventNtuple* ntuple = new EventNtuple();
+jets2p->SetBranchAddress("EvtNtuple", &ntuple);
+jets2p->GetEntry(9)
+ntuple->getQGLikelihoods(new QGLikelihoodCalculator())
+ */
 vector<double> EventNtuple::getQGLikelihoods(QGLikelihoodCalculator* qglikeli)
 {
-   vector<double> qglikelihoods;
-   bool del = false;
-   
-   if (!qglikeli) {
-      qglikeli = new QGLikelihoodCalculator();
-      del = true;
+   if (qglikeli==0) {
+      cout << "\tERROR::EventNtuple::getQGLikelihoods The QGLikelihoodCalculator is NULL" << endl
+           << "\tPlease fix this. The program will now terminate." << endl;
+      assert(qglikeli);
    }
-
+   if (jLV.size()==0)
+      cout << "\tWARNING::EventNtuple::getQGLikelihoods jLV, jChargedMultiplicity, jNeutralMultiplicity, or jPtD has size 0." << endl << "\tTherefore, no QGLikelihoods will be returned." << endl;
+   
+   vector<double> qglikelihoods;
    for (unsigned int i=0; i<jLV.size(); i++) {
       qglikelihoods.push_back(getQGLikelihood(i,qglikeli));
    }
-   
-   if (del)
-      delete qglikeli;
 
    return qglikelihoods;
 }
 
+
+//______________________________________________________________________________
 double EventNtuple::getJERfactor(double pt, double eta, double ptgen){
 
   double jer = 1;
@@ -107,38 +143,39 @@ double EventNtuple::getJERfactor(double pt, double eta, double ptgen){
 
 }
 
+
+//______________________________________________________________________________
 void EventNtuple::doJER(){
 
-  if (jLV.size()<2 || refjLV.size()<2){
+  if (jLV.size()<2){
     cout<<"ERROR EventNtuple::doJER cannot be called with zero-size vectors"<<endl;
     return ;
   }
 
-  double c0 = getJERfactor(jLV[0].Pt(), jLV[0].Eta(), refjLV[0].Pt());
-  double c1 = getJERfactor(jLV[1].Pt(), jLV[1].Eta(), refjLV[1].Pt());
+  double c0 = getJERfactor(jLV[0].Pt(), jLV[0].Eta(), jLV[0].refLV.Pt());
+  double c1 = getJERfactor(jLV[1].Pt(), jLV[1].Eta(), jLV[1].refLV.Pt());
 
   double newMetX = (c0 - 1)*jLV[0].X() + (c1 - 1)*jLV[1].X() + METLV[0].X();
   double newMetY = (c0 - 1)*jLV[0].Y() + (c1 - 1)*jLV[1].Y() + METLV[0].Y();
   //Jet 1
-  jLV[0]= jLV[0]*c0;
+  jLV[0] = jLV[0]*c0;
 
   //Jet 2
-  jLV[1]= jLV[1]*c1;
+  jLV[1] = jLV[1]*c1;
 
 
   METLV[0].SetX(newMetX);
   METLV[0].SetY(newMetY);
 
-  METEt = sqrt(pow(newMetX, 2) + pow(newMetY, 2));
-
 }
 
-////////////////FNAL CUTs
 
+//______________________________________________________________________________
+////////////////FNAL CUTs
 bool EventNtuple::FNALcutsElectron(){
  
-  if (METEt <= 30)
-    return false;
+  if (METLV[0].Et() <= 30)
+     return false;
   
   TLorentzVector ll = lLV[0];
   TLorentzVector met = METLV[0];
@@ -173,10 +210,12 @@ bool EventNtuple::FNALcutsElectron(){
 
     return true;
 }
+
+//______________________________________________________________________________
 //First FNAL Cut (electron)
 bool EventNtuple::FNALcutsMuon(){
 
-  if (METEt <= 30)
+  if (METLV[0].Et() <= 30)
     return false;
 
   TLorentzVector ll = lLV[0];
