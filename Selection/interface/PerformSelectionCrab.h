@@ -17,7 +17,6 @@
 //
 // CMS includes
 //
-
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -85,7 +84,7 @@
 #include "TAMUWW/Selection/bin/RunEventSet.h"
 
 //
-// Root includes
+// ROOT includes
 //
 #include "TROOT.h"
 #include "TMath.h"
@@ -158,16 +157,15 @@ private:
    // additional (local) functions
    void getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup);
    void makeTPUDist();
-   void setDRlj1();
-   void setDRlj2();
+   void setDRlj();
    void setThetalj1pj2();
    void saveGenPart();
    bool matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2);
    /// matches jets to generator level objects
    pair<int, TLorentzVector> matchToGen(double eta, double phi);
-   void ptSort(vector<TLorentzVector> & vec);
+   void ptSort(vector<Jet> & vec);
    void swap(TLorentzVector & x, TLorentzVector & y);
-   int  max_position(vector<TLorentzVector> & vec, int from, int to);
+   int  max_position(vector<Jet> & vec, int from, int to);
    /// increments the specified tables
    void incrementCounter(int nCut, unsigned int nJets, Table* t1, Table* t2, Table* t3 = 0);
    void printEventInformation(bool print, int cLevel, bool muon);
@@ -186,6 +184,8 @@ private:
    bool PFlowLoose;
    bool elONLY;
    bool muONLY;
+   bool OnVsOffShell;
+   bool StoreJets01;
    int SQWaT_Version;
    bool doTrackerIso;
    bool doDetectorIso;
@@ -207,9 +207,7 @@ private:
    // tree variables
    TTree* EvtTree_0Jets;
    TTree* EvtTree_1Jets;
-   TTree* EvtTree_2Jets;
-   TTree* EvtTree_3Jets;
-   TTree* EvtTree_4Jets;
+   TTree* EvtTree_2pJets;
    EventNtuple* EvtNtuple;
    // histogram variables
    TH1D* TPUDist;
@@ -267,13 +265,10 @@ private:
    // vertex variables
    reco::Vertex pv;
    bool PVfound;
-   double zvtx;
    int vtxcnt;
+   vector<Vertex> vp4;
    // jet variables
-   vector <math::XYZTLorentzVector> jp4_temp;
-   vector <TLorentzVector> refjp4, rawjp4, jp4;
-   vector <double> JEta, JEta_temp, JPhi, JPhi_temp;
-   vector <int> refpdgid;
+   vector <Jet> jp4;
    TVector3 jjp3;
    double j_pt;
    double j_ptMin;
@@ -284,7 +279,6 @@ private:
    double j_DRelMin;
    double muPrim_DRjMin;
    double adphi;
-   vector<double> JChargedMultiplicity, JNeutralMultiplicity, JPtD;
    double CHEFMin;
    double CEMEFMax;
    double NHEFMax;    
@@ -293,10 +287,8 @@ private:
    int CMultiplicityMin;
 
    // b-tag variables
-   vector <int> jBtagSSV, jBtagTC;
-   int nBtagSSV, nBtagTC;
-   vector <double> jBtagDiscriminatorSSV, jBtagDiscriminatorTC;
-   double bDiscriminatorSSVMin, bDiscriminatorTCMin;
+   int nBtagSSV, nBtagTC, nBtagCSV, nBtagCSVMVA;
+   double bDiscriminatorSSVMin, bDiscriminatorTCMin, bDiscriminatorCSVMin, bDiscriminatorCSVMVAMin;
 
    // muon variables
    // Primary Muons (used in muon selection)
@@ -405,23 +397,14 @@ private:
    bool el_PassLoose;
 
    // lepton variables
-   vector<TLorentzVector> lp4;
+   vector<Lepton> lp4;
+   //vector<TLorentzVector> lp4;
    TVector3 lp3;
-   vector<double> l_Eta, l_Phi;
-   vector<DEFS::LeptonCat> l_Type; //muon or electron
    // MET variables
-   vector<TLorentzVector> METp4;
-   double MET_Et;
+   vector<MET> METp4;
    double MET_EtMin;
    bool MET_Pass;
    // additional variables
-   double Thetalj1pj2, DRlj1, DRlj2;
-   double lTotIso;
-   double lecalIso;
-   double lhcalIso;
-   double ltrkIso;
-   double ldetIso;
-   double lpfIso;
    double Mjj;
    int lQ;
    double lEta;

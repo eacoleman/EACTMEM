@@ -40,7 +40,7 @@ using namespace std;
 bool contains(const vector<string>& collection,const string& element,const string& lepton);
 
 /// format and analyze the on vs off shell percentages in a higgs sample
-void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton);
+void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton,string ggqq);
 
 ////////////////////////////////////////////////////////////////////////////////
 // main
@@ -58,6 +58,7 @@ int main(int argc,char**argv) {
    string outFile          = cl.getValue<string> ("outFile",       "");
    vector<string> objects  = cl.getVector<string>("objects",       "");
    bool anaH               = cl.getValue<bool>   ("anaH",       false);
+   string ggqq             = cl.getValue<string> ("ggqq",        "gg");
    
    if (!cl.check()) return 0;
    cl.print();
@@ -147,7 +148,7 @@ int main(int argc,char**argv) {
    ofile->Close();
 
    if (anaH)
-      analyzeOnVsOffShell(outFileLoc,outFile,lepton);      
+      analyzeOnVsOffShell(outFileLoc,outFile,lepton,ggqq);      
 
 
    return 0;
@@ -167,7 +168,7 @@ bool contains(const vector<string>& collection,const string& element,const strin
 }
 
 //______________________________________________________________________________
-void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton) {
+void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton,string ggqq) {
 
    Int_t sty = gStyle->GetOptStat();
    gStyle->SetOptStat(0);
@@ -177,7 +178,7 @@ void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton) {
 
    ifile->cd(TString("/MWjjVsMWlv_"+lepton));
 
-   TH2D* h = (TH2D*)gDirectory->Get(TString("MWjjVsMWlv_"+lepton+"_ggH125"));
+   TH2D* h = (TH2D*)gDirectory->Get(TString("MWjjVsMWlv_"+lepton+"_"+ggqq+"H125"));
    h->SetName(TString(h->GetName())+"_formated");
 
    TLine* lineXlow = new TLine(65,0,65,200);
@@ -253,8 +254,8 @@ void analyzeOnVsOffShell(string inFileLoc,string inFile,string lepton) {
    */
 
    can.Write();
-   can.SaveAs((inFileLoc+"ggH_onVsOffShell_"+lepton+".png").c_str());
-   can.SaveAs((inFileLoc+"ggH_onVsOffShell_"+lepton+".eps").c_str());
+   can.SaveAs((inFileLoc+ggqq+"H_onVsOffShell_"+lepton+".png").c_str());
+   can.SaveAs((inFileLoc+ggqq+"H_onVsOffShell_"+lepton+".eps").c_str());
 
    gStyle->SetOptStat(sty);
 }

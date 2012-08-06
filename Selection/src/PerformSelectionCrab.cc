@@ -60,6 +60,8 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    PFlowLoose                 =         iConfig.getParameter<bool>            ("PFlowLoose");
    elONLY                     =         iConfig.getParameter<bool>            ("elONLY");
    muONLY                     =         iConfig.getParameter<bool>            ("muONLY");
+   OnVsOffShell               =         iConfig.getParameter<bool>            ("OnVsOffShell");
+   StoreJets01                =         iConfig.getParameter<bool>            ("StoreJets01");
 
    MCpTrigger                 =         iConfig.getParameter<bool>            ("MCpTrigger");
    SQWaT_Version              =         iConfig.getParameter<int>             ("SQWaT_Version");
@@ -88,7 +90,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
 
    //-----Vertex Variable Inputs
    PVfound                    =         iConfig.getParameter<bool>            ("PVfound");
-   zvtx                       =         iConfig.getParameter<double>          ("zvtx");
    vtxcnt                     =         iConfig.getParameter<int>             ("vtxcnt");
 
    //-----Jet Variable Inputs
@@ -108,6 +109,8 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    nBtagTC                    =         iConfig.getParameter<int>             ("nBtagTC");
    bDiscriminatorSSVMin       =         iConfig.getParameter<double>          ("bDiscriminatorSSVMin");
    bDiscriminatorTCMin        =         iConfig.getParameter<double>          ("bDiscriminatorTCMin");
+   bDiscriminatorCSVMin       =         iConfig.getParameter<double>          ("bDiscriminatorCSVMin");
+   bDiscriminatorCSVMVAMin    =         iConfig.getParameter<double>          ("bDiscriminatorCSVMVAMin");
 
    //-----Muon Variable Inputs
    muPrim_ptMin               =         iConfig.getParameter<double>          ("muPrim_ptMin");
@@ -181,12 +184,6 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
       MET_EtMin               =         iConfig.getParameter<double>          ("MET_EtMin");
 
    //-----Additional Variable Inputs
-   lTotIso                    =         iConfig.getParameter<double>          ("lTotIso");
-   lecalIso                   =         iConfig.getParameter<double>          ("lecalIso");
-   lhcalIso                   =         iConfig.getParameter<double>          ("lhcalIso");
-   ltrkIso                    =         iConfig.getParameter<double>          ("ltrkIso");
-   ldetIso                    =         iConfig.getParameter<double>          ("ldetIso");
-   lpfIso                     =         iConfig.getParameter<double>          ("lpfIso");
    Mjj                        =         iConfig.getParameter<double>          ("Mjj");
    lQ                         =         iConfig.getParameter<int>             ("lQ");
    lEta                       =         iConfig.getParameter<double>          ("lEta");
@@ -224,17 +221,15 @@ void PerformSelection::beginJob() {
    tableEl = fs->make<Table>(string(outtablenameEl),cuts,jets,"TableCellVal");
    tableMu = fs->make<Table>(string(outtablenameMu),cuts,jets,"TableCellVal");
    tableLp = fs->make<Table>(string(outtablenameLp),cuts,jets,"TableCellVal");
-   EvtTree_0Jets = fs->make<TTree>(getJetBinString(DEFS::jets0).c_str(), "Output tree");
-   EvtTree_1Jets = fs->make<TTree>(getJetBinString(DEFS::jet1).c_str(), "Output tree");
-   EvtTree_2Jets = fs->make<TTree>(getJetBinString(DEFS::jets2).c_str(), "Output tree for matrix element");
-   EvtTree_3Jets = fs->make<TTree>(getJetBinString(DEFS::jets3).c_str(), "Output tree");
-   EvtTree_4Jets = fs->make<TTree>(getJetBinString(DEFS::jets4).c_str(), "Output tree");
    EvtNtuple = new EventNtuple();
-   EvtTree_0Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
-   EvtTree_1Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
-   EvtTree_2Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
-   EvtTree_3Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
-   EvtTree_4Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   if (StoreJets01) {
+      EvtTree_0Jets = fs->make<TTree>(getJetBinString(DEFS::jets0).c_str(), "Output tree");
+      EvtTree_1Jets = fs->make<TTree>(getJetBinString(DEFS::jet1).c_str(), "Output tree");
+      EvtTree_0Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+      EvtTree_1Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   }
+   EvtTree_2pJets = fs->make<TTree>((getJetBinString(DEFS::jets2)+"p").c_str(), "Output tree for matrix element");
+   EvtTree_2pJets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
    if (!Data)
       TPUDist = fs->make<TH1D>("TPUDist","TPUDist",600,0,60);
    PFIsoDist = fs->make<TH1D>("PFIsoDist","PFIsoDist",1000,-1,1);
@@ -286,7 +281,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    //
    //Perform The Selection
    //
-   
+
    //
    // Trigger Selection
    //
@@ -317,17 +312,23 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    //
    jetClear();
    jetSelection();
-     
-   //
-   // Compute the invariant mass, when only two jets are present
-   //
-   computeInvariantMass();
+   // Make sure the jets are sorted by pt
+   if (jp4.size()>1)
+      ptSort(jp4);
 
    //
    // MET Selection
    //
    metSelection();
-     
+
+   //
+   // Set any further quantities that require all of the physics objects to be selected first
+   //
+   // Compute the invariant mass, when only two jets are present
+   computeInvariantMass();
+   setDRlj();
+   setThetalj1pj2();
+
    //
    // Record The Results
    //
@@ -388,7 +389,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                            }//BTags
 
                            /////////////FNAL CUTs
-                           if (MET_Et > 30) {
+                           if (METp4[0].Et() > 30) {
                               incrementCounter(8,Nj,tableEl,tableLp);
                               TLorentzVector mt(lp4[0].Px()+METp4[0].Px(),lp4[0].Py()+METp4[0].Py(),0,lp4[0].Et()+METp4[0].Et());
                               if (mt.M() > 30) {
@@ -397,8 +398,6 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                     incrementCounter(10,Nj,tableEl,tableLp);
                                     if (abs(lp4[0].Eta()) < 2.5) {
                                        incrementCounter(11,Nj,tableEl,tableLp);
-                                       if (jp4.size()>1)
-                                          ptSort(jp4);
                                        if (jp4.size()!=0 && jp4[0].Pt() > 30) {
                                           incrementCounter(12,Nj,tableEl,tableLp);
                                           if (jp4.size() > 1 && jp4[1].Pt() > 30) {
@@ -494,7 +493,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                            }//BTags
                            
                            /////////////FNAL CUTs
-                           if (MET_Et > 30) {
+                           if (METp4[0].Et() > 25) {
                               incrementCounter(8,Nj,tableMu,tableLp);
                               TLorentzVector mt(lp4[0].Px()+METp4[0].Px(),lp4[0].Py()+METp4[0].Py(),0,lp4[0].Et()+METp4[0].Et());
                               if (mt.M() > 30) {
@@ -503,8 +502,6 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                     incrementCounter(10,Nj,tableMu,tableLp);
                                     if (abs(lp4[0].Eta()) < 2.1) {
                                        incrementCounter(11,Nj,tableMu,tableLp);
-                                       if (jp4.size()>1)
-                                          ptSort(jp4);
                                        if (jp4.size()!=0 && jp4[0].Pt() > 30) {
                                           incrementCounter(12,Nj,tableMu,tableLp);
                                           if (jp4.size() > 1 && jp4[1].Pt() > 30) {
@@ -563,7 +560,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       printJetInformation();
    if (printLeptonInfo)
       printLeptonInformation();
-   
+
    //
    // Fill the Ntuple to be used in Matrix Element computations
    //    and the other ntuples for future analysis
@@ -571,155 +568,101 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    // Usual option: fill in the elements which pass all of the cuts, *except* the MET cut
    //
    setFlags();
-   PFIsoDist->Fill(lpfIso);
-   if ((el_passFlag || mu_passFlag)) {
-      EvtNtuple->lLV.clear();
-      EvtNtuple->lLV = lp4;
-
-      EvtNtuple->jLV.clear();
-      EvtNtuple->jLV = jp4;
-      EvtNtuple->rawjLV = rawjp4;
-
+   if (lp4.size()>0)
+      PFIsoDist->Fill(lp4[0].lpfIso);
+   if ((el_passFlag || mu_passFlag) || OnVsOffShell) {
       //
-      // QGLikelihood variables
+      // Event Level Information
       //
-      EvtNtuple->rho=*rhoHandle;
-      EvtNtuple->jChargedMultiplicity = JChargedMultiplicity;
-      EvtNtuple->jNeutralMultiplicity = JNeutralMultiplicity;
-      EvtNtuple->jPtD = JPtD;
+      EvtNtuple->run=runNumber;
+      EvtNtuple->event=eventNumber;
+      EvtNtuple->rho=*rhoHandle;       
+
+      if (!Data && saveGenParticles)
+         saveGenPart();
 
       //
-      // trigger infromation
+      // Trigger Infromation
       //
       EvtNtuple->triggerMap = triggerMap;
 
-      EvtNtuple->METLV.clear();
-      EvtNtuple->METLV = METp4;
+      //
+      // Vertex Information
+      //
+      EvtNtuple->vLV.clear();
+      EvtNtuple->vLV = vp4;
 
-      EvtNtuple->lPhi=lp4[0].Phi();
-      //EvtNtuple->METEt=METp4.Et();
-      EvtNtuple->METEt = MET_Et;
+      //
+      // Jet Information
+      //
+      EvtNtuple->jLV.clear();
+      EvtNtuple->jLV = jp4;
+      // Transfer Function Variables
+      // Do the matching between the pat::Jets and the reco::genParticles
+      pair<int, TLorentzVector> matchedPair;
+      if (!Data) {
+         for (unsigned int j = 0; j<jp4.size(); j++) {
+            matchedPair = matchToGen(jp4[j].Eta(),jp4[j].Phi());
+            EvtNtuple->jLV[j].matchedGenParticles = matchedPair.second;
+            EvtNtuple->jLV[j].matchedpdgId = matchedPair.first;
+            EvtNtuple->jLV[j].matchedDeltaR = reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), jp4[j].Eta(), jp4[j].Phi());
+         }
+      }
+      EvtNtuple->Mjj=Mjj;
 
-      EvtNtuple->jBtagSSV.clear();
-      EvtNtuple->jBtagTC.clear();
-      EvtNtuple->jBtagSSV = jBtagSSV;
-      EvtNtuple->jBtagTC = jBtagTC;
-      EvtNtuple->jBtagDiscriminatorSSV.clear();
-      EvtNtuple->jBtagDiscriminatorTC.clear();
-      EvtNtuple->jBtagDiscriminatorSSV = jBtagDiscriminatorSSV;
-      EvtNtuple->jBtagDiscriminatorTC = jBtagDiscriminatorTC;
-      EvtNtuple->lQ=lQ;
-
+      //
+      // Lepton Information
+      //
+      EvtNtuple->lLV.clear();
+      EvtNtuple->lLV = lp4;
       if (abs(lEta)<etaBarrelMax) {
          //
          // barrel
          //
-         EvtNtuple->ldetComp=0;
+         EvtNtuple->lLV[0].ldetComp = 0;
       } 
       else {
          //
          // endcap
          //
-         EvtNtuple->ldetComp=1;
+         EvtNtuple->lLV[0].ldetComp = 1;
       }
-      EvtNtuple->run=runNumber;
-      EvtNtuple->event=eventNumber;
-       
-      //
-      // Transfer Function Variables
-      //
-      EvtNtuple->matchedGenParticles.clear();
-      EvtNtuple->matchedpdgId.clear();
-      EvtNtuple->matchedDeltaR.clear();
-      //
-      // Do the matching between the pat::Jets and the reco::genParticles
-      //
-      pair<int, TLorentzVector> matchedPair;
-      if (!Data) {
-         for (unsigned int j = 0; j<jp4.size(); j++) {
-            matchedPair = matchToGen(jp4[j].Eta(),jp4[j].Phi());
-            EvtNtuple->matchedGenParticles.push_back(matchedPair.second);
-            EvtNtuple->matchedpdgId.push_back(matchedPair.first);
-            EvtNtuple->matchedDeltaR.push_back(reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), jp4[j].Eta(), jp4[j].Phi()));
-         }
-         EvtNtuple->refjLV = refjp4;
-         EvtNtuple->refpdgid = refpdgid;
-      }
-      if (!Data && saveGenParticles)
-         saveGenPart();
-
-      //
-      // Additional Variables
-      //
-      EvtNtuple->lTotIso=lTotIso;
-      EvtNtuple->lecalIso=lecalIso;
-      EvtNtuple->lhcalIso=lhcalIso;
-      EvtNtuple->ltrkIso=ltrkIso;
-      EvtNtuple->ldetIso=ldetIso;
-      EvtNtuple->lpfIso=lpfIso;
-      EvtNtuple->lmvaTrig=el_mvaTrig;
-      EvtNtuple->lmvaNonTrig=el_mvaNonTrig;
-      EvtNtuple->Mjj=Mjj;
-      EvtNtuple->leptonCat=DEFS::none;
-      EvtNtuple->leptonCat_passAll=DEFS::none;
+      if (el_passAll)
+         EvtNtuple->lLV[0].leptonCat_passAll=DEFS::electron;
+      if (mu_passAll)
+         EvtNtuple->lLV[0].leptonCat_passAll=DEFS::muon;
+      /*
       if (el_passFlag)
          EvtNtuple->leptonCat=DEFS::electron;
       if (mu_passFlag)
          EvtNtuple->leptonCat=DEFS::muon;
-      if (el_passAll)
-         EvtNtuple->leptonCat_passAll=DEFS::electron;
-      if (mu_passAll)
-         EvtNtuple->leptonCat_passAll=DEFS::muon;
-
-      setDRlj1();
-      setDRlj2();
-      setThetalj1pj2();
-       
-      EvtNtuple->DRlj1=DRlj1;
-      EvtNtuple->DRlj2=DRlj2;
-      EvtNtuple->Thetalj1pj2=Thetalj1pj2;
+      */
 
       //
-      // Pileup information
-      // 
-      EvtNtuple->npv=0;
-      const reco::VertexCollection::const_iterator vtxEnd = vtxHandle->end();
-      for (reco::VertexCollection::const_iterator vtxIter = vtxHandle->begin(); vtxEnd != vtxIter; ++vtxIter) {
-         if (!vtxIter->isFake() && vtxIter->ndof()>=4 && fabs(vtxIter->z())<=24 && fabs(vtxIter->position().Rho())<=2.0)
-            ++EvtNtuple->npv;
-      }
-      EvtNtuple->tnpus.clear();
-      EvtNtuple->npus.clear();
-      if (!Data) {
-         for(unsigned int i=0; i<pileupHandle->size(); i++) {
-            EvtNtuple->tnpus.push_back((*pileupHandle)[i].getTrueNumInteractions());
-            EvtNtuple->npus.push_back((*pileupHandle)[i].getPU_NumInteractions());
-         }
-      }
+      // MET Information
+      //
+      EvtNtuple->METLV.clear();
+      EvtNtuple->METLV = METp4;
 
       //
       // Fill The Tree
       //
-      //EvtTree_2Jets->Fill();
-      
       int treeSwitch = jcnt_tot;
-      if (treeSwitch > 4)
-         treeSwitch = 4;
+      if (treeSwitch > 2)
+         treeSwitch = 2;
+      if (OnVsOffShell)
+         treeSwitch = 2;
       switch (treeSwitch) {
          case 0:
-            EvtTree_0Jets->Fill();
+            if (StoreJets01)
+               EvtTree_0Jets->Fill();
             break;
          case 1:
-            EvtTree_1Jets->Fill();
+            if (StoreJets01)
+               EvtTree_1Jets->Fill();
             break;
          case 2:
-            EvtTree_2Jets->Fill();
-            break;
-         case 3:
-            EvtTree_3Jets->Fill();
-            break;
-         case 4:
-            EvtTree_4Jets->Fill();
+            EvtTree_2pJets->Fill();
             break;
          default:
             cout << "WARNING::Value of jcnt_tot does not correspond to a known tree." << endl
@@ -834,16 +777,36 @@ void PerformSelection::setFlags()
 //______________________________________________________________________________
 void PerformSelection::vertexSelection()
 {
+   vp4.clear();
    PVfound = (vtxHandle->begin() != vtxHandle->end());
-   zvtx = -999;
    if (PVfound) {
       pv = (*vtxHandle->begin());
       if (pv.ndof()>=4 && fabs(pv.z())<=24 && fabs(pv.position().Rho())<=2.0) {
          vtxcnt++;
-         zvtx = pv.z();
+         vp4.push_back(Vertex(pv.x(),pv.y(),pv.z(),0));
+         vp4.back().vNDOF = pv.ndof();
+
+         //
+         // Pileup information
+         // 
+         const reco::VertexCollection::const_iterator vtxEnd = vtxHandle->end();
+         for (reco::VertexCollection::const_iterator vtxIter = vtxHandle->begin(); vtxEnd != vtxIter; ++vtxIter) {
+            if (!vtxIter->isFake() && vtxIter->ndof()>=4 && fabs(vtxIter->z())<=24 && fabs(vtxIter->position().Rho())<=2.0)
+               ++vp4.back().npv;
+         }
+         vp4.back().tnpus.clear();
+         vp4.back().npus.clear();
+         if (!Data) {
+            for(unsigned int i=0; i<pileupHandle->size(); i++) {
+               vp4.back().tnpus.push_back((*pileupHandle)[i].getTrueNumInteractions());
+               vp4.back().npus.push_back((*pileupHandle)[i].getPU_NumInteractions());
+            }
+         }
       }
-      else
+      else {
          PVfound=false; 
+         vp4.push_back(Vertex(-999,-999,-999,-999));
+      }
    }
    else {
       throw cms::Exception("InvalidInput") << " There needs to be at least one primary vertex in the event."
@@ -863,21 +826,9 @@ void PerformSelection::jetClear() {
    Mjj=-1;
      
    jNEntries=0;
-   refjp4.clear();
-   rawjp4.clear();
    jp4.clear();
-   JEta.clear();
-   JPhi.clear();
-   refpdgid.clear();
    nBtagSSV=0;
    nBtagTC=0;
-   jBtagSSV.clear();
-   jBtagTC.clear();
-   jBtagDiscriminatorSSV.clear();
-   jBtagDiscriminatorTC.clear();
-   JChargedMultiplicity.clear();
-   JNeutralMultiplicity.clear();
-   JPtD.clear();
    jstreams.clear();
 }
 
@@ -898,17 +849,17 @@ void PerformSelection::jetSelection() {
       // loop through all of the leptons to check the DR with the current jet
       //
       bool jDR = true;
-      for (unsigned int i=0; i<l_Eta.size(); i++) {
-         adphi=abs(l_Phi[i]-j_phi);
+      for (unsigned int i=0; i<lp4.size(); i++) {
+         adphi=abs(lp4[i].Phi()-j_phi);
          //
          // we're on a circle
          //
          if (adphi>pi_)
             adphi=2*pi_-adphi;
          
-         j_DRlepton=pow((j_eta-l_Eta[i])*(j_eta-l_Eta[i])+adphi*adphi,0.5);
+         j_DRlepton=pow((j_eta-lp4[i].Eta())*(j_eta-lp4[i].Eta())+adphi*adphi,0.5);
          
-         if ((l_Type[i]==DEFS::electron && j_DRlepton<j_DRelMin) || (l_Type[i]==DEFS::muon && j_DRlepton<muPrim_DRjMin))
+         if ((lp4[i].leptonCat==DEFS::electron && j_DRlepton<j_DRelMin) || (lp4[i].leptonCat==DEFS::muon && j_DRlepton<muPrim_DRjMin))
             jDR = false;
          else
             continue;
@@ -922,50 +873,51 @@ void PerformSelection::jetSelection() {
           jetIter->numberOfDaughters()>NDaughtersMin && jetIter->chargedHadronEnergyFraction()>CHEFMin && 
           jetIter->chargedMultiplicity()>CMultiplicityMin && jetIter->chargedEmEnergyFraction()<CEMEFMax) {
          jcnt_tot++;
-	  
+         jNEntries++;
          //
          // store the parameters
          //
 
+         //
+         // Corrected (reco) jet
+         //
+         math::XYZTLorentzVector vvv = jetIter->p4();
+         jp4.push_back(Jet(vvv.Px(),vvv.Py(),vvv.Pz(),vvv.E()));
+         jp4.back().jChargedMultiplicity = jetIter->chargedMultiplicity();
+         jp4.back().jNeutralMultiplicity = jetIter->neutralMultiplicity();
+         jp4.back().jNeutralHadronEnergyFraction = jetIter->neutralHadronEnergyFraction();
+         jp4.back().jNeutralEmEnergyFraction = jetIter->neutralEmEnergyFraction();
+         jp4.back().jChargedHadronEnergyFraction = jetIter->chargedHadronEnergyFraction();
+         jp4.back().jChargedEmEnergyFraction = jetIter->chargedEmEnergyFraction();
+         jp4.back().jNumberOfDaughters = jetIter->numberOfDaughters();
+         //PFConstituents not in SQWaT PATtuples created by V00-00-04 or earlier
+         if (SQWaT_Version >= 5)
+            jp4.back().jPtD = getPtD(jetIter->getPFConstituents());
+         else
+            jp4.back().jPtD = 0;
+
+         //
+         // Uncorrected (raw) jet
+         //
+         math::XYZTLorentzVector vv = jetIter->correctedJet("Uncorrected").p4();
+         jp4.back().rawLV = TLorentzVector(vv.Px(),vv.Py(),vv.Pz(),vv.E());
+         
          //
          // Gen (ref) jet
          //
          if (!Data) {
             if (jetIter->genJet()) {
                math::XYZTLorentzVector v = jetIter->genJet()->p4();
-               refjp4.push_back(TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E()));
-               refpdgid.push_back(jetIter->genJet()->pdgId());
+               jp4.back().refLV = TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E());
+               jp4.back().refpdgId = jetIter->genJet()->pdgId();
             }
             else {
                TLorentzVector lv(0,0,0,0);
-               refjp4.push_back(lv);
-               refpdgid.push_back(0);
+               jp4.back().refLV = lv;
+               jp4.back().refpdgId = 0;
             }
          }
 
-         //
-         // Uncorrected (raw) jet
-         //
-         math::XYZTLorentzVector vv = jetIter->correctedJet("Uncorrected").p4();
-         rawjp4.push_back(TLorentzVector(vv.Px(),vv.Py(),vv.Pz(),vv.E()));
-
-         //
-         // Corrected (reco) jet
-         //
-         math::XYZTLorentzVector vvv = jetIter->p4();
-         jp4.push_back(TLorentzVector(vvv.Px(),vvv.Py(),vvv.Pz(),vvv.E()));
-         JEta.push_back(j_eta); 
-         JPhi.push_back(j_phi);
-         JChargedMultiplicity.push_back(jetIter->chargedMultiplicity());
-         JNeutralMultiplicity.push_back(jetIter->neutralMultiplicity());
-         //if (typeid(*jetIter) == typeid(reco::PFJet))
-         //PFConstituents not in SQWaT PATtuples created by V00-00-04 or earlier
-         if (SQWaT_Version >= 5)
-            JPtD.push_back(getPtD(jetIter->getPFConstituents()));
-         else
-            JPtD.push_back(0);
-         jNEntries++;
-	 
          jstream << "pt " << j_pt << " eta " << j_eta << " j_DRlepton " << j_DRlepton
                  << " NHEF " << jetIter->neutralHadronEnergyFraction()
                  << " NEMEF " << jetIter->neutralEmEnergyFraction()
@@ -980,20 +932,34 @@ void PerformSelection::jetSelection() {
          //
          // b-tagging
          //
-         jBtagDiscriminatorSSV.push_back(jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags"));
-         jBtagDiscriminatorTC.push_back(jetIter->bDiscriminator("trackCountingHighEffBJetTags"));
+         jp4.back().jBtagDiscriminatorSSV = jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags");
+         jp4.back().jBtagDiscriminatorTC = jetIter->bDiscriminator("trackCountingHighEffBJetTags");
+         jp4.back().jBtagDiscriminatorCSV = jetIter->bDiscriminator("combinedSVBJetTags");
+         jp4.back().jBtagDiscriminatorCSVMVA = jetIter->bDiscriminator("combinedSVMVABJetTags");
          if (jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminatorSSVMin) {
-            jBtagSSV.push_back(1);
+            jp4.back().jBtagSSV = 1;
             nBtagSSV++;
          } 
          else
-            jBtagSSV.push_back(0);
+            jp4.back().jBtagSSV = 0;
          if (jetIter->bDiscriminator("trackCountingHighEffBJetTags")>bDiscriminatorTCMin) {
-            jBtagTC.push_back(1);
+            jp4.back().jBtagTC = 1;
             nBtagTC++;
          } 
          else
-            jBtagTC.push_back(0);
+            jp4.back().jBtagTC = 0;
+         if (jetIter->bDiscriminator("combinedSecondaryVertexBJetTags")>bDiscriminatorCSVMin) {
+            jp4.back().jBtagCSV = 1;
+            nBtagCSV++;
+         } 
+         else
+            jp4.back().jBtagCSV = 0;
+         if (jetIter->bDiscriminator("combinedSVMVABJetTags")>bDiscriminatorCSVMVAMin) {
+            jp4.back().jBtagCSVMVA = 1;
+            nBtagCSVMVA++;
+         } 
+         else
+            jp4.back().jBtagCSVMVA = 0;
       } //for(Selection Cuts)
    } //for(jetIter)
 }
@@ -1090,7 +1056,6 @@ void PerformSelection::muonSelection() {
       
        
       mu_vtxPass=false;
-      //if (abs(zvtx - muIter->vertex().z())<muPrim_dzMax && muIter->dB()<muPrim_dBMax)
       if (abs(muIter->innerTrack()->dz(vtxHandle->at(0).position()))<muPrim_dzMax && muIter->dB()<muPrim_dBMax)
          mu_vtxPass=true;
        
@@ -1113,18 +1078,26 @@ void PerformSelection::muonSelection() {
          if (isProperlyIsolatedMu) {
             mucnt_Prim++;
             math::XYZTLorentzVector lv = muIter->p4();
-            lp4.push_back(TLorentzVector(lv.Px(),lv.Py(),lv.Pz(),lv.E()));
-            lQ=muIter->charge();
-            l_Eta.push_back(mu_eta);
-            l_Phi.push_back(mu_phi);
-            l_Type.push_back(DEFS::muon);
-            ltrkIso=mu_TrkIso;
-            ldetIso=mu_DetIso;
-            lpfIso=mu_PFIso;
+            lp4.push_back(Lepton(lv.Px(),lv.Py(),lv.Pz(),lv.E())); 
+            lp4.back().lQ = muIter->charge();
+            lp4.back().leptonCat = DEFS::muon;
+            lp4.back().ltrkIso = mu_TrkIso;
+            lp4.back().ldetIso = mu_DetIso;
+            lp4.back().lpfIso = mu_PFIso;
             if (doDetectorIso)
-               lTotIso=mu_DetIso;
+               lp4.back().lTotIso = mu_DetIso;
             else
-               lTotIso=mu_TrkIso;
+               lp4.back().lTotIso = mu_TrkIso;
+            lp4.back().mIsGlobal = muisGmTm;
+            lp4.back().mIsPF = muisPFm;
+            lp4.back().mIsTracker = muIter->isTrackerMuon();
+            lp4.back().mNormalizedChi2 = muIter->globalTrack()->normalizedChi2();
+            lp4.back().mNumberOfValidMuonHits = muIter->globalTrack()->hitPattern().numberOfValidMuonHits();
+            lp4.back().mNumberValidHits = muPrim_itNHits;
+            lp4.back().mNumberOfValidPixelHits = muIter->innerTrack()->hitPattern().numberOfValidPixelHits();
+            lp4.back().mNumberOfMatchedStations = muIter->numberOfMatchedStations();
+            lp4.back().ldz = abs(muIter->innerTrack()->dz(vtxHandle->at(0).position()));
+            lp4.back().ldB = muIter->dB();
 
             lstream << "mu_tight pt " << mu_pt << " eta " << abs(mu_eta) << " mu_vtxPass " << mu_vtxPass << " dz " << abs(muIter->innerTrack()->dz(vtxHandle->at(0).position())) << " d0 " << abs(muIter->dB()) << " PFIso " << mu_PFIso << " global " << muIter->isGlobalMuon() << " pf " << muIter->isPFMuon() << " nMuonHits " << muIter->globalTrack()->hitPattern().numberOfValidMuonHits() << " nHits " << muIter->innerTrack()->numberOfValidHits() << " nPixelHits " << muIter->innerTrack()->hitPattern().numberOfValidPixelHits() << " Chi2 " << muIter->globalTrack()->normalizedChi2() << " nMatchedStations " << muIter->numberOfMatchedStations() << endl;
             lstreams.push_back(lstream.str());
@@ -1157,9 +1130,6 @@ void PerformSelection::muonSelection() {
 void PerformSelection::eleClear() {
    elcnt_Prim=0;
    elcnt_Loose=0;
-   l_Eta.clear();
-   l_Phi.clear();
-   l_Type.clear();
    lstreams.clear();
    lp4.clear();
 }
@@ -1222,18 +1192,30 @@ void PerformSelection::eleSelection() {
          //
          elcnt_Prim++;
          math::XYZTLorentzVector lv = elIter->p4();
-         lp4.push_back(TLorentzVector(lv.Px(),lv.Py(),lv.Pz(),lv.E()));
-         lQ=elIter->charge();
-         l_Eta.push_back(el_eta);
-         l_Phi.push_back(el_phi);
-         l_Type.push_back(DEFS::electron);
-         ltrkIso=el_TrkIso;
-         ldetIso=el_DetIso;
-         lpfIso=el_PFIso;
+         lp4.push_back(Lepton(lv.Px(),lv.Py(),lv.Pz(),lv.E()));
+         lp4.back().lQ = elIter->charge();
+         lp4.back().leptonCat = DEFS::electron;
+         lp4.back().ltrkIso = el_TrkIso;
+         lp4.back().ldetIso = el_DetIso;
+         lp4.back().lpfIso = el_PFIso;
          if (doDetectorIso)
-            lTotIso=el_DetIso;
+            lp4.back().lTotIso = el_DetIso;
          else
-            lTotIso=el_TrkIso;
+            lp4.back().lTotIso = el_TrkIso;
+         lp4.back().ldz = abs(elIter->gsfTrack()->dz(pv.position()));
+         lp4.back().ldB = abs(elIter->dB());
+         lp4.back().emvaTrig = el_mvaTrig;
+         lp4.back().emvaNonTrig = el_mvaNonTrig;
+         lp4.back().ePassConversionVeto = el_convPass;
+         lp4.back().eIsEB = elIter->isEB();
+         lp4.back().eIsEE = elIter->isEE();
+         lp4.back().eSuperClusterEta = elIter->superCluster()->eta();
+         lp4.back().eEcalEnergy = elIter->ecalEnergy();
+         lp4.back().eESuperClusterOverP = elIter->eSuperClusterOverP();
+         lp4.back().eSigmaIetaIeta = elIter->sigmaIetaIeta();
+         lp4.back().eDeltaPhi = elIter->deltaPhiSuperClusterTrackAtVtx();
+         lp4.back().eDeltaEta = elIter->deltaEtaSuperClusterTrackAtVtx();
+         lp4.back().eHadronicOverEm = elIter->hadronicOverEm();
 
          lstream << "el_tight pt " << el_pt << " eta " << abs(el_eta) << " dz " << abs(elIter->gsfTrack()->dz(pv.position())) << " d0 " << abs(elIter->dB()) << " PFIso " << el_PFIso << " EB " << elIter->isEB() << " Passed conversion veto " << el_convPass << " sigmaIetaIeta " << elIter->sigmaIetaIeta() << " DeltaPhi " << abs(elIter->deltaPhiSuperClusterTrackAtVtx()) << " DeltaEta " << abs(elIter->deltaEtaSuperClusterTrackAtVtx()) << " HoE " << elIter->hadronicOverEm() << " EinvMinusPinv " << el_EinvMinusPinvPass << " nHits " << elIter->gsfTrack()->trackerExpectedHitsInner().numberOfHits() << endl; 
          lstreams.push_back(lstream.str());
@@ -1439,9 +1421,8 @@ void PerformSelection::metSelection() {
 
    math::XYZTLorentzVector v = METHandle->front().p4();
    METp4.push_back(TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E()));
-   MET_Et = METp4[0].Et();
 
-   MET_Pass = MET_Et > MET_EtMin;
+   MET_Pass = METp4[0].Et() > MET_EtMin;
 }
 
 
@@ -1487,20 +1468,23 @@ void PerformSelection::makeTPUDist() {
 }
 
 //______________________________________________________________________________
-void PerformSelection::setDRlj1() {
-   DRlj1=lp4[0].DeltaR(jp4[0]);
-}
-
-//______________________________________________________________________________
-void PerformSelection::setDRlj2() {
-   DRlj2=lp4[0].DeltaR(jp4[1]);
+void PerformSelection::setDRlj() {
+   for (int i=0; i<jcnt_tot; i++)
+      if (lp4.size()>0)
+         jp4[i].DRlj = lp4[0].DeltaR(jp4[i]);
 }
 
 //______________________________________________________________________________
 void PerformSelection::setThetalj1pj2() {
-   lp3.SetXYZ(lp4[0].Px(),lp4[0].Py(),lp4[0].Pz());
-   jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
-   Thetalj1pj2=lp3.Dot(jjp3)/(lp3.Mag()*jjp3.Mag());
+   if (jp4.size()>=2 && lp4.size()>0) {
+      lp3.SetXYZ(lp4[0].Px(),lp4[0].Py(),lp4[0].Pz());
+      jjp3.SetXYZ(jp4[0].Px()+jp4[1].Px(),jp4[0].Py()+jp4[1].Py(),jp4[0].Pz()+jp4[1].Pz());
+      lp4[0].Thetalj1pj2 = lp3.Dot(jjp3)/(lp3.Mag()*jjp3.Mag());
+   }
+   else if (lp4.size()>0)
+      lp4[0].Thetalj1pj2 = 0;
+   else
+      return;
 }
 
 //______________________________________________________________________________
@@ -1562,7 +1546,6 @@ void PerformSelection::saveGenPart() {
 //______________________________________________________________________________
 bool PerformSelection::matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2) {
    if (p1->status()==p2->status() && p1->pdgId()==p2->pdgId() && p1->charge()==p2->charge()) {
-      cout << "sfsg1" << endl;
       math::XYZTLorentzVectorD const& tl1p4 = p1->p4();
       math::XYZTLorentzVectorD const& tl2p4 = p2->p4();
       if (tl1p4.px()==tl2p4.px() && tl1p4.py()==tl2p4.py() && tl1p4.pz()==tl2p4.pz() && tl1p4.energy()==tl2p4.energy())
@@ -1594,7 +1577,7 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
 }
 
 //______________________________________________________________________________
-void PerformSelection::ptSort(vector<TLorentzVector> & vec) {
+void PerformSelection::ptSort(vector<Jet> & vec) {
    for (unsigned int next = 0; next < vec.size()-1; next++) {
       unsigned int max_pos = (unsigned int)max_position(vec, next, vec.size()-1);
       if (max_pos != next)
@@ -1610,7 +1593,7 @@ void PerformSelection::swap(TLorentzVector & x, TLorentzVector & y) {
 }
 
 //______________________________________________________________________________
-int PerformSelection::max_position(vector<TLorentzVector> & vec, int from, int to) {
+int PerformSelection::max_position(vector<Jet> & vec, int from, int to) {
    int max_pos = from;
    int i;
    for (i = from + 1; i <= to; i++)

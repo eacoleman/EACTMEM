@@ -29,20 +29,28 @@ inputFiles = cms.untracked.vstring(
 ##################
 # WZ Monte Carlo #
 ##################
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_9_1_Lph.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_99_1_pzW.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_98_1_77z.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_97_1_GnJ.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_96_1_wKp.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_95_1_2Ke.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_94_1_Aj2.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_93_1_LYz.root'
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_9_1_Lph.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_99_1_pzW.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_98_1_77z.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_97_1_GnJ.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_96_1_wKp.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_95_1_2Ke.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_94_1_Aj2.root',
+    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_93_1_LYz.root'
 #####################
 # WJets Monte Carlo #
 #####################
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_518_1_QXj.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_517_1_N8m.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_510_1_87t.root'
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_518_1_QXj.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_517_1_N8m.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_510_1_87t.root'
+######################
+# ggH125 Monte Carlo #
+######################
+#    '/store/user/aperloff/LQ-ggh125_SIM/SQWaT_PAT_52X_Summer12_v1/290326670ba15ca0752d90668da7d2ec/pat_52x_test_1_1_5x8.root'
+#####################
+# WH120 Monte Carlo #
+#####################
+#    'dcap::///pnfs/cms/WAX/11/store/user/ssengupt/H_M120/output/ssengupt/WH_ZH_TTH_HToWW_M-120_8TeV-pythia6/SQWaT_PAT_52X_wH_zH_ttH_120_Summer12_v2/290326670ba15ca0752d90668da7d2ec/pat_52x_test_66_1_Abv.root'
 #############
 # Muon Data #
 #############
@@ -108,6 +116,8 @@ process.PS.invertEID         = cms.bool(False)               # electrons which *
 process.PS.PFlowLoose        = cms.bool(False)               # use the collections with the PF2PAT postfix=PFlowLoose (instead of PFlow)
 process.PS.elONLY            = cms.bool(False)               # only save the output if the lepton is an electron
 process.PS.muONLY            = cms.bool(False)               # only save the output if the lepton is a muon
+process.PS.OnVsOffShell      = cms.bool(False)               # save all the trees in the 2 jets tree and don't use any cuts
+process.PS.StoreJets01       = cms.bool(False)               # save the jets0 and jet1 trees
 
     #-----Event Variable Inputs
 process.PS.elcnt_Prim                 = cms.int32(0)
@@ -129,7 +139,6 @@ process.PS.el_passTrigger             = cms.bool(True)
 
     #-----Vertex Variable Inputs
 process.PS.PVfound                    = cms.bool(False)
-process.PS.zvtx                       = cms.double(-999)
 process.PS.vtxcnt                     = cms.int32(0)
 
     #-----Jet Variable Inputs
@@ -147,8 +156,10 @@ process.PS.CMultiplicityMin           = cms.int32(0)
     #-----B-Tag Variable Inputs
 process.PS.nBtagSSV                   = cms.int32(0)
 process.PS.nBtagTC                    = cms.int32(0)
-process.PS.bDiscriminatorSSVMin       = cms.double(1.74)     # corresponds to the 'medium' cut (per https://twiki.cern.ch/twiki/bin/view/CMS/BTV10001)
-process.PS.bDiscriminatorTCMin        = cms.double(1.74)     #Should change
+process.PS.bDiscriminatorSSVMin       = cms.double(1.74)     # https://twiki.cern.ch/twiki/bin/view/CMS/BTagPerformanceOP
+process.PS.bDiscriminatorTCMin        = cms.double(3.3)      # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging?redirectedfrom=CMS.SWGuideBTagging#Algorithms
+process.PS.bDiscriminatorCSVMin      = cms.double(0.679)     # corresponds to the 'medium' cuts
+process.PS.bDiscriminatorCSVMVAMin   = cms.double(0.679)
 
     #-----Muon Variable Inpust
 process.PS.muPrim_ptMin               = cms.double(20.0)

@@ -47,7 +47,7 @@ double weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
    // Trigger Effeciency reweighting
    //weight *= triggerEfficiency->getWeight(ntuple->leptonCat, ntuple->lLV[0].Pt(), ntuple->lLV[0].Eta());
    // Pileup reweighting
-   weight *= puweight->getWeight(ntuple->tnpus[1]);
+   weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
    
    return weight;
 }
@@ -264,7 +264,7 @@ bool eventPassCuts(EventNtuple* ntuple, const PhysicsProcessNEW*){
      both              |   both   | continue
    */
    // Kill only electron-muon combinations, nothing else
-   if ( ntuple->leptonCat != leptonCategory && (leptonCategory != DEFS::both && ntuple->leptonCat != DEFS::both) )
+   if ( ntuple->lLV[0].leptonCat != leptonCategory && (leptonCategory != DEFS::both && ntuple->lLV[0].leptonCat != DEFS::both) )
       return false;
   
    /* OLD CUTS
