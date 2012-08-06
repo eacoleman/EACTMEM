@@ -75,15 +75,17 @@ namespace UserFunctions
 void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, double weight)
 {
    //-----------------ELECTRON--------------------//
-   if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
+   //if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
+   if (1)
    {
+      
       double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
       double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
       pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
-      
+
       if(!doElectron)
          return;
-      
+
       plots["Mjj_electron"]->Fill(Mjj,weight);
       plots["LeptPt_electron"]->Fill(ntuple->lLV[0].Pt(),weight);
       plots["LeptEta_electron"]->Fill(ntuple->lLV[0].Eta(),weight);
@@ -123,9 +125,10 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
       }
       plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lQ)*weight);
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lQ)*weight);
+*/
    }
    // -------------MUON-------------------//
-   else if (ntuple->leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
+   else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
    {
       double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
       double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
@@ -160,26 +163,26 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
       plots["DeltaPhi_LJ1_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
       plots["DeltaPhi_J1J2_muon"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);   
       plots["DeltaPhi_LJ1_vs_J1J2_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots["npv_muon"]->Fill(ntuple->npv,weight);
+      plots["npv_muon"]->Fill(ntuple->vLV[0].npv,weight);
       plots["jjlvPhi_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
       plots["MWjjVsMWlv_muon"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
-      if (ntuple->lQ == 1){
+      if (ntuple->lLV[0].lQ == 1){
          plots["DeltaPhi_LJ1_vs_J1J2_Positive_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots["WmT_Positive_muon"]->Fill(WmT, weight);
       }
-      if (ntuple->lQ == -1){
+      if (ntuple->lLV[0].lQ == -1){
          plots["DeltaPhi_LJ1_vs_J1J2_Negative_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots["WmT_Negative_muon"]->Fill(WmT, weight);
       }
-      plots["WmT_Subtracted_muon"]->Fill(WmT, (ntuple->lQ)*weight);
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lQ)*weight);
+      plots["WmT_Subtracted_muon"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
+      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
    }
 }//fillPlots
 
 //______________________________________________________________________________
 // Return true if the event pass the cuts imposed to the given lepton category
 bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*){
-
+   
   /*
   ntuple->leptonCat  |    req   | result
           muon       |   muon   | continue
@@ -193,7 +196,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
           both       |   both   | continue
   */
   // Kill onlye electron-muon combinations, nothing else
-  if ( ntuple->leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->leptonCat != DEFS::both) )
+  if ( ntuple->lLV[0].leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->lLV[0].leptonCat != DEFS::both) )
     return false;
 
  /* if (ntuple->leptonCat == DEFS::muon)
@@ -207,11 +210,11 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
 
   //Implement FNAL cuts
   if (doFNAL){
-    if (ntuple->leptonCat == DEFS::muon){
+    if (ntuple->lLV[0].leptonCat == DEFS::muon){
       if(!ntuple->FNALcutsMuon())
 	return false;
     }
-    else if(ntuple->leptonCat == DEFS::electron)
+    else if(ntuple->lLV[0].leptonCat == DEFS::electron)
       if (!ntuple->FNALcutsElectron())
 	return false;
   }
@@ -250,7 +253,7 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
 
    // Pileup reweighting
    if (doPUreweight){
-     weight *= puweight->getWeight(ntuple->tnpus[1]);
+     weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
      
      if (WJweight){
        if (auxName.Contains("WJETS")){
@@ -319,7 +322,7 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
     return;
    
   // Initializes PU Reweighting
-  string dataname = string("/uscms/home/amejia94/CMSSW_5_2_3_patch4/src/pileup12_noTrig.root");
+  string dataname = string("/uscms/home/amejia94/CMSSW_5_2_5/src/pileup12_noTrig.root");
   string MCname   = string(TString(proc->fileName));
   puweight = new PUreweight(dataname,MCname,"pileup_IsoMu24_eta2p1","PS/TPUDist");
 }
@@ -459,34 +462,46 @@ pair<double,double> UserFunctions::onVsOffShellInclusive(EventNtuple * ntuple)
 	} //loop through the daughters of the Higgs
 	if (verbose)
 	  cout << "->";
-	for (unsigned int j=0; j<W.size() && W.size()==2; j++) {
-	  lc = 0;
-	  qc = 0;
-	  for (unsigned int k=0; k<ntuple->genParticleCollection[W[j].second].daughterPositions.size(); k++) {
-	    if (W[j].first==2)
-	      continue;
-	    else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==0) {
-	      lc++;
-	    }
-	    else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==1) {
-	      qc++;
-	    }
-	    if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId!=0)
-	      if (verbose)
-		cout << ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId
-		     << ",";
-	  } //loop through the daughters of the W
-	  if (lc==2 && qc==0)
-	    W[j].first = 0;
-	  else if (lc==0 && qc==2)
-	    W[j].first = 1;
-	  else if (lc>0 && qc>0)
-	    W[j].first = 2;
-	  else {
-	    cout << "Something is wonky!!!" << endl;
-	    W[j].first = 3;
-	  }
-	} //loop through all of the W
+    if(W.size()==2) {
+       for (unsigned int j=0; j<W.size(); j++) {
+          lc = 0;
+          qc = 0;
+          for (unsigned int k=0; k<ntuple->genParticleCollection[W[j].second].daughterPositions.size(); k++) {
+             if (W[j].first==2)
+                continue;
+             else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==0) {
+                if (abs(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==11 && ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].p4.Pt()<=27) {
+                   if (verbose)
+                      cout << "CUT" << endl;
+                   return make_pair(-1.0,-1.0);
+                }
+                if (abs(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==13 && ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].p4.Pt()<=24) {
+                   if (verbose)
+                      cout << "CUT" << endl;
+                   return make_pair(-1.0,-1.0);
+                }
+                lc++;
+             }
+             else if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && leptonOrQuark(ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId)==1) {
+                qc++;
+             }
+             if (ntuple->genParticleCollection[W[j].second].daughterPositions[k]<=500 && ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId!=0)
+                if (verbose)
+                   cout << ntuple->genParticleCollection[ntuple->genParticleCollection[W[j].second].daughterPositions[k]].pdgId
+                        << ",";
+          } //loop through the daughters of the W
+          if (lc==2 && qc==0)
+             W[j].first = 0;
+          else if (lc==0 && qc==2)
+             W[j].first = 1;
+          else if (lc>0 && qc>0)
+             W[j].first = 2;
+          else {
+             cout << "Something is wonky!!!" << endl;
+             W[j].first = 3;
+          }
+       } //loop through all of the W
+    } //if there are only 2 W
 	if (verbose)
 	  cout << endl;
       } //find the Higgs
@@ -494,7 +509,7 @@ pair<double,double> UserFunctions::onVsOffShellInclusive(EventNtuple * ntuple)
    
    if (W.size()==0) {
      //cout << "WARNING::No W decaying from a Higgs was found." << endl;
-     return make_pair(0.0,0.0);
+     return make_pair(-1.0,-1.0);
    }
    else if (W[0].first==0 && W[1].first==1)
      return make_pair(ntuple->genParticleCollection[W[1].second].p4.M(),
@@ -506,7 +521,7 @@ pair<double,double> UserFunctions::onVsOffShellInclusive(EventNtuple * ntuple)
      cout << "WARNING::Unable to determine which W is hadronic and which W is leptonic." << endl
 	  << "W[0].first = " << W[0].first << "\tW1[].first = " << W[1].first << endl
 	  << "W[0].second = " << W[0].second << "\tW1[].second = " << W[1].second << endl;
-     return make_pair(0.0,0.0);
+     return make_pair(-1.0,-1.0);
    }
 }
 
@@ -612,7 +627,7 @@ int main(int argc,char**argv) {
 void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight, bool verbose) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
-   pFill.setCutFunction(&UserFunctions::eventPassCuts);
+   //pFill.setCutFunction(&UserFunctions::eventPassCuts);
    pFill.setWeightFunction(&UserFunctions::weightFunc);
    pFill.setProcessFunction(&UserFunctions::processFunc);
    pFill.setInitializeEventFunction(&UserFunctions::initEventFunc);
@@ -709,38 +724,41 @@ double getNumMCEvts(TString channelName)
 // intLum    = The integrated luminosity in pb-1 for this given lepton category 
 vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
    
-  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120621_NTUPLES/";
+  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120722_NTUPLES/";
   vector <PhysicsProcessNEW*> procs;
   
-
-  procs.push_back(new PlotterPhysicsProcessNEW("WW",basePath+"WW/PS.root", getCrossSection("WW"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WW",basePath+"WW.root", getCrossSection("WW"),
                                                intLum, getNumMCEvts("WW"), getProcessColor("WW")));
-  procs.push_back(new PlotterPhysicsProcessNEW("WZ",basePath+"WZ/PS.root", getCrossSection("WZ"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WZ",basePath+"WZ.root", getCrossSection("WZ"),
                                                intLum, getNumMCEvts("WZ"), getProcessColor("WZ")));
-  procs.push_back(new PlotterPhysicsProcessNEW("DYJets",basePath+"DYJets/PS.root", getCrossSection("DYJets"),
+  procs.push_back(new PlotterPhysicsProcessNEW("DYJets",basePath+"DYJets.root", getCrossSection("DYJets"),
                                                intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
-  procs.push_back(new PlotterPhysicsProcessNEW("TTbar",basePath+"TTbar/PS.root", getCrossSection("TTbar"),
+  procs.push_back(new PlotterPhysicsProcessNEW("TTbar",basePath+"TTbar.root", getCrossSection("TTbar"),
                                                intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T",basePath+"STopT_T/PS.root", getCrossSection("STopT_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T",basePath+"STopT_T.root", getCrossSection("STopT_T"),
                                                intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
   //   procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
   //                            getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
   //                            getProcessColor("STopT_Tbar")));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T",basePath+"STopS_T/PS.root", getCrossSection("STopS_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T",basePath+"STopS_T.root", getCrossSection("STopS_T"),
                                                intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T")));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar/PS.root",
+  procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar.root",
                                                getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
                                                getProcessColor("STopS_Tbar")));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T/PS.root",
+  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T.root",
                                                getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
                                                getProcessColor("STopTW_T")));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar/PS.root", 
+  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar.root", 
                                                getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
                                                getProcessColor("STopTW_Tbar")));
-
-  procs.push_back(new PlotterPhysicsProcessNEW("ggH125",basePath+"ggH125/PS.root", 
-                                               getCrossSection("ggH125")*getBranchingRatio("ggH125"), intLum, getNumMCEvts("ggH125"),
-                                               getProcessColor("ggH125"), "PS/jets2"));
+  procs.push_back(new PlotterPhysicsProcessNEW("ggH125",basePath+"ggH125.root", 
+                                               getCrossSection("ggH125")*getBranchingRatio("ggH125"),
+                                               intLum, getNumMCEvts("ggH125"), getProcessColor("ggH125"), 
+                                               "PS/jets2"));
+  procs.push_back(new PlotterPhysicsProcessNEW("qqH125",basePath+"qqH125.root", 
+                                               getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
+                                               intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
+                                               "PS/jets2"));
   
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
@@ -751,29 +769,29 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets/PS.root",1.16539*getCrossSection("WJets"),
+    procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.16539*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
-                                                 "PS/EvtTree", DEFS::electron));
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data/PS.root",
+                                                 "PS/jet2", DEFS::electron));
+    procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
-                                                 "PS/EvtTree", DEFS::electron)); 
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched/PS.root",
+                                                 "PS/jets2", DEFS::electron)); 
+    procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
                                                  0.000882659*getCrossSection("QCD_ElEnriched"), intLum,
                                                  getNumMCEvts("QCD_ElEnriched"),
                                                  getProcessColor("QCD_ElEnriched"),
-                                                 "PS/EvtTree", DEFS::electron));
+                                                 "PS/jets2", DEFS::electron));
   }  
   
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets/PS.root",1.16817*getCrossSection("WJets"),
+    procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets.root",1.16817*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
-                                                 "PS/EvtTree", DEFS::muon));
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_muon",basePath+"SingleMu_Data/PS.root",
+                                                 "PS/jets2", DEFS::muon));
+    procs.push_back(new PlotterPhysicsProcessNEW("Data_muon",basePath+"SingleMu_Data.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleMu_Data"),
-                                                 "PS/EvtTree", DEFS::muon));
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched/PS.root",
+                                                 "PS/jets2", DEFS::muon));
+    procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
                                                  0.671604*getCrossSection("QCD_MuEnriched"), intLum,
                                                  getNumMCEvts("QCD_MuEnriched"),
                                                  getProcessColor("QCD_MuEnriched"),
@@ -1784,6 +1802,8 @@ Color_t getProcessColor(TString channelName){
    else if (channelName.CompareTo("TTbar") == 0)
      return kAzure-2; 
    else if (channelName.CompareTo("ggH125") == 0)
+     return kRed+2; 
+   else if (channelName.CompareTo("qqH125") == 0)
      return kRed+2; 
    else if (channelName.CompareTo("SingleEl_Data") == 0)
      return kBlack;
