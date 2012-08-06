@@ -112,20 +112,19 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
       plots["DeltaPhi_LJ1_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
       plots["DeltaPhi_J1J2_electron"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
       plots["DeltaPhi_LJ1_vs_J1J2_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots["npv_electron"]->Fill(ntuple->npv,weight);
+      plots["npv_electron"]->Fill(ntuple->vLV[0].npv,weight);
       plots["jjlvPhi_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
       plots["MWjjVsMWlv_electron"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
-      if (ntuple->lQ == 1){
+      if (ntuple->lLV[0].lQ == 1){
          plots["DeltaPhi_LJ1_vs_J1J2_Positive_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots["WmT_Positive_electron"]->Fill(WmT, weight);
       }
-      if (ntuple->lQ == -1){
+      if (ntuple->lLV[0].lQ == -1){
          plots["DeltaPhi_LJ1_vs_J1J2_Negative_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots["WmT_Negative_electron"]->Fill(WmT, weight);
       }
-      plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lQ)*weight);
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lQ)*weight);
-*/
+      plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
+      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
    }
    // -------------MUON-------------------//
    else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
