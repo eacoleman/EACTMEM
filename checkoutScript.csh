@@ -19,7 +19,7 @@ if ( $version == 428 ) then
 	cd CMSSW_4_2_8/src
 	cmsenv
 	set CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
-	cvs co -d TAMUWW UserCode/TAMUWW
+	cvs co -r branch42X -d TAMUWW UserCode/TAMUWW
 	cvs co FWCore/Common/interface/EventBase.h
 
 	echo "Commenting out line 86 from FWCore/Common/interface/EventBase.h"
