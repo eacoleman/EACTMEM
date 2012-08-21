@@ -583,7 +583,7 @@ void fillPlotsForProcess(map<string, aPlot> & plots, proc* proc, int leptCat){
          cout<<"\t\tevent "<<ev<<endl;
 
       // make sure the events pass the extraCuts
-      if (ntuple->leptonCat != leptCat)
+      if (ntuple->lLV[0].leptonCat != leptCat)
          continue;
 
       //reset the weight for each event, so the default will be 1.0

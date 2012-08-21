@@ -430,15 +430,15 @@ void EventNtupleEventFile::fillBranches(PartonColl& partons)
   partons.setNeutrino(m_ntuple->METLV[0]);
 
 
-  PartonColl::Jet jet1(m_ntuple->jLV[0], m_ntuple->jBtagSSV[0],
+  PartonColl::Jet jet1(m_ntuple->jLV[0], m_ntuple->jLV[0].jBtagSSV,
 		       true, 0, false, 0, 0, 0, 0, 0);
-  PartonColl::Jet jet2(m_ntuple->jLV[1], m_ntuple->jBtagSSV[1],
+  PartonColl::Jet jet2(m_ntuple->jLV[1], m_ntuple->jLV[1].jBtagSSV,
 		       true, 0, false, 0, 0, 0, 0, 0);
   
   partons.addJet(jet1);
   partons.addJet(jet2);
 
-  partons.setLepCharge(m_ntuple->lQ);
-  partons.setDetector(m_ntuple->ldetComp);
+  partons.setLepCharge(m_ntuple->lLV[0].lQ);
+  partons.setDetector(m_ntuple->lLV[0].ldetComp);
 
 }//fillBranches

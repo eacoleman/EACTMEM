@@ -2,13 +2,10 @@
 echo "Have you run 'kserver_init' in the last 24 hrs? (y/n) "
 set KS = $<
 if ( $KS != y ) then
-	echo "ERROR::Cannot continue without running that command being run first!"	
-	echo "//////////////"
-	echo "// FINISHED //"
-	echo "//////////////"
-	exit
-else
+	echo "WARNING::Cannot continue without running that command being run first!"
+	echo "Running kserver_init ... "
 	kserver_init
+	echo "DONE"
 endif
 
 echo " Type 428 for CMSSW_4_2_8, 525 for CMSSW_5_2_5 (Default = 525) "
@@ -22,7 +19,7 @@ if ( $version == 428 ) then
 	cd CMSSW_4_2_8/src
 	cmsenv
 	set CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
-	cvs co -d TAMUWW UserCode/TAMUWW
+	cvs co -r branch42X -d TAMUWW UserCode/TAMUWW
 	cvs co FWCore/Common/interface/EventBase.h
 
 	echo "Commenting out line 86 from FWCore/Common/interface/EventBase.h"
@@ -35,12 +32,15 @@ else
 	cmsenv
 	set CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
 	cvs co -d TAMUWW UserCode/TAMUWW
+	echo "Removing TAMUWW/Selection42X because it is not compatible with the 52X ntuple"
+	rm -r TAMUWW/Selection42X/
 	cvs co -r V06-02-04    TopQuarkAnalysis/Configuration
 	cvs co -r V06-05-01    DataFormats/PatCandidates
 	cvs co -r V08-09-05    PhysicsTools/PatAlgos
 	cvs co -r V00-03-11    CommonTools/ParticleFlow
 	cvs co -r V00-01-04 -d SQWaT UserCode/SQWaT
 	cvs co -d PhysicsTools/NtupleUtils UserCode/Bicocca/PhysicsTools/NtupleUtils
+	cvs co -d Muon/MuonAnalysisTools/ UserCode/sixie/Muon/MuonAnalysisTools
 	cvs co -r V00-00-08 -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools
 	cd EGamma/EGammaAnalysisTools/data
 	cat download.url | xargs wget

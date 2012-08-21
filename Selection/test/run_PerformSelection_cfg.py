@@ -59,6 +59,7 @@ process.PS.muonSource                 = cms.InputTag('selectedPatMuonsPFlow')   
 process.PS.METSource                  = cms.InputTag('patMETsPFlow')                         # InputTag for MET collection
 process.PS.rhoSource                  = cms.InputTag("kt6PFJetsChsForIsolationPFlow", "rho") # InputTag for event rho source
 process.PS.triggerSource              = cms.InputTag('patTriggerEvent')                      # InputTag for trigger collection
+process.PS.pileupSource               = cms.InputTag('addPileupInfo')                        # InputTag for pileupSummaryInfos collection
 
     #-----Trigger Information
 ##process.PS.muTrigger                  = cms.vstring('HLT_Mu30_v*')  
@@ -84,6 +85,7 @@ process.PS.Data                       = cms.bool(True)               # is the da
 process.PS.saveGenParticles           = cms.bool(False)               # save the generated particle information for hard scatter decays
 process.PS.noMETCut                   = cms.bool(False)               # disregard the MET cut when storing the events
 process.PS.invertEID                  = cms.bool(False)               # electrons which *fail* at least two of the EID requirements will be kept instead
+process.PS.QCDcuts                    = cms.bool(False)
 process.PS.PFlowLoose                 = cms.bool(False)               # use the collections with the PF2PAT postfix=PFlowLoose (instead of PFlow)
 process.PS.elONLY                     = cms.bool(False)               # only save the output if the lepton is an electron
 process.PS.muONLY                     = cms.bool(False)               # only save the output if the lepton is a muon

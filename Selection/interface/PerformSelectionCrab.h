@@ -64,6 +64,8 @@
 #include "RecoVertex/PrimaryVertexProducer/interface/PrimaryVertexSorter.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 //
 // User Defined Includes
@@ -144,19 +146,15 @@ private:
    void metSelection();
    // additional (local) functions
    void getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-   void setlp4LV();
-   void setlp3();
-   void setj1p4LV();
-   void setj2p4LV();
-   void setjjp3();
-   void setMETp4LV();
-   void setDRlj1();
-   void setDRlj2();
+   void setDRlj();
    void setThetalj1pj2();
    void saveGenPart();
    bool matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2);
    /// matches jets to generator level objects
    pair<int, TLorentzVector> matchToGen(double eta, double phi);
+   void ptSort(vector<Jet> & vec);
+   void swap(TLorentzVector & x, TLorentzVector & y);
+   int  max_position(vector<Jet> & vec, int from, int to);
    /// increments the specified counters: either El&Lp or Mu&Lp depending on whether MuPresent or ElPresent = 1 (the other counter should = 0 )
    void incrementCounter(int nCut, int nJets, int ElPass[NCUTS][NJETS], int MuPass[NCUTS][NJETS],
                          int LpPass[NCUTS][NJETS], int MuPresent, int ElPresent);
@@ -208,6 +206,7 @@ private:
    edm::InputTag muonSource;
    edm::InputTag METSource;
    edm::InputTag rhoSource;
+   edm::InputTag pileupSource;
    // handles
    edm::Handle<pat::TriggerEvent> triggerHandle;
    edm::Handle<reco::VertexCollection> vtxHandle;
@@ -217,6 +216,7 @@ private:
    edm::Handle<vector<pat::Muon> > muonHandle;
    edm::Handle<vector<pat::MET> > METHandle;
    edm::Handle<double> rhoHandle;
+   edm::Handle<vector<PileupSummaryInfo> > pileupHandle;
    // trigger variables
    bool mu_passTrigger;
    bool el_passTrigger;
@@ -251,11 +251,11 @@ private:
    // vertex variables
    reco::Vertex pv;
    bool PVfound;
-   double zvtx;
    int vtxcnt;
+   vector<Vertex> vp4;
    // jet variables
-   vector <math::XYZTLorentzVector> jp4, jp4_temp;
-   vector <double> JEta, JEta_temp, JPhi, JPhi_temp;
+   vector <Jet> jp4;
+   TVector3 jjp3;
    double j_pt;
    double j_ptMin;
    double j_eta;
@@ -265,12 +265,9 @@ private:
    double j_DRelMin;
    double muPrim_DRjMin;
    double adphi;
-   vector<double> JChargedMultiplicity, JNeutralMultiplicity, JPtD;
    
    // b-tag variables
-   vector <int> jBtagSSV, jBtagTC;
    int nBtagSSV, nBtagTC;
-   vector <double> jBtagDiscriminatorSSV, jBtagDiscriminatorTC;
    double bDiscriminatorSSVMin, bDiscriminatorTCMin;
 
    // muon variables
@@ -347,27 +344,14 @@ private:
    // Electron Flags
    //
    bool el_aetaPass;
-   bool el_convPass_a;
-   bool el_convPass_b;
    // lepton variables
-   //double l_Eta; //Modified for synchronization 03/26/2012
-   //double l_Phi;
-   vector<double> l_Eta; //Added for synchronization 03/26/2012
-   vector<double> l_Phi;
-   vector<int> l_Type; //0 for electrons, 1 for muons
+   vector<Lepton> lp4;
+   TVector3 lp3;
    // MET variables
-   double MET_Et;
+   vector<MET> METp4;
    double MET_EtMin;
+   bool MET_Pass;
    // additional variables
-   math::XYZTLorentzVector lp4, METp4;
-   TLorentzVector lp4LV, j1p4LV, j2p4LV, METp4LV;
-   TVector3 lp3, jjp3;
-   double Thetalj1pj2, DRlj1, DRlj2;
-   double lTotIso;
-   double lecalIso;
-   double lhcalIso;
-   double ltrkIso;
-   double lrelIso;
    double Mjj;
    int lQ;
    double lEta;
