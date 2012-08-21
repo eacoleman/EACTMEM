@@ -38,6 +38,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    muonSource                 =         iConfig.getParameter<edm::InputTag>   ("muonSource");
    METSource                  =         iConfig.getParameter<edm::InputTag>   ("METSource");
    rhoSource                  =         iConfig.getParameter<edm::InputTag>   ("rhoSource");
+   pileupSource               =         iConfig.getParameter<edm::InputTag>   ("pileupSource");
 
    //-----Trigger Information
    muTrigger                  =         iConfig.getParameter<vector<string> > ("muTrigger");
