@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //// A Common Set of variables and functions.
 
-const int NPROCESSES=33;
+const int NPROCESSES=27;
 const int NCUTS=10;
 const int FINALCUT=5;
 const int NJETS=5;
@@ -45,14 +45,7 @@ void InitializeLabels(TString pcsLbl[NPROCESSES], TString cutLbl[NCUTS])
   pcsLbl[23]="HWWMH550";
   pcsLbl[24]="HWWMH600";
   pcsLbl[25]="Mu_All";
-  pcsLbl[26]="El_All"; //Start splitting by 150, rather than 300 events
-  pcsLbl[27]="WJets_matchingdown";
-  pcsLbl[28]="WJets_matchingup";
-  pcsLbl[29]="WJets_scaledown";
-  pcsLbl[30]="WJets_scaleup";
-  pcsLbl[31]="QCD_Mu";
-  pcsLbl[32]="QCD_El";
-
+  pcsLbl[26]="El_All";
 
   ///Matrix Element Selection Labels
   cutLbl[0]="c0:HLT+Kin";

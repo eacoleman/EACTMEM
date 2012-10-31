@@ -35,7 +35,7 @@ using namespace std;
 
 #define MAXJOBS 20000
 
-const bool isData=true; //use when setting .cfg file parameters.
+const bool isData=false; //use when setting .cfg file parameters.
 const bool isLocalDataset=true; //use to set .cfg file parameters when running on a locally stored dataset.
 const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet";//Use when working with a local dataset.
 //const TString dbs_url_name = "http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_01/servlet/DBSServlet";//Use when working with a local dataset.

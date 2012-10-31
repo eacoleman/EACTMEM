@@ -6,4 +6,8 @@
 <use   name="rootphysics"/>
 <use   name="rootgraphics"/>  
 <use   name="root"/>
-<bin   name="plotter_x" file="plotter_x.cc" />
+<use   name="rootminuit2"/>
+<bin   name="plotter_x"             file="plotter_x.cc" />
+<bin   name="BackgroundEstimator_x" file="BackgroundEstimator_x.cc" />
+<bin   name="TestRebinBGEst_x"      file="TestRebinBGEst_x.cc" />
+<bin   name="Fitter_x"              file="Fitter_x.cc" />
