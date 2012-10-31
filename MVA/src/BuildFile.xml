@@ -1,0 +1,18 @@
+<use   name="TAMUWW/SpecialTools"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/PluginManager"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="PhysicsTools/UtilAlgos"/>
+<use   name="CommonTools/UtilAlgos"/>
+<use   name="DataFormats/Math"/>
+<use   name="rootphysics"/>
+<use   name="rootgraphics"/>  
+<use   name="rootmath"/>
+<use   name="rootcore"/>
+<use   name="rootminuit2"/>
+<use   name="roottmva"/>
+<use   name="root"/>
+<export>
+  <lib   name="1"/>
+</export>
+

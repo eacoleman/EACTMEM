@@ -1,0 +1,10 @@
+universe = vanilla
+Executable = CondorBatchJob.sh
+Requirements = Memory >= 199 && OpSys == "LINUX" && (Arch != "DUMMY")
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Output = /uscms_data/d2/aperloff/CMSSW_4_2_8/src/TAMUWW/MVA/bin/MVA_out/out_TMVA_$(process).stdout
+Error  = /uscms_data/d2/aperloff/CMSSW_4_2_8/src/TAMUWW/MVA/bin/MVA_out/out_TMVA_$(process).stderr
+Log    = /uscms_data/d2/aperloff/CMSSW_4_2_8/src/TAMUWW/MVA/bin/MVA_out/out_TMVA_$(process).condor
+notify_user = aperloff@physics.tamu.edu
+Queue 1
