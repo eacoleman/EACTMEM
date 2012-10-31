@@ -1,0 +1,175 @@
+
+// Title:     PlotFiller.cc
+// Author:    Travis Lamb
+// Started:   22nd of June, 2012
+// Last Edit: 22nd of June, 2012
+
+// Uses Plot and PhysicsProcessNEW to return a plot for a given process and yield.
+
+// Our libraries
+#include "TAMUWW/Tools/interface/PlotFiller.hh"
+
+using namespace std;
+
+//#####################################################################
+//#####################################################################
+//#####################################################################
+
+PlotFiller::PlotFiller(map<string, Plot*> &plotsTemp,
+                       vector<PhysicsProcessNEW*> &procsTemp,
+                       void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
+   plots(plotsTemp),
+   processes(procsTemp),
+   userFillFunc(userFillFuncTemp)
+{
+   userWeightFunc = &defaultWeightFunc;
+   userCutFunc = &defaultCutFunc;
+   userProcessFunc = &defaultProcessFunc;
+   userInitEventFunc = &defaultInitEventFunc;
+   
+   numberOfEvents = 0;
+   
+   debug = false;
+}
+
+PlotFiller::~PlotFiller()
+{
+   
+}
+
+void PlotFiller::setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+{
+   userWeightFunc = userWeightFuncTemp;
+}
+
+void PlotFiller::setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+{
+   userCutFunc = userCutFuncTemp;
+}
+
+void PlotFiller::setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+{
+   userProcessFunc = userProcessFuncTemp;
+}
+
+void PlotFiller::setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+{
+   userInitEventFunc = userInitEventFuncTemp;
+}
+
+void PlotFiller::setMaximumEventsDEBUG(unsigned int maxEvts)
+{
+   debugNumberOfEvents = maxEvts;
+   debug = true;
+}
+
+void PlotFiller::setMVAWeightDir(TString MVAWD)
+{
+   MVAWeightDir = MVAWD;
+}
+
+void PlotFiller::setMVAMethods(vector<TString> MVAM)
+{
+   MVAMethods = MVAM;
+}
+
+void PlotFiller::run()
+{
+   cout << "\nPlotFiller::run Begin filling plots" << endl;
+   for(unsigned int i = 0; i < processes.size(); i++)
+   {
+      cout << "\nDoing Process " << processes[i]->name << endl;
+
+      // Tell all plots to prepare for filling 
+      for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++) {
+         p->second->prepareToFillProcess(processes[i]);
+      }
+
+      // Create the eventntuple and set the branch address
+      
+      EventNtuple * ntuple = 0;
+      METree * metree = 0;
+      MicroNtuple * mnt = 0;
+      TChain * c = processes[i]->chain;
+      if (c->GetBranch("EvtTree")) {
+         ntuple = new EventNtuple();
+         c->SetBranchAddress("EvtTree",&ntuple);
+      }
+      else if (c->GetBranch("EvtNtuple")) {
+         ntuple = new EventNtuple();
+         c->SetBranchAddress("EvtNtuple",&ntuple);
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run EvtTree and EvtNtuple branches not found." << endl
+              << "\tSetting EventNtuple pointer to 0x0." << endl;
+      }
+      if (c->GetBranch("mnt")) {
+         mnt = new MicroNtuple(2);
+         c->SetBranchAddress("mnt",&mnt);
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run mnt branch not found." << endl
+              << "\tSetting MicroNtuple pointer to 0x0." << endl;
+      }
+      if (c->GetBranch("METree")) {
+         metree = new METree();
+         c->SetBranchAddress("METree",&metree);
+         if (!MVAWeightDir.IsNull() && !MVAMethods.empty()) {
+            c->GetEntry(16);
+            metree->setMVAReader(MVAMethods,MVAWeightDir);
+         }
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run METree branch not found." << endl
+              << "\tSetting METree pointer to 0x0." << endl;
+      }
+      
+      // The counter for how many events pass the cuts in each process
+      unsigned int numProcEvts = 0;
+      double sumW = 1.;
+   
+      // Define the weight variable and set the default as 1.0
+      double weight = 1.0;
+
+      // Loop over events in the process
+      if(debug && debugNumberOfEvents < c->GetEntries())
+      {
+         numberOfEvents = debugNumberOfEvents;
+      }
+      else
+      {
+         numberOfEvents = c->GetEntries();
+      }
+
+      cout << "Processing " << numberOfEvents << " events (out of " << c->GetEntries() << ")." << endl;
+      
+      // This runs once for each process before the events are run.
+      userProcessFunc(ntuple, processes[i]);
+
+      for (unsigned int ev = 0 ; ev < numberOfEvents ; ev++)
+      {
+         // Report every now and then
+         if ((ev % 10000) == 0)
+            cout<<"\tevent "<<ev<<endl;
+         
+         // Get the given entry
+         c->GetEntry(ev);
+         // Runs before any cuts are made
+         userInitEventFunc(ntuple, processes[i]);
+         // Cut events here
+         if(!userCutFunc(ntuple, processes[i]))
+            continue;
+         // reset the weight for each event, so the default will be 1.0
+         weight = 1.0;
+         weight *= userWeightFunc(ntuple, processes[i]);
+         // Fill plots
+         //cout << "Entry = " << ev << endl; 
+         userFillFunc(plots, ntuple, metree, mnt, MVAMethods, weight);
+         // Keep track of the total number of events & weights passing the cuts 
+         sumW += weight;
+         numProcEvts++;
+      }
+      cout << "Number of " << processes[i]->name << " events passing the cuts: " << numProcEvts << " with weights: " << sumW << endl;
+   }
+   cout << "\nPlotFiller::run DONE" << endl;
+}
