@@ -157,7 +157,8 @@ void FigureOfMerit::minimizationFunction(Int_t &npar, Double_t *gin, Double_t &f
 
    //calculate chisquare
    Double_t sum_nll = 0;
-   for (int ibin = 1 ; ibin <= signal->GetNbinsX() ; ibin++) {
+   //for (int ibin = 1 ; ibin <= signal->GetNbinsX() ; ibin++) {
+   for (int ibin = 0 ; ibin <= signal->GetNbinsX()+1 ; ibin++) {
 
      // skip bins in which both signal and background are zero
      if (background->GetBinContent(ibin) == 0 ){

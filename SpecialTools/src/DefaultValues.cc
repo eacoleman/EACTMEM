@@ -248,12 +248,9 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   vector<DEFS::PhysicsProcess::Type> procs;
 
 
-  procs.push_back(DEFS::PhysicsProcess::STopS_T    );
-  procs.push_back(DEFS::PhysicsProcess::STopS_Tbar );
-  procs.push_back(DEFS::PhysicsProcess::STopT_T    );
-  procs.push_back(DEFS::PhysicsProcess::STopT_Tbar );
-  procs.push_back(DEFS::PhysicsProcess::STopTW_T   );
-  procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
+  procs.push_back(DEFS::PhysicsProcess::STopS   );
+  procs.push_back(DEFS::PhysicsProcess::STopT   );
+  procs.push_back(DEFS::PhysicsProcess::STopTW  );
   procs.push_back(DEFS::PhysicsProcess::TTbar   );
   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
@@ -261,9 +258,13 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
   procs.push_back(DEFS::PhysicsProcess::WJets   ); 
-  procs.push_back(DEFS::PhysicsProcess::ZJets   );
+  procs.push_back(DEFS::PhysicsProcess::Zjets   );
+  procs.push_back(DEFS::PhysicsProcess::Ztautau );
   procs.push_back(DEFS::PhysicsProcess::QCDMu               );
-  procs.push_back(DEFS::PhysicsProcess::QCDEl               );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80      );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170     );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80   );
+  procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170  );
   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
   procs.push_back(DEFS::PhysicsProcess::WW      );
   procs.push_back(DEFS::PhysicsProcess::WZ      );
