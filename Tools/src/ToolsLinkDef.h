@@ -2,7 +2,6 @@
 #include "TAMUWW/Tools/interface/PlotMap.hh"
 #include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
-#include "TAMUWW/Tools/interface/TAMUWWMVA.hh"
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -17,6 +16,5 @@
 #pragma link C++ class PlotMap+;
 #pragma link C++ class FormattedPlotMap+;
 #pragma link C++ class PlotFiller+;
-#pragma link C++ class TAMUWWMVA+;
 
 #endif
