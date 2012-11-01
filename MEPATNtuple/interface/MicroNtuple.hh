@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
@@ -54,8 +55,6 @@ public:
   enum {nHWWmasses = 14};
   Double_t epd1tagHWW[nHWWmasses];
   Double_t epd2tagHWW[nHWWmasses];
-
-
 
   // Create a map that contains the index of eventProb to be used for a
   // given DEFS::EP::Type and parameter type. This map is static and 
@@ -135,7 +134,7 @@ public:
 
   void clear();
 
-  ClassDef(MicroNtuple, 9)
+  ClassDef(MicroNtuple, 10)
 
 };
 
