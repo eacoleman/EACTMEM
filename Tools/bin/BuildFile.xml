@@ -13,4 +13,4 @@
 <bin   name="BackgroundEstimator_x" file="BackgroundEstimator_x.cc" />
 <bin   name="TestRebinBGEst_x"      file="TestRebinBGEst_x.cc" />
 <bin   name="getHistograms_x"       file="getHistograms_x.cc" />
-<bin   name="TMVAClassification_x"  file="TMVAClassification_x.cc" />
+<bin   name="Fitter_x"              file="Fitter_x.cc" />
