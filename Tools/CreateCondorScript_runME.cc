@@ -23,6 +23,8 @@ using namespace std;
 
 #include <TAMUWW/Tools/GlobalTools428.cc>
 
+const TString globalRunMESuffix = "Wgg";// Use when running over additional MEs, set to "" by default
+
 void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffix, const char* rootInputDir, const char* rootInputName, const char* OutputName, int NEvtsPerJob, int FirstJob, int NJobs, bool createDisjointJobScript = false, const char* disjointJobsString="")
 //// Creates a condor launcher (ScriptDir/CondorLauncher_ScriptNameSuffix) script and a .csh script used by it (ScriptDir/CondorScript_ScriptNameSuffix.csh).
 //// These can be used from any directory, provided it has cteq5l.tbl & cteq6l.tbl libraries (normally located in TAMUWW/PDFs/Pdfdata/), a /log subdirectory as well as run_MatrixElement macro in it. Note: rootInputDir is the location of the .root input file as seen from this directory.
@@ -54,7 +56,7 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffi
   outlauncher << "Requirements = Memory >= 199 &&OpSys == \"LINUX\"&& (Arch != \"DUMMY\" )&& Disk > 1000000" << endl;
   outlauncher << "Should_Transfer_Files = YES" << endl;
   outlauncher << "WhenToTransferOutput = ON_EXIT" << endl;
-  outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement, cteq5l.tbl, cteq6l.tbl" << endl;
+  outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement" << globalRunMESuffix << ", cteq5l.tbl, cteq6l.tbl" << endl;
   outlauncher << "Output = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stdout" << endl;
   outlauncher << "Error = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stderr" << endl;
   outlauncher << "Log = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).log" << endl;
@@ -114,14 +116,18 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffi
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void CheckCONDOROutput(const char* inFilePrefix, TString & invalidFileStr, int & nInvalidFiles, int cntBeg, int cntEnd, bool checkMETreePresence=true, bool suppressoutput=false) {
+void CheckCONDOROutput(const char* inFilePrefix, TString & invalidFileStr, int & nInvalidFiles, int cntBeg, int cntEnd, bool checkMETree=true, int expectedMETreeEvents=-1,int totalEvents=-1, bool suppressoutput=false) {
 //// Checks if files of the form inFilePrefixCNT.root (CNT=cntBeg,...,cntEnd) are present and returns the string of missing files.
+//// If expectedMETreeEvents>0 (and checkMETree=true) checks that the tree has the exact number of events.
+//// Set totalEvents>0 to check the last file in a string of ME jobs ran on the same source (aka. skim) root file wher cntEnd=nJobs-1.
   TString Command, infilename, sstr;
   char line[500];
   char tempCnt[5];
   int nMissingFiles=0;
   int nEmptyFiles=0;
+  int nIncompleteFiles=0;
   bool emptyTree=true;
+  bool incompleteTree=false;
   //cout << "cntBeg=" << cntBeg << " cntEnd=" << cntEnd << endl;
   for (Int_t i=cntBeg; i<(cntEnd+1);i++) {
     infilename=".root";
@@ -144,39 +150,49 @@ void CheckCONDOROutput(const char* inFilePrefix, TString & invalidFileStr, int &
       invalidFileStr=invalidFileStr+tempCnt;
       nMissingFiles++;
     } else { 
-      if ( checkMETreePresence ) {
+      if ( checkMETree ) {
 	//cout << "1" << endl;
 	TFile* testfile = new TFile(infilename);
 	//cout << "2" << endl;
 	TTree* TestTree = (TTree*)testfile->Get("METree");
 	//cout << "3" << endl;
 	emptyTree=true;
+	incompleteTree=false;
 	if (TestTree) {
 	  emptyTree=false;
+	  if ( (expectedMETreeEvents>0)&&((TestTree->GetEntries())!=expectedMETreeEvents)&&(i!=cntEnd) ) {incompleteTree=true;} //check everything except the last file
+	  if ( (expectedMETreeEvents>0)&&(totalEvents>0)&&( (TestTree->GetEntries())!=(totalEvents-i*expectedMETreeEvents) )&&(i==cntEnd) ) {incompleteTree=true;} //check the last file
 	}
 	delete TestTree;
 	testfile->Close();
 	delete testfile;
 	//cout << "4" << endl;
 	if ( emptyTree ) {
-	  //cout << "Empty File" << endl;
-	  ///The i'th file is empty
 	  if ( invalidFileStr!="" ) {
 	    invalidFileStr=invalidFileStr+" , ";
 	  }
 	  invalidFileStr=invalidFileStr+tempCnt;
 	  nEmptyFiles++;
 	}
+	if ( incompleteTree ) {
+	  if ( invalidFileStr!="" ) {
+	    invalidFileStr=invalidFileStr+" , ";
+	  }
+	  invalidFileStr=invalidFileStr+tempCnt;
+	  nIncompleteFiles++;
+	}
+
       }      
     }
 
   }
   if  ( !suppressoutput ) {
     cout << "NMissing=" << nMissingFiles;
-    if ( checkMETreePresence ) { cout << ", NEmpty=" << nEmptyFiles; }
+    if ( checkMETree ) { cout << ", NEmpty=" << nEmptyFiles; }
+    if ( expectedMETreeEvents>0 ) { cout << ", NIncomplete=" << nIncompleteFiles; }
     cout << " | invalidfiles : " <<  invalidFileStr << endl;
   }
-  nInvalidFiles=nMissingFiles+nEmptyFiles;
+  nInvalidFiles=nMissingFiles+nEmptyFiles+nIncompleteFiles;
 
 }
 
@@ -199,11 +215,13 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
 
   for (Int_t np=StartProcess; np<(EndProcess+1);np++) {
     cout << "Process=" << PLabel[np] << endl;
-    scriptBaseName=PLabel[np];
+    scriptBaseName=globalRunMESuffix;
+    scriptBaseName=PLabel[np]+scriptBaseName;
     scriptBaseName=inputmode+scriptBaseName;
     rootinputBaseName=inputmode;
     rootinputBaseName=PLabel[np]+rootinputBaseName;
     outputBaseName=inputmode;
+    outputBaseName=globalRunMESuffix+outputBaseName;
     outputBaseName=PLabel[np]+outputBaseName;
 
     TFile* infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
@@ -236,7 +254,7 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
 // 	CreateCondorScript_runME(ScriptDir,scriptBaseName+"JESm1s",rootInputDir,rootinputBaseName+"_JESm1s.root",outputBaseName+"JESm1s",nEvtsPerJob,0,nJobs);
 //       }
     } else {
-      //cout << "Checking Completed Jobs" << endl;
+      cout << "Checking Completed Jobs" << endl;
       TString infileprefix="";
       infileprefix=inputmode+infileprefix;
       infileprefix=PLabel[np]+infileprefix;
@@ -245,7 +263,7 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
       TString invalidFileStr;
       int nInvalidFiles;
 
-      CheckCONDOROutput(infileprefix,invalidFileStr,nInvalidFiles,0,nJobs-1,true,false);
+      CheckCONDOROutput(infileprefix,invalidFileStr,nInvalidFiles,0,nJobs-1,true,NEvtsPerJob,nEntries,false);
       if ( createCompletionScripts && (nInvalidFiles>0) ) {
 	cout << "Creating the completion script" << endl;
 	CreateCondorScript_runME(ScriptDir,scriptBaseName+"Completion",rootInputDir,rootinputBaseName+filenameSuffix,outputBaseName,nEvtsPerJob,0,nInvalidFiles,true,invalidFileStr);

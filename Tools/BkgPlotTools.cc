@@ -26,95 +26,7 @@ void BkgPlotTools () {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////*********Helper Functions*********//////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-void splitModeString(const char* stringlinein, vector<TString>& stringSetName, vector<Color_t>& stringSetColor, vector<TString>& stringSet, int& nStringSets, TString separationChar="ENDSET") {
-//// Takes stringlinein, which should be of the form "name[0] color[0] string[0] separationChar name[1] color[1], string[1] separationChar ... ", strores them separately as well as records the number of strings
-  nStringSets=0;
-  int nSubstrings=0;
-  stringSetName.clear();
-  stringSetColor.clear();
-  stringSet.clear();
-  TString t_stringname, t_string, t_tempstr;
-  Color_t t_stringcolor;
-  istrstream inStrings(stringlinein);
-  bool cont=true;
-  bool readstring=true;
 
-
-//   TString inModes_mu = "Data 1 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microMu_All_EPDv01.root 5020 ENDSET     WpJ 2 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 ENDSET    ZpJ 3 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 ENDSET    TTbar 5 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 ENDSET    WW 4 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123";
-
-  // input the names, file locations & event counts
-  while ( cont ) {
-    inStrings >> t_stringname;
-    if ( t_stringname!="" ) {
-      inStrings >> t_stringcolor;
-      readstring=true;
-      t_string="";
-      nSubstrings=0;
-      while ( readstring ) {
-	inStrings >> t_tempstr;
-	if ( (t_tempstr!="")&&(t_tempstr!=separationChar) ) {
-	  t_string=t_string+t_tempstr;
-	  t_string=t_string+" ";
-	  nSubstrings++;
-	} else {
-	  readstring=false;
-	  if ( t_tempstr=="" ) {
-	    cont=false;
-	  }
-	}
-
-	if ( nSubstrings>100 ) {
-	  readstring=false;
-	  cont=false;
-	  cout << "Error: made 100 iterations and unable to read in the substring parameters for " << stringlinein << endl;
-	}
-      }
-      stringSetName.push_back(t_stringname);
-      stringSetColor.push_back(t_stringcolor);
-      stringSet.push_back(t_string);
-      nStringSets++;
-
-      if ( nStringSets>100 ) {
-	cont=false;
-	cout << "Error: made 100 iterations and unable to read in the full string parameters for " << stringlinein << endl;
-      }
-    } else {
-      cont=false;
-    }
-  }
-
-}
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
-void readModeFilesAndScales(const char* modelinein, vector<TString>& fileName, vector<double>& scaleFactor, int& nModes) {
-//// Takes modelinein, which should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color [2] modename[2] ... ", and extracts these parameters as well as the number of modes
-  nModes=0;
-  fileName.clear();
-  scaleFactor.clear();
-  TString t_fileName;
-  double t_scaleFactor;
-  istrstream inModes(modelinein);
-  bool cont=true;
-
-  // input the names, file locations & event counts
-  while ( cont==true ) {
-    inModes >> t_fileName;
-    if ( t_fileName!="" ) {
-      inModes >> t_scaleFactor;
-      fileName.push_back(t_fileName);
-      scaleFactor.push_back(t_scaleFactor);
-      nModes++;
-    } else {
-      cont=false;
-    }
-    if ( nModes>100 ) {
-      cont=false;
-      cout << "Error: made 100 iterations and unable to read in the parameters for " << modelinein << endl;
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 void readModes(const char* modelinein, vector<TString>& modename, vector<TString>& infilename, vector<double>& evtcount, vector<int>& color, int& nModes) {
 //// Takes modelinein, which should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color [2] modename[2] ... ", and extracts these parameters as well as the number of modes
   nModes=0;
@@ -320,117 +232,6 @@ void fillHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int 
   }
   
 }
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------//
-void fillCombinedHistograms(TH1F* h[20], const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest, vector<TString> inModeSets, vector<TString> inModeSetNames, int nModeSets, int nQCD=-1, bool firstSetIsData=true, bool dosumW2 = false)
-////Fill in each histogram in the array h from the files in infilenames.
-{
-  
-//   //read the Differing Cuts, if any
-//   vector<TString> cuts;
-//   cuts.clear();
-//   TString t_cut;
-//   istrstream inCuts(InDiffCuts);
-//   if ( useDifferingCuts ) {
-//     for (Int_t n=0; n<nModes; n++) {
-//       inCuts >> t_cut;
-//       t_cut=t_cut+")&&";
-//       t_cut="("+t_cut;
-//       cuts.push_back(t_cut);
-//     }
-//   }
-
-
-  TString Restrictions, hname, histload_str;
-  vector<TString> fileNames;
-  vector<double> scaleFactor; //Usually CrossSection/NGenerated, so that scalefactor*nentries=number of expected events per pb. However, scaleFactor[0]=Lumi in pb if firstSetIsData=true.
-  int nSubEntries=0;
-  double nexpectedEvts=0;
-  double nData=0.0;
-  double scale=0;
-  double Lumi=1.0;
-  //  int startSetCount=0;
-  char n_char[5];
-  //  char Max_char[30], Min_char[30], 
-
-//   /// Make a string defining the restrictions (Range + Additional Ones).
-  
-//   sprintf(Max_char,"%.2e",VarMax);
-//   cout << "Max_char=" << Max_char << endl;
-//   sprintf(Min_char,"%.2e",VarMin);
-//   cout << "Min_char=" << Min_char << endl;
-
-//   Restrictions = ")";
-//   if (AddRest!=0) {
-//     Restrictions = AddRest+Restrictions;
-//     Restrictions = ")&&("+Restrictions;
-//   } else {
-
-//   }
-//   Restrictions=Max_char+Restrictions;
-//   Restrictions="<"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions=")&&("+Restrictions;
-//   Restrictions=Min_char+Restrictions;
-//   Restrictions=">"+Restrictions;
-//   Restrictions=VarName+Restrictions;
-//   Restrictions="("+Restrictions;
-//   if ( weightTheHistograms ) {
-//     Restrictions=Restrictions+" )";
-//     Restrictions="*( "+Restrictions;
-//     Restrictions=weightVar+Restrictions;
-//   }
-//  cout << "Restrictions=" << Restrictions << endl;
-  
-//   //Open the files
-//   TFile* f[20];
-//   TTree* InTree[20];
-
-  for (Int_t n=0; n<nModeSets; n++) {
-    sprintf(n_char,"%i",n);
-    hname="]";
-    hname = n_char + hname;
-    hname="h["+hname;
-    cout << "hname=" << hname << endl;
-    //Get the filenames & scalefactors
-    readModeFilesAndScales(inModeSets[n],fileNames,scaleFactor,nSubEntries);
-    //Fill the histograms for this set
-    TH1F* hSet[20];
-    fillHistograms(hSet,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nSubEntries,fileNames,dosumW2);
-    TH1F* htemp = new TH1F("htemp","htemp",NBins,VarMin,VarMax);
-    if ( (n==0)&&(firstSetIsData=true) ) {
-      Lumi=scaleFactor[0];
-      nData=hSet[0]->GetEntries();
-      nexpectedEvts=nData;
-      htemp->Add(hSet[0]);
-    } else {
-      //Add the histograms (with the appropriate scale factors)
-      nexpectedEvts=0;
-      for (Int_t m=0; m<nSubEntries; m++) {
-	scale=scaleFactor[m]*Lumi;
-	if ( n==nQCD ) {
-	  cout << "Using QCD scaling scheme" << endl;
-	  scale=scaleFactor[m]*nData/(hSet[m]->GetEntries());
-	}
-	nexpectedEvts+=scale*(hSet[m]->GetEntries());
-	hSet[m]->Scale(scale);
-	htemp->Add(hSet[m]);
-      }
-    }
-
-    h[n] = (TH1F*)htemp->Clone();
-    h[n]->SetName(hname);
-    h[n]->SetTitle(hname);
-    delete htemp;
-    cout << "n=" << n << " Process=" << inModeSetNames[n] << " nexpectedEvts=" << nexpectedEvts << endl;
-
-  }
-
-
-  
-}
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////***** Primary Plot Functions*****//////////////////////////////////////////////
@@ -1036,94 +837,85 @@ void Plot_StackedBackgrounds(const char* TitleName, const char* TreeName, const 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void Plot_Validation(const char* TitleName, const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, int nQCD=-1, const char* SaveName = 0 , bool scaleMCtoData = true, bool drawMCwithErrors=false )
+void Plot_Validation(const char* TitleName, const char* TreeName, const char* VarName, int NBins, double VarMin, double VarMax, const char* AddRest = 0, const char* inModes = 0, const char* SaveName = 0 , bool scaleMCtoData = true, bool drawMCwithErrors=false )
 //// Makes a Validation/Control plot with MC either scaled either to Data or to theory expectations.
 //// inModes should be of the form "modename[0] infilename[0] evtCount[0] color[0] modename[1] infilename[1] evtCount[1] color[1] modename[2] ... " 
 //// mode0=Data (evtCount[0]=Lumi), evtCount[i]=XSection/N_MCGenerated.
 //// Use AddRest to give additional restrictions
 {
 
-  vector<TString> modeSetName, modeSets;
-  vector<Color_t> modeSetColor;
+  vector<TString> modenames, infilenames;
   vector<double> inDouble;
-  //vector<int> colors;
-  int nModeSets = 0;
-  //int nModeSets_sw2 = 0;
-  double size;
-  //  double entries;
+  vector<int> colors;
+  int nModes = 0;
+  int nModes_sw2 = 0;
+  double scale;
+  double entries;
   double nMCtotal=0;
   double nData=0;
 
-  splitModeString(inModes,modeSetName,modeSetColor,modeSets,nModeSets,"ENDSET");
-  //  readModes(inModes,modenames,infilenames,inDouble,colors,nModes);
+  readModes(inModes,modenames,infilenames,inDouble,colors,nModes);
 
   //Create the individual histograms
   TH1F* h[20];
 
   TCanvas *cnv = new TCanvas("cnv","cnv",10,10,900,600);
   TLegend *lgnd;
-  if ( nModeSets<10 ) {
-    lgnd = new TLegend(0.7,0.9-0.05*nModeSets,0.90,0.9);
+  if ( nModes<10 ) {
+    lgnd = new TLegend(0.7,0.9-0.05*nModes,0.90,0.9);
   } else {
     lgnd = new TLegend(0.7,0.4,0.90,0.9);
   }
 
-  //cout << "1" << endl;
-  //  fillHistograms(h,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes,infilenames,false);
-  fillCombinedHistograms(h,TreeName,VarName,NBins,VarMin,VarMax,AddRest,modeSets,modeSetName,nModeSets,nQCD,true,false);
-  //  cout << "2" << endl;
-  //cout << "h[0]->GetEntries()=" << h[0]->GetEntries() << endl;
-  //cout << "h[0]->Integral()=" << h[0]->Integral() << endl;
-  //cout << "3" << endl;
+  fillHistograms(h,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes,infilenames,false);
 
-//   TH1F* h_sw2[20];
-//   fillHistograms(h_sw2,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes_sw2,infilenames,true);
+  TH1F* h_sw2[20];
+  fillHistograms(h_sw2,TreeName,VarName,NBins,VarMin,VarMax,AddRest,nModes_sw2,infilenames,true);
 
   //Create the accumulated histograms
   TH1F* ha[20];  
   TString haname;
   char n_char[30];
 
-  for (Int_t n=1; n<nModeSets; n++) {
+  for (Int_t n=1; n<nModes; n++) {
     sprintf(n_char,"%i",n);
     haname="]";
     haname = n_char + haname;
     haname="ha["+haname;
     ha[n]=new TH1F(haname,haname,NBins,VarMin,VarMax);
     //    ha[n]->Sumw2();
-    size=h[n]->Integral();
-    //    scale=inDouble[0];//*Lumi (in pb^-1)
-    nMCtotal+=size;
-    //cout << modeSetName[n] <<" : entries=" << entries << " : Lumi=" << inDouble[0] <<" : expectedEvts=" <<  entries*scale << endl;
-    //h[n]->Scale(scale);
+    entries=h[n]->GetEntries();
+    scale=inDouble[n]*inDouble[0];//(CrossSection/NEvtsGen)*Lumi
+    nMCtotal+=entries*scale;
+    cout << modenames[n] <<" : entries=" << entries << " : Lumi=" << inDouble[0] <<" : expectedEvts=" <<  entries*scale << endl;
+    h[n]->Scale(scale);
   }
 
   //cout << "1" << endl;
-  nData=h[0]->Integral();
-  cout << "nMCtotalExpected=" << nMCtotal << " : nData=" << nData << endl;
+  nData=h[0]->GetEntries();
+  cout << "nMCtotal=" << nMCtotal << " : nData=" << nData << endl;
 
-  for (Int_t n=1; n<nModeSets; n++) {
+  for (Int_t n=1; n<nModes; n++) {
     if ( scaleMCtoData ) {
       h[n]->Scale(nData/nMCtotal);
     }
     for (Int_t m=1; m<(n+1); m++) {
       ha[n]->Add(h[m]);
     }
-
-    ha[n]->SetFillColor(modeSetColor[n]);
+    ha[n]->SetFillColor(colors[n]);
   }
 
 
   //  cout << "nModes=" << nMode << endl;
   int k;
-  for (Int_t n=1; n<nModeSets; n++) {
-    k=nModeSets-n;
+  for (Int_t n=1; n<nModes; n++) {
+    k=nModes-n;
     if ( n==1 ) {
       ha[k]->Draw();
     } else {
       ha[k]->Draw("same");
     }
-    lgnd->AddEntry(ha[k],modeSetName[k],"f");
+    lgnd->AddEntry(ha[k],modenames[k],"f");
   }
 
 
@@ -1147,16 +939,16 @@ void Plot_Validation(const char* TitleName, const char* TreeName, const char* Va
   //Add the data
   h[0]->Draw("esame");
   h[0]->SetLineWidth(2);
-  h[0]->SetLineColor(modeSetColor[0]);
-  h[0]->SetFillColor(modeSetColor[0]);
-  lgnd->AddEntry(h[0],modeSetName[0],"l");
+  h[0]->SetLineColor(colors[0]);
+  h[0]->SetFillColor(colors[0]);
+  lgnd->AddEntry(h[0],modenames[0],"l");
 
   gStyle->SetOptStat(0);
   gStyle->SetTitleX(0.15);
   gStyle->SetTitleY(0.97);
-  ha[nModeSets-1]->SetTitle(TitleName);
-  ha[nModeSets-1]->SetXTitle(VarName);
-  ha[nModeSets-1]->SetYTitle("Evts");
+  ha[nModes-1]->SetTitle(TitleName);
+  ha[nModes-1]->SetXTitle(VarName);
+  ha[nModes-1]->SetYTitle("Evts");
 
   lgnd->Draw();
 
@@ -1173,8 +965,8 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 //// Makes validation plots for all of the variables
 //// the SaveName=savePrefix+VarName+.png
 {
-  TString saveDir = "/uscms_data/d2/aperloff/CMSSW_4_2_8/src/TAMUWW/Tools/bin/MEValidation/";
-  const int NVars=15;
+  TString saveDir = "~ilyao/public_html/MEValidation/";
+  const int NVars=9;
   TString VarName[NVars];
   TString VarTitle[NVars];
   double VarMin[NVars];
@@ -1234,58 +1026,34 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
   VarTitle[1]="logWWEventProb";
   VarMin[1]=-35;
   VarMax[1]=-0.0;
-  VarName[2]="log(m_tProbStat.tEventProb[1])";
-  VarTitle[2]="logWZEventProb";
+  VarName[2]="log(m_tProbStat.tEventProb[3])";
+  VarTitle[2]="logWLgEventProb";
   VarMin[2]=-35;
   VarMax[2]=-0.0;
-  VarName[3]="log(m_tProbStat.tEventProb[2])";
-  VarTitle[3]="logWZbbEventProb";
+  VarName[3]="log(m_tProbStat.tEventProb[4])";
+  VarTitle[3]="logWLgSubleadingEventProb";
   VarMin[3]=-35;
   VarMax[3]=-0.0;
-  VarName[4]="log(m_tProbStat.tEventProb[3])";
-  VarTitle[4]="logWLgEventProb";
+  VarName[4]="log(m_tProbStat.tEventProb[5])";
+  VarTitle[4]="logWLLEventProb";
   VarMin[4]=-35;
   VarMax[4]=-0.0;
-  VarName[5]="log(m_tProbStat.tEventProb[4])";
-  VarTitle[5]="logWLgSubleadingEventProb";
+  VarName[5]="log(m_tProbStat.tEventProb[6])";
+  VarTitle[5]="logWLbEventProb";
   VarMin[5]=-35;
   VarMax[5]=-0.0;
-  VarName[6]="log(m_tProbStat.tEventProb[5])";
-  VarTitle[6]="logWLLEventProb";
+  VarName[6]="log(m_tProbStat.tEventProb[7])";
+  VarTitle[6]="logWbbEventProb";
   VarMin[6]=-35;
   VarMax[6]=-0.0;
-  VarName[7]="log(m_tProbStat.tEventProb[6])";
-  VarTitle[7]="logWLbEventProb";
+  VarName[7]="log(m_tProbStat.tEventProb[8])";
+  VarTitle[7]="logZLightEventProb";
   VarMin[7]=-35;
   VarMax[7]=-0.0;
-  VarName[8]="log(m_tProbStat.tEventProb[7])";
-  VarTitle[8]="logWbbEventProb";
+  VarName[8]="log(m_tProbStat.tEventProb[9])";
+  VarTitle[8]="logttEventProb";
   VarMin[8]=-35;
   VarMax[8]=-0.0;
-  VarName[9]="log(m_tProbStat.tEventProb[8])";
-  VarTitle[9]="logZLightEventProb";
-  VarMin[9]=-35;
-  VarMax[9]=-0.0;
-  VarName[10]="log(m_tProbStat.tEventProb[9])";
-  VarTitle[10]="logttEventProb";
-  VarMin[10]=-35;
-  VarMax[10]=-0.0;
-  VarName[11]="log(m_tProbStat.tEventProb[10])";
-  VarTitle[11]="logtChannelEventProb";
-  VarMin[11]=-35;
-  VarMax[11]=-0.0;
-  VarName[12]="log(m_tProbStat.tEventProb[11])";
-  VarTitle[12]="logsChannelEventProb";
-  VarMin[12]=-35;
-  VarMax[12]=-0.0;
-  VarName[13]="log(m_tProbStat.tEventProb[12])";
-  VarTitle[13]="logtwChannelEventProb";
-  VarMin[13]=-35;
-  VarMax[13]=-0.0;
-  VarName[14]="log(m_tProbStat.tEventProb[13])";
-  VarTitle[14]="logQCDEventProb";
-  VarMin[14]=-35;
-  VarMax[14]=-0.0;
 //   VarName[]="log(m_tProbStat.tEventProb[])";
 //   VarTitle[]="log";
 //   VarMin[]=-35;
@@ -1295,30 +1063,6 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 //   VarMax[1]=5.0;
 
 
-////Cross-Section/NGenerated
-//18.2/4265243=4.22015814808206740e-06 for WZ
-//   double STopWeight = 3.19/259971;
-//   double STopBarWeight = 1.44/137980;
-//   double TTopWeight = 41.92/3900171;
-//   double TTopBarWeight = 22.65/1944826;
-//   double TWTopWeight = 7.87/795379;
-//   double TWTopBarWeight = 7.87/787629;
-// QCD Fractions: double rel2jet = 0.0663, rel3jet = 0.0229, rmu2jet = 0.001625, rmu3jet = 0.;
-
-
-///No QCD:
-//  TString inModes_mu = "Data 1 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microMu_All_EPDv01.root 5020 ENDSET     WpJ 2 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 ENDSET    ZpJ 3 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 ENDSET    Top 5 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopT_T_EPDv01.root 0.0000107482 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopS_T_EPDv01.root 0.00001227 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopTW_T_EPDv01.root 0.000009895 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopT_Tbar_EPDv01.root 0.000011646 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopS_Tbar_EPDv01.root 0.000010436 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopTW_Tbar_EPDv01.root 0.000009992 ENDSET    Diboson 4 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWZ_EPDv01.root 0.00000422";
-
-
-//  TString inModes_el = "Data 1 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microEl_All_EPDv01.root 5020 ENDSET     WpJ 2 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 ENDSET    ZpJ 3 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 ENDSET    Top 5 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopT_T_EPDv01.root 0.0000107482 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopS_T_EPDv01.root 0.00001227 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopTW_T_EPDv01.root 0.000009895 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopT_Tbar_EPDv01.root 0.000011646 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopS_Tbar_EPDv01.root 0.000010436 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microSTopTW_Tbar_EPDv01.root 0.000009992 ENDSET    Diboson 4 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWZ_EPDv01.root 0.00000422";
-//  int nQCD=-10;
-
-// ///With QCD:
-   TString inModes_mu = "Data 1 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSingleMu_Data_EPDv01.root 5020 ENDSET   QCD 6 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microQCD_Mu_EPDv01.root 0.001625 ENDSET     WpJ 2 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWJets_EPDv01.root 0.0003849171 ENDSET    ZpJ 3 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microZJets_EPDv01.root 0.000084017952387 ENDSET    Top 5 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microTTbar_EPDv01.root 0.000044031 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopT_T_EPDv01.root 0.0000107482 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopS_T_EPDv01.root 0.00001227 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopTW_T_EPDv01.root 0.000009895 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopT_Tbar_EPDv01.root 0.000011646 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopS_Tbar_EPDv01.root 0.000010436 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopTW_Tbar_EPDv01.root 0.000009992 ENDSET    Diboson 4 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWW_EPDv01.root 0.0000101753087377979123 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWZ_EPDv01.root 0.00000422";
-
-
-   TString inModes_el = "Data 1 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSingleEl_Data_EPDv01.root 5020 ENDSET   QCD 6 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microQCD_El_EPDv01.root 0.0663 ENDSET     WpJ 2 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWJets_EPDv01.root 0.0003849171 ENDSET    ZpJ 3 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microZJets_EPDv01.root 0.000084017952387 ENDSET    Top 5 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microTTbar_EPDv01.root 0.000044031 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopT_T_EPDv01.root 0.0000107482 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopS_T_EPDv01.root 0.00001227 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopTW_T_EPDv01.root 0.000009895 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopT_Tbar_EPDv01.root 0.000011646 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopS_Tbar_EPDv01.root 0.000010436 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microSTopTW_Tbar_EPDv01.root 0.000009992 ENDSET    Diboson 4 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWW_EPDv01.root 0.0000101753087377979123 /uscms_data/d2/aperloff/Spring12ME7TeV/MEResults/microNtuples_oldStructure/microWZ_EPDv01.root 0.00000422";
-   int nQCD=1;
 
 ////Cross-Section/NGenerated
 //18.2/4265243=4.22015814808206740e-06 for WZ
@@ -1331,15 +1075,15 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 // QCD Fractions: double rel2jet = 0.0663, rel3jet = 0.0229, rmu2jet = 0.001625, rmu3jet = 0.;
 
 
-//   TString inModes_mu = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microMu_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
+  TString inModes_mu = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microMu_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
 
 
-//   TString inModes_el = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microEl_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
+  TString inModes_el = "Data /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microEl_All_EPDv01.root 5020 1 WpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWJets_EPDv01.root 0.0003849171 2 ZpJ /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microZJets_EPDv01.root 0.000084017952387 3 TTbar /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microTTbar_EPDv01.root 0.000044031 5 WW /uscms_data/d3/ilyao/Spring12ME7TeV/MEResults/microNtuples/microWW_EPDv01.root 0.0000101753087377979123 4";
 
-//   ///// SelectionLevelCuts
-//   TString cutstrName="SelectionLevelCutsNoQCD_";
-//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0) )";
-//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0) )";
+  ///// FullCutsV01
+//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>40.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>30.0)&&(jLV[1].Pt()>30.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>40.0)&&(0.3<(jLV[0].Pt()/Mjj))&&((jLV[0].Pt()/Mjj)<0.7)&&(METLV[0].Et()>30.0) )";
+
 
 //   ///// StandarCuts
 //   TString cutstrName="StandardCuts_";
@@ -1348,16 +1092,18 @@ void Plot_AllValidations(const char* TitleName, int NBins, bool scaleMCtoData = 
 
   ///// Diboson Analysis-like cuts
   TString cutstrName="DibosonAnaLikeCuts_";
-  //TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>25.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
-TString AddRest_mu="( (leptonCat==1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>25.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
-//TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.5)&&(lLV[0].Pt()>30.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>30.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
-TString AddRest_el="( (leptonCat==2)&&(lLV[0].Pt()>35.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>30.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
+  TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.1)&&(lLV[0].Pt()>25.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>25.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
+  TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0)&&(abs(lLV[0].Eta())<2.5)&&(lLV[0].Pt()>30.0)&&(jLV[0].Pt()>35.0)&&(jLV[1].Pt()>35.0)&&(DRlj1>0.5)&&(DRlj2>0.5)&&(abs(jLV[0].Eta()-jLV[1].Eta())<1.5)&&(sqrt((jLV[0].Px()+jLV[1].Px())*(jLV[0].Px()+jLV[1].Px())+(jLV[0].Py()+jLV[1].Py())*(jLV[0].Py()+jLV[1].Py()))>20.0)&&( (abs(jLV[0].Phi()-METLV[0].Phi())<0.4)||((2*TMath::Pi()-abs(jLV[0].Phi()-METLV[0].Phi()))<0.4) )&&(METLV[0].Et()>30.0)&&(sqrt((lLV[0].Et()+METLV[0].Et())*(lLV[0].Et()+METLV[0].Et())-(lLV[0].Px()+METLV[0].Px())*(lLV[0].Px()+METLV[0].Px())-(lLV[0].Py()+METLV[0].Py())*(lLV[0].Py()+METLV[0].Py()))>50.0) )";
 
+
+//   ///// SelectionLevelCuts
+//   TString cutstrName="SelectionLevelCuts_";
+//   TString AddRest_mu="( (leptonCat==1)&&(40.0<Mjj)&&(Mjj<300.0) )";
+//   TString AddRest_el="( (leptonCat==2)&&(40.0<Mjj)&&(Mjj<300.0) )";
 
 
   for (Int_t n=0; n<NVars; n++) {
     ///Muons:
-    cout << "SAVING MUON VALIDATION PLOTS" << endl;
     TString SaveName="_mu.png";
     //TString SaveName="_mu.root";
     SaveName=VarTitle[n]+SaveName;
@@ -1366,9 +1112,8 @@ TString AddRest_el="( (leptonCat==2)&&(lLV[0].Pt()>35.0)&&(jLV[0].Pt()>35.0)&&(j
     TString Title = VarTitle[n];
     Title = " Muons : " + Title;
     Title = TitleName + Title;
-    Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_mu,inModes_mu,nQCD,SaveName,scaleMCtoData,drawMCwithErrors);
+    Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_mu,inModes_mu,SaveName,scaleMCtoData,drawMCwithErrors);
     ///Electrons:
-    cout << "SAVING ELECTRON VALIDATION PLOTS" << endl;
     SaveName="_el.png";
     //SaveName="_el.root";
     SaveName=VarTitle[n]+SaveName;
@@ -1377,7 +1122,7 @@ TString AddRest_el="( (leptonCat==2)&&(lLV[0].Pt()>35.0)&&(jLV[0].Pt()>35.0)&&(j
     Title = VarTitle[n];
     Title = " Electrons : " + Title;
     Title = TitleName + Title;
-    Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_el,inModes_el,nQCD,SaveName,scaleMCtoData,drawMCwithErrors);
+    Plot_Validation(Title,"METree",VarName[n],NBins,VarMin[n],VarMax[n],AddRest_el,inModes_el,SaveName,scaleMCtoData,drawMCwithErrors);
   }
 
 }
