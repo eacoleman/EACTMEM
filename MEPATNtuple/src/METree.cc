@@ -218,6 +218,12 @@ ProbStat::ProbStat() :
   tRealTime(0),
   tCpuTime(0),
   tProb(0),
+  tJet0Type(0),  
+  tJet1Type(0),  
+  tJet2Type(0),  
+  tJet3Type(0),  
+  tJet4Type(0),  
+  tJet5Type(0),
   tMaxProb(0),
   tEventProb(0),
   tEventErr(0),
@@ -235,6 +241,12 @@ ProbStat::ProbStat(int number) :
   tRealTime(0),
   tCpuTime(0),
   tProb(new Double_t[number]),
+  tJet0Type(new Double_t[number]),  
+  tJet1Type(new Double_t[number]),  
+  tJet2Type(new Double_t[number]),  
+  tJet3Type(new Double_t[number]),  
+  tJet4Type(new Double_t[number]),  
+  tJet5Type(new Double_t[number]),
   tMaxProb(new Double_t[number]),
   tEventProb(0),
   tEventErr(0),
@@ -252,6 +264,12 @@ ProbStat::ProbStat(const ProbStat& rhs) :
   tRealTime(rhs.tRealTime),
   tCpuTime(rhs.tCpuTime),
   tProb(new Double_t[tN]),
+  tJet0Type(new Double_t[tN]),  
+  tJet1Type(new Double_t[tN]),  
+  tJet2Type(new Double_t[tN]),  
+  tJet3Type(new Double_t[tN]),  
+  tJet4Type(new Double_t[tN]),  
+  tJet5Type(new Double_t[tN
   tMaxProb(new Double_t[tN]),
   tEventProb(rhs.tEventProb),
   tEventErr(rhs.tEventErr),
@@ -263,6 +281,12 @@ ProbStat::ProbStat(const ProbStat& rhs) :
     tRelerr [i] = rhs.tRelerr[i];
     tIfail  [i] = rhs.tIfail[i];
     tProb   [i] = rhs.tProb[i];
+    tJet0Type[i] = rhs.tJet0Type[i];  
+    tJet1Type[i] = rhs.tJet1Type[i];  
+    tJet2Type[i] = rhs.tJet2Type[i];  
+    tJet3Type[i] = rhs.tJet3Type[i];  
+    tJet4Type[i] = rhs.tJet4Type[i];  
+    tJet5Type[i] = rhs.tJet5Type[i];
     tMaxProb[i] = rhs.tMaxProb[i];
   }//for
   
@@ -279,12 +303,24 @@ const ProbStat& ProbStat::operator=(const ProbStat& rhs){
   delete [] tRelerr;
   delete [] tIfail;
   delete [] tProb;
+  delete [] tJet0Type;  
+  delete [] tJet1Type;  
+  delete [] tJet2Type;  
+  delete [] tJet3Type;  
+  delete [] tJet4Type;  
+  delete [] tJet5Type;
   delete [] tMaxProb;
 
   tNevl    = new Double_t[tN];
   tRelerr  = new Double_t[tN];
   tIfail   = new Double_t[tN];
   tProb    = new Double_t[tN];
+  tJet0Type = new Double_t[tN];  
+  tJet1Type = new Double_t[tN];  
+  tJet2Type = new Double_t[tN];  
+  tJet3Type = new Double_t[tN];  
+  tJet4Type = new Double_t[tN];  
+  tJet5Type = new Double_t[tN];
   tMaxProb = new Double_t[tN];
 
   for (Int_t i = 0; i < tN; ++i){
@@ -293,6 +329,12 @@ const ProbStat& ProbStat::operator=(const ProbStat& rhs){
     tRelerr [i] = rhs.tRelerr[i];
     tIfail  [i] = rhs.tIfail[i];
     tProb   [i] = rhs.tProb[i];
+    tJet0Type[i] = rhs.tJet0Type[i];  
+    tJet1Type[i] = rhs.tJet1Type[i];  
+    tJet2Type[i] = rhs.tJet2Type[i];  
+    tJet3Type[i] = rhs.tJet3Type[i];  
+    tJet4Type[i] = rhs.tJet4Type[i];  
+    tJet5Type[i] = rhs.tJet5Type[i];
     tMaxProb[i] = rhs.tMaxProb[i];
 
   }//for
@@ -313,6 +355,12 @@ ProbStat::~ProbStat(){
   delete [] tRelerr;
   delete [] tIfail;
   delete [] tProb;
+  delete [] tJet0Type;  
+  delete [] tJet1Type;  
+  delete [] tJet2Type;  
+  delete [] tJet3Type;  
+  delete [] tJet4Type;  
+  delete [] tJet5Type;
   delete [] tMaxProb;
 }
 
