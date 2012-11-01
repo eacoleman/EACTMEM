@@ -269,7 +269,7 @@ ProbStat::ProbStat(const ProbStat& rhs) :
   tJet2Type(new Double_t[tN]),  
   tJet3Type(new Double_t[tN]),  
   tJet4Type(new Double_t[tN]),  
-  tJet5Type(new Double_t[tN
+  tJet5Type(new Double_t[tN]),
   tMaxProb(new Double_t[tN]),
   tEventProb(rhs.tEventProb),
   tEventErr(rhs.tEventErr),

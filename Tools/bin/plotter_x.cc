@@ -81,7 +81,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 
    if (ntuple) {
       //-----------------ELECTRON--------------------//
-      if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
       {
          double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
          double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
@@ -133,7 +133,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 */
       }
       // -------------MUON-------------------//
-      else if (ntuple->leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
       {
          double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
          double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
@@ -188,7 +188,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 
    if (metree) { 
       //-----------------ELECTRON--------------------//
-      if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
          for (unsigned int tep=0; tep<15; tep++) {
             string name = UserFunctions::concatString("tEventProb",tep) + "_electron";
             //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
@@ -204,7 +204,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
          }
       }
       // -------------MUON-------------------//
-      else if (ntuple->leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
          for (unsigned int tep=0; tep<15; tep++) {
             string name = UserFunctions::concatString("tEventProb",tep) + "_muon";
             //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
@@ -223,7 +223,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 
    if (mnt) {
       //-----------------ELECTRON--------------------//
-      if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
          plots["epdPretagWWandWZ_electron"]->Fill(log(mnt->epdPretagWWandWZ),weight);
          double tEventProb0 = metree->getProbStat(0)->tEventProb;
          double tEventProb1 = metree->getProbStat(1)->tEventProb;
@@ -234,7 +234,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
          plots["epdPretagWWandWZ_RE_electron"]->Fill(epd,weight);
       }
       // -------------MUON-------------------//
-      else if (ntuple->leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
          plots["epdPretagWWandWZ_muon"]->Fill(log(mnt->epdPretagWWandWZ),weight);
          double tEventProb0 = metree->getProbStat(0)->tEventProb;
          double tEventProb1 = metree->getProbStat(1)->tEventProb;
@@ -253,7 +253,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*){
    
   /*
-  ntuple->leptonCat  |    req   | result
+  ntuple->lLV[0].leptonCat  |    req   | result
           muon       |   muon   | continue
           electron   |   muon   | false
           both       |   muon   | continue
@@ -265,7 +265,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
           both       |   both   | continue
   */
   // Kill onlye electron-muon combinations, nothing else
-  if ( ntuple->leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->leptonCat != DEFS::both) )
+  if ( ntuple->lLV[0].leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->lLV[0].leptonCat != DEFS::both) )
     return false;
 
   //if (ntuple->event!=2663602)
@@ -274,7 +274,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
   TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
   double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
 
-  if (ntuple->leptonCat == DEFS::muon)
+  if (ntuple->lLV[0].leptonCat == DEFS::muon)
      if ((ntuple->lLV[0].Pt()) <= 25.0                                  ||
          (ntuple->METLV[0].Et()) <= 25.0                                ||
          (ntuple->jLV[0].Pt()) <= 35.0                                  ||
@@ -286,7 +286,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
          wmt <= 50.0                                                     )
         return false;
   
-  if (ntuple->leptonCat == DEFS::electron) 
+  if (ntuple->lLV[0].leptonCat == DEFS::electron) 
      if ((ntuple->lLV[0].Pt()) <= 35.0                                  ||
          (ntuple->METLV[0].Et()) <= 30.0                                ||
          (ntuple->jLV[0].Pt()) <= 35.0                                  ||
@@ -301,11 +301,11 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
 
   //Implement FNAL cuts
   // if (doFNAL){
-  //   if (ntuple->leptonCat == DEFS::muon){
+  //   if (ntuple->lLV[0].leptonCat == DEFS::muon){
   //     if(!ntuple->FNALcutsMuon())
   //   return false;
   //   }
-  //   else if(ntuple->leptonCat == DEFS::electron)
+  //   else if(ntuple->lLV[0].leptonCat == DEFS::electron)
   //     if (!ntuple->FNALcutsElectron())
   //   return false;
   // }

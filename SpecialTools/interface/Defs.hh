@@ -32,11 +32,9 @@ namespace DEFS{
 	       WH130 , WH135 , WH140 , WH145 , WH150 ,
 	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
 	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
-	       STopS, STopT, STopTW, Wcc, WJets, WLg, Wgg, WLL, WLb, Wbb,
-	       WW, WZbb, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
-	       QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
-	       Data};
- 
+	       HWW180, HWW190, HWW200, HWW250, HWW300, HWW350, HWW400, HWW450, HWW500, HWW550, HWW600,
+	       STopS_T, STopS_Tbar, STopT_T, STopT_Tbar, STopTW_T, STopTW_Tbar, Wcc, WJets, ZJets, WW, WZ, TTbar, 
+	       QCDMu, QCDEl, Data};
 
     // A routine that returns the type given a string 
     Type getProcessType(std::string str);///
@@ -66,27 +64,18 @@ namespace DEFS{
   enum LeptonCat {none, muon, electron, both};
   static const unsigned int nLeptonCat = 4; 
 
-  // A routine that returns the string given the LeptonCat 
-  std::string getLeptonCatString(LeptonCat );
+    // A routine that returns the string given the EvtType 
+  std::string getEventCatString(LeptonCat );
 
-  // for historical reasons
-  std::string getEventCatString(LeptonCat a);
-
-  // A routine that returns the LeptonCat given the string
-  LeptonCat getLeptonCat(std::string type);
-
-  // ---------------------------------------------------------------
+  // -----------------------------------------------------------
   //            ALL ABOUT THE JET TYPES
   // ---------------------------------------------------------------
   enum JetBin {jets0, jet1, jets2, jets3, jets4, jets5};
-  
-  // for historical reasons
-  static const unsigned int NJETS = 5;
 
   // A routine that returns a string given the type
   std::string getJetBinString(JetBin type);
 
-  // A routine that returns a JetBin given
+  // A routine that returns a jetBin given
   JetBin getJetBin(std::string str);
 
 
@@ -135,20 +124,6 @@ namespace DEFS{
 
   // A routine that returns a jetBin given a string
   TagCat getTagCat(std::string str);
-
-  // ---------------------------------------------------------------
-  //            ALL ABOUT THE CUT LEVELS
-  // ---------------------------------------------------------------
-
-   enum CutLevel {NPATtupleEvts, c0, c1, c2, c3, c4, c5, c6, FNAL1, FNAL2, FNAL3, FNAL4, FNAL5, FNAL6, FNAL7, FNAL8, FNAL9, FNAL10, BTag0, BTag1, BTag2, BTag3p};
-   static const unsigned int nCutLevel = 22;
-   static const unsigned int nFinalCutLevel = 7;
-
-  // A routine that returns a string given the type
-  std::string getCutLevelString(CutLevel type);
-
-  // A routine that returns a CutLevel given
-  CutLevel getCutLevel(std::string str);
 
 }
 
