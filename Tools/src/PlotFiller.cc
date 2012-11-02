@@ -8,7 +8,6 @@
 
 // Our libraries
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
-//#include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
 using namespace std;
 
@@ -18,7 +17,7 @@ using namespace std;
 
 PlotFiller::PlotFiller(map<string, Plot*> &plotsTemp,
                        vector<PhysicsProcessNEW*> &procsTemp,
-                       void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, double)):
+                       void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
    plots(plotsTemp),
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
@@ -64,20 +63,65 @@ void PlotFiller::setMaximumEventsDEBUG(unsigned int maxEvts)
    debug = true;
 }
 
+void PlotFiller::setMVAWeightDir(TString MVAWD)
+{
+   MVAWeightDir = MVAWD;
+}
+
+void PlotFiller::setMVAMethods(vector<TString> MVAM)
+{
+   MVAMethods = MVAM;
+}
+
 void PlotFiller::run()
 {
+   cout << "\nPlotFiller::run Begin filling plots" << endl;
    for(unsigned int i = 0; i < processes.size(); i++)
    {
-      cout << "\nDoing Process " << processes[i]->name;
+      cout << "\nDoing Process " << processes[i]->name << endl;
       
       // Tell all plots to prepare for filling 
-      for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++)
+      for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++) {
          p->second->prepareToFillProcess(processes[i]);
+      }
       
       // Create the eventntuple and set the branch address
-      EventNtuple * ntuple = new EventNtuple();
+      EventNtuple * ntuple = 0;
+      METree * metree = 0;
+      MicroNtuple * mnt = 0;
       TChain * c = processes[i]->chain;
-      c->SetBranchAddress("EvtNtuple",&ntuple);
+      if (c->GetBranch("EvtTree")) {
+         ntuple = new EventNtuple();
+         c->SetBranchAddress("EvtTree",&ntuple);
+      }
+      else if (c->GetBranch("EvtNtuple")) {
+         ntuple = new EventNtuple();
+         c->SetBranchAddress("EvtNtuple",&ntuple);
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run EvtTree and EvtNtuple branches not found." << endl
+              << "\tSetting EventNtuple pointer to 0x0." << endl;
+      }
+      if (c->GetBranch("mnt")) {
+         mnt = new MicroNtuple(2);
+         c->SetBranchAddress("mnt",&mnt);
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run mnt branch not found." << endl
+              << "\tSetting MicroNtuple pointer to 0x0." << endl;
+      }
+      if (c->GetBranch("METree")) {
+         metree = new METree();
+         c->SetBranchAddress("METree",&metree);
+         if (!MVAWeightDir.IsNull() && !MVAMethods.empty()) {
+            c->GetEntry(16);
+            metree->setMVAReader(MVAMethods,MVAWeightDir);
+         }
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run METree branch not found." << endl
+              << "\tSetting METree pointer to 0x0." << endl;
+      }
 
       // The counter for how many events pass the cuts in each process
       unsigned int numProcEvts = 0;
@@ -96,7 +140,7 @@ void PlotFiller::run()
          numberOfEvents = c->GetEntries();
       }
       
-      cout << " with " << numberOfEvents << " events." << endl;
+      cout << "Processing " << numberOfEvents << " events (out of " << c->GetEntries() << ")." << endl;
       
       // This runs once for each process before the events are run.
       userProcessFunc(ntuple, processes[i]);
@@ -122,7 +166,8 @@ void PlotFiller::run()
          weight *= userWeightFunc(ntuple, processes[i]);
          
          // Fill plots
-         userFillFunc(plots, ntuple, weight);
+         //cout << "Entry = " << ev << endl; 
+         userFillFunc(plots, ntuple, metree, mnt, MVAMethods, weight);
          
          // Keep track of the total number of events & weights passing the cuts 
          sumW += weight;
@@ -131,4 +176,5 @@ void PlotFiller::run()
       
       cout << "Number of " << processes[i]->name << " events passing the cuts: " << numProcEvts << " with weights: " << sumW << endl;
    }
+   cout << "\nPlotFiller::run DONE" << endl;
 }

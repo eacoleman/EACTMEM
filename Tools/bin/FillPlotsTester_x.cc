@@ -32,7 +32,7 @@ TriggerEfficiency* triggerEfficiency;
 DEFS::LeptonCat leptonCategory;
 PUreweight* puweight;
 
-void fillPlots(map<string, Plot*> &plots, EventNtuple *ntuple, double weight);
+void fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, METree * metree, MicroNtuple * mnt, vector<TString>, double weight = 1.0);
 bool eventPassCuts(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
 double weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
 {
@@ -310,7 +310,7 @@ bool eventPassCuts(EventNtuple* ntuple, const PhysicsProcessNEW*){
 
 }// eventPassCuts
 
-void fillPlots(map<string, Plot*> &plots, EventNtuple* ntuple, double weight)
+void fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, METree * metree, MicroNtuple * mnt, vector<TString>, double weight)
 {
    plots["Mjj"]->Fill(ntuple->Mjj,weight);
    plots["MET"]->Fill(ntuple->METLV[0].Et(),weight);

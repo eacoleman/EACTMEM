@@ -211,12 +211,15 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
 
 void Plot::saveHistogramsToFile(TString histoFile)
 {
+   cout << "Plot::saveHistogramsToFile begin..." << endl;
    TFile output(histoFile, "RECREATE");
    for (unsigned int i = 0; i < histos.size(); i++)
    {
+      cout << "\tPlot::saveHistogramsToFile saving histogram " << histos[i]->GetName() << endl;
       histos[i]->Write();
    }
    output.Close();
+   cout << "Plot::saveHistogramsToFile DONE" << endl;
 }
 
 // ##################################################
@@ -227,6 +230,7 @@ FormattedPlot::FormattedPlot()
 {
    overlaySignalFactor = 1.0;
    overlaySignalName = "";
+   logxy = make_pair(false,false);
 }
 
 // ------------------------------------------------------------
@@ -327,6 +331,9 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    canMain->SetLeftMargin(0.115); 
    canMain->SetRightMargin(0.03); 
    canMain->cd();
+   TPad* padMain = (TPad*)canMain->GetPad(0);
+   padMain->SetLogx(logxy.first);
+   padMain->SetLogy(logxy.second);
    
    //Define the graphics option
    TString gOption = stacked ? "": "nostack";
@@ -369,7 +376,8 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    l->Draw("same");
 
    // Add the luminosity
-   drawLumi(3.6);
+   //drawLumi(3.6);
+   drawLumi(procs[0]->intLum/1000);
 
    // canRatio: this is the pad with the Data/MC on it
    TVirtualPad * canRatio = can->GetPad(2);
@@ -380,6 +388,9 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    canRatio->SetGridx();
    canRatio->SetGridy();
    canRatio->cd();
+   TPad* padRatio = (TPad*)canRatio->GetPad(0);
+   padRatio->SetLogx(logxy.first);
+   //padRatio->SetLogy(logxy.second);
   
    // Create the Ratio plot
    TH1* hRatio = (TH1*) tDa->Clone(tempName+"_Ratio");

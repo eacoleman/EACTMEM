@@ -84,6 +84,7 @@ public:
    
    std::vector<std::string> axisTitles;
    std::pair<double,double> range;
+   std::pair<bool,bool> logxy;
    
    // The lepton that this plot is for
    DEFS::LeptonCat leptonCat;

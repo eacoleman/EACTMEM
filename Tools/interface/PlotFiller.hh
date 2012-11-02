@@ -10,6 +10,8 @@
 //#include "TAMUWW/Tools/interface/PlotMap.hh"
 //#include "TAMUWW/SpecialTools/interface/ProtectedMap.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
+#include "TAMUWW/MEPATNtuple/interface/METree.hh"
+#include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "TAMUWW/Tools/interface/TriggerEfficiency.hh"
 
@@ -28,7 +30,7 @@ public:
    // NOTE That the user must provide the fill function at construction (because it is a required function).
    PlotFiller(map<string, Plot*> &plotsTemp,
               std::vector<PhysicsProcessNEW*> &procsTemp,
-              void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, double) );
+              void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double) );
    ~PlotFiller();
    
    // Simple functions to change the functionality of the code.
@@ -36,6 +38,8 @@ public:
    void setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    void setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
    void setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
+   void setMVAWeightDir(TString MVAWD);
+   void setMVAMethods(vector<TString> MVAM);
    
    // Debug functions
    void setMaximumEventsDEBUG(unsigned int maxEvts);
@@ -50,10 +54,12 @@ private:
    unsigned int numberOfEvents;
    unsigned int debugNumberOfEvents;
    bool debug;
-   
+   TString MVAWeightDir;
+   vector<TString> MVAMethods;   
+
    // These are the custom functions.
    // Fills the plots
-   void (*userFillFunc) (map<string, Plot*> &, EventNtuple*, double);
+   void (*userFillFunc) (map<string, Plot*> &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double);
    // Returns a double that will multiply the weight
    double (*userWeightFunc) (EventNtuple*, const PhysicsProcessNEW*);
    // Returns true if the event passes the cut

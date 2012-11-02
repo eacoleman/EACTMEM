@@ -16,11 +16,13 @@
 // ROOT libraries
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TBenchmark.h"
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TH2D.h"
 #include "TChain.h"
+#include "TLorentzVector.h"
 
 // C++ libraries
 #include <iostream>
@@ -49,10 +51,14 @@ namespace UserFunctions
    bool doElectron;
    bool doMuon;
 
+////////////////////////////////////////////////////////////////////////////////
+//  User Functions
+////////////////////////////////////////////////////////////////////////////////
+
    // Is run once for each process before events are cut (initialize)
    void initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
    // this function fills all of the plots for a given process
-   void fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, double weight = 1.0);
+   void fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, METree * metree, MicroNtuple * mnt, vector<TString>, double weight = 1.0);
    // returns a boolean if the event passes the specified cuts
    bool eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*);
    // returns a double
@@ -69,113 +75,186 @@ namespace UserFunctions
    // returns a number rounded away from zero
    double round(double r);
    int round_int(double r);
+   // concat any two streamable objects into a string
+   template <class T, class U>
+   std::string concatString(const T& obj1, const U& obj2);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//  Implement User Functions
+////////////////////////////////////////////////////////////////////////////////
+
 //______________________________________________________________________________
-void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple, double weight)
+void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,  METree * metree, MicroNtuple * mnt, vector<TString> MVAMethods, double weight)
 {
-   //-----------------ELECTRON--------------------//
-   //if (ntuple->leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
-   if (1)
-   {
-      
-      double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
-      double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
-      pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
+   //WARNING!!! Make sure that ntuple, metree, and mnt are set before using!!! Example::metree and mnt will not be set if you are running on an MEInput file.
 
-      if(!doElectron)
-         return;
+   if (ntuple) {
+      //-----------------ELECTRON--------------------//
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both))
+      {
+      
+         double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
+         double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+         pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
 
-      plots["Mjj_electron"]->Fill(Mjj,weight);
-      plots["LeptPt_electron"]->Fill(ntuple->lLV[0].Pt(),weight);
-      plots["LeptEta_electron"]->Fill(ntuple->lLV[0].Eta(),weight);
-      plots["LeptPhi_electron"]->Fill(ntuple->lLV[0].Phi(),weight);
-      plots["MET_electron"]->Fill(ntuple->METLV[0].Et(),weight);
-      plots["WmT_electron"]->Fill(WmT, weight);
-      plots["MjjmWmT_electron"]->Fill(Mjj - WmT, weight);
-      plots["Jet1Pt_electron"]->Fill(ntuple->jLV[0].Pt(),weight);
-      plots["Jet1Eta_electron"]->Fill(ntuple->jLV[0].Eta(),weight);
-      plots["Jet1Phi_electron"]->Fill(ntuple->jLV[0].Phi(),weight);
-      plots["Jet2Pt_electron"]->Fill(ntuple->jLV[1].Pt(),weight);
-      plots["Jet2Eta_electron"]->Fill(ntuple->jLV[1].Eta(),weight);
-      plots["Jet2Phi_electron"]->Fill(ntuple->jLV[1].Phi(),weight);
-      plots["DeltaEtaJ1J2_electron"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
-      plots["Ptjj_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
-      plots["j1Pt_Mjj_electron"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
-      plots["j2Pt_Mjj_electron"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
-      plots["Mlvjj_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
-      plots["DeltaRLepMET_electron"]->Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2)),weight);
-      plots["EJ1EJ2_electron"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
-      plots["BetaJ1BetaJ2_electron"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
-      plots["DeltaRJ1J2_electron"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
-      plots["AngleJ1J2_electron"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
-      plots["DeltaPhi_LJ1_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
-      plots["DeltaPhi_J1J2_electron"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots["DeltaPhi_LJ1_vs_J1J2_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots["npv_electron"]->Fill(ntuple->vLV[0].npv,weight);
-      plots["jjlvPhi_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
-      plots["MWjjVsMWlv_electron"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
-      if (ntuple->lLV[0].lQ == 1){
-         plots["DeltaPhi_LJ1_vs_J1J2_Positive_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
-         plots["WmT_Positive_electron"]->Fill(WmT, weight);
+         if(!doElectron)
+            return;
+
+         plots["Mjj_electron"]->Fill(Mjj,weight);
+         plots["LeptPt_electron"]->Fill(ntuple->lLV[0].Pt(),weight);
+         plots["LeptEta_electron"]->Fill(ntuple->lLV[0].Eta(),weight);
+         plots["LeptPhi_electron"]->Fill(ntuple->lLV[0].Phi(),weight);
+         plots["MET_electron"]->Fill(ntuple->METLV[0].Et(),weight);
+         plots["WmT_electron"]->Fill(WmT, weight);
+         plots["MjjmWmT_electron"]->Fill(Mjj - WmT, weight);
+         plots["Jet1Pt_electron"]->Fill(ntuple->jLV[0].Pt(),weight);
+         plots["Jet1Eta_electron"]->Fill(ntuple->jLV[0].Eta(),weight);
+         plots["Jet1Phi_electron"]->Fill(ntuple->jLV[0].Phi(),weight);
+         plots["Jet2Pt_electron"]->Fill(ntuple->jLV[1].Pt(),weight);
+         plots["Jet2Eta_electron"]->Fill(ntuple->jLV[1].Eta(),weight);
+         plots["Jet2Phi_electron"]->Fill(ntuple->jLV[1].Phi(),weight);
+         plots["DeltaEtaJ1J2_electron"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
+         plots["Ptjj_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
+         plots["j1Pt_Mjj_electron"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
+         plots["j2Pt_Mjj_electron"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
+         plots["Mlvjj_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
+         plots["DeltaRLepMET_electron"]->Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2)),weight);
+         plots["EJ1EJ2_electron"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
+         plots["BetaJ1BetaJ2_electron"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
+         plots["DeltaRJ1J2_electron"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
+         plots["AngleJ1J2_electron"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
+         plots["DeltaPhi_LJ1_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
+         plots["DeltaPhi_METJ1_electron"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->METLV[0]),weight);
+         plots["DeltaPhi_J1J2_electron"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+         plots["DeltaPhi_LJ1_vs_J1J2_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+         plots["npv_electron"]->Fill(ntuple->vLV[0].npv,weight);
+         plots["jjlvPhi_electron"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
+         plots["MWjjVsMWlv_electron"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
+         if (ntuple->lLV[0].lQ == 1){
+            plots["DeltaPhi_LJ1_vs_J1J2_Positive_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+            plots["WmT_Positive_electron"]->Fill(WmT, weight);
+         }
+         if (ntuple->lLV[0].lQ == -1){
+            plots["DeltaPhi_LJ1_vs_J1J2_Negative_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+            plots["WmT_Negative_electron"]->Fill(WmT, weight);
+         }
+         plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
+         plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
       }
-      if (ntuple->lLV[0].lQ == -1){
-         plots["DeltaPhi_LJ1_vs_J1J2_Negative_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
-         plots["WmT_Negative_electron"]->Fill(WmT, weight);
-      }
-      plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
-   }
-   // -------------MUON-------------------//
-   else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
-   {
-      double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
-      double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
-      pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
+      // -------------MUON-------------------//
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
+      {
+         double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
+         double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+         pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
       
-      if(!doMuon)
-         return;
-      
-      plots["Mjj_muon"]->Fill(Mjj,weight);
-      plots["LeptPt_muon"]->Fill(ntuple->lLV[0].Pt(),weight);
-      plots["LeptEta_muon"]->Fill(ntuple->lLV[0].Eta(),weight);
-      plots["LeptPhi_muon"]->Fill(ntuple->lLV[0].Phi(),weight);
-      plots["MET_muon"]->Fill(ntuple->METLV[0].Et(),weight);
-      plots["WmT_muon"]->Fill(WmT, weight);
-      plots["MjjmWmT_muon"]->Fill(Mjj - WmT, weight);
-      plots["Jet1Pt_muon"]->Fill(ntuple->jLV[0].Pt(),weight);
-      plots["Jet1Eta_muon"]->Fill(ntuple->jLV[0].Eta(),weight);
-      plots["Jet1Phi_muon"]->Fill(ntuple->jLV[0].Phi(),weight);
-      plots["Jet2Pt_muon"]->Fill(ntuple->jLV[1].Pt(),weight);
-      plots["Jet2Eta_muon"]->Fill(ntuple->jLV[1].Eta(),weight);
-      plots["Jet2Phi_muon"]->Fill(ntuple->jLV[1].Phi(),weight);
-      plots["DeltaEtaJ1J2_muon"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
-      plots["Ptjj_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
-      plots["j1Pt_Mjj_muon"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
-      plots["j2Pt_Mjj_muon"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
-      plots["Mlvjj_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
-      plots["DeltaRLepMET_muon"]->Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2)),weight);
-      plots["EJ1EJ2_muon"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
-      plots["BetaJ1BetaJ2_muon"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
-      plots["DeltaRJ1J2_muon"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
-      plots["AngleJ1J2_muon"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
-      plots["DeltaPhi_LJ1_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
-      plots["DeltaPhi_J1J2_muon"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);   
-      plots["DeltaPhi_LJ1_vs_J1J2_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots["npv_muon"]->Fill(ntuple->vLV[0].npv,weight);
-      plots["jjlvPhi_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
-      plots["MWjjVsMWlv_muon"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
-      if (ntuple->lLV[0].lQ == 1){
-         plots["DeltaPhi_LJ1_vs_J1J2_Positive_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
-         plots["WmT_Positive_muon"]->Fill(WmT, weight);
+         if(!doMuon)
+            return;
+
+         plots["Mjj_muon"]->Fill(Mjj,weight);
+         plots["LeptPt_muon"]->Fill(ntuple->lLV[0].Pt(),weight);
+         plots["LeptEta_muon"]->Fill(ntuple->lLV[0].Eta(),weight);
+         plots["LeptPhi_muon"]->Fill(ntuple->lLV[0].Phi(),weight);
+         plots["MET_muon"]->Fill(ntuple->METLV[0].Et(),weight);
+         plots["WmT_muon"]->Fill(WmT, weight);
+         plots["MjjmWmT_muon"]->Fill(Mjj - WmT, weight);
+         plots["Jet1Pt_muon"]->Fill(ntuple->jLV[0].Pt(),weight);
+         plots["Jet1Eta_muon"]->Fill(ntuple->jLV[0].Eta(),weight);
+         plots["Jet1Phi_muon"]->Fill(ntuple->jLV[0].Phi(),weight);
+         plots["Jet2Pt_muon"]->Fill(ntuple->jLV[1].Pt(),weight);
+         plots["Jet2Eta_muon"]->Fill(ntuple->jLV[1].Eta(),weight);
+         plots["Jet2Phi_muon"]->Fill(ntuple->jLV[1].Phi(),weight);
+         plots["DeltaEtaJ1J2_muon"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
+         plots["Ptjj_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
+         plots["j1Pt_Mjj_muon"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
+         plots["j2Pt_Mjj_muon"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
+         plots["Mlvjj_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] + ntuple->METLV[0]).M(),weight);
+         plots["DeltaRLepMET_muon"]->Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2)),weight);
+         plots["EJ1EJ2_muon"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
+         plots["BetaJ1BetaJ2_muon"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
+         plots["DeltaRJ1J2_muon"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
+         plots["AngleJ1J2_muon"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
+         plots["DeltaPhi_LJ1_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
+         plots["DeltaPhi_METJ1_muon"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->METLV[0]),weight);
+         plots["DeltaPhi_J1J2_muon"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);   
+         plots["DeltaPhi_LJ1_vs_J1J2_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+         plots["npv_muon"]->Fill(ntuple->vLV[0].npv,weight);
+         plots["jjlvPhi_muon"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() - (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
+         plots["MWjjVsMWlv_muon"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
+         if (ntuple->lLV[0].lQ == 1){
+            plots["DeltaPhi_LJ1_vs_J1J2_Positive_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+            plots["WmT_Positive_muon"]->Fill(WmT, weight);
+         }
+         if (ntuple->lLV[0].lQ == -1){
+            plots["DeltaPhi_LJ1_vs_J1J2_Negative_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
+            plots["WmT_Negative_muon"]->Fill(WmT, weight);
+         }
+         plots["WmT_Subtracted_muon"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
+         plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
       }
-      if (ntuple->lLV[0].lQ == -1){
-         plots["DeltaPhi_LJ1_vs_J1J2_Negative_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
-         plots["WmT_Negative_muon"]->Fill(WmT, weight);
-      }
-      plots["WmT_Subtracted_muon"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
    }
+
+   if (metree) { 
+      //-----------------ELECTRON--------------------//
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
+         for (unsigned int tep=0; tep<15; tep++) {
+            string name = UserFunctions::concatString("tEventProb",tep) + "_electron";
+            //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
+            plots[name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
+         }
+         if (!MVAMethods.empty() && ntuple) {
+            //cout << "MVADiscriminator_electron = " << metree->getMVAOutput(MVAMethods).front()["response"] << endl;
+            //cout << "MVAProbability_electron = " << metree->getMVAOutput(MVAMethods).front()["probability"] << endl;
+            //cout << "weight = " << weight << endl;
+            metree->setMjjMVA(ntuple->Mjj);
+            plots["MVADiscriminator_electron"]->Fill(metree->getMVAOutput(MVAMethods).front()["response"],weight);
+            plots["MVAProbability_electron"]->Fill(metree->getMVAOutput(MVAMethods).front()["probability"],weight);
+         }
+      }
+      // -------------MUON-------------------//
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
+         for (unsigned int tep=0; tep<15; tep++) {
+            string name = UserFunctions::concatString("tEventProb",tep) + "_muon";
+            //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
+            plots[name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
+         }
+         if (!MVAMethods.empty() && ntuple) {
+            //cout << "MVADiscriminator_muon = " << metree->getMVAOutput(MVAMethods).front()["response"] << endl;
+            //cout << "MVAProbability_muon = " << metree->getMVAOutput(MVAMethods).front()["probability"] << endl;
+            //cout << "weight = " << weight << endl;
+            metree->setMjjMVA(ntuple->Mjj);
+            plots["MVADiscriminator_muon"]->Fill(metree->getMVAOutput(MVAMethods).front()["response"],weight);
+            plots["MVAProbability_muon"]->Fill(metree->getMVAOutput(MVAMethods).front()["probability"],weight);
+         }
+      }
+   }
+
+   if (mnt) {
+      //-----------------ELECTRON--------------------//
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
+         plots["epdPretagWWandWZ_electron"]->Fill(log(mnt->epdPretagWWandWZ),weight);
+         double tEventProb0 = metree->getProbStat(0)->tEventProb;
+         double tEventProb1 = metree->getProbStat(1)->tEventProb;
+         double tEventProb3 = metree->getProbStat(3)->tEventProb;
+         double signal = (tEventProb0 / 0.8e-06) + (tEventProb1 / 0.1e-06);
+         double back   = tEventProb3 / 0.75e-03;
+         double epd    = signal /(signal+back);
+         plots["epdPretagWWandWZ_RE_electron"]->Fill(epd,weight);
+      }
+      // -------------MUON-------------------//
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
+         plots["epdPretagWWandWZ_muon"]->Fill(log(mnt->epdPretagWWandWZ),weight);
+         double tEventProb0 = metree->getProbStat(0)->tEventProb;
+         double tEventProb1 = metree->getProbStat(1)->tEventProb;
+         double tEventProb3 = metree->getProbStat(3)->tEventProb;
+         double signal = (tEventProb0 / 0.8e-06) + (tEventProb1 / 0.1e-06);
+         double back   = tEventProb3 / 0.75e-03;
+         double epd    = signal /(signal+back);
+         plots["epdPretagWWandWZ_RE_muon"]->Fill(epd,weight);
+      }
+   }
+    
 }//fillPlots
 
 //______________________________________________________________________________
@@ -183,22 +262,28 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
 bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*){
    
   /*
-  ntuple->leptonCat  |    req   | result
-          muon       |   muon   | continue
-          electron   |   muon   | false
-          both       |   muon   | continue
-          muon       | electron | false
-          electron   | electron | continue
-          both       | electron | continue
-          muon       |   both   | continue
-          electron   |   both   | continue
-          both       |   both   | continue
+  ntuple->lLV[0].leptonCat  |    req   | result
+                 muon       |   muon   | continue
+                 electron   |   muon   | false
+                 both       |   muon   | continue
+                 muon       | electron | false
+                 electron   | electron | continue
+                 both       | electron | continue
+                 muon       |   both   | continue
+                 electron   |   both   | continue
+                 both       |   both   | continue
   */
-  // Kill onlye electron-muon combinations, nothing else
+  // Kill only electron-muon combinations, nothing else
   if ( ntuple->lLV[0].leptonCat != leptonCat && (leptonCat != DEFS::both && ntuple->lLV[0].leptonCat != DEFS::both) )
     return false;
 
- /* if (ntuple->leptonCat == DEFS::muon)
+/*
+  // Keep only specific events
+  if (ntuple->event!=2663602)
+     return false;
+*/
+/*
+  if (ntuple->leptonCat == DEFS::muon)
     if ((ntuple->lLV[0].Pt()) <= 25.0 || (ntuple->METLV[0].Et()) <= 30.0)
       return false;
   
@@ -206,6 +291,36 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
     if ((ntuple->lLV[0].Pt()) <= 30.0 || (ntuple->METLV[0].Et()) <= 35.0)
       return false;
  */
+
+/*
+  // Diboson analysis cuts
+  TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
+  double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+
+  if (ntuple->leptonCat == DEFS::muon)
+     if ((ntuple->lLV[0].Pt()) <= 25.0                                  ||
+         (ntuple->METLV[0].Et()) <= 25.0                                ||
+         (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+         (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+         (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
+         ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
+         (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
+         (mt.M()) <= 30.0                                               ||
+         wmt <= 50.0                                                     )
+        return false;
+  
+  if (ntuple->leptonCat == DEFS::electron) 
+     if ((ntuple->lLV[0].Pt()) <= 35.0                                  ||
+         (ntuple->METLV[0].Et()) <= 30.0                                ||
+         (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+         (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+         (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
+         ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
+         (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
+         (mt.M()) <= 30.0                                               ||
+         wmt <= 50.0                                                     )
+        return false;
+*/
 
   //Implement FNAL cuts
   if (doFNAL){
@@ -321,9 +436,9 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
     return;
    
   // Initializes PU Reweighting
-  string dataname = string("/uscms/home/amejia94/CMSSW_5_2_5/src/pileup12_noTrig.root");
+  string dataname = string("/uscms/home/aperloff/MatrixElement/CMSSW_5_3_2_patch4/src/TAMUWW/Tools/bin/pileup12_noTrig.root");
   string MCname   = string(TString(proc->fileName));
-  puweight = new PUreweight(dataname,MCname,"pileup_IsoMu24_eta2p1","PS/TPUDist");
+  puweight = new PUreweight(dataname,MCname,"pileup_noTrig","PS/TPUDist");
 }
 
 double UserFunctions::charge(int x) {
@@ -533,8 +648,20 @@ int UserFunctions::round_int(double r) {
    return (r > 0.0) ? (r + 0.5) : (r - 0.5); 
 }//round
 
+template <class T, class U>
+std::string UserFunctions::concatString(const T& obj1, const U& obj2)
+{
+   std::ostringstream output;
+   output << obj1 << obj2;
+   return output.str();
+}//concatString
+
+////////////////////////////////////////////////////////////////////////////////
+//  Local Functions
+////////////////////////////////////////////////////////////////////////////////
+
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight, bool verbose);
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, vector<TString> MVAMethods, bool verbose);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
@@ -549,10 +676,10 @@ double getNumMCEvts(TString channelName);
 vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum);
 
 /// returns a vector containing all of the processes that the program will use
-vector<PhysicsProcessNEW*> getProcesses(vector<string>& processNames, double intLum);
+vector<PhysicsProcessNEW*> getProcesses(vector<string>& processNames, DEFS::LeptonCat leptonCat, double intLum);
 
 /// returns a map containing all of the plots that will be made for each process and their specific attributes
-map<string, Plot*> getPlots(string leptonCatString);
+map<string, Plot*> getPlots(string leptonCatString, bool norm_data);
 
 /// returns the Color_t for a specific process
 Color_t getProcessColor(TString channelName);
@@ -569,7 +696,7 @@ int main(int argc,char**argv) {
    if (!cl.parse(argc,argv)) return 0;
 
    vector<string> processNames      = cl.getVector<string> ("procs",           "");
-   double         intLum            = cl.getValue<double>  ("lum",           3600);  
+   double         intLum            = cl.getValue<double>  ("lum",          10000);  
    string         lepCat            = cl.getValue<string>  ("lep",         "both");
    UserFunctions::doJER             = cl.getValue<bool>    ("doJer",         true);
    UserFunctions::doPUreweight      = cl.getValue<bool>    ("doPUrewt",      true);
@@ -579,13 +706,20 @@ int main(int argc,char**argv) {
    UserFunctions::leptonCat         = DEFS::getLeptonCat   (lepCat);
    UserFunctions::WJweight          = cl.getValue<bool>    ("WJweight",     false);
    UserFunctions::verbose           = cl.getValue<bool>    ("verbose",      false);
+   bool           norm_data         = cl.getValue<bool>    ("norm_data",    false);
    int            maxEvts           = cl.getValue<int>     ("maxEvts",          0);
+   TString        MVAWeightDir      = cl.getValue<TString> ("MVAWeightDir",    "");
+   vector<TString> MVAMethods       = cl.getVector<TString>("MVAMethods",      "");
 
    if (!cl.check()) return 0;
    cl.print();
    
+   TBenchmark* m_benchmark = new TBenchmark();
+   m_benchmark->Reset();
+   m_benchmark->Start("event");
+
    // The vector containing all plots to be made
-   map<string, Plot*> plots = getPlots(lepCat);
+   map<string, Plot*> plots = getPlots(lepCat,norm_data);
    
    cout << "Doing lepton category "<<DEFS::getLeptonCatString(UserFunctions::leptonCat)<< endl;
 
@@ -593,14 +727,14 @@ int main(int argc,char**argv) {
    vector <PhysicsProcessNEW*> procs;
    
    if (!processNames.empty())
-     procs = getProcesses(processNames,intLum);
+      procs = getProcesses(processNames,UserFunctions::leptonCat,intLum);
    else
-     procs = getProcesses(UserFunctions::leptonCat,intLum);
+      procs = getProcesses(UserFunctions::leptonCat,intLum);
       
    // Make all the plots and store to outputFile
    TString outFileName = "outputFile_";
    outFileName += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
-   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, UserFunctions::verbose);
+   doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, MVAWeightDir, MVAMethods, UserFunctions::verbose);
    
    if (UserFunctions::leptonCat == DEFS::muon || UserFunctions::leptonCat == DEFS::both)
    {
@@ -613,6 +747,11 @@ int main(int argc,char**argv) {
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_Subtracted_electron.root");
    }
    
+   m_benchmark->Stop("event");
+   cout << "plotter_x" << endl << "\tCPU time = " << m_benchmark->GetCpuTime("event") << " s" << endl
+        << "\tReal time = " << m_benchmark->GetRealTime("event") << " s" << endl;
+   delete m_benchmark;
+
    return 0;
 
 }//plotter()
@@ -623,15 +762,19 @@ int main(int argc,char**argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight, bool verbose) {
+void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, vector<TString> MVAMethods, bool verbose) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
-   //pFill.setCutFunction(&UserFunctions::eventPassCuts);
+   pFill.setCutFunction(&UserFunctions::eventPassCuts);
    pFill.setWeightFunction(&UserFunctions::weightFunc);
    pFill.setProcessFunction(&UserFunctions::processFunc);
    pFill.setInitializeEventFunction(&UserFunctions::initEventFunc);
    if (maxEvts>0)
       pFill.setMaximumEventsDEBUG(maxEvts); // TEST
+   if (!MVAWeightDir.IsNull()) {
+      pFill.setMVAWeightDir(MVAWeightDir);
+      pFill.setMVAMethods(MVAMethods);
+   }
    pFill.run();
 
    // Will all the info in the plots get the canvas and write it to file
@@ -704,7 +847,7 @@ double getNumMCEvts(TString channelName)
 
    string basePath = gSystem->pwd();
    basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple_525.txt"),"TableCellVal");
+   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple_532.txt"),"TableCellVal");
    TableCell * cell =table.getCellRowColumn(string(channelName),"Events_PATtuple");
    if(cell){
       value = ((TableCellVal*)cell)->val.value;
@@ -723,41 +866,47 @@ double getNumMCEvts(TString channelName)
 // intLum    = The integrated luminosity in pb-1 for this given lepton category 
 vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
    
-  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120722_NTUPLES/";
+  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120910_NTUPLES/";
   vector <PhysicsProcessNEW*> procs;
   
   procs.push_back(new PlotterPhysicsProcessNEW("WW",basePath+"WW.root", getCrossSection("WW"),
-                                               intLum, getNumMCEvts("WW"), getProcessColor("WW")));
+                                               intLum, getNumMCEvts("WW"), getProcessColor("WW"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("WZ",basePath+"WZ.root", getCrossSection("WZ"),
-                                               intLum, getNumMCEvts("WZ"), getProcessColor("WZ")));
+                                               intLum, getNumMCEvts("WZ"), getProcessColor("WZ"), "PS/jets2p"));
+  procs.push_back(new PlotterPhysicsProcessNEW("ZZ",basePath+"ZZ.root", getCrossSection("ZZ"),
+                                               intLum, getNumMCEvts("ZZ"), getProcessColor("ZZ"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("DYJets",basePath+"DYJets.root", getCrossSection("DYJets"),
-                                               intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets")));
+                                               intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets"),
+                                               "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("TTbar",basePath+"TTbar.root", getCrossSection("TTbar"),
-                                               intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar")));
+                                               intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar"),
+                                               "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopT_T",basePath+"STopT_T.root", getCrossSection("STopT_T"),
-                                               intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T")));
-  //   procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar/PS.root",
-  //                            getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
-  //                            getProcessColor("STopT_Tbar")));
+                                               intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T"),
+                                               "PS/jets2p"));
+  procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar",basePath+"STopT_Tbar.root",
+                                               getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
+                                               getProcessColor("STopT_Tbar"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopS_T",basePath+"STopS_T.root", getCrossSection("STopS_T"),
-                                               intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T")));
+                                               intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T"),
+                                               "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar",basePath+"STopS_Tbar.root",
                                                getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
-                                               getProcessColor("STopS_Tbar")));
+                                               getProcessColor("STopS_Tbar"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T",basePath+"STopTW_T.root",
                                                getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
-                                               getProcessColor("STopTW_T")));
+                                               getProcessColor("STopTW_T"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar",basePath+"STopTW_Tbar.root", 
                                                getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
-                                               getProcessColor("STopTW_Tbar")));
+                                               getProcessColor("STopTW_Tbar"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("ggH125",basePath+"ggH125.root", 
                                                getCrossSection("ggH125")*getBranchingRatio("ggH125"),
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("ggH125"), 
-                                               "PS/jets2"));
-  procs.push_back(new PlotterPhysicsProcessNEW("qqH125",basePath+"qqH125.root", 
-                                               getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
-                                               intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
-                                               "PS/jets2"));
+                                               "PS/jets2p"));
+  //procs.push_back(new PlotterPhysicsProcessNEW("qqH125",basePath+"qqH125.root", 
+  //                                            getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
+  //                                             intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
+  //                                             "PS/jets2p"));
   
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
@@ -768,33 +917,33 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.16539*getCrossSection("WJets"),
+    procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.0*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
                                                  "PS/jet2", DEFS::electron));
     procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
-                                                 "PS/jets2", DEFS::electron)); 
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
-                                                 0.000882659*getCrossSection("QCD_ElEnriched"), intLum,
-                                                 getNumMCEvts("QCD_ElEnriched"),
-                                                 getProcessColor("QCD_ElEnriched"),
-                                                 "PS/jets2", DEFS::electron));
+                                                 "PS/jets2p", DEFS::electron)); 
+    //procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
+    //                                             1.0*getCrossSection("QCD_ElEnriched"), intLum,
+    //                                             getNumMCEvts("QCD_ElEnriched"),
+    //                                             getProcessColor("QCD_ElEnriched"),
+    //                                             "PS/jets2p", DEFS::electron));
   }  
   
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets.root",1.16817*getCrossSection("WJets"),
+    procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets.root",1.0*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
-                                                 "PS/jets2", DEFS::muon));
+                                                 "PS/jets2p", DEFS::muon));
     procs.push_back(new PlotterPhysicsProcessNEW("Data_muon",basePath+"SingleMu_Data.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleMu_Data"),
-                                                 "PS/jets2", DEFS::muon));
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
-                                                 0.671604*getCrossSection("QCD_MuEnriched"), intLum,
-                                                 getNumMCEvts("QCD_MuEnriched"),
-                                                 getProcessColor("QCD_MuEnriched"),
-                                                 "PS/jets2", DEFS::muon));
+                                                 "PS/jets2p", DEFS::muon));
+    //procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
+    //                                             1.0*getCrossSection("QCD_MuEnriched"), intLum,
+    //                                             getNumMCEvts("QCD_MuEnriched"),
+    //                                             getProcessColor("QCD_MuEnriched"),
+    //                                             "PS/jets2p", DEFS::muon));
   }
   return procs;
   
@@ -802,25 +951,57 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
 
 
 //______________________________________________________________________________
-vector<PhysicsProcessNEW*> getProcesses(vector<string>& processNames, double intLum){
+vector<PhysicsProcessNEW*> getProcesses(vector<string>& processNames, DEFS::LeptonCat leptonCat, double intLum){
    
-  //  string basePath = "/uscms_data/d3/ilyao/Summer11/428Full/Stage2SkimResults/"; 
-   string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120621_NTUPLES/"; //602 to 613
+   string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120910_NTUPLES/";
    vector <PhysicsProcessNEW*> procs;
 
    for (unsigned int i=0; i<processNames.size(); i++){
-      if (TString(processNames[i]).Contains("Data")==0)
-         if (processNames[i].compare("TTbar")==0)
-            procs.push_back(new PlotterPhysicsProcessNEW(processNames[i],basePath+processNames[i]+"/PS.root",
-                                     getCrossSection(processNames[i]), intLum, getNumMCEvts(processNames[i]),
-                                     getProcessColor(processNames[i])));
-         else
-            procs.push_back(new PlotterPhysicsProcessNEW(processNames[i],basePath+processNames[i]+"/PS.root",
-                                     getCrossSection(processNames[i]), intLum, getNumMCEvts(processNames[i]),
-                                     getProcessColor(processNames[i])));
+      if (TString(processNames[i]).Contains("Data")==1) {
+         if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("SingleEl_Data",basePath+processNames[i]+".root",
+                                                         1.0/intLum, intLum, 1.0,
+                                                         getProcessColor(processNames[i]),
+                                                         "PS/jets2p",DEFS::electron));
+         if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("SingleMu_Data",basePath+processNames[i]+".root",
+                                                         1.0/intLum, intLum, 1.0,
+                                                         getProcessColor(processNames[i]),
+                                                         "PS/jets2p",DEFS::muon));
+      }
+      else if (TString(processNames[i]).Contains("WJets")==1) {
+         if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+processNames[i]+".root",
+                                                         getCrossSection(processNames[i]), intLum, 
+                                                         getNumMCEvts(processNames[i]),
+                                                         getProcessColor(processNames[i]),
+                                                         "PS/jets2p",DEFS::electron));
+         if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+processNames[i]+".root",
+                                                         getCrossSection(processNames[i]), intLum,
+                                                         getNumMCEvts(processNames[i]),
+                                                         getProcessColor(processNames[i]),
+                                                         "PS/jets2p",DEFS::muon));
+      }
+      else if (TString(processNames[i]).Contains("QCD")==1) {
+         if (leptonCat == DEFS::electron || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("QCD_ElEnriched", basePath+"QCD_ElEnriched.root",
+                                                         getCrossSection("QCD_ElEnriched"), intLum,
+                                                         getNumMCEvts("QCD_ElEnriched"),
+                                                         getProcessColor("QCD_ElEnriched"),
+                                                         "PS/jets2p", DEFS::electron));
+         if (leptonCat == DEFS::muon || leptonCat == DEFS::both)
+            procs.push_back(new PlotterPhysicsProcessNEW("QCD_MuEnriched", basePath+"QCD_MuEnriched.root",
+                                                         getCrossSection("QCD_MuEnriched"), intLum,
+                                                         getNumMCEvts("QCD_MuEnriched"),
+                                                         getProcessColor("QCD_MuEnriched"),
+                                                         "PS/jets2p", DEFS::muon));
+      }
       else
-         procs.push_back(new PlotterPhysicsProcessNEW(processNames[i],basePath+processNames[i]+"/PS.root",1 ,1, 1,
-                                  getProcessColor(processNames[i]))); // 1's so we don't normalize data.
+         procs.push_back(new PlotterPhysicsProcessNEW(processNames[i],basePath+processNames[i]+".root",
+                                                      getCrossSection(processNames[i]), intLum, 
+                                                      getNumMCEvts(processNames[i]),
+                                                      getProcessColor(processNames[i])));
    }
 
    return procs;
@@ -829,18 +1010,18 @@ vector<PhysicsProcessNEW*> getProcesses(vector<string>& processNames, double int
 
 
 //______________________________________________________________________________
-map<string, Plot*> getPlots(string leptonCatString){
+map<string, Plot*> getPlots(string leptonCatString, bool norm_data){
 
    map<string, Plot*> plots;
 
    FormattedPlot* a = new FormattedPlot;
-   bool norm_data = false;
    double pi = TMath::Pi();
 
    //Goes in the label and tells us whether we are looking at electrons or muons
    TString lep = TString(leptonCatString);
 
    double signalFactor = 5000;
+   TString signalName = "ggH125";
    
    //---------------------ELECTRON-------------------//
    if (lep.CompareTo("electron") == 0 || lep.CompareTo("both") == 0)
@@ -853,26 +1034,29 @@ map<string, Plot*> getPlots(string leptonCatString){
       
       a = new FormattedPlot;
 
-      a->templateHisto = new TH1D("Mjj_" + electron,"Mjj_" + electron +  cuts,500,0,500);
+      //a->templateHisto = new TH1D("Mjj_" + electron,"Mjj_" + electron +  cuts,500,0,500);
+      //a->templateHisto = new TH1D("Mjj_" + electron,"Mjj_" + electron +  cuts,270,30,300);
+      a->templateHisto = new TH1D("Mjj_" + electron,"Mjj_" + electron +  cuts,22,40,150);
       a->axisTitles.push_back("M_{jj} [GeV]");
-      a->axisTitles.push_back("Number of Events / 10 GeV");
-      a->range = make_pair(0.,400.);
+      a->axisTitles.push_back("Number of Events / 5 GeV");
+      //a->range = make_pair(0.,400.);
+      //a->range = make_pair(30.,300.);
+      a->range = make_pair(40.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Mjj_electron"] = a;
-
 
       a = new FormattedPlot;
 
       a->templateHisto = new TH1D("MjjmWmT_" + electron,"MjjmWmT_" + electron +  cuts,500,-250,250);
       a->axisTitles.push_back("M_{jj} - WmT [GeV]");
-      a->axisTitles.push_back("Number of Events / 10 GeV");
+      a->axisTitles.push_back("Number of Events / GeV");
       a->range = make_pair(-100.,250.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MjjmWmT_electron"] = a;
    
@@ -880,11 +1064,11 @@ map<string, Plot*> getPlots(string leptonCatString){
 
       a->templateHisto = new TH1D("LeptPt_" + electron,"LeptPt_" + electron + cuts,1000,0,500);
       a->axisTitles.push_back("p_{T}^{lepton} [GeV]");
-      a->axisTitles.push_back("Number of Events / 5 GeV");
+      a->axisTitles.push_back("Number of Events / 0.5 GeV");
       a->range = make_pair(20.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptPt_electron"] = a;
 
@@ -897,7 +1081,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptEta_electron"] = a;
 
@@ -910,7 +1094,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptPhi_electron"] = a;
 
@@ -923,7 +1107,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(30.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MET_electron"] = a;
 
@@ -936,7 +1120,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_electron"] = a;
 
@@ -949,7 +1133,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(20.,200.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Pt_electron"] = a;
 
@@ -962,7 +1146,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Eta_electron"] = a;
 
@@ -975,7 +1159,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Phi_electron"] = a;
 
@@ -988,7 +1172,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(20.,100.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Pt_electron"] = a;
 
@@ -1001,7 +1185,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Eta_electron"] = a;
 
@@ -1014,7 +1198,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Phi_electron"] = a;
 
@@ -1027,7 +1211,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,5.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaEtaJ1J2_electron"] = a;
 
@@ -1040,7 +1224,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,250.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Ptjj_electron"] = a;
 
@@ -1053,7 +1237,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,2.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["j1Pt_Mjj_electron"] = a;
 
@@ -1066,7 +1250,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,1.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["j2Pt_Mjj_electron"] = a;
 
@@ -1079,7 +1263,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(50.,800.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Mlvjj_electron"] = a;
 
@@ -1092,7 +1276,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,7.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaRLepMET_electron"] = a;
 
@@ -1105,7 +1289,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,5000.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["EJ1EJ2_electron"] = a;
 
@@ -1118,7 +1302,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.9,1.03);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["BetaJ1BetaJ2_electron"] = a;
 
@@ -1131,7 +1315,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,7.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaRJ1J2_electron"] = a;
 
@@ -1144,7 +1328,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-0.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["AngleJ1J2_electron"] = a;
 
@@ -1157,7 +1341,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["jjlvPhi_electron"] = a;
 
@@ -1165,12 +1349,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH1D("DeltaPhi_LJ1_" + electron,"DeltaPhi_LJ1__" + electron + cuts,50,-10,10);
-      a->axisTitles.push_back("#delta #phi(LJ1)");
+      a->axisTitles.push_back("#Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_electron"] = a;
 
@@ -1178,12 +1362,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH1D("DeltaPhi_J1J2_" + electron,"DeltaPhi_J1J2__" + electron + cuts,50,-10,10);
-      a->axisTitles.push_back("#delta #phi(J1J2)");
+      a->axisTitles.push_back("#Delta #phi(J1J2)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_J1J2_electron"] = a;
 
@@ -1196,7 +1380,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0,40);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["npv_electron"] = a;
 
@@ -1204,12 +1388,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_" + electron),("DeltaPhi_LJ1_vs_J1J2__" + electron + cuts), 15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("#delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("#Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_electron"] = a;
 
@@ -1221,7 +1405,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0,200);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MWjjVsMWlv_electron"] = a;
 
@@ -1229,12 +1413,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Positive_" + electron),("DeltaPhi_LJ1_vs_J1J2_Positive__" + electron + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Positive #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Positive #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Positive_electron"] = a;
 
@@ -1242,12 +1426,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Negative_" + electron),("DeltaPhi_LJ1_vs_J1J2_Negative__" + electron + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Negative #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Negative #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Negative_electron"] = a;
 
@@ -1255,12 +1439,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Subtracted_" + electron),("DeltaPhi_LJ1_vs_J1J2_Subtracted__" + electron + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Subtracted #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Subtracted #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"] = a;
 
@@ -1274,7 +1458,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_Negative_electron"] = a;
 
@@ -1286,7 +1470,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_Positive_electron"] = a;
 
@@ -1298,9 +1482,104 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::electron;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_Subtracted_electron"] = a;
+
+      for (unsigned int tep=0; tep<15; tep++) {
+         a = new FormattedPlot;
+         TString name = TString(UserFunctions::concatString("tEventProb",tep)) + "_" + electron;
+         TString title = name + cuts;
+         string xaxis = UserFunctions::concatString("log(tEventProb[",tep) + "])";
+         a->templateHisto = new TH1D(name,title,70,-45,0);
+         a->axisTitles.push_back(xaxis);
+         a->axisTitles.push_back("Number of Events");
+         if (tep==14)
+            a->range = make_pair(-45,0);
+         else
+            a->range = make_pair(-35,0);
+         a->normToData = norm_data;
+         a->stacked = true; a->leptonCat = DEFS::both;
+         a->overlaySignalName = signalName;
+         a->overlaySignalFactor = signalFactor;
+         plots[string(name)] = a;
+      }
+
+      a = new FormattedPlot;
+      
+      TString name = "MVADiscriminator_" + electron;
+      TString title = name + cuts;
+      //a->templateHisto = new TH1D(name,title,2000,-10,10);
+      a->templateHisto = new TH1D(name,title,70,-0.05,0.65);
+      a->axisTitles.push_back("MVADiscriminator");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(-0.05,0.65);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      
+      a = new FormattedPlot;
+      
+      name = "MVAProbability_" + electron;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,100,0,1);
+      a->axisTitles.push_back("Probability");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(0,1);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      
+      name = "epdPretagWWandWZ_" + electron;
+      title = name + cuts;
+      //a->templateHisto = new TH1D(name,title,400,-20,20);
+      //a->templateHisto = new TH1D(name,title,110,-11.0,0.0);
+      a->templateHisto = new TH1D(name,title,22,-11.0,0.0);
+      a->axisTitles.push_back("log(epdPretagWWandWZ)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(-11,0);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      
+      name = "epdPretagWWandWZ_RE_" + electron;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,22,0,1);
+      a->axisTitles.push_back("EPD(WW,WZ)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(0,1);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+
+      name = "DeltaPhi_METJ1_" + electron;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,50,-10,10);
+      a->axisTitles.push_back("#Delta #phi(MET,J1)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(-pi,pi);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
    }
    //----------------------------MUON------------------------------//
    if (lep.CompareTo("muon") == 0 || lep.CompareTo("both") == 0)
@@ -1313,13 +1592,17 @@ map<string, Plot*> getPlots(string leptonCatString){
       
       a = new FormattedPlot;
       
-      a->templateHisto = new TH1D("Mjj_" + muon,"Mjj_" + muon +  cuts,500,0,500);
+      //a->templateHisto = new TH1D("Mjj_" + muon,"Mjj_" + muon +  cuts,500,0,500);
+      //a->templateHisto = new TH1D("Mjj_" + muon,"Mjj_" + muon +  cuts,270,30,300);
+      a->templateHisto = new TH1D("Mjj_" + muon,"Mjj_" + muon +  cuts,22,40,150);
       a->axisTitles.push_back("M_{jj} [GeV]");
-      a->axisTitles.push_back("Number of Events / 10 GeV");
-      a->range = make_pair(0.,400.);
+      a->axisTitles.push_back("Number of Events / 5 GeV");
+      //a->range = make_pair(0.,400.);
+      //a->range = make_pair(30.,300.);
+      a->range = make_pair(40.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Mjj_muon"] = a;
 
@@ -1328,11 +1611,11 @@ map<string, Plot*> getPlots(string leptonCatString){
 
       a->templateHisto = new TH1D("MjjmWmT_" + muon,"MjjmWmT_" + muon +  cuts,500,-250,250);
       a->axisTitles.push_back("M_{jj} - WmT [GeV]");
-      a->axisTitles.push_back("Number of Events / 10 GeV");
+      a->axisTitles.push_back("Number of Events / GeV");
       a->range = make_pair(-100.,250.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MjjmWmT_muon"] = a;
    
@@ -1340,11 +1623,11 @@ map<string, Plot*> getPlots(string leptonCatString){
 
       a->templateHisto = new TH1D("LeptPt_" + muon,"LeptPt_" + muon + cuts,1000,0,500);
       a->axisTitles.push_back("p_{T}^{lepton} [GeV]");
-      a->axisTitles.push_back("Number of Events / 5 GeV");
+      a->axisTitles.push_back("Number of Events / 0.5 GeV");
       a->range = make_pair(20.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptPt_muon"] = a;
 
@@ -1357,7 +1640,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptEta_muon"] = a;
 
@@ -1370,7 +1653,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["LeptPhi_muon"] = a;
 
@@ -1383,7 +1666,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(30.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MET_muon"] = a;
 
@@ -1396,7 +1679,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,150.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_muon"] = a;
 
@@ -1409,7 +1692,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(20.,200.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Pt_muon"] = a;
 
@@ -1422,7 +1705,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Eta_muon"] = a;
 
@@ -1435,7 +1718,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet1Phi_muon"] = a;
 
@@ -1448,7 +1731,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(20.,100.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Pt_muon"] = a;
 
@@ -1461,7 +1744,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.,3.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Eta_muon"] = a;
 
@@ -1474,7 +1757,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Jet2Phi_muon"] = a;
 
@@ -1487,7 +1770,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,5.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaEtaJ1J2_muon"] = a;
 
@@ -1500,7 +1783,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,250.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Ptjj_muon"] = a;
 
@@ -1513,7 +1796,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,2.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["j1Pt_Mjj_muon"] = a;
 
@@ -1526,7 +1809,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,1.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["j2Pt_Mjj_muon"] = a;
 
@@ -1539,7 +1822,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(50.,800.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["Mlvjj_muon"] = a;
 
@@ -1552,7 +1835,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,7.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaRLepMET_muon"] = a;
 
@@ -1565,7 +1848,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,5000.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["EJ1EJ2_muon"] = a;
 
@@ -1578,7 +1861,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.9,1.03);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["BetaJ1BetaJ2_muon"] = a;
 
@@ -1591,7 +1874,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0.,7.);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaRJ1J2_muon"] = a;
 
@@ -1604,7 +1887,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-0.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["AngleJ1J2_muon"] = a;
 
@@ -1617,7 +1900,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-3.5,3.5);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["jjlvPhi_muon"] = a;
 
@@ -1625,12 +1908,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH1D("DeltaPhi_LJ1_" + muon,"DeltaPhi_LJ1__" + muon + cuts,50,-10,10);
-      a->axisTitles.push_back("#delta #phi(LJ1)");
+      a->axisTitles.push_back("#Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_muon"] = a;
 
@@ -1638,12 +1921,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH1D("DeltaPhi_J1J2_" + muon,"DeltaPhi_J1J2__" + muon + cuts,50,-10,10);
-      a->axisTitles.push_back("#delta #phi(J1J2)");
+      a->axisTitles.push_back("#Delta #phi(J1J2)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_J1J2_muon"] = a;
 
@@ -1656,7 +1939,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0,40);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["npv_muon"] = a;
 
@@ -1664,12 +1947,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_" + muon),("DeltaPhi_LJ1_vs_J1J2__" + muon + cuts), 15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("#delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("#Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_muon"] = a;
 
@@ -1681,7 +1964,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(0,200);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["MWjjVsMWlv_muon"] = a;
 
@@ -1689,12 +1972,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Positive_" + muon),("DeltaPhi_LJ1_vs_J1J2_Positive__" + muon + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Positive #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Positive #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Positive_muon"] = a;
 
@@ -1702,12 +1985,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Negative_" + muon),("DeltaPhi_LJ1_vs_J1J2_Negative__" + muon + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Negative #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Negative #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Negative_muon"] = a;
 
@@ -1715,12 +1998,12 @@ map<string, Plot*> getPlots(string leptonCatString){
       a = new FormattedPlot;
 
       a->templateHisto = new TH2D(("DeltaPhi_LJ1_vs_J1J2_Subtracted_" + muon),("DeltaPhi_LJ1_vs_J1J2_Subtracted__" + muon + cuts),15,-pi,pi,15,-pi,pi);
-      a->axisTitles.push_back("Subtracted #delta #phi(J1J2) vs. #delta #phi(LJ1)");
+      a->axisTitles.push_back("Subtracted #Delta #phi(J1J2) vs. #Delta #phi(LJ1)");
       a->axisTitles.push_back("Number of Events / .2 Radians");
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"] = a;
 
@@ -1734,7 +2017,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_Negative_muon"] = a;
 
@@ -1746,7 +2029,7 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots["WmT_Positive_muon"] = a;
 
@@ -1758,10 +2041,107 @@ map<string, Plot*> getPlots(string leptonCatString){
       a->range = make_pair(-pi,pi);
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::muon;
-      a->overlaySignalName = "ggH125";
+      a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
-      plots["WmT_Subtracted_muon"] = a;  
+      plots["WmT_Subtracted_muon"] = a;
+
+      for (unsigned int tep=0; tep<15; tep++) {
+         a = new FormattedPlot;
+         TString name = TString(UserFunctions::concatString("tEventProb",tep)) + "_" + muon;
+         TString title = name + cuts;
+         string xaxis = UserFunctions::concatString("log(tEventProb[",tep) + "])";
+         a->templateHisto = new TH1D(name,title,70,-45,0);
+         a->axisTitles.push_back(xaxis);
+         a->axisTitles.push_back("Number of Events");
+         if (tep==14)
+            a->range = make_pair(-45,0);
+         else
+            a->range = make_pair(-35,0);
+         a->normToData = norm_data;
+         a->stacked = true; a->leptonCat = DEFS::both;
+         a->overlaySignalName = signalName;
+         a->overlaySignalFactor = signalFactor;
+         plots[string(name)] = a;
+      }
+
+      a = new FormattedPlot;
+      
+      TString name = "MVADiscriminator_" + muon;
+      TString title = name + cuts;
+      //a->templateHisto = new TH1D(name,title,2000,-10,10);
+      a->templateHisto = new TH1D(name,title,70,-0.05,0.65);
+      a->axisTitles.push_back("MVADiscriminator");
+      a->axisTitles.push_back("Number of Events");
+      //a->range = make_pair(-1,1);
+      a->range = make_pair(-0.05,0.65);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      
+      a = new FormattedPlot;
+      
+      name = "MVAProbability_" + muon;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,100,0,1);
+      a->axisTitles.push_back("Probability");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(0,1);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      
+      name = "epdPretagWWandWZ_" + muon;
+      title = name + cuts;
+      //a->templateHisto = new TH1D(name,title,400,-20,20);
+      //a->templateHisto = new TH1D(name,title,110,-11,0);
+      a->templateHisto = new TH1D(name,title,22,-11,0);
+      a->axisTitles.push_back("log(epdPretagWWandWZ)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(-11,0);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      
+      name = "epdPretagWWandWZ_RE_" + muon;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,22,0,1);
+      a->axisTitles.push_back("EPD(WW,WZ)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(0,1);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+
+      name = "DeltaPhi_METJ1_" + muon;
+      title = name + cuts;
+      a->templateHisto = new TH1D(name,title,50,-10,10);
+      a->axisTitles.push_back("#Delta #phi(MET,J1)");
+      a->axisTitles.push_back("Number of Events");
+      a->range = make_pair(-pi,pi);
+      a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
    }
+
    // return all the plots to be made
    return plots;
 
@@ -1775,6 +2155,8 @@ Color_t getProcessColor(TString channelName){
     return kPink;
   else if (channelName.CompareTo("WZ") == 0)
     return kBlue;
+  else if (channelName.CompareTo("ZZ") == 0)
+    return kBlue-1;
   else if (channelName.CompareTo("WJets") == 0)
     return kTeal+2;
   else if (channelName.CompareTo("DYJets") == 0)
