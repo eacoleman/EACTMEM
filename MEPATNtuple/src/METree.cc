@@ -5,7 +5,12 @@
 #include <stdexcept>
 #include <TClonesArray.h>
 
+using std::cout;
+using std::endl;
+using std::map;
+using std::vector;
 
+//------------------------------------------------------------------------------
 METree::METree() :
   m_tProbStat(new TClonesArray("ProbStat")),
   m_tSize(0),
@@ -13,6 +18,7 @@ METree::METree() :
   m_event(0)
 {}
 
+//------------------------------------------------------------------------------
 METree::METree(const METree& rhs) :
   m_tProbStat(new TClonesArray("ProbStat")),
   m_tSize(rhs.m_tSize),
@@ -22,6 +28,7 @@ METree::METree(const METree& rhs) :
   AuxFunctionsRoot::copyTCA<METree>(rhs.m_tProbStat, m_tProbStat);
 }
 
+//------------------------------------------------------------------------------
 const METree& METree::operator=(const METree& rhs)
 {
   m_tProbStat->Clear();
@@ -33,11 +40,13 @@ const METree& METree::operator=(const METree& rhs)
   return *this;
 }
 
+//------------------------------------------------------------------------------
 METree::~METree()
 {
   delete m_tProbStat;
 }
 
+//------------------------------------------------------------------------------
 void METree::clear()
 {
   m_tProbStat->Clear();
@@ -46,11 +55,13 @@ void METree::clear()
   m_event = 0;
 }
 
+//------------------------------------------------------------------------------
 void METree::addProbStat(const ProbStat& stat)
 {
   new((*m_tProbStat)[m_tSize++]) ProbStat(stat);
 }
 
+//------------------------------------------------------------------------------
 Float_t METree::getEPD(double btag) const
 {
   //   static unsigned count = 0;
@@ -69,6 +80,7 @@ Float_t METree::getEPD(double btag) const
   return (schan + tchan) / (schan + tchan + wbb + wc);
 }
 
+//------------------------------------------------------------------------------
 const ProbStat* METree::getProbStat(unsigned index) const
 {
   if (index >= static_cast<unsigned>(m_tSize))
@@ -77,6 +89,126 @@ const ProbStat* METree::getProbStat(unsigned index) const
   return dynamic_cast<ProbStat*>((*m_tProbStat)[index]);
 }
 
+//------------------------------------------------------------------------------
+void METree::setMVAReader(vector<TString> MVAMethods, TString dir) {
+   // This loads the library
+   TMVA::Tools::Instance();
+
+   // --- Create the Reader object
+   reader = new TMVA::Reader( "!Color:!Silent" );
+
+   // Create a set of variables and declare them to the reader
+   // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
+   /*************************************************************/
+   unsigned int m_tSize = getNProbStat(); //////////FIX THIS!!! FIX THIS!!! FIX THIS!!!
+   /*************************************************************/
+   char name[1024];
+   for (unsigned int i=0; i<m_tSize; i++) {
+      //tEventProbMVA.push_back(.0001);
+      if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14 || i>14)
+         continue;
+      sprintf(name,"%d",i);
+      TString var = TString("tEventProb") + name + " := tEventProb[" + name + "]";
+      //cout << "tEventProb" << name << " = " << getProbStat(i)->tEventProb << " (" << (Float_t*)(&getProbStat(i)->tEventProb) << ")" << endl;
+      //reader->AddVariable(var, (Float_t*)(&getProbStat(i)->tEventProb));
+      reader->AddVariable(var, &(tEventProbMVA[i]));
+   }
+   TString var = TString("Mjj := Mjj");
+   reader->AddVariable(var, &MjjMVA);
+
+   // Spectator variables declared in the training have to be added to the reader, too
+   reader->AddSpectator("run := m_run", &m_run);
+   reader->AddSpectator("event := m_event", &m_event);
+
+   // --- Book the MVA methods
+   //TString dir    = "weights/";
+   TString prefix = "TMVAClassification";
+
+   // Book method(s)
+   for (unsigned int i=0; i<MVAMethods.size(); i++) {
+      TString methodName = MVAMethods[i] + TString(" method");   
+      TString weightfile = dir + prefix + TString("_") + MVAMethods[i] + TString(".weights.xml");
+      reader->BookMVA( methodName, weightfile );
+   }
+}
+
+//------------------------------------------------------------------------------
+vector<map<TString,Double_t> > METree::getMVAOutput(vector<TString> MVAMethods, Double_t effS) {
+   // This loads the library
+   TMVA::Tools::Instance();
+   
+   char name[1024];
+   for (int i=0; i<getNProbStat(); i++) {
+      tEventProbMVA[i] = getProbStat(i)->tEventProb;
+      sprintf(name,"%d",i);
+      //cout << "tEventProbMVA" << name << " = " << tEventProbMVA[i] << " (" << (&tEventProbMVA[i]) << ")" << endl;
+   }
+   //cout << "Response = " << reader->EvaluateMVA("BDT method") << endl;
+
+   // Retrieve MVA output, error, probability, and rarity.
+   vector<map<TString,Double_t> > outputs;
+
+   for (unsigned int i=0; i<MVAMethods.size(); i++) {
+      map<TString,Double_t> output;
+      TString methodName = MVAMethods[i] + TString(" method");  
+      
+      if (MVAMethods[i].CompareTo("CutsGA")==0)
+         output["response"] = reader->EvaluateMVA( methodName, effS );
+      else
+         output["response"] = reader->EvaluateMVA( methodName );
+      output["error"] = reader->GetMVAError();
+      output["probability"] = reader->GetProba ( methodName );
+      output["rarity"] = reader->GetRarity( methodName );
+
+      outputs.push_back(output);
+   }
+
+   return outputs;
+}
+
+//------------------------------------------------------------------------------
+vector<Double_t> METree::getMVAOutput(std::vector<TString> MVAMethods, TString specificOutput, Double_t effS) {
+   vector<Double_t> res;
+   vector<map<TString,Double_t> > ret = getMVAOutput(MVAMethods, effS);
+   for (unsigned int i=0; i<ret.size(); i++) {
+      res.push_back(ret[i][specificOutput]);
+   }
+   return res;
+}
+
+//------------------------------------------------------------------------------
+Double_t METree::getMVAOutput(TString MVAMethod, TString specificOutput, Double_t effS) {
+   vector<TString> mvam(1,MVAMethod);
+   return getMVAOutput(mvam,specificOutput,effS).front();
+}
+
+//------------------------------------------------------------------------------
+Double_t METree::getCutsGAEfficiency(Int_t nSelCutsGA, Int_t nTreeEntries){
+   return Double_t(nSelCutsGA)/nTreeEntries;
+}
+
+//------------------------------------------------------------------------------
+void METree::getMVACuts(std::vector<TString> &inputVars, std::vector<TString> &inputLabels, 
+                             std::vector<TString> &inputTitles, std::vector<Double_t> &cutsMin, 
+                             std::vector<Double_t> &cutsMax, Double_t effS) {
+   TMVA::MethodCuts* mcuts = reader->FindCutsMVA( "CutsGA method" ) ;
+   
+   if (mcuts) {      
+      mcuts->GetCuts( effS, cutsMin, cutsMax );
+      for (UInt_t ivar=0; ivar<cutsMin.size(); ivar++) {
+         inputVars.push_back(mcuts->GetInputVar(ivar));
+         inputLabels.push_back(mcuts->GetInputLabel(ivar));
+         inputTitles.push_back(mcuts->GetInputTitle(ivar));
+      }
+   }
+}
+
+//------------------------------------------------------------------------------
+void METree::setMjjMVA(double mjj) {
+   MjjMVA=mjj;
+}
+
+//------------------------------------------------------------------------------
 ProbStat::ProbStat() :
   tmeType(DEFS::EP::UNKNOWN),
   tmeParam(0),
@@ -99,6 +231,7 @@ ProbStat::ProbStat() :
   tEventMaxProb(0)
 {}
 
+//------------------------------------------------------------------------------
 ProbStat::ProbStat(int number) :
   tmeType(DEFS::EP::UNKNOWN),
   tmeParam(0),
@@ -121,6 +254,7 @@ ProbStat::ProbStat(int number) :
   tEventMaxProb(0)
 {}
 
+//------------------------------------------------------------------------------
 ProbStat::ProbStat(const ProbStat& rhs) :
   tmeType(rhs.tmeType),
   tmeParam(rhs.tmeParam),
@@ -160,6 +294,7 @@ ProbStat::ProbStat(const ProbStat& rhs) :
   
 }//C'tor
 
+//------------------------------------------------------------------------------
 const ProbStat& ProbStat::operator=(const ProbStat& rhs){
 
   tmeType = rhs.tmeType;
@@ -217,6 +352,7 @@ const ProbStat& ProbStat::operator=(const ProbStat& rhs){
   return *this;
 }
 
+//------------------------------------------------------------------------------
 ProbStat::~ProbStat(){
 
   delete [] tNevl;
