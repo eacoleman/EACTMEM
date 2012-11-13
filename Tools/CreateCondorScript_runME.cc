@@ -21,7 +21,7 @@ using namespace std;
 #include <TTree.h>
 #include <TH1.h>
 
-#include <TAMUWW/Tools/GlobalTools428.cc>
+#include <TAMUWW/Tools/GlobalTools532.cc>
 
 void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffix, const char* rootInputDir, const char* rootInputName, const char* OutputName, int NEvtsPerJob, int FirstJob, int NJobs, bool createDisjointJobScript = false, const char* disjointJobsString="")
 //// Creates a condor launcher (ScriptDir/CondorLauncher_ScriptNameSuffix) script and a .csh script used by it (ScriptDir/CondorScript_ScriptNameSuffix.csh).
@@ -65,7 +65,7 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffi
   /// Make the internal script
   outscript << "#! /bin/csh" << endl;
   outscript << "echo \"Starting\" " << endl;
-  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/CMSSW_4_2_8/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
+  outscript << "cd /uscms/home/ilyao/MATRIXELEMENT/CMSSW_5_3_2_patch4/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
   outscript << "source /uscmst1/prod/sw/cms/cshrc uaf" << endl;
   outscript << "pwd" << endl;
   //  outscript << "cmsenv" << endl;
@@ -105,7 +105,7 @@ void CreateCondorScript_runME(const char* ScriptDir, const char* ScriptNameSuffi
 
   //  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$StartJob.root EvtTree " << NEvtsPerJob_C << " $StartEvt 1" << endl;
 
-  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root EvtTree $NEvtsPerJob $StartEvt 1 1 PS" << endl;
+  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS" << endl;
   outscript << "echo \"Finished\"" << endl;
 
   tempStr="chmod +x " + tempStr;
@@ -189,7 +189,7 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
 //// Set checkCompletedJobsInstead=true to check completed jobs (in the directory completedOutputDir) and set createCompletionScripts=true to create scripts to rerun the missing jobs.
 {
   //bool runOnJESShifted=false;//obsolete option
-  TString filenameSuffix="_CMSSW428.root";
+  TString filenameSuffix=".root";
   bool insideTDirectoryFile = true;
   TString tdirectoryFileName = "PS";
   TString scriptBaseName,rootinputBaseName,outputBaseName;
@@ -210,10 +210,10 @@ void CreateMultipleCondorScripts_runME(const char* inputmode, const char* Script
     TTree* InTree;
 
     if ( !insideTDirectoryFile ) {
-      InTree = (TTree*)infile->Get("EvtTree");
+      InTree = (TTree*)infile->Get("jets2p");
     } else {
       TDirectoryFile *tdf = (TDirectoryFile*)infile->Get(tdirectoryFileName);
-      InTree = (TTree*)tdf->Get("EvtTree");
+      InTree = (TTree*)tdf->Get("jets2p");
     }
 
     nEntries=InTree->GetEntries();
@@ -337,7 +337,7 @@ void Merge_runME(const char* rootFilesDir, const char* fileBaseName, const char*
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------//
 
-void GetEventCounts(const char* rootFilesDir, const char* treeName = "EvtTree", bool insideTDirectoryFile = true, const char* tdirectoryFileName="PS", int divideby=300)
+void GetEventCounts(const char* rootFilesDir, const char* treeName = "jets2p", bool insideTDirectoryFile = true, const char* tdirectoryFileName="PS", int divideby=300)
 ////Counts the number of events for each file in rootFilesDir
 ////The events should be inside the tree 'treeName', which can be inside TDirectoryFile 'tdirectoryFileName'
 ////If divideby!=-1, then print out the number of events divided by 'divideby'
