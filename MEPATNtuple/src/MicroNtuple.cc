@@ -12,6 +12,8 @@
 using std::cout;
 using std::endl;
 using std::make_pair;
+using std::vector;
+using std::map;
 
 MicroNtuple::indexMap2 MicroNtuple::indexMap;
 
@@ -520,6 +522,131 @@ Double_t MicroNtuple::triggerTO(double detector, double etalep, double metraw,
                                 double etlep)
 {
   return 1;
+}
+
+
+//------------------------------------------------------------------------------
+//-----------------------------  TMVA METHODS  ---------------------------------
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+void MicroNtuple::setMVAReader(vector<TString> MVAMethods, TString dir) {
+   // This loads the library
+   TMVA::Tools::Instance();
+
+   // --- Create the Reader object
+   reader = new TMVA::Reader( "!Color:!Silent" );
+
+   // Create a set of variables and declare them to the reader
+   // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
+
+   char name[1024];
+   for (unsigned int i=0; i<size; i++) {
+      //eventProbMVA.push_back(.0001);
+      if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14 || i>14)
+         continue;
+      sprintf(name,"%d",i);
+      TString var = TString("eventProb") + name + " := eventProb[" + name + "]";
+      //cout << "eventProb" << name << " = " << eventProb[i] << " (" << (Float_t*)(&eventProb[i]) << ")" << endl;
+      //reader->AddVariable(var, (Float_t*)(&eventProb[i]));
+      reader->AddVariable(var, &(eventProbMVA[i]));
+   }
+   TString var = TString("Mjj := Mjj");
+   reader->AddVariable(var, &MjjMVA);
+
+   // Spectator variables declared in the training have to be added to the reader, too
+   reader->AddSpectator("run := run", &run);
+   reader->AddSpectator("event := event", &event);
+
+   // --- Book the MVA methods
+   //TString dir    = "weights/";
+   TString prefix = "TMVAClassification";
+
+   // Book method(s)
+   for (unsigned int i=0; i<MVAMethods.size(); i++) {
+      TString methodName = MVAMethods[i] + TString(" method");   
+      TString weightfile = dir + prefix + TString("_") + MVAMethods[i] + TString(".weights.xml");
+      reader->BookMVA( methodName, weightfile );
+   }
+}
+
+//------------------------------------------------------------------------------
+vector<map<TString,Double_t> > MicroNtuple::getMVAOutput(vector<TString> MVAMethods, Double_t effS) {
+   // This loads the library
+   TMVA::Tools::Instance();
+   
+   char name[1024];
+   for (unsigned int i=0; i<size; i++) {
+      eventProbMVA[i] = eventProb[i];
+      sprintf(name,"%d",i);
+      //cout << "tEventProbMVA" << name << " = " << eventProbMVA[i] << " (" << (&eventProbMVA[i]) << ")" << endl;
+   }
+   //cout << "Response = " << reader->EvaluateMVA("BDT method") << endl;
+
+   // Retrieve MVA output, error, probability, and rarity.
+   vector<map<TString,Double_t> > outputs;
+
+   for (unsigned int i=0; i<MVAMethods.size(); i++) {
+      map<TString,Double_t> output;
+      TString methodName = MVAMethods[i] + TString(" method");  
+      
+      if (MVAMethods[i].CompareTo("CutsGA")==0)
+         output["response"] = reader->EvaluateMVA( methodName, effS );
+      else
+         output["response"] = reader->EvaluateMVA( methodName );
+      output["error"] = reader->GetMVAError();
+      output["probability"] = reader->GetProba ( methodName );
+      output["rarity"] = reader->GetRarity( methodName );
+
+      outputs.push_back(output);
+   }
+
+   return outputs;
+}
+
+//------------------------------------------------------------------------------
+vector<Double_t> MicroNtuple::getMVAOutput(std::vector<TString> MVAMethods, TString specificOutput, Double_t effS) {
+   vector<Double_t> res;
+   vector<map<TString,Double_t> > ret = getMVAOutput(MVAMethods, effS);
+   for (unsigned int i=0; i<ret.size(); i++) {
+      res.push_back(ret[i][specificOutput]);
+   }
+   return res;
+}
+
+//------------------------------------------------------------------------------
+Double_t MicroNtuple::getMVAOutput(TString MVAMethod, TString specificOutput, Double_t effS) {
+   vector<TString> mvam(1,MVAMethod);
+   return getMVAOutput(mvam,specificOutput,effS).front();
+}
+
+//------------------------------------------------------------------------------
+Double_t MicroNtuple::getCutsGAEfficiency(Int_t nSelCutsGA, Int_t nTreeEntries){
+   return Double_t(nSelCutsGA)/nTreeEntries;
+}
+
+//------------------------------------------------------------------------------
+void MicroNtuple::getMVACuts(std::vector<TString> &inputVars, std::vector<TString> &inputLabels, 
+                             std::vector<TString> &inputTitles, std::vector<Double_t> &cutsMin, 
+                             std::vector<Double_t> &cutsMax, Double_t effS) {
+   // This loads the library
+   TMVA::Tools::Instance();
+
+   TMVA::MethodCuts* mcuts = reader->FindCutsMVA( "CutsGA method" ) ;
+   
+   if (mcuts) {      
+      mcuts->GetCuts( effS, cutsMin, cutsMax );
+      for (UInt_t ivar=0; ivar<cutsMin.size(); ivar++) {
+         inputVars.push_back(mcuts->GetInputVar(ivar));
+         inputLabels.push_back(mcuts->GetInputLabel(ivar));
+         inputTitles.push_back(mcuts->GetInputTitle(ivar));
+      }
+   }
+}
+
+//------------------------------------------------------------------------------
+void MicroNtuple::setMjjMVA(double mjj) {
+   MjjMVA=mjj;
 }
 
 ClassImp(MicroNtuple)

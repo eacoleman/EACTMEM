@@ -91,7 +91,12 @@ void makeMicroNtuple(TChain & chain, string output, unsigned nJets,
     for (int i = 0; i < meNtuple->getNProbStat(); ++i){
       microNtuple->eventProb[i]    = meNtuple->getProbStat(i)->tEventProb;
       microNtuple->eventMaxProb[i] = meNtuple->getProbStat(i)->tEventMaxProb;  
-    }    
+    }   
+
+    // Copy all event based quantities
+    microNtuple->size = meNtuple->getNProbStat();
+    microNtuple->run = meNtuple->getRun();
+    microNtuple->event = meNtuple->getEvent();
     
     // Get the b-probabilites for each jet.
     for (unsigned int bb = 0; bb < eventNtuple->jBtag.size(); bb++)

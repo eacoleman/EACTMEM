@@ -203,37 +203,7 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
             //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
             plots[name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
          }
-         if (!MVAMethods.empty() && ntuple) {
-            //cout << "MVADiscriminator_electron = " << metree->getMVAOutput(MVAMethods).front()["response"] << endl;
-            //cout << "MVAProbability_electron = " << metree->getMVAOutput(MVAMethods).front()["probability"] << endl;
-            //cout << "weight = " << weight << endl;
-            metree->setMjjMVA(ntuple->Mjj);
-            plots["MVADiscriminator_electron"]->Fill(metree->getMVAOutput(MVAMethods).front()["response"],weight);
-            plots["MVAProbability_electron"]->Fill(metree->getMVAOutput(MVAMethods).front()["probability"],weight);
-         }
-      }
-      // -------------MUON-------------------//
-      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
-         for (unsigned int tep=0; tep<15; tep++) {
-            string name = UserFunctions::concatString("tEventProb",tep) + "_muon";
-            //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
-            plots[name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
-         }
-         if (!MVAMethods.empty() && ntuple) {
-            //cout << "MVADiscriminator_muon = " << metree->getMVAOutput(MVAMethods).front()["response"] << endl;
-            //cout << "MVAProbability_muon = " << metree->getMVAOutput(MVAMethods).front()["probability"] << endl;
-            //cout << "weight = " << weight << endl;
-            metree->setMjjMVA(ntuple->Mjj);
-            plots["MVADiscriminator_muon"]->Fill(metree->getMVAOutput(MVAMethods).front()["response"],weight);
-            plots["MVAProbability_muon"]->Fill(metree->getMVAOutput(MVAMethods).front()["probability"],weight);
-         }
-      }
-   }
 
-   if (mnt) {
-      //-----------------ELECTRON--------------------//
-      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
-         plots["epdPretagWWandWZ_electron"]->Fill(log(mnt->epdPretagWWandWZ),weight);
          double tEventProb0 = metree->getProbStat(0)->tEventProb;
          double tEventProb1 = metree->getProbStat(1)->tEventProb;
          double tEventProb3 = metree->getProbStat(3)->tEventProb;
@@ -244,7 +214,12 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
       }
       // -------------MUON-------------------//
       else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
-         plots["epdPretagWWandWZ_muon"]->Fill(log(mnt->epdPretagWWandWZ),weight);
+         for (unsigned int tep=0; tep<15; tep++) {
+            string name = UserFunctions::concatString("tEventProb",tep) + "_muon";
+            //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
+            plots[name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
+         }
+
          double tEventProb0 = metree->getProbStat(0)->tEventProb;
          double tEventProb1 = metree->getProbStat(1)->tEventProb;
          double tEventProb3 = metree->getProbStat(3)->tEventProb;
@@ -252,6 +227,35 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
          double back   = tEventProb3 / 0.75e-03;
          double epd    = signal /(signal+back);
          plots["epdPretagWWandWZ_RE_muon"]->Fill(epd,weight);
+      }
+   }
+
+   if (mnt) {
+      //-----------------ELECTRON--------------------//
+      if (ntuple->lLV[0].leptonCat == DEFS::electron && (leptonCat == DEFS::electron || leptonCat == DEFS::both)) {
+         plots["epdPretagWWandWZ_electron"]->Fill(log(mnt->epdPretagWWandWZ),weight);
+
+         if (!MVAMethods.empty() && ntuple) {
+            //cout << "MVADiscriminator_electron = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
+            //cout << "MVAProbability_electron = " << mnt->getMVAOutput(MVAMethods).front()["probability"] << endl;
+            //cout << "weight = " << weight << endl;
+            mnt->setMjjMVA(ntuple->Mjj);
+            plots["MVADiscriminator_electron"]->Fill(mnt->getMVAOutput(MVAMethods).front()["response"],weight);
+            plots["MVAProbability_electron"]->Fill(mnt->getMVAOutput(MVAMethods).front()["probability"],weight);
+         }
+      }
+      // -------------MUON-------------------//
+      else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both)) {
+         plots["epdPretagWWandWZ_muon"]->Fill(log(mnt->epdPretagWWandWZ),weight);
+
+         if (!MVAMethods.empty() && ntuple) {
+            //cout << "MVADiscriminator_muon = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
+            //cout << "MVAProbability_muon = " << mnt->getMVAOutput(MVAMethods).front()["probability"] << endl;
+            //cout << "weight = " << weight << endl;
+            mnt->setMjjMVA(ntuple->Mjj);
+            plots["MVADiscriminator_muon"]->Fill(mnt->getMVAOutput(MVAMethods).front()["response"],weight);
+            plots["MVAProbability_muon"]->Fill(mnt->getMVAOutput(MVAMethods).front()["probability"],weight);
+         }
       }
    }
     
@@ -368,16 +372,18 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
    // Pileup reweighting
    if (doPUreweight){
      weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
-     
-     if (WJweight){
-       if (auxName.Contains("WJETS")){
-	 double dpLJ = ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]);
-	 double dpJJ = ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]);
-	 int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
-	 weight *= wJetsWeight->GetBinContent(bin);
-       }
-     }
    }
+   
+   // WJets weighting (specific to fix shape issues)
+   if (WJweight){
+      if (auxName.Contains("WJETS")){
+         double dpLJ = ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]);
+         double dpJJ = ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]);
+         int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
+         weight *= wJetsWeight->GetBinContent(bin);
+      }
+   }
+
    return weight;
 }
 
@@ -406,29 +412,29 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
   auxName.ToUpper();
 
   if (WJweight){
-    TFile* Subs;
-    if(auxName.Contains("WJETS")){
-      Subs = TFile::Open(TString("/uscms/home/amejia94/CMSSW_5_2_5/src/subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root"));
-      if (!Subs->IsOpen()) {
-	cout << "\tERROR::Weight file (subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root) was not opened" << endl
-	     << "\tWJets histograms will not be filled" << endl;
-	return;
-      }
-      TH2D* auxh  = (TH2D*) Subs->Get("hdSubtract");
-      if (!auxh) {
-	cout << "\tERROR::Weight hist hdSubtract could not be found int subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root" << endl
-	     << "\tWJets histograms will not be filled" << endl;
-	return;
-      }
-      wJetsWeight = (TH2D*) auxh->Clone();
-      if (!wJetsWeight) {
-	cout << "\tERROR::Weight hist wJetsWeight was not cloned properly" << endl
-	     << "\tWJets histograms will not be filled" << endl;
-	return;
-      }
-      wJetsWeight->SetDirectory(0);
+     TFile* Subs;
+     if(auxName.Contains("WJETS")){
+        Subs = TFile::Open(TString("/uscms/home/amejia94/CMSSW_5_2_5/src/subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root"));
+        if (!Subs->IsOpen()) {
+           cout << "\tERROR::Weight file (subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root) was not opened" << endl
+                << "\tWJets histograms will not be filled" << endl;
+           return;
+        }
+        TH2D* auxh  = (TH2D*) Subs->Get("hdSubtract");
+        if (!auxh) {
+           cout << "\tERROR::Weight hist hdSubtract could not be found int subtracted_"+DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root" << endl
+                << "\tWJets histograms will not be filled" << endl;
+           return;
+        }
+        wJetsWeight = (TH2D*) auxh->Clone();
+        if (!wJetsWeight) {
+           cout << "\tERROR::Weight hist wJetsWeight was not cloned properly" << endl
+                << "\tWJets histograms will not be filled" << endl;
+           return;
+        }
+        wJetsWeight->SetDirectory(0);
       Subs->Close();
-    }
+     }
   }
   
   auxName.ToUpper();
@@ -732,19 +738,23 @@ int main(int argc,char**argv) {
       procs = getProcesses(UserFunctions::leptonCat,intLum);
       
    // Make all the plots and store to outputFile
-   TString outFileName = "outputFile_";
+   if(!UserFunctions::outDir.EndsWith("/"))
+      UserFunctions::outDir+="/";
+   if(!gSystem->OpenDirectory(UserFunctions::outDir))
+      gSystem->mkdir(UserFunctions::outDir);
+   TString outFileName = UserFunctions::outDir + "outputFile_";
    outFileName += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
    doPlotter(outFileName, plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, MVAWeightDir, MVAMethods, UserFunctions::verbose);
    
    if (UserFunctions::leptonCat == DEFS::muon || UserFunctions::leptonCat == DEFS::both)
    {
-      plots["DeltaPhi_LJ1_vs_J1J2_muon"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_mu.root");
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_Subtracted_muon.root");
+      plots["DeltaPhi_LJ1_vs_J1J2_muon"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_mu.root");
+      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_Subtracted_muon.root");
    }
    if (UserFunctions::leptonCat == DEFS::electron || UserFunctions::leptonCat == DEFS::both)
    {
-      plots["DeltaPhi_LJ1_vs_J1J2_electron"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_el.root");
-      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->saveHistogramsToFile("DeltaPhi_LJ1_vs_J1J2_Subtracted_electron.root");
+      plots["DeltaPhi_LJ1_vs_J1J2_electron"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_el.root");
+      plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_Subtracted_electron.root");
    }
    
    m_benchmark->Stop("event");
@@ -785,10 +795,6 @@ void doPlotter(TString fileName, map<string, Plot*> & plots, vector<PhysicsProce
       
       can->Write();
       
-      if(!UserFunctions::outDir.EndsWith("/"))
-         UserFunctions::outDir+="/";
-      if(!gSystem->OpenDirectory(UserFunctions::outDir))
-         gSystem->mkdir(UserFunctions::outDir);
       can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".png");
       can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".eps");
    }
@@ -866,7 +872,7 @@ double getNumMCEvts(TString channelName)
 // intLum    = The integrated luminosity in pb-1 for this given lepton category 
 vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
    
-  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20120910_NTUPLES/";
+  string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20121102_NTUPLES/";
   vector <PhysicsProcessNEW*> procs;
   
   procs.push_back(new PlotterPhysicsProcessNEW("WW",basePath+"WW.root", getCrossSection("WW"),
@@ -919,7 +925,7 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
     procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.0*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
-                                                 "PS/jet2", DEFS::electron));
+                                                 "PS/jets2p", DEFS::electron));
     procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleEl_Data"),

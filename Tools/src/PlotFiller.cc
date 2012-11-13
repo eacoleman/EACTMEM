@@ -102,25 +102,25 @@ void PlotFiller::run()
          cout << "\nWARNING::PlotFiller::run EvtTree and EvtNtuple branches not found." << endl
               << "\tSetting EventNtuple pointer to 0x0." << endl;
       }
-      if (c->GetBranch("mnt")) {
-         mnt = new MicroNtuple(2);
-         c->SetBranchAddress("mnt",&mnt);
-      }
-      else {
-         cout << "\nWARNING::PlotFiller::run mnt branch not found." << endl
-              << "\tSetting MicroNtuple pointer to 0x0." << endl;
-      }
       if (c->GetBranch("METree")) {
          metree = new METree();
          c->SetBranchAddress("METree",&metree);
-         if (!MVAWeightDir.IsNull() && !MVAMethods.empty()) {
-            c->GetEntry(16);
-            metree->setMVAReader(MVAMethods,MVAWeightDir);
-         }
       }
       else {
          cout << "\nWARNING::PlotFiller::run METree branch not found." << endl
               << "\tSetting METree pointer to 0x0." << endl;
+      }
+      if (c->GetBranch("mnt")) {
+         mnt = new MicroNtuple(2);
+         c->SetBranchAddress("mnt",&mnt);
+         if (!MVAWeightDir.IsNull() && !MVAMethods.empty()) {
+            c->GetEntry(16);
+            mnt->setMVAReader(MVAMethods,MVAWeightDir);
+         }
+      }
+      else {
+         cout << "\nWARNING::PlotFiller::run mnt branch not found." << endl
+              << "\tSetting MicroNtuple pointer to 0x0." << endl;
       }
 
       // The counter for how many events pass the cuts in each process

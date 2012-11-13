@@ -150,7 +150,7 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
    stop->SetTitle("STop");
    stop->Sumw2();
    TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
-   dibo->SetTitle("WW+WZ");
+   dibo->SetTitle("WW+WZ+ZZ");
    dibo->Sumw2();
    
    // Loop over histos grouping around
@@ -178,7 +178,8 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
          
       }
       else if (hName.Contains("WW") ||
-                hName.Contains("WZ")  )
+               hName.Contains("WZ") ||
+               hName.Contains("ZZ") )
       {
 
          // if first time set the attributes
@@ -426,7 +427,7 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
    stop->SetTitle("STop");
    stop->Sumw2();
    TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
-   dibo->SetTitle("WW+WZ");
+   dibo->SetTitle("WW+WZ+ZZ");
    dibo->Sumw2();
    
    // Loop over histos grouping around
@@ -460,7 +461,8 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
          
       }
       else if (hName.Contains("WW") ||
-                hName.Contains("WZ")  )
+               hName.Contains("WZ") ||
+               hName.Contains("ZZ") )
       {
 
          // if first time set the attributes

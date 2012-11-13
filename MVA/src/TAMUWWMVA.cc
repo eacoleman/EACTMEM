@@ -140,7 +140,7 @@ double TAMUWWMVA::getNumMCEvts(TString channelName) {
 
 //______________________________________________________________________________
 int TAMUWWMVA::getTSize() {
-   int m_tSize(0);
+   int size(0);
    //TFile* ftemp = TFile::Open(ifilePath + "micro" + ifilesSignal[0] + "_EPDv01.root");
    //TTree* ttemp = (TTree*)ftemp->Get("METree");
    //m_tSize = ttemp->GetBranch("m_tSize")->GetLeaf("m_tSize")->GetValue(0);
@@ -291,7 +291,7 @@ void TAMUWWMVA::TMVAClassification() {
       else
          signalWeight.push_back(getCrossSection(ifilesSignal[i])*getBranchingRatio(ifilesSignal[i])*luminosity/getNumMCEvts(ifilesSignal[i]));
       inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesSignal[i] + "_EPDv01.root"));
-      signal.push_back((TTree*)inputs.back()->Get("METree"));
+      signal.push_back((TTree*)inputs.back()->Get("mnt"));
       factory->AddSignalTree(signal.back(), signalWeight.back());
       if (ifilesSignal[i].CompareTo("HWWMH150")==0) {
          /*
@@ -312,7 +312,7 @@ void TAMUWWMVA::TMVAClassification() {
    for (unsigned int i=0; i<ifilesBackground.size(); i++) {
       backgroundWeight.push_back(getCrossSection(ifilesBackground[i])*getBranchingRatio(ifilesBackground[i])*luminosity/getNumMCEvts(ifilesBackground[i]));
       inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesBackground[i] + "_EPDv01.root"));
-      background.push_back((TTree*)inputs.back()->Get("METree"));
+      background.push_back((TTree*)inputs.back()->Get("mnt"));
       factory->AddBackgroundTree(background.back(), backgroundWeight.back());
       cout << "                             : Weight for background (" << ifilesBackground[i] << ") is " 
            << getCrossSection(ifilesBackground[i]) << " * " << getBranchingRatio(ifilesBackground[i]) << " * " << luminosity 
@@ -376,15 +376,15 @@ void TAMUWWMVA::TMVAClassification() {
 
    // Define the input variables that shall be used for the MVA training
    /*************************************************************/
-   int m_tSize = getTSize(); //////////FIX THIS!!! FIX THIS!!! FIX THIS!!!
-   cout << "--- Factory                  : Number of variables: " << m_tSize << endl;
+   int size = getTSize(); //////////FIX THIS!!! FIX THIS!!! FIX THIS!!!
+   cout << "--- Factory                  : Number of variables: " << size << endl;
    /*************************************************************/
    char name[1024];
-   for (int i=0; i<m_tSize; i++) {
+   for (int i=0; i<size; i++) {
       if (i==10 || i==1 || i==13 || i==12 | i==9 | i==14)
          continue;
       sprintf(name,"%d",i);
-      TString var = TString("tEventProb") + name + " := tEventProb[" + name + "]";
+      TString var = TString("eventProb") + name + " := eventProb[" + name + "]";
       cout << "--- Factory                  : Adding variable: " << var << endl;
       factory->AddVariable(var);
    }
@@ -395,8 +395,8 @@ void TAMUWWMVA::TMVAClassification() {
    // You can add so-called "Spectator variables", which are not used in the MVA training, 
    // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
    // input variables, the response values of all trained MVAs, and the spectator variables
-   factory->AddSpectator("run := m_run", "I");
-   factory->AddSpectator("event := m_event", "I");
+   factory->AddSpectator("run := run", "I");
+   factory->AddSpectator("event := event", "I");
 
    // Apply additional cuts on the signal and background samples (can be different)
    //   TCut mycuts = "abs(eta)>1.5"; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
