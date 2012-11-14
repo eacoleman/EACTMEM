@@ -19,6 +19,7 @@
 
 using std::cout;
 using std::endl;
+using std::max;
 
 ////////////////////////////////////////////////////////////////////////////////
 // construction/destruction
@@ -139,7 +140,7 @@ double EventNtuple::getJERfactor(double pt, double eta, double ptgen){
 
   double corr = ptgen / pt;
 
-  return  corr + jer * (1 - corr);
+  return  max(0.0,corr + jer * (1 - corr));
 
 }
 
