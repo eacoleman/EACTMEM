@@ -125,6 +125,15 @@ int main(int argc, char* argv[]){
   rootInt.setSampleSet(true);
   rootInt.setPseudoRandom(true);
   rootInt.setNeval(0, 1000000);
+
+  // For ZLight (to reduce the time required)
+  RootIntegrator rootIntZLight;
+  rootIntZLight.setNcomp(1);
+  rootIntZLight.setEpsilon(.05, 0);
+  rootIntZLight.setVerbose(0);
+  rootIntZLight.setSampleSet(true);
+  rootIntZLight.setPseudoRandom(true);
+  rootIntZLight.setNeval(0, 1000000);
   
 //   CubaInt::Cuhre integrator;
 //   integrator.setCubatureRule(9);
@@ -219,7 +228,7 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));
   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
-  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootIntZLight, lightTF));
 
 
   ///Top and QCD (reduced version doesn't compute ttbar and STopTW MEs, which take up the majority of computing time due to additional integration)
