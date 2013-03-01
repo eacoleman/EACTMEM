@@ -29,14 +29,14 @@ inputFiles = cms.untracked.vstring(
 ##################
 # WZ Monte Carlo #
 ##################
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_9_1_Lph.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_99_1_pzW.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_98_1_77z.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_97_1_GnJ.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_96_1_wKp.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_95_1_2Ke.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_94_1_Aj2.root',
-    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_93_1_LYz.root'
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_9_1_Lph.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_99_1_pzW.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_98_1_77z.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_97_1_GnJ.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_96_1_wKp.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_95_1_2Ke.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_94_1_Aj2.root',
+#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_93_1_LYz.root'
 #####################
 # WJets Monte Carlo #
 #####################
@@ -64,7 +64,7 @@ inputFiles = cms.untracked.vstring(
 #    '/store/user/lnujj/PATtuples/sboutle/SingleElectron/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_fwF.root'
     )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(50000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.source = cms.Source("PoolSource",
                             skipEvents = cms.untracked.uint32(0),
                             fileNames = inputFiles )
@@ -142,7 +142,7 @@ process.PS.PVfound                    = cms.bool(False)
 process.PS.vtxcnt                     = cms.int32(0)
 
     #-----Jet Variable Inputs
-process.PS.j_ptMin                    = cms.double(20.0)
+process.PS.j_ptMin                    = cms.double(25.0) #25.0 #raised from 20 to reduce size
 process.PS.j_aetaMax                  = cms.double(2.4)
 process.PS.j_DRelMin                  = cms.double(0.3)
 process.PS.muPrim_DRjMin              = cms.double(0.3)
@@ -162,7 +162,7 @@ process.PS.bDiscriminatorCSVMin      = cms.double(0.679)     # corresponds to th
 process.PS.bDiscriminatorCSVMVAMin   = cms.double(0.679)
 
     #-----Muon Variable Inpust
-process.PS.muPrim_ptMin               = cms.double(20.0)
+process.PS.muPrim_ptMin               = cms.double(24.0) # raised from 20 to reduce size
 process.PS.muPrim_aetaMax             = cms.double(2.1)
 process.PS.muPrim_dBMax               = cms.double(0.02) #Changed for FNAL numbers
 process.PS.muPrim_dzMax               = cms.double(0.5)
@@ -185,7 +185,7 @@ process.PS.muLoose_PFIsoMax           = cms.double(0.2)
 
 
     #-----Electron Variable Inputs
-process.PS.elPrim_ptMin               = cms.double(20.0)
+process.PS.elPrim_ptMin               = cms.double(27.0) # raised from 20 to reduce size
 process.PS.elPrim_aetaMax             = cms.double(2.5)
 process.PS.elPrim_aetascExcludeMax    = cms.double(1.5660)
 process.PS.elPrim_aetascExcludeMin    = cms.double(1.4442)

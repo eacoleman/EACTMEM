@@ -2,21 +2,33 @@
 import os
 
 SAMPLE = ["PS"]
-PROCESS = ""
+PROCESS = "WJets_part2"
+MULTICRAB = False
+if (not MULTICRAB):
+  PROCESS = ""
 
-path = "/pnfs/cms/WAX/resilient/aperloff/MatrixElement/PS_outfiles_qqH125_Inclusive_20120731/"
-local = "/uscms_data/d2/aperloff/PS_outfiles_qqH125_Inclusive_20120731/"
+path = "/pnfs/cms/WAX/resilient/aperloff/MatrixElement/PS_outfiles_20121102_WJets_part2/"
+local = "/uscms_data/d2/aperloff/PS_outfiles_20121102_WJets_part2/"
 for ss in SAMPLE:
   #if (os.path.exists(local+"/"+PROCESS+"/")):
   #  print "directory "+local+"/"+PROCESS+"/"+" exists"
   #else:
   #  os.mkdir(local+"/"+PROCESS+"/")
-  FILES = os.listdir(path+"/"+PROCESS+"/")
+  if (MULTICRAB):
+    FILES = os.listdir(path+"/"+PROCESS+"/")
+  else:
+    FILES = os.listdir(path+"/")
+    
   for ll in FILES:
     #print ll
     if (ll.find(ss) != -1):
       print ll
-      command = "dccp "+path+"/"+PROCESS+"/"+ll+" "+local+"/"
+      
+      if(MULTICRAB):
+        command = "dccp "+path+"/"+PROCESS+"/"+ll+" "+local+"/"
+      else:
+        command = "dccp "+path+"/"+ll+" "+local+"/"
+        
       print command
       os.system(command)
 

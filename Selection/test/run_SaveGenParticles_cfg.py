@@ -29,10 +29,14 @@ inputFiles = cms.untracked.vstring(
 ######################
 # ggH125 Monte Carlo #
 ######################
-    '/store/user/aperloff/LQ-ggh125_SIM/LQ-ggh125_AODSIM/51bfef3f471c3bed6331eb644e144b83/gghlvjj-125_AODSIM_24_1_aNW.root'
+#    '/store/user/aperloff/LQ-ggh125_SIM/LQ-ggh125_AODSIM/51bfef3f471c3bed6331eb644e144b83/gghlvjj-125_AODSIM_24_1_aNW.root'
+########
+# Jeff #
+######## 
+'/store/user/lpctau/HighMassTau/isuarez/isuarez/W2Jets_TuneZ2_7TeV-madgraph-tauola/ElecTauTauSkim/1f3af44863a202f6442f2462b30b9200/elecTauTauPatSkim_100_1_aGj.root'
     )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.source = cms.Source("PoolSource",
                             skipEvents = cms.untracked.uint32(0),
                             fileNames = inputFiles )
