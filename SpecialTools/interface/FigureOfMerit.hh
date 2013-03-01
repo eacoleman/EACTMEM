@@ -3,6 +3,13 @@
 
 // Root libraries
 #include "TH1.h"
+#include "TString.h"
+
+// STL libraries
+#include <utility>
+
+//Local Libraries
+#include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 
 class FigureOfMerit{
 
@@ -10,6 +17,12 @@ public:
 
   FigureOfMerit();
   ~FigureOfMerit();
+
+  //Use this when working with arbitrary dimensions and using cuts
+  static double usingShapeFromTemplatesMD(TH1* signal, TH1* background, double relativeBinErrorLimit = 3);
+
+  // This returns false if the Histogram has an empty bin
+  static bool checkBackgroundHistogramMD(TProfileMDF* back, double relativeBinErrorLimit = 3);
 
   // Use this when finding limits on cross sections, as with the WH analysis
   static double usingShapeFromTemplates(TH1* signal, TH1* background, double relativeBinErrorLimit = 3);
@@ -29,8 +42,9 @@ private:
   static TH1* signal;
   static TH1* background;
   static void minimizationFunction(Int_t &npar, Double_t *gin, Double_t &f, 
-			      Double_t *par, Int_t iflag);
-
+                                   Double_t *par, Int_t iflag);
+  static void minimizationFunctionMD(Int_t &npar, Double_t *gin, Double_t &f, 
+                                     Double_t *par, Int_t iflag);
 
 };
 
