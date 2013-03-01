@@ -99,6 +99,13 @@ public:
    void doJER();
    double getJERfactor(double pt, double eta, double ptgen);
 
+   //
+   // Generator-Level Particle Information
+   //
+   // Print Event Information
+   void printDecayInformation(int decayParticle);
+   void printHiggsDecayInformation();
+
 
    //Needed for ME
    int run;
@@ -113,7 +120,7 @@ public:
 
    map<string,bool> triggerMap;
 
-   ClassDef(EventNtuple,9)
+   ClassDef(EventNtuple,10)
 };
 
 #endif

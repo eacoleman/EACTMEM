@@ -257,5 +257,48 @@ bool EventNtuple::FNALcutsMuon(){
 
 }//First FNAL Cut muon
 
+//______________________________________________________________________________
+void EventNtuple::printDecayInformation(int decayParticle) {
+   if (genParticleCollection.size()==0) {
+      cout << "WARNING::No genParticleCollection present." << endl;
+      return;
+   }
+   
+   vector<int> W;
+   for (unsigned int i=0; i<genParticleCollection.size(); i++) {
+      if (abs(genParticleCollection[i].pdgId)!=decayParticle)
+         continue;
+      else {
+         cout << "H->";
+         for (unsigned int j=0; j<genParticleCollection[i].daughterPositions.size(); j++) {
+            if (genParticleCollection[i].daughterPositions[j]<=500) {
+               cout << genParticleCollection[genParticleCollection[i].daughterPositions[j]].pdgId
+                    << ",";
+               W.push_back(genParticleCollection[i].daughterPositions[j]);
+            }
+         } //loop through the daughters of the Higgs
+         cout << "->";
+         if(W.size()==2) { //TAKE ME OUT
+            for (unsigned int j=0; j<W.size(); j++) {
+               for (unsigned int k=0; k<genParticleCollection[W[j]].daughterPositions.size(); k++) {
+                  //if (genParticleCollection[W[j]].daughterPositions[k]<=500 && genParticleCollection[genParticleCollection[W[j]].daughterPositions[k]].pdgId!=0) //TAKE ME OUT
+                  if (genParticleCollection[W[j]].daughterPositions[k]<=500)
+                     cout << genParticleCollection[genParticleCollection[W[j]].daughterPositions[k]].pdgId
+                          << ",";
+               } //loop through the daughters of the W
+            } //loop through all of the W
+         } //if there are only 2 W
+         cout << endl;
+      } //find the Higgs
+   } //loop through the gen particles
+
+   return;
+}
+
+//______________________________________________________________________________
+void EventNtuple::printHiggsDecayInformation() {
+   printDecayInformation(25);
+}
+
 ClassImp(EventNtuple)
 
