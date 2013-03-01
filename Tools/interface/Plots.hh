@@ -12,6 +12,7 @@
 // Our libraries
 #include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
+#include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 
 // C++ libraries
 #include <string>
@@ -35,6 +36,7 @@ public :
    // Fill the last histo here
    void Fill(double x, double w = 1);
    void Fill(double x, double y, double w);
+   void Fill(std::vector<Double_t> coord, double v, double w);
 
    // Do the scaling to luminosity or data.
    void scaleToData(std::vector<PhysicsProcessNEW*> procs);

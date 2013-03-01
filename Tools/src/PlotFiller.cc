@@ -84,7 +84,7 @@ void PlotFiller::run()
       for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++) {
          p->second->prepareToFillProcess(processes[i]);
       }
-      
+
       // Create the eventntuple and set the branch address
       EventNtuple * ntuple = 0;
       METree * metree = 0;

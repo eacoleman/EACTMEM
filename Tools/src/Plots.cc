@@ -41,7 +41,6 @@ void Plot::prepareToFillProcess(PhysicsProcessNEW * process)
    TString n = templateHisto->GetName();
    TH1 * clone = (TH1*) templateHisto->Clone(n+"_"+process->name);
    clone->SetTitle(process->name);
-   
    clone->Sumw2();
    histos.push_back(clone);
 }
@@ -58,6 +57,14 @@ void Plot::Fill(double x, double w){
 void Plot::Fill(double x, double y, double w){
    if (histos.size()>0) 
       ((TH2*)histos.back())->Fill(x,y,w);
+   else
+      cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
+}
+
+// Fill the last histo here
+void Plot::Fill(vector<Double_t> coord, double v, double w){
+   if (histos.size()>0) 
+      ((TProfileMDF*)histos.back())->Fill(coord,v,w);
    else
       cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
 }
@@ -152,6 +159,9 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
    TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
    dibo->SetTitle("WW+WZ+ZZ");
    dibo->Sumw2();
+   TH1 * higgs = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Higgs");
+   higgs->SetTitle("ggH+WH+VBF");
+   higgs->Sumw2();
    
    // Loop over histos grouping around
    for (unsigned int h=0; h < histos.size(); h ++)
@@ -194,6 +204,21 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
          dibo->Add(histos[h]);
 
       }
+      else if (hName.Contains("ggH") || 
+               hName.Contains("qqH") ||
+               hName.Contains("WH")  )
+      {
+         // if first time set the attributes
+         if (higgs->GetEntries()==0)
+         {
+            higgs->SetLineColor(histos[h]->GetLineColor());
+            higgs->SetFillColor(histos[h]->GetFillColor());
+            higgs->SetMarkerColor(histos[h]->GetMarkerColor());
+         }
+
+         // add to higgs
+         higgs->Add(histos[h]);
+      }
       else
       {
          // add as an independent process.
@@ -201,9 +226,10 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
       }
    }
 
-   // Add the diboson and single top if they were present
+   // Add the higgs, diboson, and single top if they were present
    if (stop->GetEntries() >0)  groups.insert(groups.begin(), stop);
    if (dibo->GetEntries() >0)  groups.insert(groups.begin(), dibo);
+   if (higgs->GetEntries() >0)  groups.insert(groups.begin(), higgs);
 
    // return the groupedHistos
    return groups;
@@ -217,9 +243,16 @@ void Plot::saveHistogramsToFile(TString histoFile)
    for (unsigned int i = 0; i < histos.size(); i++)
    {
       cout << "\tPlot::saveHistogramsToFile saving histogram " << histos[i]->GetName() << endl;
-      histos[i]->Write();
+      if(TString(histos[i]->ClassName()).Contains("TProfileMDF")==1) {
+         output.Close();
+         ((TProfileMDF*)histos[i])->WriteToFile(histoFile,"UPDATE");
+      }
+      else {
+         histos[i]->Write();
+      }
    }
-   output.Close();
+   if(output.IsOpen())
+      output.Close();
    cout << "Plot::saveHistogramsToFile DONE" << endl;
 }
 
@@ -429,6 +462,9 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
    TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
    dibo->SetTitle("WW+WZ+ZZ");
    dibo->Sumw2();
+   TH1 * higgs = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Higgs");
+   higgs->SetTitle("ggH+WH+VBF");
+   higgs->Sumw2();
    
    // Loop over histos grouping around
    for (unsigned int h=0; h < histos.size(); h ++)
@@ -477,6 +513,21 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
          dibo->Add(histos[h]);
 
       }
+      else if (hName.Contains("ggH") || 
+               hName.Contains("qqH") ||
+               hName.Contains("WH")  )
+      {
+         // if first time set the attributes
+         if (higgs->GetEntries()==0)
+         {
+            higgs->SetLineColor(histos[h]->GetLineColor());
+            higgs->SetFillColor(histos[h]->GetFillColor());
+            higgs->SetMarkerColor(histos[h]->GetMarkerColor());
+         }
+
+         // add to higgs
+         higgs->Add(histos[h]);
+         }
       else
       {
          // add as an independent process.
@@ -484,9 +535,10 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
       }
    }
 
-   // Add the diboson and single top if they were present
+   // Add the higgs, diboson, and single top if they were present
    if (stop->GetEntries() >0)  groups.insert(groups.begin(), stop);
    if (dibo->GetEntries() >0)  groups.insert(groups.begin(), dibo);
+   if (higgs->GetEntries() >0)  groups.insert(groups.begin(), higgs);
 
    // return the groupedHistos
    return groups;

@@ -12,6 +12,7 @@
 
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
+#include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 
 // ROOT libraries
 #include "TROOT.h"
@@ -23,6 +24,7 @@
 #include "TH2D.h"
 #include "TChain.h"
 #include "TLorentzVector.h"
+#include "TMath.h"
 
 // C++ libraries
 #include <iostream>
@@ -141,6 +143,29 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
          }
          plots["WmT_Subtracted_electron"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
          plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
+
+         vector<Double_t> coord;
+         //coord.assign(((TProfileMDF*)plots["lpt_leta_j1pt_j1eta_j2pt_j2eta_electron"]->templateHisto)->GetNaxis(),0);
+         //coord.assign(((TProfileMDF*)plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_electron"]->templateHisto)->GetNaxis(),0);
+         coord.assign(((TProfileMDF*)plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_electron"]->templateHisto)->GetNaxis(),0);
+         //coord[0] = ntuple->lLV[0].Pt();
+         coord[0] = Mjj;
+         //coord[1] = TMath::Abs(ntuple->lLV[0].Eta());
+         //coord[1] = ntuple->lLV[0].Pt();
+         coord[1] = Mjj;
+         //coord[2] = ntuple->jLV[0].Pt();
+         coord[2] = WmT;
+         //coord[3] = TMath::Abs(ntuple->jLV[0].Eta());
+         //coord[3] = ntuple->jLV[0].Pt();
+         coord[3] = ntuple->METLV[0].Et();
+         //coord[4] = ntuple->jLV[1].Pt();
+         coord[4] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
+         //coord[5] = TMath::Abs(ntuple->jLV[1].Eta());
+         //coord[5] = ntuple->jLV[1].Pt();
+         coord[5] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
+         //plots["lpt_leta_j1pt_j1eta_j2pt_j2eta_electron"]->Fill(coord,1.0,weight);
+         //plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_electron"]->Fill(coord,1.0,weight);
+         plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_electron"]->Fill(coord,1.0,weight);
       }
       // -------------MUON-------------------//
       else if (ntuple->lLV[0].leptonCat == DEFS::muon && (leptonCat == DEFS::muon || leptonCat == DEFS::both))
@@ -192,6 +217,28 @@ void UserFunctions::fillPlots(map<string, Plot*> &  plots, EventNtuple * ntuple,
          }
          plots["WmT_Subtracted_muon"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
          plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), (ntuple->lLV[0].lQ)*weight);
+
+         vector<Double_t> coord;
+         //coord.assign(((TProfileMDF*)plots["lpt_leta_j1pt_j1eta_j2pt_j2eta_muon"]->templateHisto)->GetNaxis(),0);
+         //coord.assign(((TProfileMDF*)plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_muon"]->templateHisto)->GetNaxis(),0);
+         coord.assign(((TProfileMDF*)plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_muon"]->templateHisto)->GetNaxis(),0);
+         //coord[0] = ntuple->lLV[0].Pt();
+         coord[0] = Mjj;
+         //coord[1] = TMath::Abs(ntuple->lLV[0].Eta());
+         //coord[1] = ntuple->lLV[0].Pt();
+         coord[1] = Mjj;
+         //coord[2] = ntuple->jLV[0].Pt();
+         coord[2] = WmT;
+         //coord[3] = TMath::Abs(ntuple->jLV[0].Eta());
+         //coord[3] = ntuple->jLV[0].Pt();
+         coord[3] = ntuple->METLV[0].Et();
+         //coord[4] = ntuple->jLV[1].Pt();
+         coord[4] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
+         //coord[5] = TMath::Abs(ntuple->jLV[1].Eta());
+         //coord[5] = ntuple->jLV[1].Pt();
+         coord[5] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
+         //plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_muon"]->Fill(coord,1.0,weight);
+         plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_muon"]->Fill(coord,1.0,weight);
       }
    }
 
@@ -284,6 +331,23 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
 /*
   // Keep only specific events
   if (ntuple->event!=2663602)
+     return false;
+*/
+/*
+  unsigned int count = ntuple->jLV.size();
+  if (ntuple->lLV[0].leptonCat == DEFS::muon)
+     for (unsigned int i=0; i<ntuple->jLV.size(); i++) {
+        if ((ntuple->jLV[i].Pt()) <= 25.0 )
+           count--;
+     }
+  
+  if (ntuple->lLV[0].leptonCat == DEFS::electron)
+     for (unsigned int i=0; i<ntuple->jLV.size(); i++) {
+        if ((ntuple->jLV[i].Pt()) <= 25.0 )
+           count--;
+     }
+  //if(count<ntuple->jLV.size())
+  if(count<2)
      return false;
 */
 /*
@@ -750,11 +814,17 @@ int main(int argc,char**argv) {
    {
       plots["DeltaPhi_LJ1_vs_J1J2_muon"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_mu.root");
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_muon"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_Subtracted_muon.root");
+      //plots["lpt_leta_j1pt_j1eta_j2pt_j2eta_muon"]->saveHistogramsToFile(UserFunctions::outDir + "lpt_leta_j1pt_j1eta_j2pt_j2eta_muon.root");
+      //plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_muon"]->saveHistogramsToFile(UserFunctions::outDir + "lpt_lpt_j1pt_j1pt_j2pt_j2pt_muon.root";)
+      plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_muon"]->saveHistogramsToFile(UserFunctions::outDir + "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_muon.root");
    }
    if (UserFunctions::leptonCat == DEFS::electron || UserFunctions::leptonCat == DEFS::both)
    {
       plots["DeltaPhi_LJ1_vs_J1J2_electron"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_el.root");
       plots["DeltaPhi_LJ1_vs_J1J2_Subtracted_electron"]->saveHistogramsToFile(UserFunctions::outDir + "DeltaPhi_LJ1_vs_J1J2_Subtracted_electron.root");
+      //plots["lpt_leta_j1pt_j1eta_j2pt_j2eta_electron"]->saveHistogramsToFile(UserFunctions::outDir + "lpt_leta_j1pt_j1eta_j2pt_j2eta_electron.root");
+      //plots["lpt_lpt_j1pt_j1pt_j2pt_j2pt_electron"]->saveHistogramsToFile(UserFunctions::outDir + "lpt_lpt_j1pt_j1pt_j2pt_j2pt_electron.root");
+      plots["Mjj_Mjj_Mt_MET_DeltaR_DeltaR_electron"]->saveHistogramsToFile(UserFunctions::outDir + "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_electron.root");
    }
    
    m_benchmark->Stop("event");
@@ -909,11 +979,15 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
                                                getCrossSection("ggH125")*getBranchingRatio("ggH125"),
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("ggH125"), 
                                                "PS/jets2p"));
-  //procs.push_back(new PlotterPhysicsProcessNEW("qqH125",basePath+"qqH125.root", 
-  //                                            getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
-  //                                             intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
-  //                                             "PS/jets2p"));
-  
+  procs.push_back(new PlotterPhysicsProcessNEW("qqH125",basePath+"qqH125.root", 
+                                               getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
+                                               intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
+                                               "PS/jets2p"));
+  procs.push_back(new PlotterPhysicsProcessNEW("WH125",basePath+"WH125.root", 
+                                               getCrossSection("WH125")*getBranchingRatio("WH125"), 
+                                               intLum, getNumMCEvts("WH125"), getProcessColor("WH125"), 
+                                               "PS/jets2p"));
+
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
   // we multiply the histograms by getScaleFactor in class proc in PlotterAux.hh
@@ -923,10 +997,11 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.0*getCrossSection("WJets"),
+     procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron",basePath+"WJets.root",1.0*getCrossSection("WJets"),
+     //procs.push_back(new PlotterPhysicsProcessNEW("WJets_electron","/uscms_data/d2/aperloff/PS_outfiles_WJets_20121115/WJets.root",1.0*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
                                                  "PS/jets2p", DEFS::electron));
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data.root",
+    procs.push_back(new PlotterPhysicsProcessNEW("Data_electron",basePath+"SingleEl_Data_19p148fb.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
                                                  "PS/jets2p", DEFS::electron)); 
@@ -938,10 +1013,11 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   }  
   
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets.root",1.0*getCrossSection("WJets"),
+     procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon",basePath+"WJets.root",1.0*getCrossSection("WJets"),
+     //procs.push_back(new PlotterPhysicsProcessNEW("WJets_muon","/uscms_data/d2/aperloff/PS_outfiles_WJets_20121115/WJets.root",1.0*getCrossSection("WJets"),
                                                  intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
                                                  "PS/jets2p", DEFS::muon));
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_muon",basePath+"SingleMu_Data.root",
+    procs.push_back(new PlotterPhysicsProcessNEW("Data_muon",basePath+"SingleMu_Data_19p279fb.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleMu_Data"),
                                                  "PS/jets2p", DEFS::muon));
@@ -1027,8 +1103,19 @@ map<string, Plot*> getPlots(string leptonCatString, bool norm_data){
    TString lep = TString(leptonCatString);
 
    double signalFactor = 5000;
-   TString signalName = "ggH125";
-   
+   TString signalName = "ggH+WH+VBF";
+
+   Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
+   Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
+   Double_t jetptbinslow[9] = {20,25,30,35,40,50,70,100,1000};   
+   Double_t jetptbinshigh[10] = {20,50,80,100,110,120,130,140,160,1000};
+   Double_t Mjjbinslow[11] = {20,40,50,60,70,80,90,100,200,300,1000};
+   Double_t Mjjbinshigh[11] = {20,100,110,120,130,150,180,200,250,350,1000};
+   Double_t Mtbinshigh[11] = {0,20,40,60,70,80,100,120,140,200,1000};
+   Double_t METbinshigh[10] = {0,40,50,60,70,80,100,120,200,1000};
+   Double_t DRlepjet1low[10] = {0.3,0.5,0.9,1.3,1.5,1.7,2.0,2.5,3.0,5.0};
+   Double_t DRlepjet1high[11] = {0.3,2.0,2.25,2.5,2.75,3.0,3.25,3.5,4.0,4.5,5.0};
+
    //---------------------ELECTRON-------------------//
    if (lep.CompareTo("electron") == 0 || lep.CompareTo("both") == 0)
    {
@@ -1581,6 +1668,57 @@ map<string, Plot*> getPlots(string leptonCatString, bool norm_data){
       a->axisTitles.push_back("Number of Events");
       a->range = make_pair(-pi,pi);
       a->logxy = make_pair(false,false);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      /*
+      name = "lpt_leta_j1pt_j1eta_j2pt_j2eta_" + electron;
+      title = "lpt_leta_j1pt_j1eta_j2pt_j2eta_" + electron + cuts;
+      a->templateHisto = new TProfileMDF("lpt_leta_j1pt_j1eta_j2pt_j2eta","lpt_leta_j1pt_j1eta_j2pt_j2eta_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("lpt",8,leptonptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("leta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j1pt",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j1eta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j2pt",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j2eta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      */
+      /*
+      name = "lpt_lpt_j1pt_j1pt_j2pt_j2pt_" + electron;
+      title = "lpt_lpt_j1pt_j1pt_j2pt_j2pt_" + electron + cuts;
+      a->templateHisto = new TProfileMDF("lpt_lpt_j1pt_j1pt_j2pt_j2pt","lpt_lpt_j1pt_j1pt_j2pt_j2pt_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{lepton} [GeV]",8,leptonptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{lepton} [GeV]",9,leptonptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{1}} [GeV]",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{1}} [GeV]",9,jetptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{2}} [GeV]",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{2}} [GeV]",9,jetptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      */
+      name = "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_" + electron;
+      title = "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_" + electron + cuts;
+      a->templateHisto = new TProfileMDF("Mjj_Mjj_Mt_MET_DeltaR_DeltaR","Mjj_Mjj_Mt_MET_DeltaR_DeltaR_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{T}^{W} [GeV]",10,Mtbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("Missing E_{T} [GeV]",9,METbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",9,DRlepjet1low);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",10,DRlepjet1high);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
       a->normToData = norm_data;
       a->stacked = true; a->leptonCat = DEFS::both;
       a->overlaySignalName = signalName;
@@ -2146,6 +2284,57 @@ map<string, Plot*> getPlots(string leptonCatString, bool norm_data){
       a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots[string(name)] = a;
+
+      a = new FormattedPlot;
+      /*
+      name = "lpt_leta_j1pt_j1eta_j2pt_j2eta_" + muon;
+      title = "lpt_leta_j1pt_j1eta_j2pt_j2eta_" + muon + cuts;
+      a->templateHisto = new TProfileMDF("lpt_leta_j1pt_j1eta_j2pt_j2eta","lpt_leta_j1pt_j1eta_j2pt_j2eta_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("lpt",8,leptonptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("leta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j1pt",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j1eta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j2pt",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("j2eta",10,0,2.5);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      */
+      /*
+      name = "lpt_lpt_j1pt_j1pt_j2pt_j2pt_" + muon;
+      title = "lpt_lpt_j1pt_j1pt_j2pt_j2pt_" + muon + cuts;
+      a->templateHisto = new TProfileMDF("lpt_lpt_j1pt_j1pt_j2pt_j2pt","lpt_lpt_j1pt_j1pt_j2pt_j2pt_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{lepton} [GeV]",8,leptonptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{lepton} [GeV]",9,leptonptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{1}} [GeV]",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{1}} [GeV]",9,jetptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{2}} [GeV]",8,jetptbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{2}} [GeV]",9,jetptbinshigh);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
+      */
+      name = "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_" + muon;
+      title = "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_" + muon + cuts;
+      a->templateHisto = new TProfileMDF("Mjj_Mjj_Mt_MET_DeltaR_DeltaR","Mjj_Mjj_Mt_MET_DeltaR_DeltaR_");
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinslow);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("M_{T}^{W} [GeV]",10,Mtbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("Missing E_{T} [GeV]",9,METbinshigh);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",9,DRlepjet1low);
+      ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",10,DRlepjet1high);
+      ((TProfileMDF*)a->templateHisto)->Sumw2();
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::both;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[string(name)] = a;
    }
 
    // return all the plots to be made
@@ -2171,7 +2360,7 @@ Color_t getProcessColor(TString channelName){
     return kYellow+1;
   else if (channelName.CompareTo("QCD_MuEnriched") == 0)
     return kYellow+1;
-  //right now these aren't being used because we are combining all the STop's in PlotterAux.cc
+  //right now these aren't being used because we are combining all the STop's in Plots.cc
   else if (channelName.CompareTo("STopT_T") == 0)
     return kOrange+1;
   else if (channelName.CompareTo("STopT_Tbar") == 0)
@@ -2191,6 +2380,8 @@ Color_t getProcessColor(TString channelName){
    else if (channelName.CompareTo("ggH125") == 0)
      return kRed+2; 
    else if (channelName.CompareTo("qqH125") == 0)
+     return kRed+2; 
+   else if (channelName.CompareTo("WH125") == 0)
      return kRed+2; 
    else if (channelName.CompareTo("SingleEl_Data") == 0)
      return kBlack;
