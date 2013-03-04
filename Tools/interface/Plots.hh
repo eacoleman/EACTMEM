@@ -22,7 +22,7 @@
 // ################### PLOT CLASS ###################
 // ##################################################
 
-// A basic class that holds all of the process histograms for a given plot.
+// A basic class that holds all of the process histograms for a given plot. 
 class Plot: public TNamed
 {
 public :
@@ -31,7 +31,7 @@ public :
    Plot() { scaled = false; }
 
    // Create a new histo here
-   void prepareToFillProcess(PhysicsProcessNEW* proc);
+  void prepareToFillProcess(TString suffix, TString groupName);
       
    // Fill the last histo here
    void Fill(double x, double w = 1);
@@ -42,12 +42,12 @@ public :
    void scaleToData(std::vector<PhysicsProcessNEW*> procs);
    
    // Saves the histograms to the filename
-   void saveHistogramsToFile(TString histoFile);
+  void saveHistogramsToFile(TString histoFile, TString option = "RECREATE");
 
    // Do the grouping of the histograms according to some rules.
    // For example join all histos for singleTop into a single one, 
    // also WW and WZ are usually put together...
-   std::vector<TH1*>  doGrouping(std::vector<PhysicsProcessNEW*> procs);
+   // I don't see the NEED FOR THIS std::vector<TH1*>  doGrouping(std::vector<PhysicsProcessNEW*> procs);
    
    std::vector<TH1*> getHistos() { return histos; }
 
@@ -78,11 +78,15 @@ public:
    
    // Make the canvas here
    TCanvas* getCanvas(std::vector<PhysicsProcessNEW*> procs);
+
+   // Do the grouping of histograms according to histo->title, which is process groupName;
+   std::vector<TH1*> doGrouping(std::vector<PhysicsProcessNEW*> procs);
    
    // Do the grouping of the histograms according to some rules.
    // For example join all histos for singleTop into a single one, 
    // also WW and WZ are usually put together...
-   std::vector<TH1*> doGrouping(std::vector<PhysicsProcessNEW*> procs);
+   //std::vector<TH1*> doGroupingOLD(std::vector<PhysicsProcessNEW*> procs);
+
    
    std::vector<std::string> axisTitles;
    std::pair<double,double> range;
@@ -96,7 +100,8 @@ private:
    void formatColors(std::vector<PhysicsProcessNEW*> procs);
    void formatRatio(TH1* hRatio);
    void formatStack(THStack * stack, double maxi);
-   
+  TH1 * findTitleInTH1Vector(TString title, std::vector<TH1*> groupedHistos);
+
    ClassDef (FormattedPlot,1);
 };
 

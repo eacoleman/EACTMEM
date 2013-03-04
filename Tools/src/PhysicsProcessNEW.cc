@@ -14,17 +14,21 @@ using namespace std;
 // ##################################################
 
 PhysicsProcessNEW::PhysicsProcessNEW (string procName,
+				      string groupingName,
                                       string fileNameTEMP,
                                       double cross_section,
                                       double lum, 
                                       unsigned int in_ev,
-                                      string treeName):
+                                      string treeName,
+				      DEFS::LeptonCat lepcat):
    name(procName),
+   groupName(groupingName),
    fileName(fileNameTEMP),
    chain (0),
    sigma(cross_section),
    intLum(lum),
-   initial_events(in_ev)
+   initial_events(in_ev),
+   leptonCat(lepcat)
 {
    TFile * file = TFile::Open(fileName);
    if (!file->IsOpen())
@@ -52,6 +56,7 @@ PhysicsProcessNEW::PhysicsProcessNEW (string procName,
 // ##################################################
 
 PlotterPhysicsProcessNEW::PlotterPhysicsProcessNEW (string procName,
+						    string groupingName,
                                                     string fileNameTEMP,
                                                     double cross_section,
                                                     double lum, 
@@ -59,9 +64,7 @@ PlotterPhysicsProcessNEW::PlotterPhysicsProcessNEW (string procName,
                                                     int col,
                                                     string treeName,
                                                     DEFS::LeptonCat lepCat):
-   PhysicsProcessNEW(procName, fileNameTEMP, cross_section, lum, in_ev, treeName),
-   color(col),
-   leptonCat(lepCat)
-{
+  PhysicsProcessNEW(procName, groupingName, fileNameTEMP, cross_section, lum, in_ev, treeName, lepCat),
+  color(col){
    
 }

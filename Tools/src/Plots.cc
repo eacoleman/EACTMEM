@@ -36,11 +36,11 @@ void drawLumi(float intLum);
 // ##################################################
 
 // Create a new histo here
-void Plot::prepareToFillProcess(PhysicsProcessNEW * process)
+void Plot::prepareToFillProcess(TString suffix, TString groupName)
 {
-   TString n = templateHisto->GetName();
-   TH1 * clone = (TH1*) templateHisto->Clone(n+"_"+process->name);
-   clone->SetTitle(process->name);
+   TString n = templateHisto->GetTitle();
+   TH1 * clone = (TH1*) templateHisto->Clone(n+suffix);
+   clone->SetTitle(groupName);
    clone->Sumw2();
    histos.push_back(clone);
 }
@@ -50,7 +50,8 @@ void Plot::Fill(double x, double w){
    if (histos.size()>0) 
       histos.back()->Fill(x,w);
    else
-      cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
+      cout<<"ERROR in Plot named "<<templateHisto->GetName()
+	  <<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
 }
 
 // Fill the last histo here
@@ -58,7 +59,8 @@ void Plot::Fill(double x, double y, double w){
    if (histos.size()>0) 
       ((TH2*)histos.back())->Fill(x,y,w);
    else
-      cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
+      cout<<"ERROR in Plot named "<<templateHisto->GetName()
+	  <<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
 }
 
 // Fill the last histo here
@@ -66,7 +68,8 @@ void Plot::Fill(vector<Double_t> coord, double v, double w){
    if (histos.size()>0) 
       ((TProfileMDF*)histos.back())->Fill(coord,v,w);
    else
-      cout<<"ERROR in Plot named "<<templateHisto->GetName()<<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
+      cout<<"ERROR in Plot named "<<templateHisto->GetName()
+	  <<" Fill(..) called without calling prepareToFillProcess first"<<endl; 
 }
 
 // Do the scaling to luminosity or data.
@@ -137,6 +140,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
    scaled = true;
 }
 
+/* 
 // ------------------------------------------------------------
 // This groups all the histograms that need grouping.
 // Typically all the Single tops and Dibosons
@@ -235,25 +239,24 @@ vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
    return groups;
 
 }
-
-void Plot::saveHistogramsToFile(TString histoFile)
+*/
+ // This is wrong, someone needs to fix it;
+ // ** the output->close before the ProfileMDF::WriteToFile call will 
+ // not allow the regular histo to be save after a TProfileMDF has been saved
+void Plot::saveHistogramsToFile(TString histoFile, TString option)
 {
-   cout << "Plot::saveHistogramsToFile begin..." << endl;
-   TFile output(histoFile, "RECREATE");
-   for (unsigned int i = 0; i < histos.size(); i++)
-   {
-      cout << "\tPlot::saveHistogramsToFile saving histogram " << histos[i]->GetName() << endl;
-      if(TString(histos[i]->ClassName()).Contains("TProfileMDF")==1) {
-         output.Close();
-         ((TProfileMDF*)histos[i])->WriteToFile(histoFile,"UPDATE");
-      }
-      else {
-         histos[i]->Write();
-      }
+   TFile output(histoFile, option);
+   for (unsigned int i = 0; i < histos.size(); i++){
+     if(TString(histos[i]->ClassName()).Contains("TProfileMDF")==1) {
+       output.Close();
+       ((TProfileMDF*)histos[i])->WriteToFile(histoFile,"UPDATE");
+     }
+     else {
+       histos[i]->Write();
+     }
    }
    if(output.IsOpen())
-      output.Close();
-   cout << "Plot::saveHistogramsToFile DONE" << endl;
+     output.Close();
 }
 
 // ##################################################
@@ -284,7 +287,8 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    scaleToData(procs);
   
    // Do the grouping of the histos and return the list of histograms to be plotted.
-   // This takes care of putting all the SingleTop Histos together, or diboson together etc.
+   // This takes care of putting all the processes with the same groupName together
+   // typically SingleTop Histos together, or diboson together etc.
    std::vector<TH1*> groupedHistos = doGrouping(procs);
 
    // Create the total Data and MC histos and Stacks
@@ -324,35 +328,35 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
          areMCHists = true;
       }
       
-      if (overlaySignalName.Length() > 0)
-      {
-         TString tempOverlaySignalName = overlaySignalName;
-         tempOverlaySignalName.ToUpper();
-         if (hname.Contains(tempOverlaySignalName))
-         {
-            TString className = tMC->ClassName(); 
-            if (!className.Contains("TH2"))
-            {
-               signal = (TH1*)groupedHistos[h]->Clone();
-               signal->SetFillColor(0);
-               signal->Scale(overlaySignalFactor);
-               
-               ostringstream legendTitleStream;
-               legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
-               string legendTitle = legendTitleStream.str();
-               
-               l->AddEntry(signal,legendTitle.c_str(),"lp0");
-            }
-         }
-      }
-   }
+      // Check if this is the signal we want to overlay
+      if (overlaySignalName.Contains(groupedHistos[h]->GetTitle())){
+	
+	//TString className = tMC->ClassName(); 
+	//if (!className.Contains("TH2")){
+	  
+	  ostringstream signalNameStream;
+	  signalNameStream <<  groupedHistos[h]->GetName() << "_x" << overlaySignalFactor;
+	  signal = (TH1*)groupedHistos[h]->Clone(TString(signalNameStream.str()));
+	  signal->SetFillColor(0);
+	  signal->Scale(overlaySignalFactor);
+          
+	  ostringstream legendTitleStream;
+	  legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
+	  string legendTitle = legendTitleStream.str();
+	  l->AddEntry(signal,legendTitle.c_str(),"lp0");
+
+	  //}// skip TH2 for some reasons.
+
+      } // if this is the signal histo
+      
+   }// for grouped histos
    
    // General Style Formatting
    gStyle->SetOptTitle(0);
    //gStyle->SetOptStat(2211);
 
    // Create and Draw the Canvas
-   TCanvas * can = new TCanvas(templateHisto->GetName());
+   TCanvas * can = new TCanvas(templateHisto->GetTitle());
    can->SetFillColor(0);
    can->Divide(1,2);
    
@@ -441,110 +445,51 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 }
 
 // ------------------------------------------------------------
-// This groups all the histograms that need grouping.
-// Typically all the Single tops and Dibosons
-vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs)
-{
-   // The returning vector
-   vector<TH1*> groups;
-   if (procs.size()  != histos.size() )
-   {
-      cout<<"ERROR Plot::doGrouping procs.size()="<<procs.size()
-          <<" is different than histos.size()="<<histos.size()<<endl;
-      cout<<"\t Returning NO groups!"<<endl;
-      return groups;
-   }
+// Find the first histo in groupedHistos that matches the title,
+// return a null pointer if it can't find one
+TH1 * FormattedPlot::findTitleInTH1Vector(TString title, vector<TH1*> groupedHistos) {
+  
+   // Loop over original histos
+  for (unsigned int h=0; h < groupedHistos.size(); h ++)
+    if (title.EqualTo(groupedHistos[h]->GetTitle())) 
+      return groupedHistos[h];
 
-   // The grouped ones
-   TH1 * stop = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_STop");
-   stop->SetTitle("STop");
-   stop->Sumw2();
-   TH1 * dibo = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Diboson");
-   dibo->SetTitle("WW+WZ+ZZ");
-   dibo->Sumw2();
-   TH1 * higgs = (TH1*) templateHisto->Clone(TString(templateHisto->GetName())+"_Higgs");
-   higgs->SetTitle("ggH+WH+VBF");
-   higgs->Sumw2();
-   
-   // Loop over histos grouping around
-   for (unsigned int h=0; h < histos.size(); h ++)
-   {
-      TString hName = histos[h]->GetTitle();
-      
-      // Skip this histogram if it is the wrong lepton category
-      if(hName.Contains("electron") && leptonCat == DEFS::muon)
-         continue;
-      if(hName.Contains("muon") && leptonCat == DEFS::electron)
-         continue;
-      
-      if (hName.Contains("STopT_Tbar")  ||
-          hName.Contains("STopT_T")     ||
-          hName.Contains("STopTW_Tbar") ||
-          hName.Contains("STopTW_T")    ||
-          hName.Contains("STopS_Tbar")  ||
-          hName.Contains("STopS_T")     )
-      {
-         // if first time set the attributes
-         if (stop->GetEntries()==0)
-         {
-            stop->SetLineColor(histos[h]->GetLineColor());
-            stop->SetFillColor(histos[h]->GetFillColor());
-            stop->SetMarkerColor(histos[h]->GetMarkerColor());
-         }
-         
-         // add to single top
-         stop->Add(histos[h]);
-         
-      }
-      else if (hName.Contains("WW") ||
-               hName.Contains("WZ") ||
-               hName.Contains("ZZ") )
-      {
+    return 0;
 
-         // if first time set the attributes
-         if (dibo->GetEntries()==0)
-         {
-            dibo->SetLineColor(histos[h]->GetLineColor());
-            dibo->SetFillColor(histos[h]->GetFillColor());
-            dibo->SetMarkerColor(histos[h]->GetMarkerColor());
-         }
+}//findTitleInTH1Vector
+ 
 
-         // add to diboson
-         dibo->Add(histos[h]);
+// ------------------------------------------------------------
+// This groups all the histograms with the same title together
+// Since the titles are given by process->groupName it groups all processes
+// with the same groupNames together
+vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs){
 
-      }
-      else if (hName.Contains("ggH") || 
-               hName.Contains("qqH") ||
-               hName.Contains("WH")  )
-      {
-         // if first time set the attributes
-         if (higgs->GetEntries()==0)
-         {
-            higgs->SetLineColor(histos[h]->GetLineColor());
-            higgs->SetFillColor(histos[h]->GetFillColor());
-            higgs->SetMarkerColor(histos[h]->GetMarkerColor());
-         }
+  // The returning vector
+  vector<TH1*> groupedHistos;
+  
+  // Loop over original histos
+  for (unsigned int h=0; h < histos.size(); h ++){
+ 
+    // Find the histo in groupedHistos that matches the title, return null pointer if it can't.
+    TH1 * hgroup = findTitleInTH1Vector(histos[h]->GetTitle(),groupedHistos);
+    
+    // if it does not exist, add one to the groupedHistos
+    if (hgroup==0){
+      TString cloneName = histos[h]->GetName();
+      cloneName += "_clone";
+      groupedHistos.push_back((TH1*) histos[h]->Clone(cloneName));
+    }
+    // if it does exist just add this to the already existing one
+    else 
+      hgroup->Add(histos[h]);
+  }
 
-         // add to higgs
-         higgs->Add(histos[h]);
-         }
-      else
-      {
-         // add as an independent process.
-         groups.push_back(histos[h]);
-      }
-   }
+  return groupedHistos;
 
-   // Add the higgs, diboson, and single top if they were present
-   if (stop->GetEntries() >0)  groups.insert(groups.begin(), stop);
-   if (dibo->GetEntries() >0)  groups.insert(groups.begin(), dibo);
-   if (higgs->GetEntries() >0)  groups.insert(groups.begin(), higgs);
+}//doGrouping
 
-   // return the groupedHistos
-   return groups;
-
-}
-
+// ------------------------------------------------------------
 void FormattedPlot::formatColors(vector<PhysicsProcessNEW*> procs)
 {
    for(unsigned int i = 0; i < procs.size(); i++)

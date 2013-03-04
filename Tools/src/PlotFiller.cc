@@ -15,9 +15,9 @@ using namespace std;
 //#####################################################################
 //#####################################################################
 
-PlotFiller::PlotFiller(map<string, Plot*> &plotsTemp,
+PlotFiller::PlotFiller(MapOfPlots &plotsTemp,
                        vector<PhysicsProcessNEW*> &procsTemp,
-                       void (*userFillFuncTemp) (map<string, Plot*> &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
+                       void (*userFillFuncTemp) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
    plots(plotsTemp),
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
@@ -81,10 +81,12 @@ void PlotFiller::run()
       cout << "\nDoing Process " << processes[i]->name << endl;
       
       // Tell all plots to prepare for filling 
-      for (map<string, Plot*>::iterator p = plots.begin() ; p != plots.end() ; p++) {
-         p->second->prepareToFillProcess(processes[i]);
-      }
-
+      for (MapOfPlots::iterator p = plots.begin() ; p != plots.end() ; p++) {
+	TString suffix = "_"+processes[i]->name + "_" + DEFS::getLeptonCatString(p->first);
+	for (map<string,  Plot * >::iterator p2 = p->second.begin(); p2 != p->second.end(); p2++)
+	  p2->second->prepareToFillProcess(suffix, processes[i]->groupName);
+      }//for 
+      
       // Create the eventntuple and set the branch address
       EventNtuple * ntuple = 0;
       METree * metree = 0;
