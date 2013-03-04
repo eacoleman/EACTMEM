@@ -15,13 +15,14 @@ using namespace std;
 // #########################################################
 
 PhysicsProcessMemory::PhysicsProcessMemory (string procName,
+					    string groupingName,
                                             string fileNameTEMP,
                                             double cross_section,
                                             double lum, 
                                             unsigned int in_ev,
                                             string treeName,
                                             bool loadIntoMemory):
-   PhysicsProcessNEW(procName, fileNameTEMP, cross_section, lum, in_ev, treeName),
+  PhysicsProcessNEW(procName, groupingName, fileNameTEMP, cross_section, lum, in_ev, treeName),
    m_loadIntoMemory(loadIntoMemory),
    m_formulaWeight(0),
    m_formulaCategory(0)

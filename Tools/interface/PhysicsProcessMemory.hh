@@ -56,6 +56,7 @@ public:
   // C'tor.  
   // loadIntoMemory determines whether we load the tree to memory or not
    PhysicsProcessMemory(std::string procName,
+			std::string groupingName,
                         std::string fileNameTEMP,
                         double cross_section,
                         double lum, 
