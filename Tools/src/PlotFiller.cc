@@ -101,15 +101,15 @@ void PlotFiller::run()
          c->SetBranchAddress("EvtNtuple",&ntuple);
       }
       else {
-         cout << "\nWARNING::PlotFiller::run EvtTree and EvtNtuple branches not found." << endl
-              << "\tSetting EventNtuple pointer to 0x0." << endl;
+	cout << "\tPlotFiller::run EvtTree and EvtNtuple branches not found." << endl
+	     << "\tSetting EventNtuple pointer to 0x0." << endl;
       }
       if (c->GetBranch("METree")) {
          metree = new METree();
          c->SetBranchAddress("METree",&metree);
       }
       else {
-         cout << "\nWARNING::PlotFiller::run METree branch not found." << endl
+	cout << "\tPlotFiller::run METree branch not found." << endl
               << "\tSetting METree pointer to 0x0." << endl;
       }
       if (c->GetBranch("mnt")) {
@@ -121,7 +121,7 @@ void PlotFiller::run()
          }
       }
       else {
-         cout << "\nWARNING::PlotFiller::run mnt branch not found." << endl
+         cout << "\tPlotFiller::run mnt branch not found." << endl
               << "\tSetting MicroNtuple pointer to 0x0." << endl;
       }
 
@@ -142,7 +142,7 @@ void PlotFiller::run()
          numberOfEvents = c->GetEntries();
       }
       
-      cout << "Processing " << numberOfEvents << " events (out of " << c->GetEntries() << ")." << endl;
+      cout << "\tProcessing " << numberOfEvents << " events (out of " << c->GetEntries() << ")." << endl;
       
       // This runs once for each process before the events are run.
       userProcessFunc(ntuple, processes[i]);
@@ -151,7 +151,7 @@ void PlotFiller::run()
       {
          // Report every now and then
          if ((ev % 10000) == 0)
-            cout<<"\tevent "<<ev<<endl;
+            cout<<"\t\tevent "<<ev<<endl;
          
          // Get the given entry
          c->GetEntry(ev);

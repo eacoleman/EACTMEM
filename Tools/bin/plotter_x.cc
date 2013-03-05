@@ -26,6 +26,7 @@
 #include "TChain.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
+#include "TError.h"
 
 // C++ libraries
 #include <iostream>
@@ -363,13 +364,17 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
 	     << "\tWJets histograms will not be filled" << endl;
 	return;
       }
-      TH2D* auxh  = (TH2D*) Subs->Get("wjweight");
+      //TH2D* auxh  = (TH2D*) Subs->Get("wjweight");
+      TString hname = "DeltaPhi_LJ1_vs_J1J2_";
+      hname += DEFS::getLeptonCatString(UserFunctions::leptonCat);
+      TH2D * auxh = (TH2D*) Subs->Get(hname);
+
       if (!auxh) {
 	cout << "\tERROR::Weight hist wjweight could not be found in filename "<<filename
 	     <<endl<< "\tWJets histograms will not be filled" << endl;
 	return;
       }
-      wJetsWeight = (TH2D*) auxh->Clone();
+      wJetsWeight = (TH2D*) auxh->Clone("weightClone");
       if (!wJetsWeight) {
 	cout << "\tERROR::Weight hist wJetsWeight was not cloned properly" << endl
 	     << "\tWJets histograms will not be filled" << endl;
@@ -689,8 +694,10 @@ int main(int argc,char**argv) {
     cout<<"plotter_x called with lepton category both. WE HAVE NOT FIXED THIS TO WORK YET."<<lepCat<<endl;
     return 1;
   }
-  
-  
+
+  // Tell ROOT to not print useless INFO
+  gErrorIgnoreLevel = kWarning;
+
   TBenchmark* m_benchmark = new TBenchmark();
   m_benchmark->Reset();
   m_benchmark->Start("event");
@@ -741,8 +748,10 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
 	  p2 != p->second.end() ; p2++){
       TCanvas* can = ((FormattedPlot*) p2->second)->getCanvas(procs);
       can->Write();      
-      can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".png");
-      //can->SaveAs(UserFunctions::outDir+"/"+can->GetName()+".eps");
+      TString canName = UserFunctions::outDir+"/"+can->GetName();
+      canName += "_"+DEFS::getLeptonCatString(UserFunctions::leptonCat);
+      can->SaveAs(canName+".png");
+      can->SaveAs(canName+".eps");
     }
   canOutFile->Close();
   
