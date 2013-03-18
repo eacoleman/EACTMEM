@@ -55,7 +55,13 @@ public:
    double jNeutralHadronEnergyFraction, jNeutralEmEnergyFraction, jChargedHadronEnergyFraction, jChargedEmEnergyFraction;
    double jNumberOfDaughters;
 
-   ClassDef(Jet,1)
+  // to sort the Jets in order of decreasing Pt
+  static bool sortInDecreasingPt( const Jet & j1, const Jet & j2){
+    return j1.Pt() > j2.Pt();
+  }
+
+  
+  ClassDef(Jet,1)
 };
 
 #endif
