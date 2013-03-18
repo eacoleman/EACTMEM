@@ -146,29 +146,36 @@ double EventNtuple::getJERfactor(double pt, double eta, double ptgen){
 
 
 //______________________________________________________________________________
+// This corrects the resolution of all jets and updates the MET.
+// The computation of new met follows. Using subscripts _o for old and _n for new
+// we get from the def of met that met_o + j_0 =0 and met_n + j_n=0
+// => met_n + j_n - j_o + j_o = 0
+//    met_n + j_n - j_o - met_o = 0 => met_n  = met_o + j_o - j_n
+// and using j_n = c * j_o we get
+//    met_n = met_0 + j_o ( 1 - c) 
 void EventNtuple::doJER(){
 
-  if (jLV.size()<2){
-    cout<<"ERROR EventNtuple::doJER cannot be called with zero-size vectors"<<endl;
-    return ;
-  }
+  // Loop over jets
+  for (unsigned int j=0; j < jLV.size() ; j++){
 
-  double c0 = getJERfactor(jLV[0].Pt(), jLV[0].Eta(), jLV[0].refLV.Pt());
-  double c1 = getJERfactor(jLV[1].Pt(), jLV[1].Eta(), jLV[1].refLV.Pt());
+    // get the correction factor for this jet
+    double cor = getJERfactor(jLV[j].Pt(), jLV[j].Eta(), jLV[j].refLV.Pt());
+    
+    // recompute the met for this change
+    double newMetX = (1 - cor)*jLV[j].X() + METLV[0].X();
+    double newMetY = (1 - cor)*jLV[j].Y() + METLV[0].Y();
+    METLV[0].SetX(newMetX);
+    METLV[0].SetY(newMetY);
 
-  double newMetX = (c0 - 1)*jLV[0].X() + (c1 - 1)*jLV[1].X() + METLV[0].X();
-  double newMetY = (c0 - 1)*jLV[0].Y() + (c1 - 1)*jLV[1].Y() + METLV[0].Y();
-  //Jet 1
-  jLV[0] = jLV[0]*c0;
+    // correct the jet
+    jLV[j] = jLV[j]*cor;
 
-  //Jet 2
-  jLV[1] = jLV[1]*c1;
+  }// for jets
 
+  // sort the vector of jets here
+  std::sort(jLV.begin(), jLV.end(), Jet::sortInDecreasingPt);
 
-  METLV[0].SetX(newMetX);
-  METLV[0].SetY(newMetY);
-
-}
+}// doJER
 
 
 //______________________________________________________________________________
