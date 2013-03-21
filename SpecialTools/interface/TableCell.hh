@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCell.hh,v 1.2 2011/02/26 19:10:07 eusebi Exp $
+// $Id: TableCell.hh,v 1.3 2012/06/29 15:54:38 aperloff Exp $
 
 #ifndef TABLECELL_DEF
 #define TABLECELL_DEF
@@ -40,6 +40,7 @@ public:
   // explain how to do operation of cells 
   virtual TableCell & operator+=(const TableCell &rhs) {return *this;}
   virtual TableCell & operator-=(const TableCell &rhs) {return *this;}
+  virtual TableCell & operator/=(const TableCell &rhs) {return *this;}
 
   virtual TableCell & operator*=(const double & rhs) {return *this;}
   virtual TableCell & operator/=(const double & rhs) {return *this;}

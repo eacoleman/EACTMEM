@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCellVal.cc,v 1.4 2012/06/21 19:20:48 aperloff Exp $
+// $Id: TableCellVal.cc,v 1.5 2012/06/29 15:54:38 aperloff Exp $
 
 
 //My libraries
@@ -105,6 +105,20 @@ TableCellVal TableCellVal::operator-(const TableCell &rhs) const {
   TableCellVal res = *this;
   res -= rhs;
   return res;
+}
+
+//----------------------------------------------------------------------------
+TableCell & TableCellVal::operator/=(const TableCell &rhsa) {
+   TableCellVal * rhs = (TableCellVal *) &rhsa ;
+   val /= rhs->val;
+   return *this;
+}
+
+//----------------------------------------------------------------------------
+TableCellVal TableCellVal::operator/(const TableCell &rhs) const {
+   TableCellVal res = *this;
+   res /= rhs;
+   return res;
 }
 
 //----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.hh,v 1.6 2012/06/07 21:09:58 aperloff Exp $
+// $Id: Table.hh,v 1.7 2012/06/29 15:54:38 aperloff Exp $
 
 #ifndef TABLE_DEF
 #define TABLE_DEF
@@ -39,6 +39,9 @@ public :
 
   Table operator-(const Table &rhs) const;
   Table & operator-=(const Table &rhs);
+
+  Table operator/(const Table&rhs) const;
+  Table & operator/=(const Table &rhs);
 
   Table operator*(double rhs) const;
   Table & operator*=(double rhs);

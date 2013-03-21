@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: Table.cc,v 1.8 2012/06/21 19:20:48 aperloff Exp $
+// $Id: Table.cc,v 1.9 2012/06/29 15:54:38 aperloff Exp $
 
 //My libraries
 #include "TAMUWW/SpecialTools/interface/Table.hh"
@@ -265,7 +265,7 @@ Table & Table::operator-=(const Table & rhs){
   //Check
   if (table2Rows.size() != tableRows.size()){
     cout<<"ERROR  Table::AddTable Tables have two different number of rows,"<<endl
-	<<" Returning without adding."<<endl;
+	<<" Returning without subtracting."<<endl;
     return *this;
   }
 
@@ -279,7 +279,7 @@ Table & Table::operator-=(const Table & rhs){
     // Check
     if (tableRowCells.size() != table2RowCells.size()){
       cout<<"ERROR  Table::operator-= TableRow "<<it<<" have two different number of cells"<<endl
-	  <<" Returning without adding."<<endl;
+	  <<" Returning without subtracting."<<endl;
       return *this;
     }
     
@@ -301,6 +301,51 @@ Table Table::operator-(const Table &rhs) const {
   return res;
 
 }//operator-
+
+//----------------------------------------------------------------------------
+Table & Table::operator/=(const Table & rhs){
+
+  vector<TableRow> table2Rows = rhs.getRows();
+
+  //Check
+  if (table2Rows.size() != tableRows.size()){
+    cout<<"ERROR  Table::DivideTable Tables have two different number of rows,"<<endl
+	<<" Returning without dividing."<<endl;
+    return *this;
+  }
+
+  //Loop over all the rows dividing the information of the other table
+  for (unsigned int it = 0; it < tableRows.size(); it++){
+
+    // get the cells for each row
+    vector<TableCell*> tableRowCells = tableRows[it].getCellEntries();
+    vector<TableCell*> table2RowCells = table2Rows[it].getCellEntries();
+    
+    // Check
+    if (tableRowCells.size() != table2RowCells.size()){
+      cout<<"ERROR  Table::operator/= TableRow "<<it<<" have two different number of cells"<<endl
+	  <<" Returning without dividing."<<endl;
+      return *this;
+    }
+    
+    // Loop over all the cells adding the information of the other table
+    for (unsigned int it = 0; it < tableRowCells.size(); it++)
+      tableRowCells[it]->operator/=(*table2RowCells[it]);
+
+  }
+  return *this;
+
+}//opertor/=
+
+//----------------------------------------------------------------------------
+Table Table::operator/(const Table &rhs) const {
+
+  // Make a copy in which I divide the right hand side
+  Table res = *this;
+  res /= rhs;
+  return res;
+
+}//operator/
 
 //----------------------------------------------------------------------------
 Table Table::operator*(double rhs) const {

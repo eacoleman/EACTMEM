@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: TableCellVal.hh,v 1.1 2011/02/26 19:11:03 eusebi Exp $
+// $Id: TableCellVal.hh,v 1.2 2012/06/29 15:54:38 aperloff Exp $
 
 #ifndef TABLECELLVAL_DEF
 #define TABLECELLVAL_DEF
@@ -34,10 +34,12 @@ public:
   // explain how to do addition of cells, inherited from bass class
   virtual TableCell & operator+=(const TableCell &rhs) ;
   virtual TableCell & operator-=(const TableCell &rhs) ;
+  virtual TableCell & operator/=(const TableCell &rhs) ;
 
   // Native to this class
   virtual TableCellVal operator+(const TableCell &rhs) const;
   virtual TableCellVal operator-(const TableCell &rhs) const;
+  virtual TableCellVal operator/(const TableCell &rhs) const;
 
   virtual TableCell & operator*=(const double & rhs) ;
   TableCellVal operator*(double rhs) const;
