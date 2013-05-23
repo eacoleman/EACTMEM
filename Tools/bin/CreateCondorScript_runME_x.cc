@@ -64,7 +64,11 @@ using namespace std;
       outputBaseName=globalRunMESuffix+outputBaseName;
       outputBaseName=processes[np]+outputBaseName;
 
-      TFile* infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
+      TFile* infile;
+      if(pbsScripts)
+         infile = new TFile(rootInputDir+processes[np]+"/"+rootinputBaseName+filenameSuffix);
+      else
+         infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
       TTree* InTree;
 
       if ( !insideTDirectoryFile ) {
