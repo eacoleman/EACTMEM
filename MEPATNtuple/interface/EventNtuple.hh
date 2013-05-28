@@ -24,14 +24,19 @@
 #include "TObject.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
+#include "TString.h"
+#include "TRegexp.h"
 
 //
 // Standard Library Includes
 //
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <map>
 #include <cassert>
+#include <utility>
 
 //
 // Namespace
@@ -39,6 +44,10 @@
 using std::vector;
 using std::map;
 using std::string;
+using std::pair;
+using std::cout;
+using std::setw;
+using std::left;
 
 ////////////////////////////////////////////////////////////////////////////////
 // class definition
@@ -100,12 +109,29 @@ public:
    double getJERfactor(double pt, double eta, double ptgen);
 
    //
+   // MET-Phi Corrections
+   //
+   void doMETPhiCorrection(TString eraType = "pfMEtSysShiftCorrParameters_2012runAvsNvtx_data");
+   pair<double,double> getMETPhiCorrection(TString eraType = "pfMEtSysShiftCorrParameters_2012runAvsNvtx_data");
+
+   //
    // Generator-Level Particle Information
    //
    // Print Event Information
    void printDecayInformation(int decayParticle);
    void printHiggsDecayInformation();
 
+    //
+    // Trigger Information
+    //
+    // Get wasAccept information for a specific trigger
+    bool findSpecificTrigger(string triggerName);
+    // Print wasAccept information for a specific trigger
+    void printSpecificTrigger(string triggerName);
+    // Get wasAccept information for multiple triggers. Return the && if true and || if false.
+    bool findTriggers(TString triggerName, bool andor = true);
+    // Print wasAccept information for multiple triggers
+    void printTriggers(TString triggerName);
 
    //Needed for ME
    int run;

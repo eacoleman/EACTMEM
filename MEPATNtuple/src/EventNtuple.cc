@@ -179,6 +179,133 @@ void EventNtuple::doJER(){
 
 
 //______________________________________________________________________________
+//Types:
+//       pfMEtSysShiftCorrParameters_2011runAvsSumEt_data
+//       pfMEtSysShiftCorrParameters_2011runAvsSumEt_mc
+//       pfMEtSysShiftCorrParameters_2011runBvsSumEt_data
+//       pfMEtSysShiftCorrParameters_2011runBvsSumEt_mc
+//       pfMEtSysShiftCorrParameters_2011runAplusBvsSumEt_data
+//       pfMEtSysShiftCorrParameters_2011runAplusBvsSumEt_mc
+//       pfMEtSysShiftCorrParameters_2012runAvsSumEt_data
+//       pfMEtSysShiftCorrParameters_2012runAvsSumEt_mc
+//       pfMEtSysShiftCorrParameters_2011runAvsNvtx_data
+//       pfMEtSysShiftCorrParameters_2011runAvsNvtx_mc
+//       pfMEtSysShiftCorrParameters_2011runBvsNvtx_data
+//       pfMEtSysShiftCorrParameters_2011runBvsNvtx_mc
+//       pfMEtSysShiftCorrParameters_2011runAplusBvsNvtx_data
+//       pfMEtSysShiftCorrParameters_2011runAplusBvsNvtx_mc
+//       pfMEtSysShiftCorrParameters_2012runAvsNvtx_data
+//       pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc
+pair<double,double> EventNtuple::getMETPhiCorrection(TString eraType){
+   
+   pair<double,double> METCor = std::make_pair(0,0);
+/*
+   // parametrization of MET x/y shift vs. sumEt
+   if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAvsSumEt_data")==0) {
+      METCor.first  = -3.365e-1 + (4.801e-3*sumEt);
+      METCor.second = +2.578e-1 - (6.124e-3*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAvsSumEt_mc")==0) {
+      METCor.first  = -9.389e-2 + (1.815e-4*sumEt);
+      METCor.second = +1.571e-1 - (3.710e-3*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runBvsSumEt_data")==0) {
+      METCor.first  = -3.265e-1 + (5.162e-3*sumEt);
+      METCor.second = -1.956e-2 - (6.299e-3*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runBvsSumEt_mc")==0) {
+      METCor.first  = -1.070e-1 + (9.587e-5*sumEt);
+      METCor.second = -1.517e-2 - (3.357e-3*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAplusBvsSumEt_data")==0) {
+      METCor.first  = -5.65217e-01 + (5.42436e-03*sumEt);
+      METCor.second = +4.54054e-01 - (6.73607e-03*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAplusBvsSumEt_mc")==0) {
+      METCor.first  = -4.53909e-02 - (2.55863e-05*sumEt);
+      METCor.second = +1.27947e-01 - (3.62604e-03*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsSumEt_data")==0) {
+      METCor.first  = -7.67892e-01 + (5.76983e-03*sumEt);
+      METCor.second = +5.54005e-01 - (2.94046e-03*sumEt);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsSumEt_mc")==0) {
+      METCor.first  = +1.77344e-01 - (1.34333e-03*sumEt);
+      METCor.second = +8.08402e-01 - (2.84264e-03*sumEt);
+   }
+*/
+   // parametrization of MET x/y shift vs. Nvtx
+   if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAvsNvtx_data")==0) {
+      METCor.first  = +3.87339e-1 + (2.58294e-1*vLV[0].npv);
+      METCor.second = -7.83502e-1 - (2.88899e-1*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAvsNvtx_mc")==0) {
+      METCor.first  = -1.94451e-2 - (4.38986e-3*vLV[0].npv);
+      METCor.second = -4.31368e-1 - (1.90753e-1*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runBvsNvtx_data")==0) {
+      METCor.first  = +6.64470e-1 + (2.71292e-1*vLV[0].npv);
+      METCor.second = -1.239990e0 - (3.18661e-1*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runBvsNvtx_mc")==0) {
+      METCor.first  = -9.89706e-2 + (6.64796e-3*vLV[0].npv);
+      METCor.second = -5.32495e-1 - (1.82195e-1*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAplusBvsNvtx_data")==0) {
+      METCor.first  = +3.64118e-01 + (2.93853e-01*vLV[0].npv);
+      METCor.second = -7.17757e-01 - (3.57309e-01*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2011runAplusBvsNvtx_mc")==0) {
+      METCor.first  = -4.79178e-02 + (8.62653e-04*vLV[0].npv);
+      METCor.second = -4.54408e-01 - (1.89684e-01*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_data")==0) {
+      METCor.first  = +3.54233e-01 + (2.65299e-01*vLV[0].npv);
+      METCor.second = +1.88923e-01 - (1.66425e-01*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc")==0) {
+      METCor.first  = -2.99576e-02 - (6.61932e-02*vLV[0].npv);
+      METCor.second = +3.70819e-01 - (1.48617e-01*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_data")==0) {
+      METCor.first  = +1.62143 + (0.489774*vLV[0].npv);
+      METCor.second = -1.41580 - (0.314019*vLV[0].npv);
+   }
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_mc")==0) {
+      METCor.first  = +0.496732 - (0.0156985*vLV[0].npv);
+      METCor.second = +0.379505 - (0.2656620*vLV[0].npv);
+   }
+   
+   METCor.first*=-1;
+   METCor.second*=-1;
+
+   return  METCor;
+
+}// getMETPhiCorrection
+
+
+//______________________________________________________________________________
+void EventNtuple::doMETPhiCorrection(TString eraType){
+   
+   //Loop over the MET lorentz vectors
+   for (unsigned int m=0; m < METLV.size(); m++){
+      
+      // get the correction factor for this MET
+      pair<double,double> cor = getMETPhiCorrection(eraType);
+      //cout << "\tPx before correction = " << METLV[0].Px() << endl;
+      //cout << "\tPy before correction = " << METLV[0].Py() << endl;
+      //cout << "\tPx correction = " << cor.first << endl;
+      //cout << "\tPy correction = " << cor.second << endl;
+      METLV[0].SetX(METLV[0].Px()+cor.first);
+      METLV[0].SetY(METLV[0].Py()+cor.second);
+      //cout << "\tPx after correction = " << METLV[0].Px() << endl;
+      //cout << "\tPy after correction = " << METLV[0].Py() << endl;
+   }// for METs
+
+}// doMETPhiCorrection
+
+
+//______________________________________________________________________________
 ////////////////FNAL CUTs
 bool EventNtuple::FNALcutsElectron(){
  
@@ -305,6 +432,63 @@ void EventNtuple::printDecayInformation(int decayParticle) {
 //______________________________________________________________________________
 void EventNtuple::printHiggsDecayInformation() {
    printDecayInformation(25);
+}
+
+//______________________________________________________________________________
+bool EventNtuple::findSpecificTrigger(string triggerName) {
+   return triggerMap[triggerName];
+}
+
+//______________________________________________________________________________
+void EventNtuple::printSpecificTrigger(string triggerName) {
+   cout << "EventNtuple::printSpecificTrigger:" << endl
+        << left << setw(90) << "Trigger Name" << setw(5) << "" << setw(9) << "wasAccept" << endl;
+   char prev = std::cout.fill ('_');
+   cout << setw(90) << "" << std::setfill(prev) << setw(5) << "" << std::setfill('_') << setw(9) << "" << endl;
+   std::cout.fill(prev);
+   cout << left << setw(90) << triggerName << setw(5) << "" << setw(9) << triggerMap[triggerName] << endl;
+}
+
+//______________________________________________________________________________
+bool EventNtuple::findTriggers(TString triggerName, bool andor) {
+   TRegexp trigRegexp(triggerName);
+   bool matchTrigName = false;
+   bool retAnd = true;
+   bool retOr = false;
+   for(map<string,bool>::iterator it = triggerMap.begin(); it!=triggerMap.end(); it++) {
+      TString thisTrigPath = TString(it->first);
+      matchTrigName = thisTrigPath.Contains(trigRegexp);
+      if(matchTrigName == true) {
+         if(andor)
+            retAnd = retAnd && triggerMap[string(thisTrigPath)];
+         else
+            retOr = retOr || triggerMap[string(thisTrigPath)];
+      }
+   }
+   if(andor)
+      return retAnd;
+   else
+      return retOr;
+}
+
+//______________________________________________________________________________
+void EventNtuple::printTriggers(TString triggerName) {
+   TRegexp trigRegexp(triggerName);
+   bool matchTrigName = false;
+
+   cout << "EventNtuple::printSpecificTrigger:" << endl
+        << left << setw(90) << "Trigger Name" << setw(5) << "" << setw(9) << "wasAccept" << endl;
+   char prev = std::cout.fill ('_');
+   cout << setw(90) << "" << std::setfill(prev) << setw(5) << "" << std::setfill('_') << setw(9) << "" << endl;
+   std::cout.fill(prev);
+   
+   for(map<string,bool>::iterator it = triggerMap.begin(); it!=triggerMap.end(); it++) {
+      TString thisTrigPath = TString(it->first);
+      matchTrigName = thisTrigPath.Contains(trigRegexp);
+      if(matchTrigName == true) {
+         cout << left << setw(90) << thisTrigPath << setw(5) << "" << setw(9) << triggerMap[string(thisTrigPath)] << endl;
+      }
+   }
 }
 
 ClassImp(EventNtuple)
