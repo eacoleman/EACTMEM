@@ -49,8 +49,6 @@ namespace UserFunctions
   bool doJER;
   bool doPUreweight;
   bool doFNAL;
-  bool doMetPhiWeight;
-  TH1D* metPhiWeight= 0;
   bool fillTMDF;
   bool WJweight;
   TH2D* wJetsWeight= 0;
@@ -106,7 +104,6 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 	double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) -
 			  pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) -
 			  pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
-
 	pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
 
 	plots[leptonCat]["Mjj"]->Fill(Mjj,weight);
@@ -114,7 +111,6 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 	plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
 	plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
 	plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Et(),weight);
-	plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
 	plots[leptonCat]["WmT"]->Fill(WmT, weight);
 	plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
 	plots[leptonCat]["Jet1Pt"]->Fill(ntuple->jLV[0].Pt(),weight);
@@ -301,30 +297,20 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
 {
   TString auxName = proc->name;
   auxName.ToUpper();
+  if(auxName.Contains("DATA") || auxName.Contains("QCD"))
+    {
+      return 1.0;
+    }
+   
   double weight = 1.0;
-
-  if (doMetPhiWeight){
-
-    if(auxName.Contains("DATA") || auxName.Contains("QCD")) {
-
-      // TEST OF MET PHI WEIGHTING
-      double metphi = ntuple->METLV[0].Phi();
-      int bin     = metPhiWeight->FindBin(metphi);
-      weight *= metPhiWeight->GetBinContent(bin);
-
-    } //Data or QCD
-
-  } // doMetPhiWeight
 
   // Pileup reweighting
   if (doPUreweight){
-    if(!auxName.Contains("DATA") && !auxName.Contains("QCD")) 
-      weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
+    weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
   }
    
   // WJets weighting (specific to fix shape issues)
   if (WJweight){
-
     if (auxName.Contains("WJETS")){
       // Original
       double dpLJ = ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]);
@@ -332,13 +318,14 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
       int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
       weight *= wJetsWeight->GetBinContent(bin);
        
-      
-      // double deLJ =  ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta();
-      // double deJJ =  ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta();
-      // weight  *= wJetsWeightTF2->Eval(deLJ,deJJ);
-    }
+      /*
+	double deLJ =  ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta();
+	double deJJ =  ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta();
+	weight  *= wJetsWeightTF2->Eval(deLJ,deJJ);
+      */
 
-  } // wjets
+    }
+  }
 
   return weight;
 
@@ -362,31 +349,6 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
 {
   TString auxName = proc->name;
   auxName.ToUpper();
-
-  if (doMetPhiWeight){
-
-    // get the filename
-    TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/data_weight.root";
-    
-    TFile * Subs = TFile::Open(filename);
-    if (!Subs->IsOpen()) {
-      cout << "\tERROR::Weight file "+filename+ " could not be opened." << endl
-	   << "\tWJets histograms will not be filled" << endl;
-      return;
-    }
-
-    TString hname = "metphi";
-    TH2D * auxh = (TH2D*) Subs->Get(hname);
-    if (!auxh) {
-      cout << "\tERROR::Weight hist "<<hname<<" could not be found in filename "<<filename
-	   <<endl<< "\tMetPhi weight will not be applied " << endl;
-      return;
-    }
-    metPhiWeight = (TH1D*) auxh->Clone("metPhiWeightClone");
-    metPhiWeight ->SetDirectory(0);
-    Subs->Close();
-
-  }// if doMetPhiWeight
 
   if (WJweight){
     TFile* Subs;
@@ -704,7 +666,6 @@ int main(int argc,char**argv) {
   UserFunctions::doJER              = cl.getValue<bool>    ("doJer",        false);
   UserFunctions::doPUreweight       = cl.getValue<bool>    ("doPUrewt",      true);
   UserFunctions::doFNAL             = cl.getValue<bool>    ("doFNAL",       false);
-  UserFunctions::doMetPhiWeight     = cl.getValue<bool>    ("doMetPhiWeight",false);
   UserFunctions::cutRegion          = cl.getValue<string>  ("cutRegion",    "all");
   UserFunctions::outDir             = cl.getValue<string>  ("outDir",         ".");
   UserFunctions::WJweight           = cl.getValue<bool>    ("WJweight",     false);
@@ -952,11 +913,10 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
                                                "PS/jets2p"));
 
   procs.push_back(new PlotterPhysicsProcessNEW("WJets","W+Jets",basePath+"WJets.root",
-					       0.936549 * getCrossSection("WJets"),
+					       getCrossSection("WJets"),
                                                intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
 					       "PS/jets2p"));
    
-
 
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
@@ -967,16 +927,10 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD","QCD",basePath+"QCD_Electron.root",
-						 0.000205855 , intLum, 1 , getProcessColor("QCD_ElEnriched"),
-						 "PS/jets2p"));
-
-
     procs.push_back(new PlotterPhysicsProcessNEW("Data_electron","Data",basePath+"SingleEl_Data_19p148fb.root",
                                                  1./intLum, intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
                                                  "PS/jets2p", DEFS::electron)); 
-
     //procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
     //                                             1.0*getCrossSection("QCD_ElEnriched"), intLum,
     //                                             getNumMCEvts("QCD_ElEnriched"),
@@ -1101,18 +1055,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   a->overlaySignalFactor = signalFactor;
   plots[leptonCat][string(name)] = a;
 
-  a = new FormattedPlot;
-  name = "METPhi";
-  a->templateHisto = new TH1D(name + lepStr, name, 62, -TMath::Pi(), TMath::Pi());
-  a->axisTitles.push_back("Missing E_{T} Phi ");
-  a->axisTitles.push_back("Number of Events" );
-  a->range = make_pair(-3.5, 3.5);
-  a->normToData = norm_data;
-  a->stacked = true; a->leptonCat = DEFS::electron;
-  a->overlaySignalName = signalName;
-  a->overlaySignalFactor = signalFactor;
-  plots[leptonCat][string(name)] = a;
-
+   
   a = new FormattedPlot;
   name = "WmT";
   a->templateHisto = new TH1D(name + lepStr, name,1000,0,500);
