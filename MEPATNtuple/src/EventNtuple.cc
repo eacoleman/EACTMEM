@@ -435,6 +435,34 @@ void EventNtuple::printHiggsDecayInformation() {
 }
 
 //______________________________________________________________________________
+bool EventNtuple::triggered(char * triggerName, bool andor){
+   if(TString(triggerName).Contains("*")==1) {
+      TRegexp trigRegexp(triggerName);
+      bool matchTrigName = false;
+      bool retAnd = true;
+      bool retOr = false;
+      for(map<string,bool>::iterator it = triggerMap.begin(); it!=triggerMap.end(); it++) {
+         TString thisTrigPath = TString(it->first);
+         matchTrigName = thisTrigPath.Contains(trigRegexp);
+         if(matchTrigName == true) {
+            if(andor)
+               retAnd = retAnd && triggerMap[string(thisTrigPath)];
+            else
+               retOr = retOr || triggerMap[string(thisTrigPath)];
+         }
+      }
+      if(andor)
+         return retAnd;
+      else
+         return retOr;
+   }
+   else if (triggerMap.find(triggerName) != triggerMap.end())
+      return triggerMap[triggerName];
+   
+   return false;
+}
+
+//______________________________________________________________________________
 bool EventNtuple::findSpecificTrigger(string triggerName) {
    return triggerMap[triggerName];
 }

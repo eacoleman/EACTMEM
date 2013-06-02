@@ -125,6 +125,8 @@ public:
     // Trigger Information
     //
     // Get wasAccept information for a specific trigger
+   bool triggered(char * triggerName, bool andor = true);
+    // Get wasAccept information for a specific trigger
     bool findSpecificTrigger(string triggerName);
     // Print wasAccept information for a specific trigger
     void printSpecificTrigger(string triggerName);
