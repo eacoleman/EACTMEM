@@ -11,14 +11,17 @@ int Fitter_x(string lep, string cat, string inFileLoc, string outFileLoc, vector
    
    // DEBUG
    double sum = 0;
-   cout << "Data Integral: ";
-   cout << HistogramsFitter::dataHistogram->Integral(0,HistogramsFitter::dataHistogram->GetNbinsX()+1) << endl;
+   cout << "Data Integral: "
+        << HistogramsFitter::dataHistogram->Integral(0,HistogramsFitter::dataHistogram->GetNbinsX()+1) << endl;
    for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
    {
       cout << mapit->first << " Integral: ";
-      cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
-      
-      sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
+      if(mapit->second) {
+         cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
+         sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
+      }
+      else
+         cout << "ERROR::" << mapit->first << " histogram not found!" << endl;
    }
    cout << "SUM: " << sum << endl;
 
@@ -32,9 +35,13 @@ int Fitter_x(string lep, string cat, string inFileLoc, string outFileLoc, vector
    for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
    {
       cout << mapit->first << " Integral: ";
-      cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
-      
-      sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
+      if(mapit->second)
+         cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
+      else
+         cout << "ERROR::" << mapit->first << " histogram not found!" << endl;
+
+      if(mapit->second)
+         sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
    }
    cout << "SUM: " << sum << endl;
 
@@ -49,8 +56,7 @@ int Fitter_x(string lep, string cat, string inFileLoc, string outFileLoc, vector
       cout << "FOM: " << histFit.getFOM(FOM) << endl;
    }
 
-   histFit.writeHistograms();
-
+   //histFit.writeHistograms();
    return 0;
 }
 
@@ -68,7 +74,7 @@ int main(int argc,char**argv)
    string         inFileLocCL  = cl.getValue<string>  ("readLocation",             "");
    string         outFileLocCL = cl.getValue<string>  ("writeLocation",            "");
    vector<string> fproc        = cl.getVector<string> ("fproc",         "WJets:::QCD");
-   vector<string> signals      = cl.getVector<string> ("signals",           "Diboson");
+   vector<string> signals      = cl.getVector<string> ("signals",            "ggH125");
    double         fom          = cl.getValue<double>  ("fom",                     3.0);
    
    if (!cl.check()) 
@@ -90,7 +96,7 @@ int main(int argc,char**argv)
    }
 */   
    if(inFileLocCL == "")
-      inFileLocCL = "outputFile_" + leptonCL + ".root";
+      inFileLocCL = "histos_" + leptonCL + ".root";
    
    if(outFileLocCL == "")
       outFileLocCL = "Fitter_" + leptonCL + "_" + objectCL + ".root";

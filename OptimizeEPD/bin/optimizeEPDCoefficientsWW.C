@@ -8,6 +8,7 @@
 #include "TH1F.h"
 #include "TFile.h"
 #include "TStopwatch.h"
+#include "TString.h"
 
 //C++ libraries
 #include <map>
@@ -113,7 +114,7 @@ double createHistoAndGetFOM( vector<PhysicsProcessForOpt*> processes,
     for (unsigned p=0;p<processes.size();p++){
 
       //get this process' name
-      string thisProcName =  processes[p]->getName();
+       string thisProcName = (string)processes[p]->getName();
 
       // put the WW or WX processes into the signal histogram
       if (thisProcName.find("WW") == 0 || thisProcName.find("WZ") == 0){
@@ -272,21 +273,22 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
 vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS::TagCat tagcat){
 
   // Get the physical processes for WW. The false means "data" is not one of the processes. 
-  vector<PhysicsProcess*> phy_processes  = DefaultValues::getProcessesWW(jetBin, tagcat,false);
+  vector<PhysicsProcessNEW*> phy_processes  = DefaultValues::getProcessesWW(jetBin, tagcat,false);
 
   // Now construct a set of PhysicsProcessForOpt out of them
   vector<PhysicsProcessForOpt*> processes ;
   for (unsigned int pp = 0 ; pp < phy_processes.size(); pp++){
-    processes.push_back(new PhysicsProcessForOpt(*phy_processes[pp]));
+     PhysicsProcessMemory ppm = (PhysicsProcessMemory)*phy_processes[pp];
+     processes.push_back(new PhysicsProcessForOpt(ppm));
   }
 
   // Report processes to screen
   for (unsigned p=0;p<processes.size();p++){
     cout<<"\tprocess name="<<processes[p]->getName()
-	<<"\ttitle="<<processes[p]->getSubName()
-	<<"\tnorm="<<processes[p]->getTotalExpectedEvents().value
-	<<"\tpercentualError="
-	<<processes[p]->getTotalExpectedEvents().error/processes[p]->getTotalExpectedEvents().value
+       //<<"\ttitle="<<processes[p]->getSubName()
+       //<<"\tnorm="<<processes[p]->getTotalExpectedEvents().value
+       //<<"\tpercentualError="
+       //<<processes[p]->getTotalExpectedEvents().error/processes[p]->getTotalExpectedEvents().value
 	<<endl;
     
   }// for

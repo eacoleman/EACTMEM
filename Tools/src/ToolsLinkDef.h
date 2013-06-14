@@ -1,11 +1,9 @@
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/Tools/interface/PlotMap.hh"
-#include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
-#include "TAMUWW/Tools/interface/PhysicsProcessMemory.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
 #include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 #include "TAMUWW/Tools/interface/CutOptimization.hh"
-#include "TAMUWW/Tools/interface/HelperFunctions.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/CreateCondorScriptME.hh"
 
 #ifdef __CINT__
@@ -14,12 +12,9 @@
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
-#pragma link C++ class HelperFunctions+;
+#pragma link C++ class DefaultValues+;
 #pragma link C++ class TProfileMDF+;
 #pragma link C++ class PhysicsProcessNEW+;
-#pragma link C++ class PlotterPhysicsProcessNEW+;
-#pragma link C++ class TreeRow+;
-#pragma link C++ class PhysicsProcessMemory+;
 #pragma link C++ class Plot+;
 #pragma link C++ class FormattedPlot+;
 #pragma link C++ class PlotMap+;

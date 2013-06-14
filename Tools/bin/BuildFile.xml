@@ -2,20 +2,23 @@
 <use   name="TAMUWW/Tools"/>
 <use   name="TAMUWW/MEPATNtuple"/>
 <use   name="JetMETAnalysis/JetUtilities"/>
+<use   name="PhysicsTools/KinFitter"/>
 <use   name="FWCore/FWLite"/>
 <use   name="rootphysics"/>
 <use   name="rootgraphics"/>  
 <use   name="root"/>
 <use   name="rootminuit2"/>
-<bin   name="TableProduction_x"     file="TableProduction_x.cc" />
-<bin   name="plotter_x"             file="plotter_x.cc" />
-<bin   name="BackgroundEstimator_x" file="BackgroundEstimator_x.cc" />
-<bin   name="TestRebinBGEst_x"      file="TestRebinBGEst_x.cc" />
-<bin   name="getHistograms_x"       file="getHistograms_x.cc" />
-<bin   name="Fitter_x"              file="Fitter_x.cc" />
-<bin   name="readMELog_x"           file="readMELog_x.cc" />
-<bin   name="Optimization_x"        file="Optimization_x.cc" />
-<bin   name="percentDifferenceTables_x" file="percentDifferenceTables_x.cc" />
-<bin   name="METPhiCorrector_x"     file="METPhiCorrector_x.cc" />
-<bin   name="IsolationPlotter_x"    file="IsolationPlotter_x.cc" />
+<bin   name="TableProduction_x"          file="TableProduction_x.cc" />
+<bin   name="plotter_x"                  file="plotter_x.cc" />
+<bin   name="BackgroundEstimator_x" 	 file="BackgroundEstimator_x.cc" />
+<bin   name="TestRebinBGEst_x"      	 file="TestRebinBGEst_x.cc" />
+<bin   name="getHistograms_x"       	 file="getHistograms_x.cc" />
+<bin   name="Fitter_x"              	 file="Fitter_x.cc" />
+<bin   name="readMELog_x"           	 file="readMELog_x.cc" />
+<bin   name="Optimization_x"        	 file="Optimization_x.cc" />
+<bin   name="percentDifferenceTables_x"  file="percentDifferenceTables_x.cc" />
+<bin   name="METPhiCorrector_x"          file="METPhiCorrector_x.cc" />
+<bin   name="IsolationPlotter_x"         file="IsolationPlotter_x.cc" />
 <bin   name="CreateCondorScript_runME_x" file="CreateCondorScript_runME_x.cc" />
+<bin   name="EventNtupleToUVaNtuple_x"   file="EventNtupleToUVaNtuple_x.cc" />
+<!--comment-->

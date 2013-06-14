@@ -19,15 +19,17 @@ Fitter::Fitter(string lepton, string object, vector<string> fproc, string inFile
    leptonName = lepton;
    objectName = object;
    HistogramsFitter::fProcessNames = fproc;
-   
+   for(unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
+      HistogramsFitter::fProcessXsec.push_back(DV.getCrossSectionAndError(HistogramsFitter::fProcessNames[nproc]).first);
+      HistogramsFitter::fProcessXsecError.push_back(DV.getCrossSectionAndError(HistogramsFitter::fProcessNames[nproc]).second);
+   }
+
    initializeFileLocations(inFileLoc, outFileLoc);
    initializeHistNames();
    
-   resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
+   //resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
    
    // The default values (before fitting) of Chi2 and parameters
-   //scaleParameters.first = 1.0;
-   //scaleParameters.second = 1.0;
    scaleParameters = vector<double> (2,1.0);
    reducedChiSquared = 0.0;
    
@@ -46,6 +48,14 @@ Fitter::~Fitter()
    }
 
    HistogramsFitter::fProcessNames.clear();
+   HistogramsFitter::fProcessXsec.clear();
+   HistogramsFitter::fProcessXsecError.clear();
+
+   // Destroy the MC histograms
+   for(map<string,TH1D*>::iterator it=HistogramsFitter::monteCarloHistograms.begin(); it!=HistogramsFitter::monteCarloHistograms.end(); it++) {
+      (*it).second->~TH1D();
+      delete (*it).second;
+   }
    HistogramsFitter::monteCarloHistograms.clear();
 
    // Destroy data histogram
@@ -61,70 +71,48 @@ Fitter::~Fitter()
 
 void Fitter::readHistograms()
 {
-   TFile rootInFile;
-   rootInFile.Open(inRootFileLocation.c_str(), "READ");
-   
-   string prefix = objectName + "_" + leptonName;
-   
-   TCanvas* testCanCopy = (TCanvas*)gDirectory->Get(prefix.c_str());
-   canvas = (TCanvas*)testCanCopy->Clone();
-   
-   pad = (TPad *) canvas->GetPrimitive((prefix + "_1").c_str());
-   mcStack = (THStack*) pad->GetPrimitive((prefix + "_stackMC").c_str());
-   dataStack = (THStack*) pad->GetPrimitive((prefix + "_stackData").c_str());
-   mcList = mcStack->GetHists();
-   dataList = dataStack->GetHists();
-   
-   // MC Histograms
+   TH1::AddDirectory(kFALSE);
+   TFile* rootInFile = TFile::Open(inRootFileLocation.c_str(), "READ");
+   if (!rootInFile->IsOpen()) {  cout<<"Can't open "<<inRootFileLocation<<endl; return; }
+
    for(unsigned int i = 0; i < histNames.size(); i++)
    {
       string name = histNames[i];
+      TString hist = objectName + "_" + name + "_" + leptonName;
+      cout << "\tFitter::readHistograms Getting histogram named " << hist << endl;
       
-      if(name == "QCD")
-      {
-         if(leptonName == "electron")
-            HistogramsFitter::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_electronEnriched").c_str());
-         else
-            HistogramsFitter::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_muonEnriched").c_str());
-      }
-      else if(name == "WJets")
-      {
-         if(leptonName == "electron")
-            HistogramsFitter::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_electron").c_str());
-         else
-            HistogramsFitter::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_muon").c_str());
-      }
+      if(gDirectory->Get(hist))
+         HistogramsFitter::monteCarloHistograms[name] = (TH1D*) (gDirectory->Get(hist)->Clone());
       else
-         HistogramsFitter::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
-      
+         cout << "\t\tFitter::readHistograms Cannot find histogram " << hist << endl
+              << "\t\t\tSkipping this histogram." << endl;
+
       if (debug)
          HistogramsFitter::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
    }
-   
-   // Data histogram
-   if(leptonName == "electron")
-      //HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (el)").c_str());
-      //HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_SingleEl_Data").c_str());
-      HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data_electron").c_str());
+
+   cout << "\tFitter::readHistograms Getting histogram named " << TString(objectName + "_Data_" + leptonName + "_" + leptonName) << endl;
+   if(gDirectory->Get(TString(objectName + "_Data_" + leptonName + "_" + leptonName)))
+      HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_Data_" + leptonName + "_" + leptonName))->Clone());
    else
-      //HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (mu)").c_str());
-      //HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_SingleMu_Data").c_str());
-      HistogramsFitter::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data_muon").c_str());
+      cout << "\t\tFitter::readHistograms Cannot find histogram " << TString(objectName + "_Data_" + leptonName + "_" + leptonName) << endl
+           << "\t\t\tSkipping this histogram." << endl;
+
    if (debug)
       HistogramsFitter::dataHistogram->Rebin(rebinSizeDEBUG);
    
-   rootInFile.Close();
+   rootInFile->Close();
 }
 
 void Fitter::fitHistograms()
 {
-   const double* parameters = fitAndReturnParameters();
+   vector<double> parameters = fitAndReturnParameters();
    
    for (unsigned int i=0; i<HistogramsFitter::fProcessNames.size(); i++) {
       HistogramsFitter::monteCarloHistograms[HistogramsFitter::fProcessNames[i]]->Scale(parameters[i]);
    }
    
-   mcStack->Modified();
+   //mcStack->Modified();
 }
 
 void Fitter::writeHistograms()
@@ -186,23 +174,6 @@ void Fitter::writeHistograms()
 
          histsToScale[nproc]->Scale(scaleParameters[nproc]);
       }
-/*
-      if(leptonName == "electron") {
-         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched").c_str());
-         histWJets = (TH1D*)inputMCList->FindObject((prefix + "_WJets_electron").c_str());
-      }
-      else if (leptonName == "muon") {
-         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched").c_str());
-         histWJets = (TH1D*)inputMCList->FindObject((prefix + "_WJets_muon").c_str());
-      }
-      else {
-         histQCD = (TH1D*)inputMCList->FindObject((prefix + "_QCD").c_str());
-         histWJets = (TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str());
-      }
-
-      histQCD->Scale(scaleParameters.first);
-      histWJets->Scale(scaleParameters.second);
-*/
 
       inputMCStack->Modified();
       
@@ -242,49 +213,7 @@ void Fitter::addSigBkgHistograms(vector<string> sig) {
    HistogramsFitter::backgroundHistogram->Sumw2();
 
    for(map<string,TH1D*>::iterator it=HistogramsFitter::monteCarloHistograms.begin(); it!=HistogramsFitter::monteCarloHistograms.end(); it++) {
-/*
-      for(unsigned int nsig=0; nsig<sig.size(); nsig++) {
-         if ((*it).first=="WJets") {
-            if (leptonName=="muon") {
-               if (objectName=="Mjj") {
-                  (*it).second->Scale(0.984361);
-               }
-               else if (objectName=="epdPretagWWandWZ") {
-                  (*it).second->Scale(0.971676);
-               }
-               else if (objectName=="MVADiscriminator") {
-                  (*it).second->Scale(0.975234);
-               }
-            }
-            else if (leptonName=="electron") {
-               if (objectName=="Mjj") {
-                  (*it).second->Scale(1.0096);
-               }
-               else if (objectName=="epdPretagWWandWZ") {
-                  (*it).second->Scale(0.945736);
-               }
-               else if (objectName=="MVADiscriminator") {
-                  (*it).second->Scale(0.990551);
-               }
-            }
-         }
-
-         if(sig[nsig] == (*it).first) {
-            HistogramsFitter::signalHistogram->Add((*it).second);
-            cout << "Fitter::Added the " << (*it).first << " histogram to the signalHistogram." << endl;
-            cout << "\t" << setw(26) << (*it).first << " Entries: " << (*it).second->GetEntries() << endl;
-            cout << "\t" << setw(26) << "signalHistogram Entries: " << HistogramsFitter::signalHistogram->GetEntries() << endl;
-         }
-         else {
-            HistogramsFitter::backgroundHistogram->Add((*it).second);
-            cout << "Fitter::Added the " << (*it).first << " histogram to the backgroundHistogram." << endl;
-            cout << "\t" << setw(26) << (*it).first << " Entries: " << (*it).second->GetEntries() << endl;
-            cout << "\t" << setw(26) << "backgroundHistogram Entries: " << HistogramsFitter::backgroundHistogram->GetEntries() << endl; 
-         }
-
-      }
-*/
-      if (vfind(sig,(*it).first)!=-1) {
+      if (DV.vfind(sig,(*it).first)!=-1) {
          HistogramsFitter::signalHistogram->Add((*it).second);
          cout << "Fitter::Added the " << (*it).first << " histogram to the signalHistogram." << endl;
          cout << "\t" << setw(26) << (*it).first << " Entries: " << (*it).second->GetEntries() << endl;
@@ -296,7 +225,6 @@ void Fitter::addSigBkgHistograms(vector<string> sig) {
          cout << "\t" << setw(26) << (*it).first << " Entries: " << (*it).second->GetEntries() << endl;
          cout << "\t" << setw(26) << "backgroundHistogram Entries: " << HistogramsFitter::backgroundHistogram->GetEntries() << endl; 
       }
-         
    }
 }
 
@@ -316,7 +244,6 @@ void Fitter::setRebinSizeDEBUG(unsigned int rebinSize)
    rebinSizeDEBUG = rebinSize;
 }
 
-//pair<double, double> Fitter::getParameters()
 vector<double> Fitter::getParameters()
 {
    return scaleParameters;
@@ -341,10 +268,6 @@ double Fitter::getFOM(double FOM) {
          HistogramsFitter::signalHistogram->SetBinContent(i,0.0);
          HistogramsFitter::signalHistogram->SetBinError(i,0.0);
       }
-//      else if (HistogramsFitter::signalHistogram->GetBinContent(i)==0 && HistogramsFitter::backgroundHistogram->GetBinContent(i)>0) {
-//         HistogramsFitter::backgroundHistogram->SetBinContent(i,0.0);
-//         HistogramsFitter::backgroundHistogram->SetBinError(i,0.0);
-//      }
    }
 
    if (FOM==1) {
@@ -372,14 +295,6 @@ double Fitter::getFOM(double FOM) {
    }
 }
 
-int Fitter::vfind(vector<string> a, string b) {
-   for (unsigned int i=0; i<a.size(); i++) {
-      if (TString(a[i]).CompareTo(TString(b))==0)
-         return i;
-   }
-   return -1;
-}
-
 //##################################################
 //############### PRIVATE FUNCTIONS ################
 //##################################################
@@ -392,16 +307,27 @@ void Fitter::initializeFileLocations(string inFileLoc, string outFileLoc)
 
 void Fitter::initializeHistNames()
 {
-   histNames.push_back("Diboson");
-   histNames.push_back("STop");
+   //histNames.push_back("Diboson");
+   histNames.push_back("WW");
+   histNames.push_back("WZ");
+   histNames.push_back("ZZ");
+   //histNames.push_back("STop");
+   histNames.push_back("STopS_T");
+   histNames.push_back("STopS_Tbar");
+   histNames.push_back("STopT_T");
+   histNames.push_back("STopT_Tbar");
+   histNames.push_back("STopTW_T");
+   histNames.push_back("STopTW_Tbar");
    histNames.push_back("WJets");
    histNames.push_back("DYJets");
    histNames.push_back("TTbar");
    histNames.push_back("QCD");
-   //histNames.push_back("ggH125");
+   histNames.push_back("ggH125");
+   histNames.push_back("qqH125");
+   histNames.push_back("WH125");
 }
 
-const double* Fitter::fitAndReturnParameters()
+vector<double> Fitter::fitAndReturnParameters()
 {
    ROOT::Math::Functor funcFit(&fitFunc,2);
    Minuit2Minimizer* minFit = new Minuit2Minimizer(kMigrad);
@@ -409,25 +335,29 @@ const double* Fitter::fitAndReturnParameters()
    // Tolerance and printouts
    minFit->SetPrintLevel(3);
    minFit->SetStrategy(2);
-   minFit->SetMaxFunctionCalls(10000);
-   minFit->SetMaxIterations(10000);
-   minFit->SetTolerance(0.1);
-   minFit->SetErrorDef(0.5);
+   minFit->SetMaxFunctionCalls(100000);
+   minFit->SetMaxIterations(100000);
+   //EDM must be less than 0.001*tolerance*up for minimization to be successful
+   minFit->SetTolerance(0.001);
+   //1.0 for chi-square fit and 1 stdev errors
+   //4.0 for chi-square fit and 2 stdev errors
+   //0.5 for negative-log-likelihood function
+   minFit->SetErrorDef(1.0);
    minFit->SetValidError(true);
    
    // Fitting
    minFit->SetFunction(funcFit);
    
    double parameter[2];
-   if(vfind(HistogramsFitter::fProcessNames,"QCD")>=0) {
+   if(DV.vfind(HistogramsFitter::fProcessNames,"QCD")<0) {
       parameter[0] = 1.0;
       parameter[1] = 1.0;
    }
    else {
       parameter[0] = 1.0;
-      parameter[1] =  0.00001;
+      parameter[1] =  0.0001;
    }
-   double step[2] = {0.001, 0.001};
+   double step[2] = {0.0001, 0.0001};
    double lower[2] = {0.0, 0.0};
    
    //minFit->SetVariable(0, "Par0", parameter[0], step[0]);
@@ -450,12 +380,15 @@ const double* Fitter::fitAndReturnParameters()
    cout << "NDF\t  = " << HistogramsFitter::dataHistogram->GetNbinsX() - 2 << endl;
    cout << "Chi2/NDF\t  = " << reducedChiSquared << endl;
    
-   //scaleParameters.first = minFit->X()[0];
-   //scaleParameters.second = minFit->X()[1];
    scaleParameters[0] = minFit->X()[0];
    scaleParameters[1] = minFit->X()[1];
    
-   return minFit->X();
+   vector<double> ret;
+   for(unsigned int i=0; i<minFit->NDim(); i++) {
+      ret.push_back(minFit->X()[i]);
+   }
+
+   return ret;
 }
 
 vector<string> Fitter::getPlotNames()
@@ -559,5 +492,13 @@ double Fitter::fitFunc(const double *par)
       }
    }
    // cout << endl << "Par0:" << par[0] << " Par1:" << par[1] << " Chi2:" << chiSquare << endl << endl;
+   //Add Gaussian Constraints
+   for(unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
+      if(HistogramsFitter::fProcessXsec[nproc]!=0 && HistogramsFitter::fProcessXsecError[nproc]!=0) {
+         //cout << "\tchiSquare=" << chiSquare << "\tHistogramsFitter::fProcessXsec[nproc]=" << HistogramsFitter::fProcessXsec[nproc] << "\tHistogramsFitter::fProcessXsecError[nproc]=" << HistogramsFitter::fProcessXsecError[nproc] << endl; 
+         //chiSquare*=TMath::Gaus(par[nproc],1,HistogramsFitter::fProcessXsecError[nproc]/HistogramsFitter::fProcessXsec[nproc]);
+         chiSquare+=TMath::Power((par[nproc]-1.0)/(HistogramsFitter::fProcessXsecError[nproc]/HistogramsFitter::fProcessXsec[nproc]),2);
+      }
+   }
    return chiSquare;
 }

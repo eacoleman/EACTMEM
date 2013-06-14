@@ -73,7 +73,7 @@ void Plot::Fill(vector<Double_t> coord, double v, double w){
 }
 
 // Do the scaling to luminosity or data.
-void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
+void Plot::scaleToData(vector<PhysicsProcessNEW*> procs, DEFS::LeptonCat lepCat)
 {
    // Make sure we can't do the scaling twice
    if (scaled)
@@ -95,7 +95,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs)
       //cout << "Normalizing to luminosity and cross section..." << endl;
       
       // This works for MC and data as well.
-      histos[p]->Scale(procs[p]->getScaleFactor());
+      histos[p]->Scale(procs[p]->getScaleFactor(lepCat));
 
       //cout<<" histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl;
 
@@ -284,7 +284,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
    formatColors(procs);
    
    // Do the scaling of the histos to lum or to data
-   scaleToData(procs);
+   scaleToData(procs,leptonCat);
   
    // Do the grouping of the histos and return the list of histograms to be plotted.
    // This takes care of putting all the processes with the same groupName together
@@ -415,7 +415,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
 
    // Add the luminosity
    //drawLumi(3.6);
-   drawLumi(procs[0]->intLum/1000);
+   drawLumi(procs[0]->intLum[leptonCat]/1000);
 
    // canRatio: this is the pad with the Data/MC on it
    TVirtualPad * canRatio = can->GetPad(2);

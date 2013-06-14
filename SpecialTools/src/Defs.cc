@@ -1,7 +1,4 @@
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
-#include <iostream>
-#include <string>
-#include "TString.h"
 
 namespace DEFS {
 
@@ -60,40 +57,42 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::WH150;
 
 
-      if(str == "HWW110")
-	return  DEFS::PhysicsProcess::HWW110;
-      if(str == "HWW115")
-	return  DEFS::PhysicsProcess::HWW115;
-      if(str == "HWW120")
-	return  DEFS::PhysicsProcess::HWW120;
-      if(str == "HWW125")
-	return  DEFS::PhysicsProcess::HWW125;
-      if(str == "HWW130")
-	return  DEFS::PhysicsProcess::HWW130;
-      if(str == "HWW135")
-	return  DEFS::PhysicsProcess::HWW135;
-      if(str == "HWW140")
-	return  DEFS::PhysicsProcess::HWW140;
-      if(str == "HWW145")
-	return  DEFS::PhysicsProcess::HWW145;
-      if(str == "HWW150")
-	return  DEFS::PhysicsProcess::HWW150;
-      if(str == "HWW155")
-	return  DEFS::PhysicsProcess::HWW155;
-      if(str == "HWW160")
-	return  DEFS::PhysicsProcess::HWW160;
-      if(str == "HWW165")
-	return  DEFS::PhysicsProcess::HWW165;
-      if(str == "HWW170")
-	return  DEFS::PhysicsProcess::HWW170;
+      if(str == "ggH110")
+	return  DEFS::PhysicsProcess::ggH110;
+      if(str == "ggH115")
+	return  DEFS::PhysicsProcess::ggH115;
+      if(str == "ggH120")
+	return  DEFS::PhysicsProcess::ggH120;
+      if(str == "ggH125")
+	return  DEFS::PhysicsProcess::ggH125;
+      if(str == "ggH130")
+	return  DEFS::PhysicsProcess::ggH130;
+      if(str == "ggH135")
+	return  DEFS::PhysicsProcess::ggH135;
+      if(str == "ggH140")
+	return  DEFS::PhysicsProcess::ggH140;
+      if(str == "ggH145")
+	return  DEFS::PhysicsProcess::ggH145;
+      if(str == "ggH150")
+	return  DEFS::PhysicsProcess::ggH150;
+      if(str == "ggH160")
+	return  DEFS::PhysicsProcess::ggH160;
+      if(str == "ggH170")
+	return  DEFS::PhysicsProcess::ggH170;
 
 
-      if( str == "STopS")
-	return  DEFS::PhysicsProcess::STopS;
-      if( str == "STopT")
-	return  DEFS::PhysicsProcess::STopT;
-      if( str == "STopTW")
-	return  DEFS::PhysicsProcess::STopTW;
+      if( str == "STopS_T")
+	return  DEFS::PhysicsProcess::STopS_T;
+      if( str == "STopS_Tbar")
+	return  DEFS::PhysicsProcess::STopS_Tbar;
+      if( str == "STopT_T")
+	return  DEFS::PhysicsProcess::STopT_T;
+      if( str == "STopT_Tbar")
+	return  DEFS::PhysicsProcess::STopT_Tbar;
+      if( str == "STopTW_T")
+	return  DEFS::PhysicsProcess::STopTW_T;
+      if( str == "STopTW_bar")
+	return  DEFS::PhysicsProcess::STopTW_Tbar;
       if( str == "Wcc")
 	return  DEFS::PhysicsProcess::Wcc;
       if( str == "WJets")
@@ -118,6 +117,10 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::QCDEl_BCtoE30to80;
       if( str == "QCDEl_BCtoE80to170")
 	return  DEFS::PhysicsProcess::QCDEl_BCtoE80to170;
+      if( str == "QCD_ElEnriched")
+	return  DEFS::PhysicsProcess::QCD_ElEnriched;
+      if( str == "QCD_MuEnriched")
+	return  DEFS::PhysicsProcess::QCD_MuEnriched;
 //       if( str == "QCD100")
 // 	return  DEFS::PhysicsProcess::QCD100;
 //       if( str == "QCD250")
@@ -136,12 +139,14 @@ namespace DEFS {
 	return  DEFS::PhysicsProcess::TTbarLJ;
       if( str == "TTbarDil")
 	return  DEFS::PhysicsProcess::TTbarLJ;
-      if( str == "Zjets")
-	return  DEFS::PhysicsProcess::Zjets;
+      if( str == "ZJets")
+	return  DEFS::PhysicsProcess::ZJets;
       if( str == "Ztautau")
 	return  DEFS::PhysicsProcess::Ztautau;
-      if( str == "data")
-	return  DEFS::PhysicsProcess::Data;
+      if( str == "SingleEl_Data")
+	return  DEFS::PhysicsProcess::SingleEl_Data;
+      if( str == "SingleMu_Data")
+	return  DEFS::PhysicsProcess::SingleMu_Data;
   
       cout<<" ERROR  DEFS::getProcessType str ="<<str<<" not found"<<endl;
   
@@ -176,39 +181,41 @@ namespace DEFS {
       else if (type == WH150)
 	return string("WH150");
 
-      else if (type == HWW110)
-	return string("HWW110");
-      else if (type == HWW115)
-	return string("HWW115");
-      else if (type == HWW120)
-	return string("HWW120");
-      else if (type == HWW125)
-	return string("HWW125");
-      else if (type == HWW130)
-	return string("HWW130");
-      else if (type == HWW135)
-	return string("HWW135");
-      else if (type == HWW140)
-	return string("HWW140");
-      else if (type == HWW145)
-	return string("HWW145");
-      else if (type == HWW150)
-	return string("HWW150");
-      else if (type == HWW155)
-	return string("HWW155");
-      else if (type == HWW160)
-	return string("HWW160");
-      else if (type == HWW165)
-	return string("HWW165");
-      else if (type == HWW170)
-	return string("HWW170");
+      else if (type == ggH110)
+	return string("ggH110");
+      else if (type == ggH115)
+	return string("ggH115");
+      else if (type == ggH120)
+	return string("ggH120");
+      else if (type == ggH125)
+	return string("ggH125");
+      else if (type == ggH130)
+	return string("ggH130");
+      else if (type == ggH135)
+	return string("ggH135");
+      else if (type == ggH140)
+	return string("ggH140");
+      else if (type == ggH145)
+	return string("ggH145");
+      else if (type == ggH150)
+	return string("ggH150");
+      else if (type == ggH160)
+	return string("ggH160");
+      else if (type == ggH170)
+	return string("ggH170");
 
-      else if (type == STopS)
-	return string("STopS");
-      else if (type == STopT)
-	return string("STopT");
-      else if (type == STopTW)
-	return string("STopTW");
+      else if (type == STopS_T)
+	return string("STopS_T");
+      else if (type == STopS_Tbar)
+	return string("STopS_Tbar");
+      else if (type == STopT_T)
+	return string("STopT_T");
+      else if (type == STopT_Tbar)
+	return string("STopT_Tbar");
+      else if (type == STopTW_T)
+	return string("STopTW_T");
+      else if (type == STopTW_Tbar)
+	return string("STopTW_Tbar");
       else if (type == Wcc) 
 	return string("Wcc");
       else if (type == WJets)
@@ -231,6 +238,10 @@ namespace DEFS {
 	return string("QCDEl_BCtoE30to80");
       else if (type == QCDEl_BCtoE80to170)
 	return string("QCDEl_BCtoE80to170");
+      else if (type == QCD_ElEnriched)
+	return string("QCD_ElEnriched");
+      else if (type == QCD_MuEnriched)
+	return string("QCD_MuEnriched");
 //       else if (type == QCD100)
 // 	return string("QCD100");
 //       else if (type == QCD250)
@@ -247,12 +258,14 @@ namespace DEFS {
 	return string("TTbarLJ");
       else if (type == TTbarDil)
 	return string("TTbarDil");
-      else if (type == Zjets)
-	return string("Zjets");
+      else if (type == ZJets)
+	return string("ZJets");
       else if (type == Ztautau)
 	return string("Ztautau");
-      else if (type == Data)
-	return string("data");
+      else if (type == SingleEl_Data)
+	return string("SingleEl_Data");
+      else if (type == SingleMu_Data)
+	return string("SingleMu_Data");
       else     
 	cout<<" ERROR  DEFS::getProcessTypeString type ="<<type<<" not found"<<endl;
 
@@ -337,13 +350,86 @@ namespace DEFS {
       else
 	cout<<"ERROR  PhysicsProcess::getHiggsType HiggsMassIndex  does not corresponds to Higgs"<<endl;
 
-      return STopS;
+      return STopS_T;
 
     }//getHiggsType
+     
+    //---------------------------------------------------------------------------
+    // A routine that returns the title for a given process type
+    std::string getTypeTitle(Type type) {
+       if (type == WW || type == WZ || type == ZZ)
+          return string("WW+WZ+ZZ");
+       else if (type == STopS_T || type == STopS_Tbar || type == STopT_T || type == STopT_Tbar ||
+                type == STopTW_T || type == STopTW_Tbar)
+          return string("Single Top");
+       else if (type == ggH125 || type == qqH125 || type == WH125)
+          return string("ggH+WH+qqH(125)");
+       else if (type == WJets)
+          return string("W+Jets");
+       else if (type == SingleEl_Data || type == SingleMu_Data)
+          return string("DATA");
+       else if (type == QCD_ElEnriched || type == QCD_MuEnriched)
+          return string("QCD");
+       else
+          return getTypeString(type);
+    }//getTypeTitle
 
-  } //namespace
+    //---------------------------------------------------------------------------
+    // A  routine that returns the Color_t for a given process type
+    Color_t getProcessColor(Type type){
+       
+       if (type == WW)
+          return kPink;
+       else if (type == WZ)
+          return kBlue;
+       else if (type == ZZ)
+          return kBlue-1;
+       else if (type == WJets)
+          return kTeal+2;
+       else if (type == ZJets)
+          return kPink-8;
+       else if (type == QCD_ElEnriched)
+          return kYellow+1;
+       else if (type == QCD_MuEnriched)
+          return kYellow+1;
+       //right now these aren't being used because we are combining all the STop's in Plots.cc
+       else if (type == STopT_T)
+          return kOrange+1;
+       else if (type == STopT_Tbar)
+          return kOrange+1; //kCyan+3;
+       else if (type == STopS_T)
+          return kOrange+1; //kBlue;
+       else if (type == STopS_Tbar)
+          return kOrange+1; //kBlue+3;
+       else if (type == STopTW_T)
+          return kOrange+1; //kMagenta;
+       else if (type == STopTW_Tbar)
+          return kOrange+1; //kGreen+3;
+       else if (type == STopTW_Tbar)
+          return kOrange+1; //kGreen+3;
+       else if (type == TTbar)
+          return kAzure-2; 
+       else if (type == ggH125)
+          return kRed+2; 
+       else if (type == qqH125)
+          return kRed+2; 
+       else if (type == WH125)
+          return kRed+2; 
+       else if (type == SingleEl_Data)
+          return kBlack;
+       else if (type == SingleMu_Data)
+          return kBlack;
+       else{
+          cout << "WARNING Plotter::GetProcessColor() Unknown process name=|"<<getTypeString(type)
+               <<"|. Returning process color as kYellow." << endl;
+       }
+       
+       return kYellow;
+       
+    }//getProcessColor
 
-
+  } //namespace   
+   
   //---------------------------------------------------------------------------
   // A routine that returns the string given the Lepton Category
   string getLeptonCatString(LeptonCat type){

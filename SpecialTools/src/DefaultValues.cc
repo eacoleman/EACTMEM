@@ -1,20 +1,5 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 
-#include <iostream>
-#include "TAMUWW/SpecialTools/interface/Table.hh"
-#include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
-#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
-#include "TAMUWW/SpecialTools/interface/TableCellText.hh"
-#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
-
-using std::string;
-using std::vector;
-using std::map;
-using std::cout;
-using std::endl;
-
-
-
 // ----------------------------------------------------------------------------
 // This method returns the table with the event expectation for the evt/tag category
 Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
@@ -65,12 +50,13 @@ Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){
 
 
 // ----------------------------------------------------------------------------
-vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProcessType> processName,
-							DEFS::JetBin jetBin, 
-							DEFS::TagCat tagcat){
+vector < PhysicsProcessNEW * > DefaultValues::getProcesses(vector<DEFS::PhysicsProcessType> processName,
+                                                           DEFS::JetBin jetBin, 
+                                                           DEFS::TagCat tagcat,
+                                                           bool forPlots){
 
   // The returning vector of processes
-  vector<PhysicsProcess*>  proc;
+  vector<PhysicsProcessNEW*>  proc;
 
   // get the table with the expected number of 
   map<DEFS::LeptonCat, Table> normTable;
@@ -83,7 +69,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
   // Loop over all the process names
   for (unsigned int prn = 0; prn < processName.size(); prn++){
 
-    PhysicsProcess * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable);
+    PhysicsProcessNEW * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots);
     if (pr == 0) {
       cout<<"ERROR DefaultValues::getProcesses couldnot add process"<<endl;
       continue;
@@ -102,65 +88,57 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
 // Return a PhysicsProcess object for process "process" from the given inputs.
 // For some reson it does not compile when I use the signature
 // (..., const Table & normTable, const Table & fileTable, ...) 
-PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
-						 DEFS::JetBin jetBin,
-						 map<DEFS::LeptonCat, Table> normTable,
-						 Table fileTable){
+PhysicsProcessNEW * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
+                                                    DEFS::JetBin jetBin,
+                                                    map<DEFS::LeptonCat, Table> normTable,
+                                                    Table fileTable,
+                                                    bool forPlots){
 
-    // get the process name
-  string prName = DEFS::PhysicsProcess::getTypeString(process);
-  
-  // get the name of the jetBin
-  string jetBinName = DEFS::getJetBinString(jetBin);
-    
-  // find the file location for that process
-  TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath");
-  
-  // make sure we found the cell
-  if (cellFile == 0){
-    cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
-	<<" does not have row "<<prName
-	<<" and column FilePath"<<endl;
-    cout<<" SKIPPING PROCESS "<<prName<<endl;
-    return 0;
-  }
-  
-  // Create the chain to that file    
-  TChain * chain ;
-  chain  = new TChain("METree");
-  chain->Add(cellFile->text.c_str());
-  
-  // Create the PhysicsProcess 
-  PhysicsProcess *  proc =  new PhysicsProcess(prName, prName, chain);
-
-  // Tell it the formula to get the categories from its own data
-  proc->setCategory("EvtTree.leptonCat");//"h.det");
-  
-  // Set the expected number of events for each category
-  // iterating over the map of normTables.
-  for ( map<DEFS::LeptonCat, Table>::iterator it = normTable.begin();
-	it != normTable.end(); it++){
-
-    // Get the cell from the table
-    TableCellVal * cellNorm = (TableCellVal *) it->second.getCellRowColumn(prName, jetBinName);
-    
-    // make sure we found the cell
-    if (cellNorm == 0){
-      cout<<"ERROR DefaultValues::getSingleProcess normalization Table " <<it->second.getTableOrigin()
-	  <<" for LeptonCat="<<DEFS::getEventCatString(it->first)
-	  <<" does not have row "<<prName
-	  <<" and column "<<jetBinName<<endl;
+   // get the process name
+   string prName = DEFS::PhysicsProcess::getTypeString(process);
+   
+   // get the name of the jetBin
+   string jetBinName = DEFS::getJetBinString(jetBin);
+   
+   // find the file location for that process
+   TableCellText * cellBasePath = (TableCellText *) fileTable.getCellRowColumn("BasePath","FilePath_microNtuple");
+   TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath_microNtuple");
+   
+   // make sure we found the cell
+   if (cellFile == 0){
+      cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
+          <<" does not have row "<<prName
+          <<" and column FilePath"<<endl;
       cout<<" SKIPPING PROCESS "<<prName<<endl;
       return 0;
-    }
- 
-    proc->setCategoryNorm(it->first, cellNorm->val);
+   }
+   
+   // Get the physics parameters
+   map<DEFS::LeptonCat,double> xsec;
+   xsec[DEFS::electron] = getCrossSectionAndError(prName).first;
+   xsec[DEFS::muon] = getCrossSectionAndError(prName).first;
+   map<DEFS::LeptonCat,double> lumi;
+   lumi[DEFS::electron] = 19148;
+   lumi[DEFS::muon] = 19279;
+   map<DEFS::LeptonCat,double> br;
+   br[DEFS::electron] = getBranchingRatio(prName);
+   br[DEFS::muon] = getBranchingRatio(prName);
+   map<DEFS::LeptonCat,unsigned int> numMCEvts;
+   numMCEvts[DEFS::electron] = (unsigned int)getNumMCEvts(prName);
+   numMCEvts[DEFS::muon] = (unsigned int)getNumMCEvts(prName);
 
-  }//for map of categories
-
-  // and return it.
-  return proc;
-
+   // Create the PhysicsProcess
+   
+   PhysicsProcessNEW *  proc;
+   if(forPlots)
+      proc =  new PlotterPhysicsProcessNEW(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, getProcessColor(process), "PS/jets2p");
+   else
+      proc =  new PhysicsProcessNEW(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, "PS/jets2p");
+   proc->setPhysicsParameters(xsec, lumi, br, numMCEvts);
+   
+   // and return it.
+   return proc;
+   
 }//getSingleProcess
 
 
@@ -241,16 +219,19 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
 }//getWeightForCategory
 
 // ----------------------------------------------------------------------------
-vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
+vector < PhysicsProcessNEW * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
 							 DEFS::TagCat tagcat, 
 							 bool include_data ){
 
   vector<DEFS::PhysicsProcess::Type> procs;
 
 
-  procs.push_back(DEFS::PhysicsProcess::STopS   );
-  procs.push_back(DEFS::PhysicsProcess::STopT   );
-  procs.push_back(DEFS::PhysicsProcess::STopTW  );
+  procs.push_back(DEFS::PhysicsProcess::STopS_T   );
+  procs.push_back(DEFS::PhysicsProcess::STopS_Tbar   );
+  procs.push_back(DEFS::PhysicsProcess::STopT_T   );
+  procs.push_back(DEFS::PhysicsProcess::STopT_Tbar   );
+  procs.push_back(DEFS::PhysicsProcess::STopTW_T  );
+  procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar  );
   procs.push_back(DEFS::PhysicsProcess::TTbar   );
   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
@@ -258,7 +239,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
   procs.push_back(DEFS::PhysicsProcess::WJets   ); 
-  procs.push_back(DEFS::PhysicsProcess::Zjets   );
+  procs.push_back(DEFS::PhysicsProcess::ZJets   );
   procs.push_back(DEFS::PhysicsProcess::Ztautau );
   procs.push_back(DEFS::PhysicsProcess::QCDMu               );
   procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80      );
@@ -270,9 +251,174 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   procs.push_back(DEFS::PhysicsProcess::WZ      );
   //procs.push_back(DEFS::PhysicsProcess::ZZ      );
 
-  if (include_data)
-    procs.push_back(DEFS::PhysicsProcess::Data    );
+  if (include_data) {
+    procs.push_back(DEFS::PhysicsProcess::SingleEl_Data    );
+    procs.push_back(DEFS::PhysicsProcess::SingleMu_Data    );
+  }
 
-  return getProcesses(procs, jetBin, tagcat);
+  return getProcesses(procs, jetBin, tagcat, false);
 
 }//getProcessesWW
+
+// ----------------------------------------------------------------------------
+vector < PhysicsProcessNEW * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin,
+                                                                DEFS::TagCat tagcat, 
+                                                                bool include_data,
+                                                                bool forPlots){
+
+   vector<DEFS::PhysicsProcess::Type> procs;
+   
+   
+   procs.push_back(DEFS::PhysicsProcess::STopS_T);
+   procs.push_back(DEFS::PhysicsProcess::STopS_Tbar);
+   procs.push_back(DEFS::PhysicsProcess::STopT_T);
+   procs.push_back(DEFS::PhysicsProcess::STopT_Tbar);
+   procs.push_back(DEFS::PhysicsProcess::STopTW_T);
+   procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
+   procs.push_back(DEFS::PhysicsProcess::TTbar);
+   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
+   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
+   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
+   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
+   //procs.push_back(DEFS::PhysicsProcess::WLight  );
+   procs.push_back(DEFS::PhysicsProcess::WJets); 
+   procs.push_back(DEFS::PhysicsProcess::ZJets);
+   //procs.push_back(DEFS::PhysicsProcess::Ztautau);
+   //procs.push_back(DEFS::PhysicsProcess::QCDMu);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
+   procs.push_back(DEFS::PhysicsProcess::WW);
+   procs.push_back(DEFS::PhysicsProcess::WZ);
+   procs.push_back(DEFS::PhysicsProcess::ZZ);
+   procs.push_back(DEFS::PhysicsProcess::ggH125);
+   procs.push_back(DEFS::PhysicsProcess::qqH125);
+   procs.push_back(DEFS::PhysicsProcess::WH125);
+   
+   if (include_data) {
+      procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
+      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+   }
+
+   return getProcesses(procs, jetBin, tagcat, forPlots);
+
+}//getProcessesWW
+
+// ----------------------------------------------------------------------------
+pair<double,double> DefaultValues::getCrossSectionAndError(TString channelName)
+{
+  Table table;
+  double xsec;
+  double error;
+
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+     basePath = gSystem->pwd();
+  basePath = basePath.substr(0,basePath.find("TAMUWW"));
+  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt"),"TableCellVal");
+  TableCell * cell = table.getCellRowColumn(string(channelName),"CrossSection");
+  if(cell){
+    xsec = ((TableCellVal*)cell)->val.value;
+    error = ((TableCellVal*)cell)->val.error;
+    if (xsec==0)
+      cout << "WARNING::getCrossSection::The cross section for " << channelName << " is 0.0 +/- 0.0" << endl;
+    return make_pair(xsec,error);
+  } else{
+    cout << "WARNING::getCrossSection::channelName " << channelName 
+	 << " not recognized. Returning -1 for the cross section." << endl 
+	 << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+	 << "Please check channel names." << endl;
+    return make_pair(-1.0,-1.0);
+  }
+}//getCrossSection
+
+// ----------------------------------------------------------------------------
+double DefaultValues::getBranchingRatio(TString channelName)
+{
+  Table table;
+  double xsec;
+
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+     basePath = gSystem->pwd();
+  basePath = basePath.substr(0,basePath.find("TAMUWW"));
+  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt"),"TableCellVal");
+  TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
+  if(cell){
+    xsec = ((TableCellVal*)cell)->val.value;
+    if (xsec==0)
+      cout << "WARNING::getBranchingRatio::The branching ratio for " << channelName << " is 0.0 +/- 0.0" << endl;
+    return xsec;
+  } else{
+    cout << "WARNING::getBranchingRatio::channelName " << channelName 
+	 << " not recognized. Returning -1 for the branching ratio." << endl 
+	 << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+	 << "Please check channel names." << endl;
+    return -1.;
+  }
+}//getBranchingRatio
+
+// ----------------------------------------------------------------------------
+double DefaultValues::getNumMCEvts(TString channelName)
+{
+  Table table;
+  double value;
+
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+    basePath = gSystem->pwd();
+  basePath = basePath.substr(0,basePath.find("TAMUWW"));
+  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple_532.txt"),
+		      "TableCellVal");
+  TableCell * cell =table.getCellRowColumn(string(channelName),"Events_PATtuple");
+  if(cell){
+    value = ((TableCellVal*)cell)->val.value;
+    if (value==0)
+      cout << "WARNING::getNumMCEvts::There are 0 events in the " << channelName << " MC." << endl;
+    return value;
+  } else{
+    cout << "WARNING::getNumMCEvts::channelName " << channelName 
+	 << " not recognized. Returning -1 event from MC." << endl 
+	 << "Please check channel names." << endl;
+    return -1.;
+  }
+}//getNumMCEvts
+
+// ----------------------------------------------------------------------------
+int DefaultValues::vfind(vector<string> a, string b) {
+   for (unsigned int i=0; i<a.size(); i++) {
+      if (TString(a[i]).CompareTo(TString(b))==0)
+         return i;
+   }
+   return -1;
+}
+
+// ----------------------------------------------------------------------------
+int DefaultValues::vfind(vector<TString> a, TString b) {
+   for (unsigned int i=0; i<a.size(); i++) {
+      if (a[i].CompareTo(b)==0)
+         return i;
+   }
+   return -1;
+}
+
+// ----------------------------------------------------------------------------
+void DefaultValues::DestroyCanvases() {
+   TList* loc = (TList*)gROOT->GetListOfCanvases();
+   TListIter itc(loc);
+   TObject *o(0);
+   while ((o = itc())) delete o;
+}

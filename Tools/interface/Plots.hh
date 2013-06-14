@@ -10,7 +10,7 @@
 #include "TString.h"
 
 // Our libraries
-#include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcessNEW.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 
@@ -39,7 +39,7 @@ public :
    void Fill(std::vector<Double_t> coord, double v, double w);
 
    // Do the scaling to luminosity or data.
-   void scaleToData(std::vector<PhysicsProcessNEW*> procs);
+   void scaleToData(std::vector<PhysicsProcessNEW*> procs, DEFS::LeptonCat lepCat);
    
    // Saves the histograms to the filename
   void saveHistogramsToFile(TString histoFile, TString option = "RECREATE");

@@ -2,7 +2,7 @@
 #define PHYSICSPROCESSFOROPT_HH
 
 
-#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcessMemory.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
@@ -10,12 +10,12 @@
 #include "TH1.h"
 
 
-class PhysicsProcessForOpt : public PhysicsProcess {
+class PhysicsProcessForOpt : public PhysicsProcessMemory {
 
 public:  
   
   // Default C'tors
-  PhysicsProcessForOpt(const PhysicsProcess & );
+  PhysicsProcessForOpt(const PhysicsProcessMemory & );
 
   void setProjectionsForOpt();
 

@@ -31,6 +31,7 @@
 
 // TAMU Libraries
 #include "TAMUWW/Tools/interface/Plots.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/FigureOfMerit.hh"
 
 namespace HistogramsFitter
@@ -39,6 +40,8 @@ namespace HistogramsFitter
    TH1D* dataHistogram;
    //names of the processes that will vary
    std::vector<std::string> fProcessNames;
+   std::vector<double> fProcessXsec;
+   std::vector<double> fProcessXsecError;
    TH1D* signalHistogram;
    TH1D* backgroundHistogram;
 }
@@ -79,6 +82,8 @@ private:
    THStack* dataStack;
    TList* mcList;
    TList* dataList;
+
+   DefaultValues DV;
    
 public:
    Fitter(std::string lepton, std::string object, std::vector<std::string> fproc, std::string inFileLoc, std::string outFileLoc = "");
@@ -111,19 +116,17 @@ public:
    double getReducedChiSquared();
    // Returns a FOM for the specified signal and background
    double getFOM(double FOM);
-   // Finds if a specific string exists in a vector
-   int vfind(std::vector<std::string> a, std::string b);
    
 private:
    void initializeFileLocations(std::string inFileLoc, std::string outFileLoc);
    void initializeHistNames();
    //Returns the numbers that we scale by to fit data
    //double[0] is the scale factor for process1, double[1] is for process2
-   const double* fitAndReturnParameters();
+   vector<double> fitAndReturnParameters();
    //Colors each monteCarlo Process
    void colorMonteCarlo();
    //This fills resultStack
-   void produceResultStacks(const double* pars);
+   //void produceResultStacks(const double* pars);
    //Returns a vector filled with the different plot names (including MET)
    // e.g. "AngleJ1J2", "MET", "j1Pt_Mjj"
    std::vector<std::string> getPlotNames();

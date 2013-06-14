@@ -1,6 +1,13 @@
 #ifndef DEFS_DEF
 #define DEFS_DEF
 
+//ROOT libraries
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TString.h"
+
+//C++ libraries
+#include <iostream>
 #include <string>
 
 // This namespace holds the definitions of all physics processes 
@@ -28,15 +35,20 @@ namespace DEFS{
   //            ALL ABOUT THE PHYSICSPROCESS TYPES
   // ---------------------------------------------------------------
   namespace PhysicsProcess {
-    enum Type {WH100 , WH105 , WH110 , WH115 , WH120 , WH125,
-	       WH130 , WH135 , WH140 , WH145 , WH150 ,
-	       HWW110, HWW115, HWW120, HWW125, HWW130, HWW135,
-	       HWW140, HWW145, HWW150, HWW155, HWW160, HWW165, HWW170,
-	       STopS, STopT, STopTW, Wcc, WJets, WLg, Wgg, WLL, WLb, Wbb,
-	       WW, WZbb, WZ, ZZ, TTbar, TTbarLJ, TTbarDil, Zjets, Ztautau,
-	       QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
-	       Data};
- 
+    enum Type {WH100 , WH105 , WH110 , WH115 , WH120 , WH125 , WH130 , WH135 , WH140 , WH145 , WH150 ,
+               WH160 , WH170 , WH180 , WH190 , WH200 , WH250 , WH300 , WH350 , WH400 , WH450 , WH500 ,
+               WH550 , WH600 , WH700 , WH800 , WH900 , WH1000 , 
+               ggH100 , ggH105 , ggH110 , ggH115 , ggH120 , ggH125 , ggH130 , ggH135 , ggH140 , ggH145 , ggH150 ,
+               ggH160 , ggH170 , ggH180 , ggH190 , ggH200 , ggH250 , ggH300 , ggH350 , ggH400 , ggH450 , ggH500 ,
+               ggH550 , ggH600 , ggH700 , ggH800 , ggH900 , ggH1000 , 
+               qqH100 , qqH105 , qqH110 , qqH115 , qqH120 , qqH125 , qqH130 , qqH135 , qqH140 , qqH145 , qqH150 ,
+               qqH160 , qqH170 , qqH180 , qqH190 , qqH200 , qqH250 , qqH300 , qqH350 , qqH400 , qqH450 , qqH500 ,
+               qqH550 , qqH600 , qqH700 , qqH800 , qqH900 , qqH1000 , 
+               STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
+               Wcc , WJets , WJets_part2 , WLg , Wgg , WLL , WLb , Wbb ,
+               WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
+               QCD_ElEnriched , QCD_MuEnriched , QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
+               SingleEl_Data , SingleMu_Data};
 
     // A routine that returns the type given a string 
     Type getProcessType(std::string str);///
@@ -52,7 +64,12 @@ namespace DEFS{
     
     // A routine that gives the type given the Higgs Mass index
     Type getHiggsType(unsigned HiggsMassIndex);
-    
+
+    // A routine that returns the title for a given process type
+    std::string getTypeTitle(Type type);
+
+    // A  routine that returns the Color_t for a given process type
+    Color_t getProcessColor(Type type);
     
   }// PhysicsProcess namespace
   typedef DEFS::PhysicsProcess::Type PhysicsProcessType ;
