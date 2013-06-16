@@ -5,9 +5,10 @@
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/Value.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
-#include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
+//#include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
@@ -34,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <stdlib.h>
 
 using namespace std;
 using DEFS::LeptonCat;
@@ -47,6 +49,7 @@ namespace UserFunctions
   DEFS::LeptonCat leptonCat;
   PUreweight* puweight;
   bool doJER;
+  bool doMETPhiCorrection;
   bool doPUreweight;
   bool doFNAL;
   bool doMetPhiWeight;
@@ -114,7 +117,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 	plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
 	plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
 	plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Et(),weight);
-	plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
+    plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
 	plots[leptonCat]["WmT"]->Fill(WmT, weight);
 	plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
 	plots[leptonCat]["Jet1Pt"]->Fill(ntuple->jLV[0].Pt(),weight);
@@ -138,6 +141,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 	plots[leptonCat]["DeltaPhi_LJ1"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
 	plots[leptonCat]["DeltaPhi_METJ1"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->METLV[0]),weight);
 	plots[leptonCat]["DeltaPhi_J1J2"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+    plots[leptonCat]["DeltaPhi_LMET"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->METLV[0]),weight);
 	plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), 
 						     ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
 	plots[leptonCat]["DeltaEta_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(), 
@@ -168,18 +172,26 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 	if (UserFunctions::fillTMDF){
 	  vector<Double_t> coord;
 	  //coord.assign(((TProfileMDF*)plots[leptonCat]["lpt_leta_j1pt_j1eta_j2pt_j2eta"]->templateHisto)->GetNaxis(),0);
-	  coord.assign(((TProfileMDF*)plots[leptonCat]["lpt_lpt_j1pt_j1pt_j2pt_j2pt"]->templateHisto)->GetNaxis(),0);
-	  coord[0] = ntuple->lLV[0].Pt();
+      //coord.assign(((TProfileMDF*)plots[leptonCat]["lpt_lpt_j1pt_j1pt_j2pt_j2pt"]->templateHisto)->GetNaxis(),0);
+      coord.assign(((TProfileMDF*)plots[leptonCat]["Mjj_Mjj_Mt_MET_DeltaR_DeltaR"]->templateHisto)->GetNaxis(),0);
+	  //coord[0] = ntuple->lLV[0].Pt();
+      coord[0] = Mjj;
 	  //coord[1] = TMath::Abs(ntuple->lLV[0].Eta());
-	  coord[1] = ntuple->lLV[0].Pt();
-	  coord[2] = ntuple->jLV[0].Pt();
+	  //coord[1] = ntuple->lLV[0].Pt();
+      coord[1] = Mjj;
+	  //coord[2] = ntuple->jLV[0].Pt();
+      coord[2] = WmT;
 	  //coord[3] = TMath::Abs(ntuple->jLV[0].Eta());
-	  coord[3] = ntuple->jLV[0].Pt();
-	  coord[4] = ntuple->jLV[1].Pt();
+	  //coord[3] = ntuple->jLV[0].Pt();
+      coord[3] = ntuple->METLV[0].Et();
+	  //coord[4] = ntuple->jLV[1].Pt();
+      coord[4] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
 	  //coord[5] = TMath::Abs(ntuple->jLV[1].Eta());
-	  coord[5] = ntuple->jLV[1].Pt();
+	  //coord[5] = ntuple->jLV[1].Pt();
+      coord[5] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)+pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
 	  //plots[leptonCat]["lpt_leta_j1pt_j1eta_j2pt_j2eta"]->Fill(coord,1.0,weight);
-	  plots[leptonCat]["lpt_lpt_j1pt_j1pt_j2pt_j2pt"]->Fill(coord,1.0,weight);
+	  //plots[leptonCat]["lpt_lpt_j1pt_j1pt_j2pt_j2pt"]->Fill(coord,1.0,weight);
+      plots[leptonCat]["Mjj_Mjj_Mt_MET_DeltaR_DeltaR"]->Fill(coord,1.0,weight);
 	}
   }
   
@@ -222,12 +234,18 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
     return false;
 
   // Remove events that should not be used from this particular process.
-  if (proc->leptonCat != DEFS::both && proc->leptonCat != ntuple->lLV[0].leptonCat) 
-    return false;
+  //if (proc->leptonCat != DEFS::both && proc->leptonCat != ntuple->lLV[0].leptonCat)
+  PhysParMap ppm = proc->sigma;
+  if (ppm[ntuple->lLV[0].leptonCat] == 0.0)
+     return false;
 
   // Remove events that are not requested from the command line  
   if ( ntuple->lLV[0].leptonCat != leptonCat && (leptonCat != DEFS::both) )
     return false;
+
+  //MET Cut
+  if ( ntuple->METLV[0].Et() <= 25.0 )
+     return false;
 
   /*
   // Keep only specific events
@@ -301,25 +319,27 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
 {
   TString auxName = proc->name;
   auxName.ToUpper();
+
+   
   double weight = 1.0;
 
   if (doMetPhiWeight){
-
-    if(auxName.Contains("DATA") || auxName.Contains("QCD")) {
-
-      // TEST OF MET PHI WEIGHTING
-      double metphi = ntuple->METLV[0].Phi();
-      int bin     = metPhiWeight->FindBin(metphi);
-      weight *= metPhiWeight->GetBinContent(bin);
-
-    } //Data or QCD
-
+     
+     if(auxName.Contains("DATA") || auxName.Contains("QCD")) {
+        
+        // TEST OF MET PHI WEIGHTING
+        double metphi = ntuple->METLV[0].Phi();
+        int bin     = metPhiWeight->FindBin(metphi);
+        weight *= metPhiWeight->GetBinContent(bin);
+	  	
+     } //Data or QCD
+	 
   } // doMetPhiWeight
-
+  
   // Pileup reweighting
   if (doPUreweight){
-    if(!auxName.Contains("DATA") && !auxName.Contains("QCD")) 
-      weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
+     if(!auxName.Contains("DATA") && !auxName.Contains("QCD"))
+        weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
   }
    
   // WJets weighting (specific to fix shape issues)
@@ -331,11 +351,11 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
       double dpJJ = ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]);
       int bin     = wJetsWeight->FindBin(dpLJ,dpJJ);
       weight *= wJetsWeight->GetBinContent(bin);
+
        
-      
-      // double deLJ =  ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta();
-      // double deJJ =  ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta();
-      // weight  *= wJetsWeightTF2->Eval(deLJ,deJJ);
+      //double deLJ =  ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta();
+      //double deJJ =  ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta();
+      //weight  *= wJetsWeightTF2->Eval(deLJ,deJJ);
     }
 
   } // wjets
@@ -348,6 +368,23 @@ void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* 
 {
   TString auxName = proc->name;
   auxName.ToUpper();
+
+  // Correct MET Phi
+  if (doMETPhiCorrection) {
+     if(auxName.Contains("DATA") || auxName.Contains("QCD")) {
+        if(verbose) cout << "BEFORE\tPx=" << ntuple->METLV[0].Px() << "\tPy=" << ntuple->METLV[0].Py() << endl;
+        //ntuple->doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_data");
+        ntuple->doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_data");
+        if(verbose) cout << "AFTER  \tPx=" << ntuple->METLV[0].Px() << "\tPy=" << ntuple->METLV[0].Py() << endl;
+     }
+     else {
+        if(verbose) cout << "BEFORE\tPx=" << ntuple->METLV[0].Px() << "\tPy=" << ntuple->METLV[0].Py() << endl;
+        //ntuple->doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc");
+        ntuple->doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_mc");
+        if(verbose) cout << "AFTER  \tPx=" << ntuple->METLV[0].Px() << "\tPy=" << ntuple->METLV[0].Py() << endl;
+     }
+  }
+
   if(auxName.Contains("DATA") || auxName.Contains("QCD"))
     return;
 
@@ -364,30 +401,30 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* pr
   auxName.ToUpper();
 
   if (doMetPhiWeight){
-
-    // get the filename
-    TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/data_weight.root";
-    
-    TFile * Subs = TFile::Open(filename);
-    if (!Subs->IsOpen()) {
-      cout << "\tERROR::Weight file "+filename+ " could not be opened." << endl
-	   << "\tWJets histograms will not be filled" << endl;
-      return;
-    }
-
-    TString hname = "metphi";
-    TH2D * auxh = (TH2D*) Subs->Get(hname);
-    if (!auxh) {
-      cout << "\tERROR::Weight hist "<<hname<<" could not be found in filename "<<filename
-	   <<endl<< "\tMetPhi weight will not be applied " << endl;
-      return;
-    }
-    metPhiWeight = (TH1D*) auxh->Clone("metPhiWeightClone");
-    metPhiWeight ->SetDirectory(0);
-    Subs->Close();
-
+     
+     // get the filename
+     TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/data_weight.root";
+ 	 
+     TFile * Subs = TFile::Open(filename);
+     if (!Subs->IsOpen()) {
+        cout << "\tERROR::Weight file "+filename+ " could not be opened." << endl
+             << "\tWJets histograms will not be filled" << endl;
+        return;
+     }
+ 	 
+     TString hname = "metphi";
+     TH2D * auxh = (TH2D*) Subs->Get(hname);
+     if (!auxh) {
+        cout << "\tERROR::Weight hist "<<hname<<" could not be found in filename "<<filename
+             <<endl<< "\tMetPhi weight will not be applied " << endl;
+        return;
+     }
+     metPhiWeight = (TH1D*) auxh->Clone("metPhiWeightClone");
+     metPhiWeight ->SetDirectory(0);
+     Subs->Close();
+ 	 
   }// if doMetPhiWeight
-
+  
   if (WJweight){
     TFile* Subs;
     if(auxName.Contains("WJETS")){
@@ -684,9 +721,6 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
 /// returns a map containing all of the plots that will be made for each process and their specific attributes
 PlotFiller::MapOfPlots getPlots(DEFS::LeptonCat leptonCat, bool norm_data);
 
-/// returns the Color_t for a specific process
-Color_t getProcessColor(TString channelName);
-
 ////////////////////////////////////////////////////////////////////////////////
 //  main
 ////////////////////////////////////////////////////////////////////////////////
@@ -702,6 +736,7 @@ int main(int argc,char**argv) {
   string          lepCat            = cl.getValue<string>  ("lep",         "both");
   UserFunctions::leptonCat          = DEFS::getLeptonCat   (lepCat);
   UserFunctions::doJER              = cl.getValue<bool>    ("doJer",        false);
+  UserFunctions::doMETPhiCorrection = cl.getValue<bool>    ("doMETPhi",     false);
   UserFunctions::doPUreweight       = cl.getValue<bool>    ("doPUrewt",      true);
   UserFunctions::doFNAL             = cl.getValue<bool>    ("doFNAL",       false);
   UserFunctions::doMetPhiWeight     = cl.getValue<bool>    ("doMetPhiWeight",false);
@@ -833,7 +868,12 @@ double getCrossSection(TString channelName)
   Table table;
   double xsec;
 
-  string basePath = gSystem->pwd();
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+     basePath = gSystem->pwd();
   basePath = basePath.substr(0,basePath.find("TAMUWW"));
   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt"),"TableCellVal");
   TableCell * cell = table.getCellRowColumn(string(channelName),"CrossSection");
@@ -857,7 +897,12 @@ double getBranchingRatio(TString channelName)
   Table table;
   double xsec;
 
-  string basePath = gSystem->pwd();
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+     basePath = gSystem->pwd();
   basePath = basePath.substr(0,basePath.find("TAMUWW"));
   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt"),"TableCellVal");
   TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
@@ -881,7 +926,12 @@ double getNumMCEvts(TString channelName)
   Table table;
   double value;
 
-  string basePath = gSystem->pwd();
+  string basePath;
+  char const* tmp = getenv("BASEPATH");
+  if(tmp != NULL)
+     basePath = string(tmp);
+  else
+    basePath = gSystem->pwd();
   basePath = basePath.substr(0,basePath.find("TAMUWW"));
   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple_532.txt"),
 		      "TableCellVal");
@@ -904,59 +954,59 @@ double getNumMCEvts(TString channelName)
 // leptonCan = The lepton category for which the processes are needed.
 // intLum    = The integrated luminosity in pb-1 for this given lepton category 
 vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
-   
+/*   
   string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20121102_NTUPLES/";
   vector <PhysicsProcessNEW*> procs;
   
-  procs.push_back(new PlotterPhysicsProcessNEW("WW","WW+WZ+ZZ",basePath+"WW.root", getCrossSection("WW"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WW","WW+WZ+ZZ",basePath+"WW.root", getCrossSection("WW"),getBranchingRatio("WW")
                                                intLum, getNumMCEvts("WW"), getProcessColor("WW"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("WZ","WW+WZ+ZZ",basePath+"WZ.root", getCrossSection("WZ"),
+  procs.push_back(new PlotterPhysicsProcessNEW("WZ","WW+WZ+ZZ",basePath+"WZ.root", getCrossSection("WZ"),getBranchingRatio("WZ"),
                                                intLum, getNumMCEvts("WZ"), getProcessColor("WZ"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("ZZ","WW+WZ+ZZ",basePath+"ZZ.root", getCrossSection("ZZ"),
+  procs.push_back(new PlotterPhysicsProcessNEW("ZZ","WW+WZ+ZZ",basePath+"ZZ.root", getCrossSection("ZZ"),getBranchingRatio("ZZ"),
                                                intLum, getNumMCEvts("ZZ"), getProcessColor("ZZ"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("DYJets","DYJets",basePath+"DYJets.root", getCrossSection("DYJets"),
+  procs.push_back(new PlotterPhysicsProcessNEW("DYJets","DYJets",basePath+"DYJets.root", getCrossSection("DYJets"), getBranchingRatio("DYJets"),
                                                intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("TTbar","TTbar",basePath+"TTbar.root", getCrossSection("TTbar"),
+  procs.push_back(new PlotterPhysicsProcessNEW("TTbar","TTbar",basePath+"TTbar.root", getCrossSection("TTbar"), getBranchingRatio("TTbar"),
                                                intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T","Single Top",basePath+"STopT_T.root", getCrossSection("STopT_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T","Single Top",basePath+"STopT_T.root", getCrossSection("STopT_T"), getBranchingRatio("STopT_T"), 
                                                intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T"),
                                                "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar","Single Top",basePath+"STopT_Tbar.root",
-                                               getCrossSection("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
+                                               getCrossSection("STopT_Tbar"), getBranchingRatio("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
                                                getProcessColor("STopT_Tbar"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T","Single Top",basePath+"STopS_T.root", getCrossSection("STopS_T"),
+  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T","Single Top",basePath+"STopS_T.root", getCrossSection("STopS_T"), getBranchingRatio("STopS_T"),
                                                intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T"),
                                                "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar","Single Top",basePath+"STopS_Tbar.root",
-                                               getCrossSection("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
+                                               getCrossSection("STopS_Tbar"), getBranchingRatio("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
                                                getProcessColor("STopS_Tbar"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T","Single Top",basePath+"STopTW_T.root",
-                                               getCrossSection("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
+                                               getCrossSection("STopTW_T"), getBranchingRatio("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
                                                getProcessColor("STopTW_T"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar","Single Top",basePath+"STopTW_Tbar.root", 
-                                               getCrossSection("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
+                                               getCrossSection("STopTW_Tbar"), getBranchingRatio("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
                                                getProcessColor("STopTW_Tbar"), "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("ggH125","ggH+WH+qqH(125)",basePath+"ggH125.root", 
-                                               getCrossSection("ggH125")*getBranchingRatio("ggH125"),
+                                               getCrossSection("ggH125"),getBranchingRatio("ggH125"),
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("ggH125"), 
                                                "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("qqH125","ggH+WH+qqH(125)",basePath+"qqH125.root", 
-                                               getCrossSection("qqH125")*getBranchingRatio("qqH125"), 
+                                               getCrossSection("qqH125"),getBranchingRatio("qqH125"), 
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
                                                "PS/jets2p"));
   procs.push_back(new PlotterPhysicsProcessNEW("WH125","ggH+WH+qqH(125)",basePath+"WH125.root", 
-                                               getCrossSection("WH125")*getBranchingRatio("WH125"), 
+                                               getCrossSection("WH125"),getBranchingRatio("WH125"), 
                                                intLum, getNumMCEvts("WH125"), getProcessColor("WH125"), 
                                                "PS/jets2p"));
-
+  //Old QCD Sample Scale Factor: 0.936549
+  //New QCD Sample Scale Factor (no met cut): 1.0034
   procs.push_back(new PlotterPhysicsProcessNEW("WJets","W+Jets",basePath+"WJets.root",
-					       0.936549 * getCrossSection("WJets"),
+                                               getCrossSection("WJets"), getBranchingRatio("WJets"),
                                                intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
-					       "PS/jets2p"));
+                                               "PS/jets2p"));
    
-
 
   // The Data
   // The normalization of the data is done in the same way as the MC. That is 
@@ -967,15 +1017,18 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD","QCD",basePath+"QCD_Electron.root",
-						 0.000205855 , intLum, 1 , getProcessColor("QCD_ElEnriched"),
-						 "PS/jets2p"));
-
-
     procs.push_back(new PlotterPhysicsProcessNEW("Data_electron","Data",basePath+"SingleEl_Data_19p148fb.root",
-                                                 1./intLum, intLum, 1,
+                                                 1./intLum, getBranchingRatio("SingleEl_Data"), intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
                                                  "PS/jets2p", DEFS::electron)); 
+    //Old QCD Sample Scale Factor: 0.000205855
+    //New QCD Sample Scale Factor (no met cut): 0.000577002
+    procs.push_back(new PlotterPhysicsProcessNEW("QCD","QCD",basePath+"QCD_Electron.root",
+                                                 //getCrossSection("QCD_ElEnriched"),
+                                                 //intLum, getNumMCEvts("QCD_ElEnriched"), getProcessColor("QCD_ElEnriched"),
+                                                 1./intLum, getBranchingRatio("QCD_ElEnriched"),
+                                                 intLum, 1, getProcessColor("QCD_ElEnriched"),
+                                                 "PS/jets2p"));
 
     //procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
     //                                             1.0*getCrossSection("QCD_ElEnriched"), intLum,
@@ -986,7 +1039,7 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
     procs.push_back(new PlotterPhysicsProcessNEW("Data_muon","Data",basePath+"SingleMu_Data_19p279fb.root",
-                                                 1./intLum, intLum, 1,
+                                                 1./intLum, getBranchingRatio("SingleMu_Data"), intLum, 1,
                                                  getProcessColor("SingleMu_Data"),
                                                  "PS/jets2p", DEFS::muon));
     //procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
@@ -996,7 +1049,8 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
     //                                             "PS/jets2p", DEFS::muon));
   }
   return procs;
-  
+*/
+   return DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag, true, true);
 }//getProcesses
 
 
@@ -1019,7 +1073,13 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
   Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
   Double_t jetptbinslow[9] = {20,25,30,35,40,50,70,100,1000};   
-  Double_t jetptbinshigh[10] = {20,50,80,100,110,120,130,140,160,1000};   
+  Double_t jetptbinshigh[10] = {20,50,80,100,110,120,130,140,160,1000};
+  Double_t Mjjbinslow[11] = {20,40,50,60,70,80,90,100,200,300,1000};
+  Double_t Mjjbinshigh[11] = {20,100,110,120,130,150,180,200,250,350,1000};
+  Double_t Mtbinshigh[11] = {0,20,40,60,70,80,100,120,140,200,1000};
+  Double_t METbinshigh[10] = {0,40,50,60,70,80,100,120,200,1000};
+  Double_t DRlepjet1low[10] = {0.3,0.5,0.9,1.3,1.5,1.7,2.0,2.5,3.0,5.0};
+  Double_t DRlepjet1high[11] = {0.3,2.0,2.25,2.5,2.75,3.0,3.25,3.5,4.0,4.5,5.0};
 
       
   //goes in the label and tells us what cuts we are applying
@@ -1112,7 +1172,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   a->overlaySignalName = signalName;
   a->overlaySignalFactor = signalFactor;
   plots[leptonCat][string(name)] = a;
-
+   
   a = new FormattedPlot;
   name = "WmT";
   a->templateHisto = new TH1D(name + lepStr, name,1000,0,500);
@@ -1372,6 +1432,17 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   a->overlaySignalFactor = signalFactor;
   plots[leptonCat][string(name)] = a;
 
+  a = new FormattedPlot;
+  name = "DeltaPhi_LMET";
+  a->templateHisto = new TH1D(name + lepStr, name,50,-10,10);
+  a->axisTitles.push_back("#Delta #phi(Lepton,MET)");
+  a->axisTitles.push_back("Number of Events / .2 Radians");
+  a->range = make_pair(-pi,pi);
+  a->normToData = norm_data;
+  a->stacked = true; a->leptonCat = DEFS::electron;
+  a->overlaySignalName = signalName;
+  a->overlaySignalFactor = signalFactor;
+  plots[leptonCat][string(name)] = a;
    
   a = new FormattedPlot;
   name = "npv";
@@ -1610,6 +1681,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   plots[leptonCat][string(name)] = a;
 
   if (UserFunctions::fillTMDF){
+/*
     a = new FormattedPlot;
     name = "lpt_leta_j1pt_j1eta_j2pt_j2eta";
     a->templateHisto = new TProfileMDF(name + lepStr, name);
@@ -1641,6 +1713,21 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
     a->overlaySignalName = signalName;
     a->overlaySignalFactor = signalFactor;
     plots[leptonCat][string(name)] = a;
+*/
+    name = "Mjj_Mjj_Mt_MET_DeltaR_DeltaR_";
+    a->templateHisto = new TProfileMDF(name + lepStr, name);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinslow);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("M_{jj} [GeV]",10,Mjjbinshigh);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("M_{T}^{W} [GeV]",10,Mtbinshigh);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("Missing E_{T} [GeV]",9,METbinshigh);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",9,DRlepjet1low);
+    ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",10,DRlepjet1high);
+    ((TProfileMDF*)a->templateHisto)->Sumw2();
+    a->normToData = norm_data;
+    a->stacked = true; a->leptonCat = DEFS::both;
+    a->overlaySignalName = signalName;
+    a->overlaySignalFactor = signalFactor;
+    plots[leptonCat][string(name)] = a;
   }
 
   // return all the plots to be made
@@ -1665,58 +1752,3 @@ MapOfPlots getPlots(DEFS::LeptonCat leptonCat, bool norm_data){
 
   return plots;
 }
-
-
-
-//______________________________________________________________________________
-Color_t getProcessColor(TString channelName){
-
-  if (channelName.CompareTo("WW") == 0)
-    return kPink;
-  else if (channelName.CompareTo("WZ") == 0)
-    return kBlue;
-  else if (channelName.CompareTo("ZZ") == 0)
-    return kBlue-1;
-  else if (channelName.CompareTo("WJets") == 0)
-    return kTeal+2;
-  else if (channelName.CompareTo("DYJets") == 0)
-    return kPink-8;
-  else if (channelName.CompareTo("QCD_ElEnriched") == 0)
-    return kYellow+1;
-  else if (channelName.CompareTo("QCD_MuEnriched") == 0)
-    return kYellow+1;
-  //right now these aren't being used because we are combining all the STop's in Plots.cc
-  else if (channelName.CompareTo("STopT_T") == 0)
-    return kOrange+1;
-  else if (channelName.CompareTo("STopT_Tbar") == 0)
-    return kOrange+1; //kCyan+3;
-  else if (channelName.CompareTo("STopS_T") == 0)
-    return kOrange+1; //kBlue;
-  else if (channelName.CompareTo("STopS_Tbar") == 0)
-    return kOrange+1; //kBlue+3;
-  else if (channelName.CompareTo("STopTW_T") == 0)
-    return kOrange+1; //kMagenta;
-  else if (channelName.CompareTo("STopTW_Tbar") == 0)
-    return kOrange+1; //kGreen+3;
-  else if (channelName.CompareTo("STopTW_Tbar") == 0)
-    return kOrange+1; //kGreen+3;
-  else if (channelName.CompareTo("TTbar") == 0)
-    return kAzure-2; 
-  else if (channelName.CompareTo("ggH125") == 0)
-    return kRed+2; 
-  else if (channelName.CompareTo("qqH125") == 0)
-    return kRed+2; 
-  else if (channelName.CompareTo("WH125") == 0)
-    return kRed+2; 
-  else if (channelName.CompareTo("SingleEl_Data") == 0)
-    return kBlack;
-  else if (channelName.CompareTo("SingleMu_Data") == 0)
-    return kBlack;
-  else{
-    cout << "WARNING Plotter::GetProcessColor() Unknown process name=|"<<channelName
-	 <<"|. Returning process color as kYellow." << endl;
-  }
-
-  return kYellow;
-
-}//getProcessColor
