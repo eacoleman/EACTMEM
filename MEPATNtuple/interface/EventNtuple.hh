@@ -138,6 +138,7 @@ public:
    //Needed for ME
    int run;
    int event;
+   int lumi;
    double rho;
    vector < Vertex > vLV;
    vector < Jet > jLV;

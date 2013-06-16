@@ -38,7 +38,7 @@ public:
 
    int lQ, ldetComp;
    DEFS::LeptonCat leptonCat, leptonCat_passAll;
-   double lTotIso, lecalIso, lhcalIso, ltrkIso, ldetIso, lpfIso, Thetalj1pj2;
+   double lTotIso, lecalIso, lhcalIso, ltrkIso, ldetIso, lpfIso, Thetalj1pj2, lphotonIso, lchargedHadronIso, lneutralHadronIso, lAEff;
 
    // Other Lepton Selection Variables
    double ldz, ldB;
@@ -51,7 +51,7 @@ public:
    bool ePassConversionVeto, eIsEB, eIsEE;
    double emvaTrig, emvaNonTrig, eSuperClusterEta, eEcalEnergy, eESuperClusterOverP, eSigmaIetaIeta, eDeltaPhi, eDeltaEta, eHadronicOverEm;
    
-   ClassDef(Lepton,1)
+   ClassDef(Lepton,2)
 };
 
 #endif
