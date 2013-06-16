@@ -16,9 +16,7 @@
 //
 // User Defined Includes
 //
-#include "TAMUWW/SpecialTools/interface/Table.hh"
-#include "TAMUWW/SpecialTools/interface/TableRow.hh"
-#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 
 //
 // ROOT includes
@@ -87,15 +85,6 @@ public:
    /// reads the filenames in the output directory and appends an integer to the
    /// end if the filename already exists. The default integer to append is 1.
    TString getFilename(TString ofile = "TMVA");
-   
-   /// returns the cross section for the given process
-   double getCrossSection(TString channelName);
-   
-   /// returns the branching ratio for the given process
-   double getBranchingRatio(TString channelName);
-   
-   /// returns the number of Monte Carlo events for the given process
-   double getNumMCEvts(TString channelName);
 
    /// returns the number of variables that will be trained upon
    int getTSize();
@@ -109,15 +98,9 @@ public:
    /// utility function
    void ActionButton( vector<TString>& TMVAGui_inactiveButtons, TList* TMVAGui_keyContent, 
                       const TString& title, TString requiredKey = "" );
-   
-   /// find function for a vector
-   int vfind(vector<TString> a, TString b);
 
    /// check if a file is already open. If not, open it.
    TFile* OpenFile( const TString& fin );
-
-   /// destroy all open canvases
-   void DestroyCanvases();
 
    /// get the number of variables in a directory
    Int_t GetNumberOfInputVariables( TDirectory *dir );

@@ -79,66 +79,6 @@ TString TAMUWWMVA::getFilename(TString ofile) {
 }
 
 //______________________________________________________________________________
-double TAMUWWMVA::getCrossSection(TString channelName) {
-   Table table;
-   double xsec;
-
-   string basePath = gSystem->pwd();
-   basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/CrossSections.txt"),"TableCellVal");
-   TableCell * cell = table.getCellRowColumn(string(channelName),"CrossSection");
-   if(cell){
-      xsec = ((TableCellVal*)cell)->val.value;
-      if (xsec==0)
-         cout << "WARNING::getCrossSection::The cross section for " << channelName << " is 0.0 +/- 0.0" << endl;
-      return xsec;
-   } else{
-      cout << "WARNING::getCrossSection::channelName " << channelName << " not recognized. Returning -1 for the cross section." << endl << "The events will have the same scale as the MC sample, but on a negative scale." << endl << "Please check channel names." << endl;
-      return -1.;
-   }
-}//getCrossSection
-
-//______________________________________________________________________________
-double TAMUWWMVA::getBranchingRatio(TString channelName) {
-   Table table;
-   double xsec;
-
-   string basePath = gSystem->pwd();
-   basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt"),"TableCellVal");
-   TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
-   if(cell){
-      xsec = ((TableCellVal*)cell)->val.value;
-      if (xsec==0)
-         cout << "WARNING::getBranchingRatio::The branching ratio for " << channelName << " is 0.0 +/- 0.0" << endl;
-      return xsec;
-   } else{
-      cout << "WARNING::getBranchingRatio::channelName " << channelName << " not recognized. Returning -1 for the branching ratio." << endl << "The events will have the same scale as the MC sample, but on a negative scale." << endl << "Please check channel names." << endl;
-      return -1.;
-   }
-}//getBranchingRatio
-
-//______________________________________________________________________________
-double TAMUWWMVA::getNumMCEvts(TString channelName) {
-   Table table;
-   double value;
-
-   string basePath = gSystem->pwd();
-   basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple.txt"),"TableCellVal");
-   TableCell * cell =table.getCellRowColumn(string(channelName),"Events_PATtuple");
-   if(cell){
-      value = ((TableCellVal*)cell)->val.value;
-      if (value==0)
-         cout << "WARNING::getNumMCEvts::There are 0 events in the " << channelName << " MC." << endl;
-      return value;
-   } else{
-      cout << "WARNING::getNumMCEvts::channelName " << channelName << " not recognized. Returning -1 event from MC." << endl << "Please check channel names." << endl;
-      return -1.;
-   }
-}//getNumMCEvts
-
-//______________________________________________________________________________
 int TAMUWWMVA::getTSize() {
    int size(0);
    //TFile* ftemp = TFile::Open(ifilePath + "micro" + ifilesSignal[0] + "_EPDv01.root");
@@ -286,10 +226,10 @@ void TAMUWWMVA::TMVAClassification() {
       if (ifilesSignal[i].CompareTo("HWWMH150")==0) {
          //signalWeight.push_back(getCrossSection("ggH150")*getBranchingRatio("ggH150")*luminosity/getNumMCEvts("ggH150"));
          //evts in mc value in table is zero right now
-         signalWeight.push_back(getCrossSection("ggH150")*getBranchingRatio("ggH150")*luminosity/109992.0);
+         signalWeight.push_back(DefaultValues::getCrossSectionAndError("ggH150").first*DefaultValues::getBranchingRatio("ggH150")*luminosity/109992.0);
       }
       else
-         signalWeight.push_back(getCrossSection(ifilesSignal[i])*getBranchingRatio(ifilesSignal[i])*luminosity/getNumMCEvts(ifilesSignal[i]));
+         signalWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first*DefaultValues::getBranchingRatio(ifilesSignal[i])*luminosity/DefaultValues::getNumMCEvts(ifilesSignal[i]));
       inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesSignal[i] + "_EPDv01.root"));
       signal.push_back((TTree*)inputs.back()->Get("mnt"));
       factory->AddSignalTree(signal.back(), signalWeight.back());
@@ -300,23 +240,23 @@ void TAMUWWMVA::TMVAClassification() {
               << getNumMCEvts("ggH150") << " = " << signalWeight.back() << endl;
          */
          cout << "                             : Weight for signal (ggH150) is " 
-              << getCrossSection("ggH150") << " * " << getBranchingRatio("ggH150") << " * " << luminosity << " // " 
+              << DefaultValues::getCrossSectionAndError("ggH150").first << " * " << DefaultValues::getBranchingRatio("ggH150") << " * " << luminosity << " // " 
               << 109992.0 << " = " << signalWeight.back() << endl;
       }
       else
          cout << "                             : Weight for signal (" << ifilesSignal[i] << ") is " 
-              << getCrossSection(ifilesSignal[i]) << " * " << getBranchingRatio(ifilesSignal[i]) << " * " << luminosity << " // " 
-              << getNumMCEvts(ifilesSignal[i]) << " = " << signalWeight.back() << endl;
+              << DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesSignal[i]) << " * " << luminosity << " // " 
+              << DefaultValues::getNumMCEvts(ifilesSignal[i]) << " = " << signalWeight.back() << endl;
    }
 
    for (unsigned int i=0; i<ifilesBackground.size(); i++) {
-      backgroundWeight.push_back(getCrossSection(ifilesBackground[i])*getBranchingRatio(ifilesBackground[i])*luminosity/getNumMCEvts(ifilesBackground[i]));
+      backgroundWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesBackground[i]).first*DefaultValues::getBranchingRatio(ifilesBackground[i])*luminosity/DefaultValues::getNumMCEvts(ifilesBackground[i]));
       inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesBackground[i] + "_EPDv01.root"));
       background.push_back((TTree*)inputs.back()->Get("mnt"));
       factory->AddBackgroundTree(background.back(), backgroundWeight.back());
       cout << "                             : Weight for background (" << ifilesBackground[i] << ") is " 
-           << getCrossSection(ifilesBackground[i]) << " * " << getBranchingRatio(ifilesBackground[i]) << " * " << luminosity 
-           << " // " << getNumMCEvts(ifilesBackground[i]) << " = " << backgroundWeight.back() << endl;
+           << DefaultValues::getCrossSectionAndError(ifilesBackground[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesBackground[i]) << " * " << luminosity 
+           << " // " << DefaultValues::getNumMCEvts(ifilesBackground[i]) << " = " << backgroundWeight.back() << endl;
    }
 
    for (unsigned int i=0; i<inputs.size(); i++) {
@@ -691,15 +631,6 @@ void TAMUWWMVA::ActionButton( vector<TString>& TMVAGui_inactiveButtons, TList* T
 }
 
 //______________________________________________________________________________
-int TAMUWWMVA::vfind(vector<TString> a, TString b) {
-   for (unsigned int i=0; i<a.size(); i++) {
-         if (a[i].CompareTo(b)==0)
-            return i;
-   }
-   return -1;
-}
-
-//______________________________________________________________________________
 TFile* TAMUWWMVA::OpenFile( const TString& fin ) {
    TFile* file = gDirectory->GetFile();
    if (file==0 || fin != file->GetName()) {
@@ -716,14 +647,6 @@ TFile* TAMUWWMVA::OpenFile( const TString& fin ) {
    
    file->cd();
    return file;
-}
-
-//______________________________________________________________________________
-void TAMUWWMVA::DestroyCanvases() {
-   TList* loc = (TList*)gROOT->GetListOfCanvases();
-   TListIter itc(loc);
-   TObject *o(0);
-   while ((o = itc())) delete o;
 }
 
 //______________________________________________________________________________
@@ -805,7 +728,7 @@ void TAMUWWMVA::Plot() {
       command = Form( ".x ../macros/CorrGui.C(\"%s\",\"%s\",\"%s\")", ofile.Data(), str->GetString().Data(), title.Data());
 
       // destroy all open cavases
-      DestroyCanvases(); 
+      DefaultValues::DestroyCanvases(); 
       
       TString extension = str->GetString();
       extension.ReplaceAll( "InputVariables", ""  );
@@ -860,7 +783,7 @@ void TAMUWWMVA::Plot() {
          ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, subTitle, str->GetString());    
       }
       
-      DestroyCanvases();
+      DefaultValues::DestroyCanvases();
       file->Close();
    }
 
@@ -947,7 +870,7 @@ void TAMUWWMVA::Plot() {
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    for (unsigned int i=0; i<lines_to_process.size(); i++) {
-      if (vfind(TMVAGui_inactiveButtons,lines_to_process[i].first)==-1) {
+      if (DefaultValues::vfind(TMVAGui_inactiveButtons,lines_to_process[i].first)==-1) {
          cout << "Processing line: " << lines_to_process[i].second << " ... " << endl;
          gROOT->ProcessLine(lines_to_process[i].second);
          gROOT->ProcessLine(".mv plots/* " + dName);
