@@ -107,7 +107,7 @@ public:
   // This returns the vector of weighted averages of the first nVar variables
   TVectorD getVectorOfAverages(unsigned nVars);
 
-   unsigned getNEvents(){ return m_treeRows.size(); }
+   unsigned int getNEvents(){ return m_treeRows.size(); }
 
    std::vector<TreeRow> & getVectorOfRows(){ return m_treeRows; }
 
@@ -115,7 +115,7 @@ public:
    inline double getWeight() const {return m_totalWeight;}
    inline void setWeight(double we) {m_totalWeight = we;}
 
-private:
+protected:
 
   // The chain pointer
   TChain * m_chainPtr;

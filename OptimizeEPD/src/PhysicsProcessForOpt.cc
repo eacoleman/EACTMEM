@@ -88,20 +88,18 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
 
   double evtProb[MicroNtuple::nEventProb];
 
-  vector<TreeRow> localTreeRows = getVectorOfRows();
-
    // Loop over all the rows
   for (unsigned int ro = 0; ro < getNEvents(); ro ++){
 
     // Get the useful information
-    int    columns =  localTreeRows[ro].data.size();
+    int    columns =  m_treeRows[ro].data.size();
 
     double bProb[2];
     bProb[0] = 0.5;
     bProb[1] = 0.5;
 
     for (int cc = 0; cc < columns; cc++){ // minus 6 because the last six are bProbs 
-      evtProb[cc] = localTreeRows[ro].data[cc];
+      evtProb[cc] = m_treeRows[ro].data[cc];
     }
     
     // Get the meProbs
@@ -116,15 +114,15 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
 					probs.ww + probs.wz);   
       
     // Do a basic check to make sure the category is within bounds. Otherwise complain heavily.
-    if ( localTreeRows[ro].category < 0 || localTreeRows[ro].category >= (int)  DEFS::nLeptonCat) {
+    if ( m_treeRows[ro].category < 0 || m_treeRows[ro].category >= (int)  DEFS::nLeptonCat) {
       cout<<"ERROR PhysicsProcessForOpt::fillNormEPDHisto (process "<<name //changed getName() to name for ppNEW
-	  <<") found category="<< localTreeRows[ro].category
+	  <<") found category="<< m_treeRows[ro].category
 	  <<" which is not in the range [0,DEFS::nLeptonCat="<< DEFS::nLeptonCat<<") defined at SpecialTools/interface/Defs.hh"<<endl;
       cout<<"\t SKIPPING EVENT"<<endl;
     }
     else{
       // fill the histogram
-      histo_cat[localTreeRows[ro].category]->Fill(epd,localTreeRows[ro].weight);
+      histo_cat[m_treeRows[ro].category]->Fill(epd,m_treeRows[ro].weight);
     }
     
   }//for rows   

@@ -285,7 +285,7 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS:
   // Report processes to screen
   for (unsigned p=0;p<processes.size();p++){
     cout<<"\tprocess name="<<processes[p]->getName()
-       //<<"\ttitle="<<processes[p]->getSubName()
+       <<"\ttitle="<<processes[p]->groupName
        //<<"\tnorm="<<processes[p]->getTotalExpectedEvents().value
        //<<"\tpercentualError="
        //<<processes[p]->getTotalExpectedEvents().error/processes[p]->getTotalExpectedEvents().value
