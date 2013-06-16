@@ -7,6 +7,7 @@
 
 using std::cout;
 using std::endl;
+using std::make_pair;
 
 //------------------------------------------------------------------------------
 METree::METree() :
@@ -86,6 +87,25 @@ const ProbStat* METree::getProbStat(unsigned index) const
 
   return dynamic_cast<ProbStat*>((*m_tProbStat)[index]);
 }
+
+//------------------------------------------------------------------------------
+indexMap2 METree::fillIndexMap(){
+  
+   for(int i=0; i<getNProbStat(); i++) {
+      if( (getProbStat(i)->tmeType == DEFS::EP::WH || getProbStat(i)->tmeType == DEFS::EP::HWW) &&
+          indexMap.find(getProbStat(i)->tmeType) == indexMap.end()) {
+         indexMap.insert (make_pair (getProbStat(i)->tmeType, indexMap1()));
+      }
+      indexMap[getProbStat(i)->tmeType].insert(make_pair(getProbStat(i)->tmeParam,i));
+   }
+
+   return indexMap;
+  
+  // get the index like this
+  // int index = map[DEFS::EP::WH][120];
+  // int index = m[DEFS::EP::WZ][0];
+  
+}// fillMap
 
 //------------------------------------------------------------------------------
 ProbStat::ProbStat() :
@@ -249,5 +269,3 @@ ProbStat::~ProbStat(){
 
 ClassImp(METree)
 ClassImp(ProbStat)
-
-

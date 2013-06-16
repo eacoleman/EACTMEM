@@ -50,13 +50,13 @@ Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){
 
 
 // ----------------------------------------------------------------------------
-vector < PhysicsProcessNEW * > DefaultValues::getProcesses(vector<DEFS::PhysicsProcessType> processName,
+vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProcessType> processName,
                                                            DEFS::JetBin jetBin, 
                                                            DEFS::TagCat tagcat,
                                                            bool forPlots){
 
   // The returning vector of processes
-  vector<PhysicsProcessNEW*>  proc;
+  vector<PhysicsProcess*>  proc;
 
   // get the table with the expected number of 
   map<DEFS::LeptonCat, Table> normTable;
@@ -69,7 +69,7 @@ vector < PhysicsProcessNEW * > DefaultValues::getProcesses(vector<DEFS::PhysicsP
   // Loop over all the process names
   for (unsigned int prn = 0; prn < processName.size(); prn++){
 
-    PhysicsProcessNEW * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots);
+    PhysicsProcess * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots);
     if (pr == 0) {
       cout<<"ERROR DefaultValues::getProcesses couldnot add process"<<endl;
       continue;
@@ -88,7 +88,7 @@ vector < PhysicsProcessNEW * > DefaultValues::getProcesses(vector<DEFS::PhysicsP
 // Return a PhysicsProcess object for process "process" from the given inputs.
 // For some reson it does not compile when I use the signature
 // (..., const Table & normTable, const Table & fileTable, ...) 
-PhysicsProcessNEW * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
+PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType process,
                                                     DEFS::JetBin jetBin,
                                                     map<DEFS::LeptonCat, Table> normTable,
                                                     Table fileTable,
@@ -129,11 +129,11 @@ PhysicsProcessNEW * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType pro
 
    // Create the PhysicsProcess
    
-   PhysicsProcessNEW *  proc;
+   PhysicsProcess *  proc;
    if(forPlots)
-      proc =  new PlotterPhysicsProcessNEW(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, getProcessColor(process), "PS/jets2p");
+      proc =  new PlotterPhysicsProcess(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, getProcessColor(process), "PS/jets2p");
    else
-      proc =  new PhysicsProcessNEW(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, "PS/jets2p");
+      proc =  new PhysicsProcess(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, "PS/jets2p");
    proc->setPhysicsParameters(xsec, lumi, br, numMCEvts);
    
    // and return it.
@@ -219,7 +219,7 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
 }//getWeightForCategory
 
 // ----------------------------------------------------------------------------
-vector < PhysicsProcessNEW * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
+vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
 							 DEFS::TagCat tagcat, 
 							 bool include_data ){
 
@@ -261,7 +261,7 @@ vector < PhysicsProcessNEW * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin
 }//getProcessesWW
 
 // ----------------------------------------------------------------------------
-vector < PhysicsProcessNEW * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin,
+vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin,
                                                                 DEFS::TagCat tagcat, 
                                                                 bool include_data,
                                                                 bool forPlots){

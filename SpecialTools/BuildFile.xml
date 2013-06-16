@@ -3,6 +3,7 @@
 <use name="rootcore"/>
 <use name="rootMinuit"/>
 <use name="TAMUWW/AuxFunctions"/>
+<use name="TAMUWW/MEPATNtuple"/>
 <export>
    <lib name="1"/>
 </export>

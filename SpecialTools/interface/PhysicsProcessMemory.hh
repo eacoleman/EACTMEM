@@ -20,7 +20,7 @@
 #include <map>
 
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
-#include "TAMUWW/SpecialTools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 
 // This  class holds the information of 
 // one row (or one entry) of the tree
@@ -50,7 +50,7 @@ public:
 
 };// end of class TreeRow 
 
-class PhysicsProcessMemory: public PhysicsProcessNEW
+class PhysicsProcessMemory: public PhysicsProcess
 {
 public:
   // C'tor.  
@@ -64,9 +64,9 @@ public:
    // D'tor
    ~PhysicsProcessMemory();
    // Copy C'tor
-   PhysicsProcessMemory(const PhysicsProcessNEW& ppn);
+   PhysicsProcessMemory(const PhysicsProcess& ppn);
    // Assignment Operator
-   PhysicsProcessMemory & operator=(const PhysicsProcessNEW & right);
+   PhysicsProcessMemory & operator=(const PhysicsProcess & right);
 
   // This set the variables we are going to get info from and the weight 
   // It returns the number of events with those conditions

@@ -14,7 +14,7 @@
 
 #pragma link C++ class DefaultValues+;
 #pragma link C++ class TProfileMDF+;
-#pragma link C++ class PhysicsProcessNEW+;
+#pragma link C++ class PhysicsProcess+;
 #pragma link C++ class Plot+;
 #pragma link C++ class FormattedPlot+;
 #pragma link C++ class PlotMap+;

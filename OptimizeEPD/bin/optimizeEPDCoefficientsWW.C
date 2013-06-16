@@ -273,7 +273,7 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
 vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS::TagCat tagcat){
 
   // Get the physical processes for WW. The false means "data" is not one of the processes. 
-  vector<PhysicsProcessNEW*> phy_processes  = DefaultValues::getProcessesWW(jetBin, tagcat,false);
+  vector<PhysicsProcess*> phy_processes  = DefaultValues::getProcessesWW(jetBin, tagcat,false);
 
   // Now construct a set of PhysicsProcessForOpt out of them
   vector<PhysicsProcessForOpt*> processes ;

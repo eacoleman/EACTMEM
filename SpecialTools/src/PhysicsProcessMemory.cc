@@ -19,7 +19,7 @@ PhysicsProcessMemory::PhysicsProcessMemory (string procName,
                                             string fileNameTEMP,
                                             string treeName,
                                             bool loadIntoMemory):
-  PhysicsProcessNEW(procName, groupingName, fileNameTEMP, treeName),
+  PhysicsProcess(procName, groupingName, fileNameTEMP, treeName),
    m_loadIntoMemory(loadIntoMemory),
    m_formulaWeight(0),
    m_formulaCategory(0)
@@ -39,7 +39,7 @@ PhysicsProcessMemory::~PhysicsProcessMemory(){
 }//D'tor
 
 //------------------------------------------------------------------------------
-PhysicsProcessMemory::PhysicsProcessMemory(const PhysicsProcessNEW& ppn){
+PhysicsProcessMemory::PhysicsProcessMemory(const PhysicsProcess& ppn){
    name = ppn.name;
    groupName = ppn.groupName;
    fileName = ppn.fileName;
@@ -54,7 +54,7 @@ PhysicsProcessMemory::PhysicsProcessMemory(const PhysicsProcessNEW& ppn){
 }//Copy C'tor
 
 //------------------------------------------------------------------------------
-PhysicsProcessMemory & PhysicsProcessMemory::operator=(const PhysicsProcessNEW & right){
+PhysicsProcessMemory & PhysicsProcessMemory::operator=(const PhysicsProcess & right){
    if (this != &right) {
       name = right.name;
       groupName = right.groupName;

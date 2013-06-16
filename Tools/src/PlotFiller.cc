@@ -4,7 +4,7 @@
 // Started:   22nd of June, 2012
 // Last Edit: 22nd of June, 2012
 
-// Uses Plot and PhysicsProcessNEW to return a plot for a given process and yield.
+// Uses Plot and PhysicsProcess to return a plot for a given process and yield.
 
 // Our libraries
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
@@ -16,7 +16,7 @@ using namespace std;
 //#####################################################################
 
 PlotFiller::PlotFiller(MapOfPlots &plotsTemp,
-                       vector<PhysicsProcessNEW*> &procsTemp,
+                       vector<PhysicsProcess*> &procsTemp,
                        void (*userFillFuncTemp) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
    plots(plotsTemp),
    processes(procsTemp),
@@ -37,22 +37,22 @@ PlotFiller::~PlotFiller()
    
 }
 
-void PlotFiller::setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+void PlotFiller::setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcess*))
 {
    userWeightFunc = userWeightFuncTemp;
 }
 
-void PlotFiller::setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+void PlotFiller::setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcess*))
 {
    userCutFunc = userCutFuncTemp;
 }
 
-void PlotFiller::setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+void PlotFiller::setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcess*))
 {
    userProcessFunc = userProcessFuncTemp;
 }
 
-void PlotFiller::setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*))
+void PlotFiller::setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcess*))
 {
    userInitEventFunc = userInitEventFuncTemp;
 }

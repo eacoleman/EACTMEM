@@ -73,7 +73,7 @@ void Plot::Fill(vector<Double_t> coord, double v, double w){
 }
 
 // Do the scaling to luminosity or data.
-void Plot::scaleToData(vector<PhysicsProcessNEW*> procs, DEFS::LeptonCat lepCat)
+void Plot::scaleToData(vector<PhysicsProcess*> procs, DEFS::LeptonCat lepCat)
 {
    // Make sure we can't do the scaling twice
    if (scaled)
@@ -144,7 +144,7 @@ void Plot::scaleToData(vector<PhysicsProcessNEW*> procs, DEFS::LeptonCat lepCat)
 // ------------------------------------------------------------
 // This groups all the histograms that need grouping.
 // Typically all the Single tops and Dibosons
-vector<TH1*> Plot::doGrouping(vector<PhysicsProcessNEW*> procs)
+vector<TH1*> Plot::doGrouping(vector<PhysicsProcess*> procs)
 {
    // The returning vector
    vector<TH1*> groups;
@@ -273,7 +273,7 @@ FormattedPlot::FormattedPlot()
 // ------------------------------------------------------------
 // Make the Canvas here ala Ricardo Eusebi
 // ------------------------------------------------------------
-TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcessNEW*> procs)
+TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
 {
    // These flags are to determine if this FormattedPlot contains data or Monte Carlo histograms
    // With these flags, it is possible for the user to create canvases with only data or only Monte Carlo
@@ -463,7 +463,7 @@ TH1 * FormattedPlot::findTitleInTH1Vector(TString title, vector<TH1*> groupedHis
 // This groups all the histograms with the same title together
 // Since the titles are given by process->groupName it groups all processes
 // with the same groupNames together
-vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs){
+vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcess*> procs){
 
   // The returning vector
   vector<TH1*> groupedHistos;
@@ -490,13 +490,13 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcessNEW*> procs){
 }//doGrouping
 
 // ------------------------------------------------------------
-void FormattedPlot::formatColors(vector<PhysicsProcessNEW*> procs)
+void FormattedPlot::formatColors(vector<PhysicsProcess*> procs)
 {
    for(unsigned int i = 0; i < procs.size(); i++)
    {
-      histos[i]->SetLineColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
-      histos[i]->SetMarkerColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
-      histos[i]->SetFillColor(((PlotterPhysicsProcessNEW*)procs[i])->color);
+      histos[i]->SetLineColor(((PlotterPhysicsProcess*)procs[i])->color);
+      histos[i]->SetMarkerColor(((PlotterPhysicsProcess*)procs[i])->color);
+      histos[i]->SetFillColor(((PlotterPhysicsProcess*)procs[i])->color);
       
       TString pname = procs[i]->name;
       pname.ToUpper();

@@ -8,7 +8,6 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
-//#include "TAMUWW/Tools/interface/PhysicsProcessNEW.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
@@ -65,15 +64,15 @@ namespace UserFunctions
   ////////////////////////////////////////////////////////////////////////////////
 
   // Is run once for each process before events are cut (initialize)
-  void initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
+  void initEventFunc(EventNtuple* ntuple, const PhysicsProcess* proc);
   // this function fills all of the plots for a given process
   void fillPlots(MapOfPlots &  plots, EventNtuple * ntuple, METree * metree, MicroNtuple * mnt, vector<TString>, double weight = 1.0);
   // returns a boolean if the event passes the specified cuts
-  bool eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*);
+  bool eventPassCuts(EventNtuple * ntuple, const PhysicsProcess*);
   // returns a double
-  double weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
+  double weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc);
   // Is run once for each process before events (initializes PU Reweighting
-  void processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc);
+  void processFunc(EventNtuple* ntuple, const PhysicsProcess* proc);
   // returns a number based on if the particle is a lepton or quark based on its pdgId
   int leptonOrQuark(int x);
   // returns the charge of a particle based on its pdgId
@@ -227,7 +226,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 
 //______________________________________________________________________________
 // Return true if the event pass the cuts imposed to the given lepton category
-bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW* proc){
+bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* proc){
  
   // Remove events categorized as "both" or "none", leaving only base categories of electron and muons
   if ( ntuple->lLV[0].leptonCat == DEFS::both ||  ntuple->lLV[0].leptonCat == DEFS::none)
@@ -315,7 +314,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcessNEW*
 
 }// eventPassCuts
 
-double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
+double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
 {
   TString auxName = proc->name;
   auxName.ToUpper();
@@ -364,7 +363,7 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcessNEW* p
 
 } // weightFunc
 
-void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
+void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
 {
   TString auxName = proc->name;
   auxName.ToUpper();
@@ -395,7 +394,7 @@ void UserFunctions::initEventFunc(EventNtuple* ntuple, const PhysicsProcessNEW* 
 } // initEventFunc
 
 //This is run once per process before looping over events
-void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcessNEW* proc)
+void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
 {
   TString auxName = proc->name;
   auxName.ToUpper();
@@ -698,13 +697,13 @@ std::string UserFunctions::concatString(const T& obj1, const U& obj2)
 ////////////////////////////////////////////////////////////////////////////////
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
-void doPlotter(MapOfPlots & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt,
+void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
 	       bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, 
 	       vector<TString> MVAMethods, bool verbose);
 
 // write the Canvases and plots to output files 
 void writePlotsToFile(TString histoFileName, TString canvasFileName,
-		      MapOfPlots & plots, vector<PhysicsProcessNEW*> procs);
+		      MapOfPlots & plots, vector<PhysicsProcess*> procs);
 
 /// returns the cross section for the given process
 double getCrossSection(TString channelName);
@@ -716,7 +715,7 @@ double getBranchingRatio(TString channelName);
 double getNumMCEvts(TString channelName);
 
 /// returns a vector containing all of the processes that the program will use
-vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum);
+vector<PhysicsProcess*> getProcesses(DEFS::LeptonCat leptonCat, double intLum);
 
 /// returns a map containing all of the plots that will be made for each process and their specific attributes
 PlotFiller::MapOfPlots getPlots(DEFS::LeptonCat leptonCat, bool norm_data);
@@ -782,7 +781,7 @@ int main(int argc,char**argv) {
   MapOfPlots plots = getPlots(UserFunctions::leptonCat,norm_data);
    
   // The vector holding all processes.
-  vector <PhysicsProcessNEW*> procs = getProcesses(UserFunctions::leptonCat,intLum);
+  vector <PhysicsProcess*> procs = getProcesses(UserFunctions::leptonCat,intLum);
       
   // Fill all the plots 
   doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, 
@@ -812,7 +811,7 @@ int main(int argc,char**argv) {
 
 //______________________________________________________________________________
 void writePlotsToFile(TString histoFileName, TString canvasFileName, 
-		      MapOfPlots & plots,  vector<PhysicsProcessNEW*> procs){
+		      MapOfPlots & plots,  vector<PhysicsProcess*> procs){
 
   //Get the canvas and write them to file and as png and eps
   cout<<"Writing canvas to rootfile "<<canvasFileName<<endl;
@@ -843,7 +842,7 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
 }//writePlotsToFile
 
 //______________________________________________________________________________
-void doPlotter(MapOfPlots & plots, vector<PhysicsProcessNEW*> procs, bool doJER, bool doPUrewt,
+void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
 	       bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir,
 	       vector<TString> MVAMethods, bool verbose) {
 
@@ -953,56 +952,56 @@ double getNumMCEvts(TString channelName)
 //______________________________________________________________________________
 // leptonCan = The lepton category for which the processes are needed.
 // intLum    = The integrated luminosity in pb-1 for this given lepton category 
-vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
+vector<PhysicsProcess*> getProcesses(DEFS::LeptonCat leptonCat, double intLum){
 /*   
   string basePath = "/uscms/home/aperloff/nobackup/PS_outfiles_20121102_NTUPLES/";
-  vector <PhysicsProcessNEW*> procs;
+  vector <PhysicsProcess*> procs;
   
-  procs.push_back(new PlotterPhysicsProcessNEW("WW","WW+WZ+ZZ",basePath+"WW.root", getCrossSection("WW"),getBranchingRatio("WW")
+  procs.push_back(new PlotterPhysicsProcess("WW","WW+WZ+ZZ",basePath+"WW.root", getCrossSection("WW"),getBranchingRatio("WW")
                                                intLum, getNumMCEvts("WW"), getProcessColor("WW"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("WZ","WW+WZ+ZZ",basePath+"WZ.root", getCrossSection("WZ"),getBranchingRatio("WZ"),
+  procs.push_back(new PlotterPhysicsProcess("WZ","WW+WZ+ZZ",basePath+"WZ.root", getCrossSection("WZ"),getBranchingRatio("WZ"),
                                                intLum, getNumMCEvts("WZ"), getProcessColor("WZ"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("ZZ","WW+WZ+ZZ",basePath+"ZZ.root", getCrossSection("ZZ"),getBranchingRatio("ZZ"),
+  procs.push_back(new PlotterPhysicsProcess("ZZ","WW+WZ+ZZ",basePath+"ZZ.root", getCrossSection("ZZ"),getBranchingRatio("ZZ"),
                                                intLum, getNumMCEvts("ZZ"), getProcessColor("ZZ"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("DYJets","DYJets",basePath+"DYJets.root", getCrossSection("DYJets"), getBranchingRatio("DYJets"),
+  procs.push_back(new PlotterPhysicsProcess("DYJets","DYJets",basePath+"DYJets.root", getCrossSection("DYJets"), getBranchingRatio("DYJets"),
                                                intLum, getNumMCEvts("DYJets"), getProcessColor("DYJets"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("TTbar","TTbar",basePath+"TTbar.root", getCrossSection("TTbar"), getBranchingRatio("TTbar"),
+  procs.push_back(new PlotterPhysicsProcess("TTbar","TTbar",basePath+"TTbar.root", getCrossSection("TTbar"), getBranchingRatio("TTbar"),
                                                intLum, getNumMCEvts("TTbar"), getProcessColor("TTbar"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopT_T","Single Top",basePath+"STopT_T.root", getCrossSection("STopT_T"), getBranchingRatio("STopT_T"), 
+  procs.push_back(new PlotterPhysicsProcess("STopT_T","Single Top",basePath+"STopT_T.root", getCrossSection("STopT_T"), getBranchingRatio("STopT_T"), 
                                                intLum, getNumMCEvts("STopT_T"), getProcessColor("STopT_T"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopT_Tbar","Single Top",basePath+"STopT_Tbar.root",
+  procs.push_back(new PlotterPhysicsProcess("STopT_Tbar","Single Top",basePath+"STopT_Tbar.root",
                                                getCrossSection("STopT_Tbar"), getBranchingRatio("STopT_Tbar"), intLum, getNumMCEvts("STopT_Tbar"),
                                                getProcessColor("STopT_Tbar"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopS_T","Single Top",basePath+"STopS_T.root", getCrossSection("STopS_T"), getBranchingRatio("STopS_T"),
+  procs.push_back(new PlotterPhysicsProcess("STopS_T","Single Top",basePath+"STopS_T.root", getCrossSection("STopS_T"), getBranchingRatio("STopS_T"),
                                                intLum, getNumMCEvts("STopS_T"), getProcessColor("STopS_T"),
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopS_Tbar","Single Top",basePath+"STopS_Tbar.root",
+  procs.push_back(new PlotterPhysicsProcess("STopS_Tbar","Single Top",basePath+"STopS_Tbar.root",
                                                getCrossSection("STopS_Tbar"), getBranchingRatio("STopS_Tbar"), intLum, getNumMCEvts("STopS_Tbar"),
                                                getProcessColor("STopS_Tbar"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_T","Single Top",basePath+"STopTW_T.root",
+  procs.push_back(new PlotterPhysicsProcess("STopTW_T","Single Top",basePath+"STopTW_T.root",
                                                getCrossSection("STopTW_T"), getBranchingRatio("STopTW_T"), intLum, getNumMCEvts("STopTW_T"),
                                                getProcessColor("STopTW_T"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("STopTW_Tbar","Single Top",basePath+"STopTW_Tbar.root", 
+  procs.push_back(new PlotterPhysicsProcess("STopTW_Tbar","Single Top",basePath+"STopTW_Tbar.root", 
                                                getCrossSection("STopTW_Tbar"), getBranchingRatio("STopTW_Tbar"), intLum, getNumMCEvts("STopTW_Tbar"),
                                                getProcessColor("STopTW_Tbar"), "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("ggH125","ggH+WH+qqH(125)",basePath+"ggH125.root", 
+  procs.push_back(new PlotterPhysicsProcess("ggH125","ggH+WH+qqH(125)",basePath+"ggH125.root", 
                                                getCrossSection("ggH125"),getBranchingRatio("ggH125"),
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("ggH125"), 
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("qqH125","ggH+WH+qqH(125)",basePath+"qqH125.root", 
+  procs.push_back(new PlotterPhysicsProcess("qqH125","ggH+WH+qqH(125)",basePath+"qqH125.root", 
                                                getCrossSection("qqH125"),getBranchingRatio("qqH125"), 
                                                intLum, getNumMCEvts("ggH125"), getProcessColor("qqH125"), 
                                                "PS/jets2p"));
-  procs.push_back(new PlotterPhysicsProcessNEW("WH125","ggH+WH+qqH(125)",basePath+"WH125.root", 
+  procs.push_back(new PlotterPhysicsProcess("WH125","ggH+WH+qqH(125)",basePath+"WH125.root", 
                                                getCrossSection("WH125"),getBranchingRatio("WH125"), 
                                                intLum, getNumMCEvts("WH125"), getProcessColor("WH125"), 
                                                "PS/jets2p"));
   //Old QCD Sample Scale Factor: 0.936549
   //New QCD Sample Scale Factor (no met cut): 1.0034
-  procs.push_back(new PlotterPhysicsProcessNEW("WJets","W+Jets",basePath+"WJets.root",
+  procs.push_back(new PlotterPhysicsProcess("WJets","W+Jets",basePath+"WJets.root",
                                                getCrossSection("WJets"), getBranchingRatio("WJets"),
                                                intLum, getNumMCEvts("WJets"), getProcessColor("WJets"),
                                                "PS/jets2p"));
@@ -1017,20 +1016,20 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   // initial_events = 1;
   
   if (leptonCat == DEFS::electron || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_electron","Data",basePath+"SingleEl_Data_19p148fb.root",
+    procs.push_back(new PlotterPhysicsProcess("Data_electron","Data",basePath+"SingleEl_Data_19p148fb.root",
                                                  1./intLum, getBranchingRatio("SingleEl_Data"), intLum, 1,
                                                  getProcessColor("SingleEl_Data"),
                                                  "PS/jets2p", DEFS::electron)); 
     //Old QCD Sample Scale Factor: 0.000205855
     //New QCD Sample Scale Factor (no met cut): 0.000577002
-    procs.push_back(new PlotterPhysicsProcessNEW("QCD","QCD",basePath+"QCD_Electron.root",
+    procs.push_back(new PlotterPhysicsProcess("QCD","QCD",basePath+"QCD_Electron.root",
                                                  //getCrossSection("QCD_ElEnriched"),
                                                  //intLum, getNumMCEvts("QCD_ElEnriched"), getProcessColor("QCD_ElEnriched"),
                                                  1./intLum, getBranchingRatio("QCD_ElEnriched"),
                                                  intLum, 1, getProcessColor("QCD_ElEnriched"),
                                                  "PS/jets2p"));
 
-    //procs.push_back(new PlotterPhysicsProcessNEW("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
+    //procs.push_back(new PlotterPhysicsProcess("QCD_electronEnriched", basePath+"QCD_ElEnriched.root",
     //                                             1.0*getCrossSection("QCD_ElEnriched"), intLum,
     //                                             getNumMCEvts("QCD_ElEnriched"),
     //                                             getProcessColor("QCD_ElEnriched"),
@@ -1038,11 +1037,11 @@ vector<PhysicsProcessNEW*> getProcesses(DEFS::LeptonCat leptonCat, double intLum
   }  
   
   if (leptonCat == DEFS::muon || leptonCat == DEFS::both){
-    procs.push_back(new PlotterPhysicsProcessNEW("Data_muon","Data",basePath+"SingleMu_Data_19p279fb.root",
+    procs.push_back(new PlotterPhysicsProcess("Data_muon","Data",basePath+"SingleMu_Data_19p279fb.root",
                                                  1./intLum, getBranchingRatio("SingleMu_Data"), intLum, 1,
                                                  getProcessColor("SingleMu_Data"),
                                                  "PS/jets2p", DEFS::muon));
-    //procs.push_back(new PlotterPhysicsProcessNEW("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
+    //procs.push_back(new PlotterPhysicsProcess("QCD_muonEnriched", basePath+"QCD_MuEnriched.root",
     //                                             1.0*getCrossSection("QCD_MuEnriched"), intLum,
     //                                             getNumMCEvts("QCD_MuEnriched"),
     //                                             getProcessColor("QCD_MuEnriched"),

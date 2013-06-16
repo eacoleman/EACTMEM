@@ -1,5 +1,5 @@
 #include "TAMUWW/SpecialTools/interface/Value.hh"
-#include "TAMUWW/SpecialTools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcessMemory.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
@@ -19,7 +19,7 @@
 
 #pragma link C++ class Value+;
 #pragma link C++ class Table+;
-#pragma link C++ class PhysicsProcessNEW+;
+#pragma link C++ class PhysicsProcess+;
 #pragma link C++ class TreeRow+;
 #pragma link C++ class PhysicsProcessMemory+;
 #pragma link C++ class FileLocationTable+;

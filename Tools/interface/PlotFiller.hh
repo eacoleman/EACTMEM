@@ -3,7 +3,7 @@
 // Author:    Travis Lamb
 // Started:   22nd of June, 2012
 
-// Uses Plot and PhysicsProcessNEW to return a plot for a given process and yield.
+// Uses Plot and PhysicsProcess to return a plot for a given process and yield.
 
 // Our libraries
 #include "TAMUWW/Tools/interface/Plots.hh"
@@ -32,15 +32,15 @@ public:
 
    // NOTE That the user must provide the fill function at construction (because it is a required function).
    PlotFiller(MapOfPlots &plotsTemp,
-              std::vector<PhysicsProcessNEW*> &procsTemp,
+              std::vector<PhysicsProcess*> &procsTemp,
               void (*userFillFuncTemp) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double) );
    ~PlotFiller();
    
    // Simple functions to change the functionality of the code.
-   void setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
-   void setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
-   void setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
-   void setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcessNEW*));
+   void setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcess*));
+   void setCutFunction(bool (*userCutFuncTemp) (EventNtuple*, const PhysicsProcess*));
+   void setProcessFunction(void (*userProcessFuncTemp) (EventNtuple*, const PhysicsProcess*));
+   void setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcess*));
    void setMVAWeightDir(TString MVAWD);
    void setMVAMethods(vector<TString> MVAM);
    
@@ -53,7 +53,7 @@ public:
 private:
    // NOTE That the plots and processes are references.
    MapOfPlots &plots;
-   std::vector<PhysicsProcessNEW*> &processes;
+   std::vector<PhysicsProcess*> &processes;
    unsigned int numberOfEvents;
    unsigned int debugNumberOfEvents;
    bool debug;
@@ -64,28 +64,28 @@ private:
    // Fills the plots
    void (*userFillFunc) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double);
    // Returns a double that will multiply the weight
-   double (*userWeightFunc) (EventNtuple*, const PhysicsProcessNEW*);
+   double (*userWeightFunc) (EventNtuple*, const PhysicsProcess*);
    // Returns true if the event passes the cut
-   bool (*userCutFunc) (EventNtuple*, const PhysicsProcessNEW*);
+   bool (*userCutFunc) (EventNtuple*, const PhysicsProcess*);
    // This function is called once for each process before the events are run
-   void (*userProcessFunc) (EventNtuple*, const PhysicsProcessNEW*);
+   void (*userProcessFunc) (EventNtuple*, const PhysicsProcess*);
    // This function is called once for each event before any cuts are made
-   void (*userInitEventFunc) (EventNtuple*, const PhysicsProcessNEW*);
+   void (*userInitEventFunc) (EventNtuple*, const PhysicsProcess*);
    
    // These default functions allow the user to only have to create functions for weights etc that he/she wants to add.
-   static bool defaultCutFunc(EventNtuple*, const PhysicsProcessNEW*)
+   static bool defaultCutFunc(EventNtuple*, const PhysicsProcess*)
    {
       return true;
    }
-   static double defaultWeightFunc(EventNtuple*, const PhysicsProcessNEW*)
+   static double defaultWeightFunc(EventNtuple*, const PhysicsProcess*)
    {
       return 1.0;
    }
-   static void defaultProcessFunc (EventNtuple*, const PhysicsProcessNEW*)
+   static void defaultProcessFunc (EventNtuple*, const PhysicsProcess*)
    {
       return;
    }
-   static void defaultInitEventFunc (EventNtuple*, const PhysicsProcessNEW*)
+   static void defaultInitEventFunc (EventNtuple*, const PhysicsProcess*)
    {
       return;
    }

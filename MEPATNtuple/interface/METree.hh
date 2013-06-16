@@ -7,6 +7,11 @@
 #include <TClonesArray.h>
 
 #include <string>
+#include <map>
+#include <utility>
+
+typedef std::map<double, int> indexMap1;
+typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
 
 class ProbStat : public TObject{
 
@@ -51,7 +56,6 @@ public:
 };
 
 
-
 class METree : public TObject{
 
 public:
@@ -74,6 +78,16 @@ public:
    
    void setRunEvent(Int_t run, Int_t event) {m_run = run; m_event = event;}
 
+   // Create a map that contains the index of eventProb to be used for a
+   // given DEFS::EP::Type and parameter type. This map is static and 
+   // could be filled on demand calling fillIndexMap(). 
+   // int index = map[DEFS::EP::WH][120]; //should be 13
+   // int index = m[DEFS::EP::WZ][0] // should be 1
+   
+   // The static method that fills the map
+   indexMap2 fillIndexMap();
+   indexMap2 getIndexMap(){ return indexMap;}
+
 private:
    TClonesArray* m_tProbStat;
    
@@ -82,7 +96,9 @@ private:
    Int_t m_run;
    Int_t m_event;
    
-   ClassDef(METree, 4)
+   indexMap2 indexMap;
+
+   ClassDef(METree, 5)
 };
 
 #endif

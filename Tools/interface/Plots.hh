@@ -10,7 +10,7 @@
 #include "TString.h"
 
 // Our libraries
-#include "TAMUWW/SpecialTools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 
@@ -39,7 +39,7 @@ public :
    void Fill(std::vector<Double_t> coord, double v, double w);
 
    // Do the scaling to luminosity or data.
-   void scaleToData(std::vector<PhysicsProcessNEW*> procs, DEFS::LeptonCat lepCat);
+   void scaleToData(std::vector<PhysicsProcess*> procs, DEFS::LeptonCat lepCat);
    
    // Saves the histograms to the filename
   void saveHistogramsToFile(TString histoFile, TString option = "RECREATE");
@@ -47,7 +47,7 @@ public :
    // Do the grouping of the histograms according to some rules.
    // For example join all histos for singleTop into a single one, 
    // also WW and WZ are usually put together...
-   // I don't see the NEED FOR THIS std::vector<TH1*>  doGrouping(std::vector<PhysicsProcessNEW*> procs);
+   // I don't see the NEED FOR THIS std::vector<TH1*>  doGrouping(std::vector<PhysicsProcess*> procs);
    
    std::vector<TH1*> getHistos() { return histos; }
 
@@ -77,15 +77,15 @@ public:
    TString overlaySignalName;
    
    // Make the canvas here
-   TCanvas* getCanvas(std::vector<PhysicsProcessNEW*> procs);
+   TCanvas* getCanvas(std::vector<PhysicsProcess*> procs);
 
    // Do the grouping of histograms according to histo->title, which is process groupName;
-   std::vector<TH1*> doGrouping(std::vector<PhysicsProcessNEW*> procs);
+   std::vector<TH1*> doGrouping(std::vector<PhysicsProcess*> procs);
    
    // Do the grouping of the histograms according to some rules.
    // For example join all histos for singleTop into a single one, 
    // also WW and WZ are usually put together...
-   //std::vector<TH1*> doGroupingOLD(std::vector<PhysicsProcessNEW*> procs);
+   //std::vector<TH1*> doGroupingOLD(std::vector<PhysicsProcess*> procs);
 
    
    std::vector<std::string> axisTitles;
@@ -97,7 +97,7 @@ public:
 
 private:
    // Take care of the formatting
-   void formatColors(std::vector<PhysicsProcessNEW*> procs);
+   void formatColors(std::vector<PhysicsProcess*> procs);
    void formatRatio(TH1* hRatio);
    void formatStack(THStack * stack, double maxi);
   TH1 * findTitleInTH1Vector(TString title, std::vector<TH1*> groupedHistos);

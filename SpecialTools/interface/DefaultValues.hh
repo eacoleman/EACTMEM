@@ -21,7 +21,7 @@
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
-#include "TAMUWW/SpecialTools/interface/PhysicsProcessNEW.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
 
 using std::string;
@@ -49,14 +49,14 @@ class DefaultValues{
   // Each PhysicsProces has norm obtained from getNormTable, and 
   // ntuples chained from files in getFileLocationTable
   // Calls the getSingleProcess recursively
-  static std::vector < PhysicsProcessNEW * > getProcesses(std::vector<DEFS::PhysicsProcessType> processName,
+  static std::vector < PhysicsProcess * > getProcesses(std::vector<DEFS::PhysicsProcessType> processName,
                                                           DEFS::JetBin jetBin, 
                                                           DEFS::TagCat tagcat,
                                                           bool forPlots);
    
   // Return a single PhysicsProces with norm obtained from normTable, and 
   // ntuples chained from files in fileTable
-  static PhysicsProcessNEW * getSingleProcess(DEFS::PhysicsProcessType process,
+  static PhysicsProcess * getSingleProcess(DEFS::PhysicsProcessType process,
                                               DEFS::JetBin jetBin,
                                               std::map<DEFS::LeptonCat,Table> normTable,
                                               Table fileTable,
@@ -66,10 +66,10 @@ class DefaultValues{
   
   //GIVE THE OFFICIAL LIST OF PROCESSES FOR THE GIVEN ANALYSIS
   // DON'T MESS WITH THIS METHOD, CREATE ANOTHER ONE FOR TEST PURPOSES
-  static std::vector < PhysicsProcessNEW * > getProcessesWW(DEFS::JetBin,
+  static std::vector < PhysicsProcess * > getProcessesWW(DEFS::JetBin,
                                                             DEFS::TagCat,
                                                             bool include_data);
-   static std::vector < PhysicsProcessNEW * > getProcessesHiggs(DEFS::JetBin,
+   static std::vector < PhysicsProcess * > getProcessesHiggs(DEFS::JetBin,
                                                                 DEFS::TagCat,
                                                                 bool include_data,
                                                                 bool forPlots);
