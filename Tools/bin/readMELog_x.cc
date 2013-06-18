@@ -128,6 +128,8 @@ void average_times_per_process(string ifile) {
    }
    cout << "DONE" << endl;
 
+   double jobCPU = 0;
+   double jobReal = 0;
    map<string,vector<double> >::iterator it_real=realTimes.begin();
    //cout << "sfsg1 " << (*it_real).second.size()<< endl;
    for(map<string,vector<double> >::iterator it_cpu=CPUTimes.begin(); it_cpu!=CPUTimes.end(); it_cpu++) {
@@ -138,13 +140,16 @@ void average_times_per_process(string ifile) {
       double sumReal = 0;
       cout << "\tAveraging CPU times ";
       for(unsigned int i=0; i<(*it_cpu).second.size(); i++) {
-         cout << ".";
+         if(i%10 == 0)
+            cout << ".";
          sumCPU+=(*it_cpu).second[i];
+         jobCPU+=(*it_cpu).second[i];
       }
       cout << endl << "\tAveraging real times ";
       for(unsigned int i=0; i<(*it_real).second.size(); i++) {
          cout << ".";
          sumReal+=(*it_real).second[i];
+         jobReal+=(*it_real).second[i];
       }
       averageCPU = sumCPU/(*it_cpu).second.size();
       averageReal = sumReal/(*it_real).second.size();
@@ -155,6 +160,10 @@ void average_times_per_process(string ifile) {
 
       it_real++;
    }
+
+   cout << endl << "\t\tBatch Job: " << endl
+        << "\t\tCPU: " << jobCPU << endl
+        << "\t\tReal: " << jobReal << endl;
 
    // close the log file
    fin.close();
