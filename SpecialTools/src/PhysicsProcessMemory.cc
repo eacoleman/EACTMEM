@@ -266,9 +266,11 @@ unsigned PhysicsProcessMemory:: preProcessTree(){
       }// if
   
       // get the weight value for this entry
+      m_formulaWeight->GetNdata();
       row.weight = m_formulaWeight->EvalInstance();
 
       // get the category value for this entry
+      m_formulaCategory->GetNdata();
       row.category = (int) m_formulaCategory->EvalInstance();
 
       // set the entry number 
@@ -281,8 +283,10 @@ unsigned PhysicsProcessMemory:: preProcessTree(){
          m_totalWeight += row.weight;
 
          //Load the values of all formulas
-         for (unsigned ff = 0; ff < m_formulas.size(); ff++)
-            row.data.push_back(m_formulas[ff]->EvalInstance());     
+         for (unsigned ff = 0; ff < m_formulas.size(); ff++) {
+            m_formulas[ff]->GetNdata();
+            row.data.push_back(m_formulas[ff]->EvalInstance());
+         }     
 
          // add the row to the sample
          m_treeRows.push_back(row);

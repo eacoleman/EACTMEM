@@ -1,7 +1,7 @@
 // Ricardo Eusebi
 // FNAL eusebi@fnal.gov
 // created: Monday February 05, 2007
-// $Id: FileLocationTable.hh,v 1.1 2011/03/01 02:02:45 eusebi Exp $
+// $Id: FileLocationTable.hh,v 1.2 2011/04/27 17:17:14 aperloff Exp $
 
 #ifndef FILELOCATIONTABLE_DEF
 #define FILELOCATIONTABLE_DEF
@@ -27,7 +27,7 @@ public :
 
   std::string getBasePath() {return basePath;}
 
-  virtual bool parseFromFile(std::string filename, std::string cellClass = "TableCellText", std::string formatStyle = "Normal");
+   virtual bool parseFromFile(std::string filename, std::string cellClass = "TableCellText", std::string formatStyle = "Normal", std::string columnSuffix = "");
 
 private :
 

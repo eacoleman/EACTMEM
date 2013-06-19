@@ -20,6 +20,7 @@
 #pragma link C++ class Value+;
 #pragma link C++ class Table+;
 #pragma link C++ class PhysicsProcess+;
+#pragma link C++ class PlotterPhysicsProcess+;
 #pragma link C++ class TreeRow+;
 #pragma link C++ class PhysicsProcessMemory+;
 #pragma link C++ class FileLocationTable+;

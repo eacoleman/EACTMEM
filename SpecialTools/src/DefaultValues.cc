@@ -6,7 +6,9 @@ Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
 
   Table table("NormTable");
   
-  string eventEstimatesFile = "TAMUWW/ConfigFiles/Official/EventEstimates_";
+  string basePath = gSystem->pwd();
+  basePath = basePath.substr(0,basePath.find("TAMUWW"));
+  string eventEstimatesFile = basePath+"TAMUWW/ConfigFiles/Official/EventEstimates_";
 
   // add the tag name and the ".txt" at the end
   eventEstimatesFile += DEFS::getEventCatString(evtcat)+"_";
@@ -27,7 +29,9 @@ Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
 Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){ 
 
   // The location of the table with the file locations
-  string fileLocationFile = "TAMUWW/ConfigFiles/Official/FileLocation_";
+  string basePath = gSystem->pwd();
+  basePath = basePath.substr(0,basePath.find("TAMUWW"));
+  string fileLocationFile = basePath+"TAMUWW/ConfigFiles/Official/FileLocation_";
   
   // add the tag name and the ".txt" at the end
   fileLocationFile += DEFS::getTagCatString(tagcat);
@@ -35,7 +39,7 @@ Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){
 
   // Create the table and parse the contents of the file
   FileLocationTable table("FileLocationTable");  
-  if(!table.parseFromFile(fileLocationFile))
+  if(!table.parseFromFile(fileLocationFile,"TableCellText","Normal","_microNtuple"))
     cout<<"ERROR  DefaultValues::getFileLocationTable() cannot parse config file "
 	<<fileLocationFile<<endl;
 
@@ -101,14 +105,21 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    string jetBinName = DEFS::getJetBinString(jetBin);
    
    // find the file location for that process
-   TableCellText * cellBasePath = (TableCellText *) fileTable.getCellRowColumn("BasePath","FilePath_microNtuple");
+   //TableCellText * cellBasePath = (TableCellText *) fileTable.getCellRowColumn("BasePath","FilePath_microNtuple");
    TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath_microNtuple");
-   
+
    // make sure we found the cell
+   /*if (cellBasePath == 0){
+      cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
+          <<" does not have row BasePath"
+          <<" for column FilePath_microNtuple"<<endl;
+      cout<<" SKIPPING PROCESS "<<prName<<endl;
+      return 0;
+      }*/
    if (cellFile == 0){
       cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
           <<" does not have row "<<prName
-          <<" and column FilePath"<<endl;
+          <<" for column FilePath_microNtuple"<<endl;
       cout<<" SKIPPING PROCESS "<<prName<<endl;
       return 0;
    }
@@ -128,12 +139,11 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    numMCEvts[DEFS::muon] = (unsigned int)getNumMCEvts(prName);
 
    // Create the PhysicsProcess
-   
    PhysicsProcess *  proc;
    if(forPlots)
-      proc =  new PlotterPhysicsProcess(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, getProcessColor(process), "PS/jets2p");
+      proc =  new PlotterPhysicsProcess(prName, getTypeTitle(process), /*cellBasePath->text+*/cellFile->text, getProcessColor(process), "METree");
    else
-      proc =  new PhysicsProcess(prName, getTypeTitle(process), cellBasePath->text+cellFile->text, "PS/jets2p");
+      proc =  new PhysicsProcess(prName, getTypeTitle(process), /*cellBasePath->text+*/cellFile->text, "METree");
    proc->setPhysicsParameters(xsec, lumi, br, numMCEvts);
    
    // and return it.

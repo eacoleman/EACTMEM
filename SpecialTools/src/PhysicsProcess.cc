@@ -18,19 +18,21 @@ PhysicsProcess::PhysicsProcess (string procName,
    fileName(fileNameTEMP),
    chain (0)
 {
-   TFile * file = TFile::Open(fileName);
+   TFile * file = new TFile(fileName,"READ");//TFile::Open(fileName);
    if (!file->IsOpen())
    {
       cout << "ERROR proc::proc() could not open file " << fileName << endl;
       return;
    }
 
+   /*
    if (!file->cd("PS"))
    {
       cout << "ERROR proc::proc() could not CD into directory PS in file " << fileName << endl;
       return;
    }
-  
+   */
+
    chain = (TChain*) file->Get(treeName.c_str());
    if (chain == 0)
    {

@@ -3,7 +3,7 @@
 CellClass=TableCellText
 
 Process                 |   FilePath_Ntuple                   |   FilePath_microNtuple
-BasePath                |   /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEResults/microNtuples/ | /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEInput/
+BasePath                | /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEInput/   | /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEResults/microNtuples/
 SingleEl_Data			|   SingleEl_Data_19p148fb.root       |   microSingleEl_Data_19p148fb_BaseCuts.root
 SingleMu_Data			|   SingleMu_Data_19p279fb.root       |   microSingleMu_Data_19p279fb_BaseCuts.root
 STopS_T    				|   STopS_T.root                      |   microSTopS_T_BaseCuts.root   

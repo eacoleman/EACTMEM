@@ -34,11 +34,11 @@ void FileLocationTable::addBasePath(){
   basePathAdded = true;
 }//addBasePath
 
-bool FileLocationTable::parseFromFile(string filename, string cellClass, string formatStyle){
+bool FileLocationTable::parseFromFile(string filename, string cellClass, string formatStyle, string columnSuffix){
   bool toReturn = Table::parseFromFile(filename, cellClass, formatStyle);
 
-  if((TableCellText*) getCellRowColumn("BasePath","FilePath"))
-    basePath = ((TableCellText*) getCellRowColumn("BasePath","FilePath"))->text;
+  if((TableCellText*) getCellRowColumn("BasePath","FilePath"+columnSuffix))
+    basePath = ((TableCellText*) getCellRowColumn("BasePath","FilePath"+columnSuffix))->text;
   
   // loop over rows and remove the BasePath row. 
   for (tableRows_it it=tableRows.begin();it!=tableRows.end(); it++){
