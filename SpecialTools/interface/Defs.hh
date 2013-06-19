@@ -164,9 +164,21 @@ namespace DEFS{
   // A routine that returns a string given the type
   std::string getCutLevelString(CutLevel type);
 
-  // A routine that returns a CutLevel given
+  // A routine that returns a CutLevel given a string
   CutLevel getCutLevel(std::string str);
 
+  // ---------------------------------------------------------------
+  //            ALL ABOUT THE NTUPLE TYPES
+  // ---------------------------------------------------------------
+   enum NtupleType {EventNtuple, METree, MicroNtuple, Other};
+   static const unsigned int nNtupleType = 4;
+   
+   // A routine that returns a string given the type
+   std::string getNtupleTypeString(NtupleType type);
+   
+   // A routine that returns a NtupleType given a string
+   NtupleType getNtupleType(std::string str);
+   
 }
 
 #endif

@@ -21,14 +21,14 @@ PhysicsProcess::PhysicsProcess (string procName,
    TFile * file = new TFile(fileName,"READ");//TFile::Open(fileName);
    if (!file->IsOpen())
    {
-      cout << "ERROR proc::proc() could not open file " << fileName << endl;
+      cout << "ERROR PhysicsProcess::PhysicsProcess() could not open file " << fileName << endl;
       return;
    }
 
    /*
    if (!file->cd("PS"))
    {
-      cout << "ERROR proc::proc() could not CD into directory PS in file " << fileName << endl;
+      cout << "ERROR PhysicsProcess::PhysicsProcess() could not CD into directory PS in file " << fileName << endl;
       return;
    }
    */
@@ -36,7 +36,7 @@ PhysicsProcess::PhysicsProcess (string procName,
    chain = (TChain*) file->Get(treeName.c_str());
    if (chain == 0)
    {
-      cout << "ERROR proc::proc() could not find tree named " << treeName << " in file " << fileName << endl;
+      cout << "ERROR PhysicsProcess::PhysicsProcess() could not find tree named " << treeName << " in file " << fileName << endl;
       return;
    }
 

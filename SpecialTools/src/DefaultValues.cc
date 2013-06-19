@@ -39,7 +39,7 @@ Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){
 
   // Create the table and parse the contents of the file
   FileLocationTable table("FileLocationTable");  
-  if(!table.parseFromFile(fileLocationFile,"TableCellText","Normal","_microNtuple"))
+  if(!table.parseFromFile(fileLocationFile,"TableCellText","Normal"))
     cout<<"ERROR  DefaultValues::getFileLocationTable() cannot parse config file "
 	<<fileLocationFile<<endl;
 
@@ -106,7 +106,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    
    // find the file location for that process
    //TableCellText * cellBasePath = (TableCellText *) fileTable.getCellRowColumn("BasePath","FilePath_microNtuple");
-   TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath_microNtuple");
+   TableCellText * cellFile = (TableCellText *) fileTable.getCellRowColumn(prName,"FilePath_MicroNtuple");
 
    // make sure we found the cell
    /*if (cellBasePath == 0){
@@ -119,7 +119,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    if (cellFile == 0){
       cout<<"ERROR DefaultValues::getSingleProcess Table "<<fileTable.getTableOrigin()
           <<" does not have row "<<prName
-          <<" for column FilePath_microNtuple"<<endl;
+          <<" for column FilePath_MicroNtuple"<<endl;
       cout<<" SKIPPING PROCESS "<<prName<<endl;
       return 0;
    }
