@@ -90,20 +90,18 @@ const ProbStat* METree::getProbStat(unsigned index) const
 
 //------------------------------------------------------------------------------
 indexMap2 METree::fillIndexMap(){
-  
+
+   indexMap.clear();
+
    for(int i=0; i<getNProbStat(); i++) {
-      if( (getProbStat(i)->tmeType == DEFS::EP::WH || getProbStat(i)->tmeType == DEFS::EP::HWW) &&
-          indexMap.find(getProbStat(i)->tmeType) == indexMap.end()) {
-         indexMap.insert (make_pair (getProbStat(i)->tmeType, indexMap1()));
-      }
       indexMap[getProbStat(i)->tmeType].insert(make_pair(getProbStat(i)->tmeParam,i));
    }
 
    return indexMap;
   
   // get the index like this
-  // int index = map[DEFS::EP::WH][120];
-  // int index = m[DEFS::EP::WZ][0];
+  // int index = indexMap[DEFS::EP::WH][120];
+  // int index = indexMap[DEFS::EP::WZ][0];
   
 }// fillMap
 

@@ -5,6 +5,7 @@
 #include "TAMUWW/Tools/interface/CutOptimization.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/CreateCondorScriptME.hh"
+#include "TAMUWW/Tools/interface/MicroNtupleMaker.hh"
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -22,5 +23,6 @@
 #pragma link C++ class PlotFiller+;
 #pragma link C++ class CutOptimization+;
 #pragma link C++ class CreateCondorScriptME+;
+#pragma link C++ class MicroNtupleMaker+;
 
 #endif

@@ -117,9 +117,6 @@ public:
 
 protected:
 
-  // The chain pointer
-  TChain * m_chainPtr;
-
   // Flag  that determines whether we load into memory or not
   bool m_loadIntoMemory;
 

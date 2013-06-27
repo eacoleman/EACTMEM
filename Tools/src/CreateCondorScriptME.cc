@@ -39,6 +39,10 @@ vector<TString> CreateCondorScriptME::read_directory( const string& path ) {
       closedir( dp );
       std::sort( result.begin(), result.end() );
    }
+   else
+   {
+      cout << "\tERROR::CreateCondorScriptME::read_directory could not open directory " << path << endl; 
+   }
    return result;
 }
 
@@ -72,6 +76,7 @@ void CreateCondorScriptME::checkForBadFiles(bool verbose) {
    string directory_to_check = completedOutputDir;
 
    if(!TString(directory_to_check).EndsWith("/")) directory_to_check += "/";
+   cout << "\tChecking directory " << directory_to_check << endl;
 
    Int_t eil = gErrorIgnoreLevel;
    gErrorIgnoreLevel=kError;

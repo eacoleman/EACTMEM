@@ -24,6 +24,18 @@ public:
 			double mhiggs, 
 			const ProbsForEPD & meProbs);
   
+  void setEPDFunction(double (*userEPDFunc) (const ProbsForEPD &));
+
+protected:
+  //user defined function to return an epd 
+  double (*userEPDFunc) (const ProbsForEPD &); 
+
+  //this is the default user defined function
+  static double defaultEPDFunc(const ProbsForEPD &){
+    return 0;
+  }
+
+  std::map <unsigned int, bool> failed_entries_map;
 
 };//class PhysicsProcessForOpt
 

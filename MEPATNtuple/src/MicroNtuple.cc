@@ -8,14 +8,13 @@
 
 #include "TF1.h"
 
-
 using std::cout;
 using std::endl;
 using std::make_pair;
 using std::vector;
 using std::map;
 
-MicroNtuple::indexMap2 MicroNtuple::indexMap;
+indexMap2 MicroNtuple::indexMap;
 
 MicroNtuple::MicroNtuple()
 {
@@ -26,11 +25,12 @@ MicroNtuple::MicroNtuple(int ijets) : nJets(ijets)
 {
    bProb = new Double_t[ijets];
    clear();
-   fillIndexMap();
 }
 
 MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
 {
+  reader = rhs.reader;
+
   nJets = rhs.nJets;
 
   bProb = new Double_t[nJets]; //[ntag][nJets]
@@ -49,12 +49,12 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
   epd2tagSchan = rhs.epd2tagSchan;
   epd1tagTchan = rhs.epd1tagTchan;
   epd2tagTchan = rhs.epd2tagTchan;
-  
-  indexMap = rhs.indexMap;
 }
 
 MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 {
+   reader = rhs.reader;
+
    nJets = rhs.nJets;
 
    delete [] bProb;
@@ -73,8 +73,6 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
    epd2tagSchan = rhs.epd2tagSchan;
    epd1tagTchan = rhs.epd1tagTchan;
    epd2tagTchan = rhs.epd2tagTchan;
-   
-   indexMap = rhs.indexMap;
 
    return *this;
 }
@@ -109,45 +107,10 @@ void MicroNtuple::clear()
   epd2tagSchan = 0;
   epd1tagTchan = 0;
   epd2tagTchan = 0;
+
+  reader = 0;
   
 }
-
-
-void MicroNtuple::fillIndexMap(){
-  
-  // Map all the processes, except those with Higgs. 
-  //NOTE that I'm not putting the top mass as I should... 
-  indexMap[DEFS::EP::STopS  ].insert ( make_pair (0,6));
-  indexMap[DEFS::EP::STopT  ].insert ( make_pair (0,5));
-  indexMap[DEFS::EP::TTbar ].insert ( make_pair (0,4));
-  indexMap[DEFS::EP::WLight].insert ( make_pair (0,2));
-  indexMap[DEFS::EP::ZLight].insert ( make_pair (0,3));
-  indexMap[DEFS::EP::WW    ].insert ( make_pair (0,0));
-  indexMap[DEFS::EP::WZ    ].insert ( make_pair (0,1));
-  indexMap[DEFS::EP::QCD   ].insert ( make_pair (0,7));	
-  
-  // Map the HWW ME's
-  indexMap.insert (make_pair (DEFS::EP::WH, indexMap1 ()));
-  indexMap[DEFS::EP::WH].insert ( make_pair (115, 8));
-  indexMap[DEFS::EP::WH].insert ( make_pair (120, 9));
-  indexMap[DEFS::EP::WH].insert ( make_pair (125, 10));
-  indexMap[DEFS::EP::WH].insert ( make_pair (130, 11));
-  indexMap[DEFS::EP::WH].insert ( make_pair (135, 12));	
-  
-  // Map the WH ME's
-  indexMap.insert (make_pair (DEFS::EP::HWW, indexMap1 ()));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (120, 13));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (130, 14));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (140, 15));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (150, 16));
-  indexMap[DEFS::EP::HWW].insert ( make_pair (160, 17));
-  
-  
-  // get the index like this
-  // int index = map[DEFS::EP::WH][120]; //should be 13
-  // int index = m[DEFS::EP::WZ][0] // should be 1
-  
-}// fillMap
 
 // This method functions as a map which maps from the eventProbs to the ProbsForEPD.
 // If you don't care about the higgs mass set it to zero.

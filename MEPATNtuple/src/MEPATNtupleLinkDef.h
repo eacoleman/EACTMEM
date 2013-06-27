@@ -8,12 +8,16 @@
 #include "TAMUWW/MEPATNtuple/interface/Lepton.hh"
 #include "TAMUWW/MEPATNtuple/interface/MET.hh"
 
+#include <map>
+#include <string>
+
 #ifdef __CINT__
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
+#pragma link C++ class std::map<std::string, bool>+;
 #pragma link C++ class METree+;
 #pragma link C++ class ProbStat+;
 #pragma link C++ class ProbsForEPD+;

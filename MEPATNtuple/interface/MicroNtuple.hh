@@ -16,6 +16,8 @@
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
 #include "TAMUWW/MatrixElement/interface/EventProbDefs.hh"
 
+typedef std::map<double, int> indexMap1;
+typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
 
 class MicroNtuple : public TObject
 {
@@ -28,7 +30,7 @@ public:
   MicroNtuple& operator=(const MicroNtuple&);
   ~MicroNtuple();
       
-  enum {nEventProb = 18};
+  enum {nEventProb = 62};
 
   // ===================================
   //  Member Variables
@@ -53,31 +55,19 @@ public:
   Double_t epd2tagWWandWZ;
 
 
-  enum {nWHmasses = 11};
+  enum {nWHmasses = 13};
   Double_t epd1tagWH[nWHmasses];
   Double_t epd2tagWH[nWHmasses];
  
-  enum {nHWWmasses = 11};
+  enum {nHWWmasses = 34};
   Double_t epd1tagHWW[nHWWmasses];
   Double_t epd2tagHWW[nHWWmasses];
 
-
-
-  // Create a map that contains the index of eventProb to be used for a
-  // given DEFS::EP::Type and parameter type. This map is static and 
-  // could be filled on demand calling fillIndexMap(). 
-  // int index = map[DEFS::EP::WH][120]; //should be 13
-  // int index = m[DEFS::EP::WZ][0] // should be 1
-  typedef std::map<double, int> indexMap1;
-  typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
-  static indexMap2 indexMap;
-
-  // The static method that fills the map
-  static void fillIndexMap();
-  static indexMap2 getIndexMap(){ return indexMap;}
-
-
   enum EPDType {kSchan = 0, kTchan = 1, kCombined = 2};
+
+  static void setIndexMap(const indexMap2 & im){indexMap = im;}
+  static indexMap2 getIndexMap(){return indexMap;}
+  static indexMap2 indexMap;
 
   // ===================================
   //  Members Methods
@@ -117,8 +107,8 @@ public:
 			     const double bProb[], Int_t arraySize);
 
 
-  // Methods for the WZ+WW 
-  static const ProbsForEPD getWZEPDCoefficients(DEFS::TagCat tagcat, int nJets); // WZ+WW coefficients
+  // Methods for the Diboson
+  static const ProbsForEPD getWZEPDCoefficients(DEFS::TagCat tagcat, int nJets); // Diboson coefficients
   Double_t calcWZEPD(DEFS::TagCat tagcat) const;
   static Double_t calcWZEPD(DEFS::TagCat tagcat, 
 			    const ProbsForEPD & meProbs, 
@@ -147,7 +137,7 @@ public:
    UInt_t size;
    Int_t run;
    Int_t event;
-   TMVA::Reader *reader;
+   TMVA::Reader *reader; //!
    //std::vector<Float_t> tEventProbMVA;
    Float_t eventProbMVA[100];
    Float_t MjjMVA;
@@ -176,7 +166,7 @@ public:
                    std::vector<Double_t> &cutsMax, Double_t effS = 0.7);
    void setMjjMVA(double mjj);
 
-  ClassDef(MicroNtuple, 10)
+  ClassDef(MicroNtuple, 11)
 
 };
 

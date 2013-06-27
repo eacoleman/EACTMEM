@@ -21,4 +21,5 @@
 <bin   name="IsolationPlotter_x"         file="IsolationPlotter_x.cc" />
 <bin   name="CreateCondorScript_runME_x" file="CreateCondorScript_runME_x.cc" />
 <bin   name="EventNtupleToUVaNtuple_x"   file="EventNtupleToUVaNtuple_x.cc" />
+<bin   name="makeMicroNtuple_x"          file="makeMicroNtuple_x.cc" />
 <!--comment-->
