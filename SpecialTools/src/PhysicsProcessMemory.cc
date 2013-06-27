@@ -24,7 +24,7 @@ PhysicsProcessMemory::PhysicsProcessMemory (string procName,
    m_formulaWeight(0),
    m_formulaCategory(0)
 {
-   m_chainPtr = chain;
+
 }// C'tor
 
 //------------------------------------------------------------------------------
@@ -39,15 +39,9 @@ PhysicsProcessMemory::~PhysicsProcessMemory(){
 }//D'tor
 
 //------------------------------------------------------------------------------
-PhysicsProcessMemory::PhysicsProcessMemory(const PhysicsProcess& ppn){
-   name = ppn.name;
-   groupName = ppn.groupName;
-   fileName = ppn.fileName;
-   sigma = ppn.sigma;
-   branching_ratio = ppn.branching_ratio;
-   intLum = ppn.intLum;
-   initial_events = ppn.initial_events;
-   m_chainPtr = ppn.chain;
+PhysicsProcessMemory::PhysicsProcessMemory(const PhysicsProcess& ppn):
+   PhysicsProcess(ppn)
+{
    m_formulaCategory = 0;
    m_formulaWeight = 0;
    m_loadIntoMemory = true;
@@ -63,7 +57,7 @@ PhysicsProcessMemory & PhysicsProcessMemory::operator=(const PhysicsProcess & ri
       branching_ratio = right.branching_ratio;
       intLum = right.intLum;
       initial_events = right.initial_events;
-      m_chainPtr = right.chain;
+      chain = right.chain;
       m_formulaCategory = 0;
       m_formulaWeight = 0;
       m_loadIntoMemory = true;
@@ -86,13 +80,13 @@ unsigned PhysicsProcessMemory::setProjections(vector < string > projections, str
 
    //and finaly recreate them all again because TTreeFormula::SetTree does not work.
    for (unsigned pro = 0; pro < projections.size(); pro ++)
-      m_formulas.push_back(new TTreeFormula("selection",projections[pro].c_str(),m_chainPtr));  
+      m_formulas.push_back(new TTreeFormula("selection",projections[pro].c_str(),chain));  
   
    //create the weight formula
-   m_formulaWeight = new TTreeFormula("weightForm",weight.c_str(),m_chainPtr);
+   m_formulaWeight = new TTreeFormula("weightForm",weight.c_str(),chain);
 
    //create the category formula
-   m_formulaCategory = new TTreeFormula("categoryForm",category.c_str(),m_chainPtr);
+   m_formulaCategory = new TTreeFormula("categoryForm",category.c_str(),chain);
 
    //do the a first preprocessing
    return preProcessTree();
@@ -130,18 +124,19 @@ unsigned  PhysicsProcessMemory::fillTH1Templates(vector < TH1* > & templates){
       else {
 
          // load the tree
-         m_chainPtr->LoadTree(m_treeRows[ro].entry);
+         chain->LoadTree(m_treeRows[ro].entry);
 
          // if this is a new tree ...   
-         if (tnumber != m_chainPtr->GetTreeNumber()) {
-            tnumber = m_chainPtr->GetTreeNumber();
+         if (tnumber != chain->GetTreeNumber()) {
+            tnumber = chain->GetTreeNumber();
 	  
             // ... then make sure to update the formulas 
             m_formulaWeight -> UpdateFormulaLeaves();
             m_formulaCategory -> UpdateFormulaLeaves();
-            for (unsigned ff = 0; ff < m_formulas.size(); ff++)
+            for (unsigned ff = 0; ff < m_formulas.size(); ff++){
+               m_formulas[ff]->GetNdata();
                m_formulas[ff]->UpdateFormulaLeaves();
-	  
+            }
          }// if
 	
          // and evaluate the formulas
@@ -193,17 +188,19 @@ unsigned  PhysicsProcessMemory::fillTH1Templates(vector < TH1* > & templates, in
       else {
 
          // load the tree
-         m_chainPtr->LoadTree(m_treeRows[ro].entry);
+         chain->LoadTree(m_treeRows[ro].entry);
 
          // if this is a new tree ...   
-         if (tnumber != m_chainPtr->GetTreeNumber()) {
-            tnumber = m_chainPtr->GetTreeNumber();
+         if (tnumber != chain->GetTreeNumber()) {
+            tnumber = chain->GetTreeNumber();
 	  
             // ... then make sure to update the formulas 
             m_formulaWeight -> UpdateFormulaLeaves();
             m_formulaCategory -> UpdateFormulaLeaves();
-            for (unsigned ff = 0; ff < m_formulas.size(); ff++)
+            for (unsigned ff = 0; ff < m_formulas.size(); ff++){
+               m_formulas[ff]->GetNdata();
                m_formulas[ff]->UpdateFormulaLeaves();
+            }
 	  
          }// if
 	
@@ -245,17 +242,17 @@ unsigned PhysicsProcessMemory:: preProcessTree(){
    Int_t tnumber = -1;
 
    // Loop over all the entries
-   for (unsigned ent = 0; ent < m_chainPtr->GetEntries(); ent++){
+   for (unsigned ent = 0; ent < chain->GetEntries(); ent++){
     
       // create a row object
       TreeRow row;
     
       // load the tree
-      m_chainPtr->LoadTree(ent);
+      chain->LoadTree(ent);
 
       // if this is a new tree ...   
-      if (tnumber != m_chainPtr->GetTreeNumber()) {
-         tnumber = m_chainPtr->GetTreeNumber();
+      if (tnumber != chain->GetTreeNumber()) {
+         tnumber = chain->GetTreeNumber();
 
          // ... then make sure to update the formulas 
          m_formulaWeight   -> UpdateFormulaLeaves();
@@ -284,8 +281,8 @@ unsigned PhysicsProcessMemory:: preProcessTree(){
 
          //Load the values of all formulas
          for (unsigned ff = 0; ff < m_formulas.size(); ff++) {
-            m_formulas[ff]->GetNdata();
-            row.data.push_back(m_formulas[ff]->EvalInstance());
+            if(m_formulas[ff]->GetNdata())
+               row.data.push_back(m_formulas[ff]->EvalInstance());
          }     
 
          // add the row to the sample

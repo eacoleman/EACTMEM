@@ -44,7 +44,7 @@ PhysicsProcess::PhysicsProcess (string procName,
    PhysParMapUI blankUI;
    for(unsigned int i = 0; i<DEFS::nLeptonCat; i++) {
       blankD[(DEFS::LeptonCat)i] = 0.0;
-      blankUI[(DEFS::LeptonCat)i] = 0;
+      blankUI[(DEFS::LeptonCat)i] = 1;
    }
    sigma = blankD;
    branching_ratio = blankD;
@@ -68,16 +68,20 @@ void PhysicsProcess::setPhysicsParameters(PhysParMap cross_section, PhysParMap l
 }
 
 void PhysicsProcess::fillMETreeIndexMap(){
-   if (chain->GetBranch("METree")) {
+   TBranch * branch = chain->GetBranch("METree");
+   if (branch) {
       METree* metree = new METree();
       chain->SetBranchAddress("METree",&metree);
       chain->GetEntry(0);
       indexMapOfME = metree->fillIndexMap();
+      chain->ResetBranchAddress(branch);
    }
    else {
       cout << "ERROR PhysicsProcess::fillMETreeIndexMap() could not find \"METree\" in the chain to fill the indexMap" << endl;
-      return;
    }
+
+  delete metree;
+  return;
 }
 
 // ##################################################
