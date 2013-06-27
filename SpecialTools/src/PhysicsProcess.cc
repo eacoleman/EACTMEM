@@ -68,9 +68,9 @@ void PhysicsProcess::setPhysicsParameters(PhysParMap cross_section, PhysParMap l
 }
 
 void PhysicsProcess::fillMETreeIndexMap(){
+   METree* metree = new METree();
    TBranch * branch = chain->GetBranch("METree");
    if (branch) {
-      METree* metree = new METree();
       chain->SetBranchAddress("METree",&metree);
       chain->GetEntry(0);
       indexMapOfME = metree->fillIndexMap();
