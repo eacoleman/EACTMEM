@@ -9,6 +9,8 @@
 #include "TFile.h"
 #include "TStopwatch.h"
 #include "TString.h"
+#include "TMath.h"
+#include "TGraph.h"
 
 //C++ libraries
 #include <map>
@@ -33,8 +35,21 @@ using std::vector;
 using std::ofstream;
 using std::stringstream;
 
+//set to 0 for quiet mode, greater than 0 for anything else
+const int debug_level = 0;
 
+// ===================================================================
+double WWEPD(const ProbsForEPD & probs){
+  return (probs.ww + probs.wz)/(probs.schan + probs.tchan + probs.tchan2 + probs.wbb +
+				probs.wc + probs.qcd + probs.tt + probs.ww + probs.wz);
+}
 
+// ===================================================================
+double HiggsEPD(const ProbsForEPD & probs){
+  return (probs.wh + probs.hww)/(probs.schan + probs.tchan + probs.tchan2 + probs.wbb +
+				 probs.wc + probs.qcd + probs.tt + probs.ww + probs.wz +
+				 probs.wh + probs.hww);
+}
 // ===================================================================
 void modifyEPDCoefficients(ProbsForEPD & EPDcoeffs, double maxPower, 
 			   double factor){
@@ -95,49 +110,61 @@ void modifyEPDCoefficients(ProbsForEPD & EPDcoeffs, double maxPower,
     break;
 
   }//end switch
-
+  
 }// modifyEPDCoefficients
 
 
 
 // ===================================================================
-double createHistoAndGetFOM( vector<PhysicsProcessForOpt*> processes, 
+double createHistoAndGetFOM( DEFS::Ana::Type anaType,
+			     vector<PhysicsProcessForOpt*> processes, 
 			     const ProbsForEPD & coeffs, 
 			     DEFS::TagCat tagcat, double mhiggs,
 			     TH1 * signalHisto,  TH1 * allBackHisto){
+ 
+  static bool first_call = true;
 
-    // Reset all the templates
-    signalHisto->Reset();
-    allBackHisto->Reset();
+  // Reset all the templates
+  signalHisto->Reset();
+  allBackHisto->Reset();
 
-    // Fill the signal and background histos for this set of EPDcoeffs
-    for (unsigned p=0;p<processes.size();p++){
-
-      //get this process' name
-       string thisProcName = (string)processes[p]->getName();
-
-      // put the WW or WX processes into the signal histogram
-      if (thisProcName.find("WW") == 0 || thisProcName.find("WZ") == 0){
-
-	// signal contains WH
-	processes[p]->fillNormEPDHisto(signalHisto, tagcat, mhiggs, coeffs);				       
-
-      }else{ 
-	// every other process is background
-	processes[p]->fillNormEPDHisto(allBackHisto, tagcat, mhiggs, coeffs);
-
-      }
+  // Fill the signal and background histos for this set of EPDcoeffs
+  //testing
+  for (unsigned p=0;p<processes.size();p++){
       
-    }// for processes
+    //get this process' name
+    TString thisProcName = processes[p]->getName();
 
-    // Calculate the figure of merit
-    double figOfMerit = FigureOfMerit::usingShapeFromTemplates(signalHisto, allBackHisto);
-    //cout<<"   figOfMerit shape= "<< figOfMerit<<endl;
-    //cout<<"   figOfMerit chi2 = "<<  FigureOfMerit::usingChi2(signalHisto, allBackHisto)<<endl;
-    //cout<<"   figOfMerit S2OB = "<<  FigureOfMerit::usingS2OverB(signalHisto, allBackHisto)<<endl;
+    // put the WW or WX processes into the signal histogram
+     
+    if ((anaType == DEFS::Ana::WWAnalysis && (thisProcName.EqualTo("WW") || thisProcName.EqualTo("WZ"))) || 
+	(anaType == DEFS::Ana::HiggsAnalysis && (thisProcName.Contains("WH") || thisProcName.Contains("ggH")))){
+
+      // signal contains
+      processes[p]->fillNormEPDHisto(signalHisto, tagcat, mhiggs, coeffs);
+				       
+      if(first_call)
+	cout<<"\tputting process "<<thisProcName<<" into signal."<<endl;
+	  
+    }else{ 
+      // every other process is background
+      processes[p]->fillNormEPDHisto(allBackHisto, tagcat, mhiggs, coeffs);
+
+      if(first_call)
+	cout<<"\tputting process "<<thisProcName<<" into background."<<endl;	
+    }
+      
+  }// for processes
+  first_call = false;
     
-
-    return figOfMerit;
+  // Calculate the figure of merit
+  double figOfMerit = FigureOfMerit::usingShapeFromTemplates(signalHisto, allBackHisto);
+  if(debug_level > 0){
+    cout<<"   figOfMerit shape= "<< figOfMerit<<endl;
+    cout<<"   figOfMerit chi2 = "<<  FigureOfMerit::usingChi2(signalHisto, allBackHisto)<<endl;
+    cout<<"   figOfMerit S2OB = "<<  FigureOfMerit::usingS2OverB(signalHisto, allBackHisto)<<endl;
+  }
+  return figOfMerit;
 
 }// createHistoAndGetFOM
 
@@ -145,8 +172,8 @@ double createHistoAndGetFOM( vector<PhysicsProcessForOpt*> processes,
 // Loop over possible coefficient configurations and keep the most 
 // most discriminant EPD.
 // -------------------------------------------------------------
-ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes, 
-			       DEFS::TagCat tagcat, double & bestFigOfMerit){
+ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForOpt*> processes, 
+			      DEFS::TagCat tagcat, double & bestFigOfMerit){
 
   // The returning set starts with all ones.
   ProbsForEPD bestEPDcoeffs(1);
@@ -175,10 +202,10 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
 
   double mhiggs = 0;
   
-// -------------------------------------------------------------
-// B- Loop over possible coefficient configurations obtaining the 
-//    most discriminant EPD.
-// -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // B- Loop over possible coefficient configurations obtaining the 
+  //    most discriminant EPD.
+  // -------------------------------------------------------------
 
   // Create the templates based on EPDcoeffs for each template 
   int bins = 40;
@@ -189,6 +216,9 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
   signalHisto->Sumw2();
   allBackHisto->Sumw2();
 
+  // Create graph that stores the best fig of merit
+  TGraph* graph_fom = new TGraph();
+
   // Define the parameters of the run 
   double maxPower = 1;// 1 is the default
   double factor   = 2;
@@ -197,8 +227,11 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
   // Flag to indicate if at least one fom was sucessfuly computed
   bool foundAtLeastOneFigureOfMerit = false; 
 
+  
+
   // Create a file to store the best histograms. 
   TFile bhf("optimizeEPD_templates.root","RECREATE");
+
 
   // Perform the iterations
   for (int iter = 0; iter < maxIter; iter++){
@@ -208,19 +241,20 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
       cout<<"Doing iteration "<<iter<<endl;
     
     // reset all the factors to the best factors
-    EPDcoeffs = bestEPDcoeffs; 
+    EPDcoeffs = bestEPDcoeffs;
     
     // don't modify anything the first pass around
-    if (iter != 0)
+    if (iter != 0){
       modifyEPDCoefficients(EPDcoeffs, maxPower, factor);
-
+      if(debug_level > 0) EPDcoeffs.show("");
+    }
     // Calculate the figure of merit for this processes and EPDcoeffs'
-    double figOfMerit = createHistoAndGetFOM(processes, EPDcoeffs * normEPDcoeffs,
+    double figOfMerit = createHistoAndGetFOM(anaType, processes, EPDcoeffs * normEPDcoeffs,
 					     tagcat, mhiggs,
 					     signalHisto,  allBackHisto);
 
     // If this is the best figure of merit 
-    if (figOfMerit > bestFigOfMerit) {   
+    if (iter == 0 || figOfMerit > bestFigOfMerit) {   
 
       // save these coefficients as the best coefficients
       bestFigOfMerit = figOfMerit;
@@ -228,6 +262,9 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
       cout<<"   BEST set found at iteration "<<iter<<" with fom="<<bestFigOfMerit<<endl;
       bestEPDcoeffs = EPDcoeffs;
       
+      // save to graph
+      graph_fom->SetPoint(graph_fom->GetN(), iter, bestFigOfMerit);
+
       // Save these histos to file
       stringstream ssB;
       ssB<<allBackHisto->GetName()<<"_iter"<<iter;
@@ -235,25 +272,29 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
       stringstream ssS;
       ssS<<signalHisto->GetName()<<"_iter"<<iter;
       signalHisto->SetLineColor(2);
-      signalHisto->Write(ssS.str().c_str());      
-
+      signalHisto->Write(ssS.str().c_str()); 
+      //cout<<"Wrote ssH and ssB"<<endl;
+      
     }// if best fom
 
-
     //if it did not found anything after 100 more iterations double the power
-    if (!foundAtLeastOneFigureOfMerit  && iter !=0 && (iter % 100 == 0)){
+    if (!foundAtLeastOneFigureOfMerit  && iter !=0 && (iter % 10 == 0)){
       maxPower *=  2;
       cout<<" Nothing found in the first "<<iter<<" iterations. Increasing the power to "<<maxPower<<endl;
     }
  
   }//for 
 
-  // Close the file3
+  
+  // Write Graph to file
+  graph_fom->Write("graph_fom");
+  // Close the file
   bhf.Close();
 
   // clean up
   delete signalHisto;
   delete allBackHisto;
+  delete graph_fom;
 
 
   // Print the normEPDcoeffs
@@ -270,29 +311,28 @@ ProbsForEPD optimizeEPDCoeffs( vector<PhysicsProcessForOpt*> processes,
 // ===================================================================
 // This method gets all the PhysicsProcesses
 // and loads the relevant info into memory. 
-vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS::TagCat tagcat){
+vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, DEFS::JetBin jetBin, DEFS::TagCat tagcat){
 
   // Get the physical processes for WW. The false means "data" is not one of the processes. 
-  vector<PhysicsProcess*> phy_processes  = DefaultValues::getProcessesWW(jetBin, tagcat,false);
+  vector<PhysicsProcess*> phy_processes;
+  if(anaType == DEFS::Ana::WWAnalysis){
+    phy_processes = DefaultValues::getProcessesWW(jetBin, tagcat,false);
+  } else if(anaType == DEFS::Ana::HiggsAnalysis){
+    phy_processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false);
+  }
 
   // Now construct a set of PhysicsProcessForOpt out of them
   vector<PhysicsProcessForOpt*> processes ;
   for (unsigned int pp = 0 ; pp < phy_processes.size(); pp++){
-     PhysicsProcessMemory ppm = (PhysicsProcessMemory)*phy_processes[pp];
-     processes.push_back(new PhysicsProcessForOpt(ppm));
+    PhysicsProcessForOpt* ppo = new PhysicsProcessForOpt(PhysicsProcessMemory(*phy_processes[pp]));
+    //    ppo->fillMETreeIndexMap();
+    if(anaType == DEFS::Ana::WWAnalysis){
+      ppo->setEPDFunction(WWEPD);
+    } else if(anaType == DEFS::Ana::HiggsAnalysis){
+      ppo->setEPDFunction(HiggsEPD);
+    }
+    processes.push_back(ppo);
   }
-
-  // Report processes to screen
-  for (unsigned p=0;p<processes.size();p++){
-    cout<<"\tprocess name="<<processes[p]->getName()
-       <<"\ttitle="<<processes[p]->groupName
-       //<<"\tnorm="<<processes[p]->getTotalExpectedEvents().value
-       //<<"\tpercentualError="
-       //<<processes[p]->getTotalExpectedEvents().error/processes[p]->getTotalExpectedEvents().value
-	<<endl;
-    
-  }// for
-
  
   return  processes ;
 
@@ -306,22 +346,23 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::JetBin jetBin, DEFS:
 // D- Find coefficients for given PhysicsProcess and coefficients
 //      - Loop over possible coefficient configurations obtaining the 
 //        most discriminant EPD.
-ProbsForEPD optimizeEPDCoeffs(DEFS::TagCat tagcat, double & bestFigOfMerit){
+ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, DEFS::TagCat tagcat, double & bestFigOfMerit){
 
   // jetbin we are optimizing over
   DEFS::JetBin jetBin = DEFS::jets2;
 
   // load all the processes into memory
-  vector<PhysicsProcessForOpt*>  processes  = loadProcessesIntoMemory(jetBin, tagcat);
+  vector<PhysicsProcessForOpt*>  processes  = loadProcessesIntoMemory(anaType, jetBin, tagcat);
+  cout<<"loadProcessIntoMemory is done"<<endl;
 
   // do the actual computation of best EPD coefficients for the given processes
-  ProbsForEPD bestEPDCoeffs = optimizeEPDCoeffs(processes, tagcat, bestFigOfMerit);
-
+  ProbsForEPD bestEPDCoeffs = optimizeEPDCoeffs(anaType, processes, tagcat, bestFigOfMerit);
+  
   // Free memory
   for (unsigned p=0;p<processes.size();p++)
     delete processes[p];   
    
-  // Print the best EPD coefficients
+  // Print the best EPD coefficientsnorm
   cout<<endl<<" BEST Coefficients with fig of merit="<< bestFigOfMerit<<" follow"<<endl;
   cout<<bestEPDCoeffs.getStringConstructor()<<endl;
 
@@ -336,7 +377,7 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::TagCat tagcat, double & bestFigOfMerit){
 // ===================================================================
 // This method just calls the method that calculates the optimized 
 // coefficients and then just print them to the output.
-void optimizeEPDCoefficientsWW(){
+void optimizeEPDCoefficients(){
 
   // Select the analysis type, only to report to the screen...
   DEFS::Ana::Type anaType = DEFS::Ana::WWAnalysis;
@@ -350,7 +391,7 @@ void optimizeEPDCoefficientsWW(){
   double figOfMerit0 = 0;
 
   // Optimize the coefficients for the pretag
-  ProbsForEPD coeffs0 = optimizeEPDCoeffs(DEFS::pretag, figOfMerit0);
+  ProbsForEPD coeffs0 = optimizeEPDCoeffs(anaType, DEFS::pretag, figOfMerit0);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - -
   // The rest just create and print the optimized 
@@ -374,7 +415,7 @@ void optimizeEPDCoefficientsWW(){
 // The MAIN program
 int main(int argc, char* argv[]){
 
-  optimizeEPDCoefficientsWW();
+  optimizeEPDCoefficients();
 
 }
 
