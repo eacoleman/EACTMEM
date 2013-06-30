@@ -580,4 +580,17 @@ namespace DEFS {
 
    }
 
+   // A routine that returns the treename for a given NtupleType
+   std::string getTreeName(NtupleType type){
+
+      if (type == EventNtuple)      return "PS/jets2p";
+      else if (type == METree)      return "METree";
+      else if (type == MicroNtuple) return "METree";
+      else if (type == Other)       return "Other";
+
+      cout<<"ERROR DEFS::getTreeName cannot find the given type"<<endl;
+      return "ERROR";
+
+   }
+
 }// end of namespace DEFS

@@ -22,4 +22,5 @@
 <bin   name="CreateCondorScript_runME_x" file="CreateCondorScript_runME_x.cc" />
 <bin   name="EventNtupleToUVaNtuple_x"   file="EventNtupleToUVaNtuple_x.cc" />
 <bin   name="makeMicroNtuple_x"          file="makeMicroNtuple_x.cc" />
+<bin   name="SkimTPUDist_x"              file="SkimTPUDist_x.cc" />
 <!--comment-->

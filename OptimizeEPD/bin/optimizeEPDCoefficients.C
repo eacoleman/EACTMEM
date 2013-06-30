@@ -316,9 +316,9 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
   // Get the physical processes for WW. The false means "data" is not one of the processes. 
   vector<PhysicsProcess*> phy_processes;
   if(anaType == DEFS::Ana::WWAnalysis){
-    phy_processes = DefaultValues::getProcessesWW(jetBin, tagcat,false);
+     phy_processes = DefaultValues::getProcessesWW(jetBin, tagcat, false, false, DEFS::MicroNtuple);
   } else if(anaType == DEFS::Ana::HiggsAnalysis){
-    phy_processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false);
+    phy_processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
   }
 
   // Now construct a set of PhysicsProcessForOpt out of them

@@ -179,6 +179,8 @@ namespace DEFS{
    // A routine that returns a NtupleType given a string
    NtupleType getNtupleType(std::string str);
    
+   std::string getTreeName(NtupleType type);
+
 }
 
 #endif

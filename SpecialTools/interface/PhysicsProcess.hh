@@ -32,8 +32,8 @@ public:
                   std::string fileNameTEMP,
                   std::string treeName = "PS/EvtTree");
 
-   double getScaleFactor(DEFS::LeptonCat lepCat) {return sigma[lepCat]*intLum[lepCat] / initial_events[lepCat];}
-   void setPhysicsParameters(PhysParMap cross_section, PhysParMap lum, PhysParMap br, PhysParMapUI in_ev);
+   double getScaleFactor(DEFS::LeptonCat lepCat) {return sigma[lepCat]*intLum[lepCat]*scaleFactor[lepCat] / initial_events[lepCat];}
+   void setPhysicsParameters(PhysParMap cross_section, PhysParMap lum, PhysParMap br, PhysParMapUI in_ev, PhysParMap sf);
    void fillMETreeIndexMap();
 
    // The given name of the process
@@ -53,6 +53,8 @@ public:
    PhysParMap  intLum;
    // The initial number of events in the MC sample
    PhysParMapUI initial_events;
+   // A scale factor which can be applied to any process for any purpose (i.e. QCD/WJets scaling)
+   PhysParMap scaleFactor;
    // A map of the physics processes used in the MEs and their position in the array that
    // stores the event probabilities
    indexMap2 indexMapOfME;

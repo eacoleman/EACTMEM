@@ -50,9 +50,10 @@ PhysicsProcess::PhysicsProcess (string procName,
    branching_ratio = blankD;
    intLum = blankD;
    initial_events = blankUI;
+   scaleFactor = blankD;
 }
 
-void PhysicsProcess::setPhysicsParameters(PhysParMap cross_section, PhysParMap lum, PhysParMap br, PhysParMapUI in_ev){
+void PhysicsProcess::setPhysicsParameters(PhysParMap cross_section, PhysParMap lum, PhysParMap br, PhysParMapUI in_ev, PhysParMap sf){
    for(PhysParMap::iterator it = cross_section.begin(); it!=cross_section.end(); it++) {
       sigma[it->first] = it->second;
    }
@@ -64,6 +65,9 @@ void PhysicsProcess::setPhysicsParameters(PhysParMap cross_section, PhysParMap l
    }
    for(PhysParMapUI::iterator it = in_ev.begin(); it!=in_ev.end(); it++) {
       initial_events[it->first] = it->second;
+   }
+   for(PhysParMap::iterator it = sf.begin(); it!=sf.end(); it++) {
+      scaleFactor[it->first] = it->second;
    }
 }
 
