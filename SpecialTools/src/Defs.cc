@@ -132,6 +132,7 @@ namespace DEFS {
       else if(str == "QCDEl_BCtoE30to80")  return  DEFS::PhysicsProcess::QCDEl_BCtoE30to80;
       else if(str == "QCDEl_BCtoE80to170") return  DEFS::PhysicsProcess::QCDEl_BCtoE80to170;
       else if(str == "QCD_ElEnriched")	   return  DEFS::PhysicsProcess::QCD_ElEnriched;
+      else if(str == "QCD_ElFULL")	   return  DEFS::PhysicsProcess::QCD_ElFULL;
       else if(str == "QCD_MuEnriched")	   return  DEFS::PhysicsProcess::QCD_MuEnriched;
       //else if(str == "QCD100") 	           return  DEFS::PhysicsProcess::QCD100;
       //else if(str == "QCD250") 	           return  DEFS::PhysicsProcess::QCD250;
@@ -258,6 +259,7 @@ namespace DEFS {
       else if (type == QCDEl_BCtoE30to80)  return string("QCDEl_BCtoE30to80");
       else if (type == QCDEl_BCtoE80to170) return string("QCDEl_BCtoE80to170");
       else if (type == QCD_ElEnriched)	   return string("QCD_ElEnriched");
+      else if (type == QCD_ElFULL)	   return string("QCD_ElFULL");
       else if (type == QCD_MuEnriched)	   return string("QCD_MuEnriched");
       //else if (type == QCD100) 	         return string("QCD100");
       //else if (type == QCD250)             return string("QCD250");
@@ -348,7 +350,7 @@ namespace DEFS {
           return string("W+Jets");
        else if (type == SingleEl_Data || type == SingleMu_Data)
           return string("DATA");
-       else if (type == QCD_ElEnriched || type == QCD_MuEnriched)
+       else if (type == QCD_ElEnriched || type == QCD_MuEnriched || type == QCD_ElFULL)
           return string("QCD");
        else
           return getTypeString(type);
@@ -364,6 +366,7 @@ namespace DEFS {
        else if (type == WJets)          return kTeal+2;
        else if (type == ZJets)          return kPink-8;
        else if (type == QCD_ElEnriched) return kYellow+1;
+       else if (type == QCD_ElFULL)     return kYellow+1;
        else if (type == QCD_MuEnriched) return kYellow+1;
        else if (type == STopT_T)        return kOrange+1;
        else if (type == STopT_Tbar)     return kOrange+1; //kCyan+3;

@@ -47,7 +47,7 @@ namespace DEFS{
                STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
                Wcc , WJets , WJets_part2 , WLg , Wgg , WLL , WLb , Wbb ,
                WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
-               QCD_ElEnriched , QCD_MuEnriched , QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
+               QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched , QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
                SingleEl_Data , SingleMu_Data};
 
     // A routine that returns the type given a string 
