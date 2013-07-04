@@ -30,6 +30,7 @@ QCD       				|  103334.00   +/- 0.00
 QCD_Pt20_MuEnriched     |  103334.00   +/- 0.00
 QCD_MuEnriched          |  103334.00   +/- 0.00
 QCD_ElEnriched          |  1.000       +/- 0.00
+QCD_ElFULL              |  1.000       +/- 0.00
 QCD_Pt20to30_EMEnriched |  0.00        +/- 0.00
 QCD_Pt30to80_EMEnriched |  0.00        +/- 0.00
 QCD_Pt80to170_EMEnriched|  0.00        +/- 0.00
