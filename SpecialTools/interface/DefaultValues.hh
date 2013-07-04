@@ -6,6 +6,9 @@
 #include "TSystem.h"
 #include "TList.h"
 #include "TString.h"
+#include "TObject.h"
+#include "TH1.h"
+#include "TH2.h"
 
 //C++ libraries
 #include <iostream>
@@ -13,6 +16,8 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <assert.h>
+
 
 //Our libraries
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
@@ -36,6 +41,10 @@ class DefaultValues{
 
 public:
 
+   // Returns the path to the config files
+   // basically returns $CMSSW_BASE+"/src/TAMUWW/Config/Official/"
+   static std::string getConfigPath();
+  
    static std::string getWeightForCategory(DEFS::TagCat tagcat,  
                                            DEFS::PhysicsProcessType, int );
 
@@ -101,6 +110,10 @@ public:
    // Destroy all open canvases
    static void DestroyCanvases();
 
+   // Returns an object from any ROOT file in TAMUWW/ConfigFiles/Official/
+   static TObject* getConfigTObject(TString histoFile, TString hname, TString newName);
+   static TH1* getConfigTH1(TString histoFile, TString hname, TString newName);
+   static TH2* getConfigTH2(TString histoFile, TString hname, TString newName);
 
 };
  

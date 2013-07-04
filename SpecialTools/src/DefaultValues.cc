@@ -1,14 +1,32 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 
+
+// ----------------------------------------------------------------------------
+// This method returns the full basepath of config files.
+// Basically returns $CMSSW_BASE+"/src/TAMUWW/Config/Official/"
+string DefaultValues::getConfigPath(){
+
+  string basePath;
+  char const* tmp = getenv("CMSSW_BASE");
+  
+  if(tmp != NULL)
+    basePath = string(tmp);
+  else {
+    cout << "ERROR DefaultValues::getConfigPath() cannot find the top of the local CMSSW release" << endl;
+    assert(tmp!=NULL);
+  }
+  
+  return basePath + "/src/TAMUWW/ConfigFiles/Official/";
+
+}// getConfigPath
+
+
 // ----------------------------------------------------------------------------
 // This method returns the table with the event expectation for the evt/tag category
 Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
 
   Table table("NormTable");
-  
-  string basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  string eventEstimatesFile = basePath+"TAMUWW/ConfigFiles/Official/EventEstimates_";
+  string eventEstimatesFile = getConfigPath()+"EventEstimates_";
 
   // add the tag name and the ".txt" at the end
   eventEstimatesFile += DEFS::getEventCatString(evtcat)+"_";
@@ -29,9 +47,7 @@ Table DefaultValues::getNormTable(DEFS::LeptonCat evtcat, DEFS::TagCat tagcat){
 Table DefaultValues::getFileLocationTable(DEFS::TagCat tagcat){ 
 
   // The location of the table with the file locations
-  string basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  string fileLocationFile = basePath+"TAMUWW/ConfigFiles/Official/FileLocation_";
+  string fileLocationFile = getConfigPath()+"FileLocation_";
   
   // add the tag name and the ".txt" at the end
   fileLocationFile += DEFS::getTagCatString(tagcat);
@@ -123,8 +139,14 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    xsec[DEFS::electron] = getCrossSectionAndError(prName).first;
    xsec[DEFS::muon] = getCrossSectionAndError(prName).first;
    map<DEFS::LeptonCat,double> lumi;
-   lumi[DEFS::electron] = 19148;
-   lumi[DEFS::muon] = 19279;
+   if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data){
+      lumi[DEFS::electron] = 1.0;
+      lumi[DEFS::muon] = 1.0;
+   }
+   else{
+      lumi[DEFS::electron] = 19148;
+      lumi[DEFS::muon] = 19279;
+   }
    map<DEFS::LeptonCat,double> br;
    br[DEFS::electron] = getBranchingRatio(prName);
    br[DEFS::muon] = getBranchingRatio(prName);
@@ -299,7 +321,8 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD250  );
    procs.push_back(DEFS::PhysicsProcess::WW);
@@ -311,7 +334,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
-      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+      //procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
 
    return getProcesses(procs, jetBin, tagcat, forPlots, ntupleType);
@@ -325,14 +348,7 @@ pair<double,double> DefaultValues::getCrossSectionAndError(TString channelName)
   double xsec;
   double error;
 
-  string basePath;
-  char const* tmp = getenv("BASEPATH");
-  if(tmp != NULL)
-     basePath = string(tmp);
-  else
-     basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/CrossSections_8TeV.txt"),"TableCellVal");
+  table.parseFromFile(getConfigPath()+"CrossSections_8TeV.txt","TableCellVal");
   TableCell * cell = table.getCellRowColumn(string(channelName),"CrossSection");
   if(cell){
     xsec = ((TableCellVal*)cell)->val.value;
@@ -355,14 +371,7 @@ double DefaultValues::getBranchingRatio(TString channelName)
   Table table;
   double br;
 
-  string basePath;
-  char const* tmp = getenv("BASEPATH");
-  if(tmp != NULL)
-     basePath = string(tmp);
-  else
-     basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/BranchingRatios_8TeV.txt"),"TableCellVal");
+  table.parseFromFile(getConfigPath()+"BranchingRatios_8TeV.txt","TableCellVal");
   TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
   if(cell){
     br = ((TableCellVal*)cell)->val.value;
@@ -384,14 +393,7 @@ double DefaultValues::getNumMCEvts(TString channelName)
   Table table;
   double value;
 
-  string basePath;
-  char const* tmp = getenv("BASEPATH");
-  if(tmp != NULL)
-     basePath = string(tmp);
-  else
-    basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/EventsFromMC_commonPATTuple_532.txt"),
+  table.parseFromFile(getConfigPath()+"EventsFromMC_commonPATTuple_532.txt",
 		      "TableCellVal");
   TableCell * cell =table.getCellRowColumn(string(channelName),"Events_PATtuple");
   if(cell){
@@ -413,14 +415,7 @@ double DefaultValues::getScaleFactor(TString channelName)
   Table table;
   double sf;
 
-  string basePath;
-  char const* tmp = getenv("BASEPATH");
-  if(tmp != NULL)
-     basePath = string(tmp);
-  else
-     basePath = gSystem->pwd();
-  basePath = basePath.substr(0,basePath.find("TAMUWW"));
-  table.parseFromFile(basePath+string("/TAMUWW/ConfigFiles/Official/ScaleFactors_8TeV.txt"),"TableCellVal");
+  table.parseFromFile(getConfigPath()+string("ScaleFactors_8TeV.txt"),"TableCellVal");
   TableCell * cell = table.getCellRowColumn(string(channelName),"ScaleFactor");
   if(cell){
     sf = ((TableCellVal*)cell)->val.value;
@@ -461,4 +456,66 @@ void DefaultValues::DestroyCanvases() {
    TListIter itc(loc);
    TObject *o(0);
    while ((o = itc())) delete o;
+}
+
+// ----------------------------------------------------------------------------
+TObject* DefaultValues::getConfigTObject(TString objectFile, TString oname, TString newName) {
+ 
+   TString basePath = getConfigPath() + objectFile;
+
+   TObject * hnew;
+   TString currentDir = gDirectory->GetPathStatic();
+
+   // open the file
+   TFile * ifile = TFile::Open(basePath);
+   if (!ifile->IsOpen()) {
+      cout << "\tERROR DefaultValues::getConfigHisto file "+basePath
+           << " could not be opened." << endl;
+      return 0;
+   }
+   
+   // get the histogram from the inside
+   TObject * htemp = ifile->Get(oname);
+
+   if(htemp==0) {
+      cout << "ERROR DefaultValues::getConfigTObject the object " << oname << " was not found in file " << basePath << endl;
+      assert(htemp!=0);
+   }
+   
+   gDirectory->cd(currentDir);
+
+   // clone it, assigne it to QCDWeightFunc and close the file
+   hnew = htemp->Clone(newName);
+   ifile->Close();
+
+   return hnew;
+
+}
+
+// ----------------------------------------------------------------------------
+TH1* DefaultValues::getConfigTH1(TString histoFile, TString hname, TString newName) {
+
+   TH1* h = (TH1*) getConfigTObject(histoFile, hname, newName);
+
+   if(h==0) {
+      cout << "ERROR DefaultValues::getConfigTH1 the object found in file " << histoFile << "cannot be cast to a TH1*" << endl;
+      assert(h!=0);
+   }
+
+   return h;
+
+}
+
+// ----------------------------------------------------------------------------
+TH2* DefaultValues::getConfigTH2(TString histoFile, TString hname, TString newName) {
+
+   TH2* h = (TH2*) getConfigTObject(histoFile, hname, newName);
+
+   if(h==0) {
+      cout << "ERROR DefaultValues::getConfigTH2 the object found in file " << histoFile << "cannot be cast to a TH2*" << endl;
+      assert(h!=0);
+   }
+
+   return h;
+
 }
