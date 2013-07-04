@@ -118,7 +118,11 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       plots[leptonCat]["LeptPt"]->Fill(ntuple->lLV[0].Pt(),weight);
       plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
       plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
+      plots[leptonCat]["LeptPFIso"]->Fill(ntuple->lLV[0].lpfIso ,weight);
       plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Et(),weight);
+      plots[leptonCat]["MET_vs_LeptEta"]->Fill(ntuple->lLV[0].Eta(),
+					       ntuple->METLV[0].Et(),
+					       weight);
       plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
       plots[leptonCat]["WmT"]->Fill(WmT, weight);
       plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
@@ -233,7 +237,8 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 //______________________________________________________________________________
 // Return true if the event pass the cuts imposed to the given lepton category
 bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* proc){
- 
+  
+
    // Remove events categorized as "both" or "none", leaving only base categories of electron and muons
    if ( ntuple->lLV[0].leptonCat == DEFS::both ||  ntuple->lLV[0].leptonCat == DEFS::none)
       return false;
@@ -251,6 +256,10 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
    //MET Cut
    if ( ntuple->METLV[0].Et() <= 25.0 )
       return false;
+
+   // PFISO cut for FULL sample
+   if (proc->name.Contains("QCD_ElFULL") && ntuple->lLV[0].lpfIso < 0.3)
+     return false;
 
    /*
    // Keep only specific events
@@ -364,7 +373,7 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
       
       // find lepton eta and apply weight
       double leptonEta = ntuple->lLV[0].Eta();
-      weight *= QCDWeightFunc->GetBinContent(leptonEta);
+      weight *= QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta)));
    }
    
    return weight;
@@ -410,90 +419,39 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
    if (doMetPhiWeight){
      
       // get the filename
-      TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/data_weight.root";
- 	 
-      TFile * Subs = TFile::Open(filename);
-      if (!Subs->IsOpen()) {
-         cout << "\tERROR  UserFunctions::processFunc() Weight file "+filename+ " could not be opened." << endl
-              << "\tWJets histograms will not be filled" << endl;
-         return;
-      }
-      
+      TString filename = "data_weight.root";
+
       TString hname = "metphi";
-      TH2D * auxh = (TH2D*) Subs->Get(hname);
-      if (!auxh) {
-         cout << "\tERROR UserFunctions::processFunc() Weight hist "<<hname
-              <<" could not be found in filename "<<filename
-              <<endl<< "\tMetPhi weight will not be applied " << endl;
-         return;
-      }
-      metPhiWeight = (TH1D*) auxh->Clone("metPhiWeightClone");
-      metPhiWeight ->SetDirectory(0);
-      Subs->Close();
+
+      metPhiWeight = (TH1D*) DefaultValues::getConfigTH1(filename, hname, "metPhiWeightClone");
  	 
    }// if doMetPhiWeight
   
    if (QCDweight && auxName.Contains("QCD")){
 
       // get the filename
-      TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/QCDWeight_";
+      TString filename = "QCDWeight_";
       filename += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
-        
-      // open the file
-      TFile * wfile = TFile::Open(filename);
-      if (!wfile->IsOpen()) {
-         cout << "\tERROR UserFunctions::processFunc Weight file "+filename
-              << " could not be opened." << endl
-              << "\tQCD histograms will not be filled" << endl;
-         return;
-      }
     
       // get the histogram from the inside
       TString hname = "QCDWeight_";
       hname += DEFS::getLeptonCatString(UserFunctions::leptonCat);
-      TH2D * auxh = (TH2D*) wfile->Get(hname);
 
-      // clone it, assigne it to QCDWeightFunc and close the file
-      QCDWeightFunc = (TH1D*) auxh->Clone("QCDweightClone");
-      QCDWeightFunc->SetDirectory(0);
-      wfile->Close();
+      QCDWeightFunc = (TH1D*) DefaultValues::getConfigTH1(filename,hname,"QCDweightClone");
 
    }// QCD weight
 
    if (WJweight){
-      TFile* Subs;
       if(auxName.Contains("WJETS")){
 
          // get the filename
-         TString filename = "/uscms_data/d2/eusebi/CMSSW_5_3_2_patch4/src/wjweight_";
+         TString filename = "wjweight_";
          filename += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
 
-         Subs = TFile::Open(filename);
-         if (!Subs->IsOpen()) {
-            cout << "\tERROR UserFunctions::processFunc Weight file " << filename 
-                 << " could not be opened." << endl
-                 << "\tWJets histograms will not be filled" << endl;
-            return;
-         }
-         //TH2D* auxh  = (TH2D*) Subs->Get("wjweight");
          TString hname = "DeltaPhi_LJ1_vs_J1J2_";
          hname += DEFS::getLeptonCatString(UserFunctions::leptonCat);
-         TH2D * auxh = (TH2D*) Subs->Get(hname);
 
-         if (!auxh) {
-            cout << "\tERROR::Weight hist wjweight could not be found in filename "<<filename
-                 <<endl<< "\tWJets histograms will not be filled" << endl;
-            return;
-         }
-         WJetsWeightFunc = (TH2D*) auxh->Clone("WJweightClone");
-         if (!WJweight) {
-            cout << "\tERROR::Weight hist wJetsWeight was not cloned properly" << endl
-                 << "\tWJets histograms will not be filled" << endl;
-            return;
-         }
-         WJetsWeightFunc->SetDirectory(0);
-	
-         Subs->Close();
+         WJetsWeightFunc = (TH2D*) DefaultValues::getConfigTH2(filename, hname, "WJweightClone");
        
          /* In case we wanted to use a TF2
             wJetsWeightTF2 = new TF2("f2","[1]+( [2]*(x*cos([0])-y*sin([0])) + [3]*(x*cos([0])-y*sin([0]))**2 )" 
@@ -508,11 +466,8 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
       return;
    
    // Initializes PU Reweighting
-   string basePath = gSystem->pwd();
-   basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   string dataname = basePath+"TAMUWW/ConfigFiles/Official/pileup12_noTrig.root";
-   //string MCname   = string(TString(proc->fileName));
-   string MCname   = basePath+"TAMUWW/ConfigFiles/Official/TPUDistributions.root";
+   string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
+   string MCname   = DefaultValues::getConfigPath()+"TPUDistributions.root";
    puweight = new PUreweight(dataname,MCname,"pileup_noTrig",
                              string(TString("TPUDist_")+proc->name));
 
@@ -810,7 +765,7 @@ int main(int argc,char**argv) {
    MapOfPlots plots = getPlots(UserFunctions::leptonCat,norm_data);
    
    // The vector holding all processes.
-   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag, true, true, DEFS::MicroNtuple);
+   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag, true, true, DEFS::EventNtuple);// DEFS::MicroNtuple);
       
    // Fill all the plots 
    doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, 
@@ -904,7 +859,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    // The overlay of a scaled signal. For signalName pick the groupingName 
    // of one of the processes. Or just "" if you don't want a signal overlayed.
    TString signalName = "ggH+WH+qqH(125)";
-   double signalFactor = 5000;
+   double signalFactor = 500;
 
    Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
    Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
@@ -916,8 +871,20 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    Double_t METbinshigh[10] = {0,40,50,60,70,80,100,120,200,1000};
    Double_t DRlepjet1low[10] = {0.3,0.5,0.9,1.3,1.5,1.7,2.0,2.5,3.0,5.0};
    Double_t DRlepjet1high[11] = {0.3,2.0,2.25,2.5,2.75,3.0,3.25,3.5,4.0,4.5,5.0};
-
-      
+   Double_t etabins[83] = {
+     -5.191, -4.889, -4.716, -4.538, -4.363, -4.191, -4.013, -3.839, -3.664, 
+     -3.489, -3.314, -3.139, -2.964, -2.853, -2.650, -2.500, -2.322, -2.172, 
+     -2.043, -1.930, -1.830, -1.740, -1.653, -1.566, -1.479, -1.392, -1.305, 
+     -1.218, -1.131, -1.044, -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, 
+     -0.435, -0.348, -0.261, -0.174, -0.087, 
+     +0.000, 
+     +0.087, +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, 
+     +0.879, +0.957, +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, 
+     +1.653, +1.740, +1.830, +1.930, +2.043, +2.172, +2.322, +2.500, +2.650, 
+     +2.853, +2.964, +3.139, +3.314, +3.489, +3.664, +3.839, +4.013, +4.191, 
+     +4.363, +4.538, +4.716, +4.889, +5.191};
+   
+     
    //goes in the label and tells us what cuts we are applying
    string cut = "_MET > 35, elPt > 30";
    TString cuts = TString(cut);
@@ -984,7 +951,19 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
 
+   a = new FormattedPlot;
+   name = "LeptPFIso";
+   a->templateHisto = new TH1D(name + lepStr, name,100,0,10);
+   a->axisTitles.push_back("lepton PFIso ");
+   a->axisTitles.push_back("Number of Events");
+   a->range = make_pair(0,7);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
    
+
    a = new FormattedPlot;
    name = "MET";
    a->templateHisto = new TH1D(name + lepStr, name,1000,0,500);
@@ -996,6 +975,20 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "MET_vs_LeptEta";
+   a->templateHisto = new TH2D(name + lepStr, name, 82, etabins, 1000,0,500);
+   a->axisTitles.push_back("Lepton #eta");
+   a->axisTitles.push_back("MET");
+   a->axisTitles.push_back("Number of Events" );
+   a->range = make_pair(-4,4);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
 
    a = new FormattedPlot;
    name = "METPhi";
