@@ -321,8 +321,8 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD250  );
    procs.push_back(DEFS::PhysicsProcess::WW);
