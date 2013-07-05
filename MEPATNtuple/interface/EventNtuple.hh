@@ -149,7 +149,7 @@ public:
 
    map<string,bool> triggerMap;
 
-   ClassDef(EventNtuple,10)
+   ClassDef(EventNtuple,11)
 };
 
 #endif
