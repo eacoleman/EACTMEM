@@ -32,7 +32,9 @@ public:
                   std::string fileNameTEMP,
                   std::string treeName = "PS/EvtTree");
 
-   double getScaleFactor(DEFS::LeptonCat lepCat) {return sigma[lepCat]*intLum[lepCat]*scaleFactor[lepCat] / initial_events[lepCat];}
+   double getScaleFactor(DEFS::LeptonCat lepCat) {
+     return sigma[lepCat]*intLum[lepCat]*scaleFactor[lepCat] * branching_ratio[lepCat] / initial_events[lepCat];
+   }
    void setPhysicsParameters(PhysParMap cross_section, PhysParMap lum, PhysParMap br, PhysParMapUI in_ev, PhysParMap sf);
    void fillMETreeIndexMap();
 
