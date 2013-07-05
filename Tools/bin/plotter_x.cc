@@ -236,8 +236,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 
 //______________________________________________________________________________
 // Return true if the event pass the cuts imposed to the given lepton category
-bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* proc){
-  
+bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* proc){  
 
    // Remove events categorized as "both" or "none", leaving only base categories of electron and muons
    if ( ntuple->lLV[0].leptonCat == DEFS::both ||  ntuple->lLV[0].leptonCat == DEFS::none)
@@ -258,7 +257,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
       return false;
 
    // PFISO cut for FULL sample
-   if (proc->name.Contains("QCD_ElFULL") && ntuple->lLV[0].lpfIso < 0.3)
+   if (proc->name.Contains("QCD") && ntuple->lLV[0].lpfIso < 0.3)
      return false;
 
    /*
@@ -310,12 +309,22 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
 
    //X axis cuts
    if (cutRegion.Contains("signal")){
-      if(ntuple->jLV[0].Et() < 30 || ntuple->jLV[1].Et() < 30)
-         return false;
+
+     // leading jet with ET > 30, and second leading with at least 25 GeV
+     if(ntuple->jLV[0].Et() < 30 || ntuple->jLV[1].Et() < 25)
+       return false;
+
+     if(ntuple->lLV[0].leptonCat == DEFS::electron && ntuple->lLV[0].Pt() < 30)
+       return false;
+
+     if(ntuple->lLV[0].leptonCat == DEFS::muon && ntuple->lLV[0].Pt() < 25)
+       return false;
+
    }
    else if (cutRegion.Contains("control1")){
-      if (ntuple->jLV[0].Et() > 30 || ntuple->jLV[1].Et() > 30)
-         return false;
+     
+     if (ntuple->jLV[0].Et() > 30 || ntuple->jLV[1].Et() > 30)
+       return false;
    }
    else if (cutRegion.Contains("control2")){
       if ((ntuple->jLV[0].Et() > 30 && ntuple->jLV[1].Et() > 30) || 
