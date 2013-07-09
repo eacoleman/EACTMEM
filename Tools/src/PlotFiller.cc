@@ -127,7 +127,7 @@ void PlotFiller::run()
 
       // The counter for how many events pass the cuts in each process
       unsigned int numProcEvts = 0;
-      double sumW = 1.;
+      double sumW = 0;
    
       // Define the weight variable and set the default as 1.0
       double weight = 1.0;
