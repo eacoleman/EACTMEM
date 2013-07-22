@@ -316,7 +316,7 @@ Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mass,
    if (probs.wh == 0) return 0;
 
    // Return the wh probability
-   return probs.wh / (probs.wh + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
+   return probs.hww / (probs.hww + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
 		      probs.wc + probs.qcd + probs.tt +
 		      probs.ww + probs.wz);      
 
@@ -360,6 +360,84 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
 }//getHWWEPDCoefficients
 
 
+
+//------------------------------------------------------------------------------
+//-----------------------------  THE Higgs METHODS      ---------------------------
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+Double_t MicroNtuple::calcHiggsEPD(DEFS::TagCat tagcat, double mhiggs) const
+{
+
+  // Get the meProbs
+  ProbsForEPD meProbs = getEventProbs(mhiggs);
+  return calcHiggsEPD(tagcat, mhiggs, meProbs, bProb, nJets);
+  
+}//calcHiggsEPD
+
+//------------------------------------------------------------------------------
+Double_t MicroNtuple::calcHiggsEPD(DEFS::TagCat tagcat, double mass,
+				const ProbsForEPD & meProbs,
+				const double bProb[], Int_t nJets){
+
+  // Get the Higgs Coefficients
+  ProbsForEPD coeffs = getHiggsEPDCoefficients(mass, tagcat, nJets);  
+  
+  // Get the probabilities for the EPD
+  ProbsForEPD probs = getProbsForEPD(meProbs, coeffs, bProb, tagcat);
+  
+  // There is less than three events per MC sample in which all the 
+  // probabilities are zero.  To avoid returning a NaN just 
+  // return zero for those
+  if (probs.wh + probs.hww == 0) return 0;
+  
+  // Return the wh probability
+  return (probs.wh + probs.hww) / (probs.wh + probs.hww + probs.schan + probs.tchan + probs.tchan2 + probs.wbb + 
+                                   probs.wc + probs.qcd + probs.tt +
+                                   probs.ww + probs.wz);      
+
+}// calcHiggsEPD
+
+
+//------------------------------------------------------------------------------
+const ProbsForEPD MicroNtuple::getHiggsEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets){
+
+  // The returning object
+  ProbsForEPD coeffs;
+
+  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
+  
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(1.94748e+09,3.93117e+09,1.09525e+08,1124.54,0,132.736,4000,380305,1.70976e+06,0,8000,6.08258e+06,3.51393e+07,0,0.042741);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(1.94748e+09,3.93117e+09,1.09525e+08,1124.54,0,132.736,4000,380305,1.70976e+06,0,8000,6.08258e+06,3.51393e+07,0,0.042741);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(1.94748e+09,3.93117e+09,1.09525e+08,1124.54,0,132.736,4000,380305,1.70976e+06,0,8000,6.08258e+06,3.51393e+07,0,0.042741);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(1.94748e+09,3.93117e+09,1.09525e+08,1124.54,0,132.736,4000,380305,1.70976e+06,0,8000,6.08258e+06,3.51393e+07,0,0.042741);
+    else                    coeffs = ProbsForEPD(1.94748e+09,3.93117e+09,1.09525e+08,1124.54,0,132.736,4000,380305,1.70976e+06,0,8000,6.08258e+06,3.51393e+07,0,0.042741);
+    
+  }else if (tagcat ==  DEFS::eq1TSV){
+
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+
+  } else if (tagcat == DEFS::eq2TSV){
+
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+
+  } else
+    throw std::runtime_error("ERROR MicroNtuple::getHiggsEPDCoefficients. Invalid tag requested");
+
+  return coeffs;
+
+}//getHiggsEPDCoefficients
+
+
+
 //------------------------------------------------------------------------------
 //-----------------------------  THE WZ METHODS      ---------------------------
 //------------------------------------------------------------------------------
@@ -398,7 +476,8 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJe
   ProbsForEPD coeffs;
 
   if(tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV)
-    return ProbsForEPD(2.85714e+09,2e+10,1.20062e+08,1.36023e+07,0,110.948,4000,357143,0,0,0,2.80857e+06,182765,0,3.99459); // DEFS::TagCat=0 figOfMerit=0.136722
+     //return ProbsForEPD(2.85714e+09,2e+10,1.20062e+08,1.36023e+07,0,110.948,4000,357143,0,0,0,2.80857e+06,182765,0,3.99459); // DEFS::TagCat=0 figOfMerit=0.136722
+     return ProbsForEPD(2.85714e+09,2e+10,2.80519e+07,2.01875e+06,0,70.6096,4000,357143,2.94118e+06,0,8000,3.37371e+06,3.30497e+08,0,0.139032); // DEFS::TagCat=0 figOfMerit=1.87472
   else if (tagcat == DEFS::eq1TSV)
     return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
   else if (tagcat != DEFS::eq2TSV)

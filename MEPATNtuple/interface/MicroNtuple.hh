@@ -63,6 +63,11 @@ public:
   Double_t epd1tagHWW[nHWWmasses];
   Double_t epd2tagHWW[nHWWmasses];
 
+  enum {nHiggsMasses = 49};
+  Double_t epdPretagHiggs[nHiggsMasses];
+  Double_t epd1tagHiggs[nHiggsMasses];
+  Double_t epd2tagHiggs[nHiggsMasses];
+
   enum EPDType {kSchan = 0, kTchan = 1, kCombined = 2};
 
   static void setIndexMap(const indexMap2 & im){indexMap = im;}
@@ -106,6 +111,12 @@ public:
 			     const ProbsForEPD & meProbs, 
 			     const double bProb[], Int_t arraySize);
 
+  // Methods for the ggH+qqH+WH
+  static const ProbsForEPD getHiggsEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets); //  ggH+qqH+WH coefficients 
+  Double_t calcHiggsEPD(DEFS::TagCat tagcat, double mass) const;
+  static Double_t calcHiggsEPD(DEFS::TagCat tagcat,  double mass,
+                               const ProbsForEPD & meProbs, 
+                               const double bProb[], Int_t arraySize);
 
   // Methods for the Diboson
   static const ProbsForEPD getWZEPDCoefficients(DEFS::TagCat tagcat, int nJets); // Diboson coefficients
@@ -166,7 +177,7 @@ public:
                    std::vector<Double_t> &cutsMax, Double_t effS = 0.7);
    void setMjjMVA(double mjj);
 
-  ClassDef(MicroNtuple, 11)
+  ClassDef(MicroNtuple, 12)
 
 };
 
