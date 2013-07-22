@@ -138,7 +138,7 @@ double createHistoAndGetFOM( DEFS::Ana::Type anaType,
     // put the WW or WX processes into the signal histogram
      
     if ((anaType == DEFS::Ana::WWAnalysis && (thisProcName.EqualTo("WW") || thisProcName.EqualTo("WZ"))) || 
-	(anaType == DEFS::Ana::HiggsAnalysis && (thisProcName.Contains("WH") || thisProcName.Contains("ggH")))){
+        (anaType == DEFS::Ana::HiggsAnalysis && (thisProcName.Contains("WH") || thisProcName.Contains("ggH") || thisProcName.Contains("qqH")))){
 
       // signal contains
       processes[p]->fillNormEPDHisto(signalHisto, tagcat, mhiggs, coeffs);
@@ -191,9 +191,9 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
 			    1./0.003,    // tt     
 			    1./0.25e-03, // wlight  
 			    1./0.28e-05, // zlight 
-			    0,           // wbb    
+			    1./0.34e-06, // wbb    
 			    0,           // wc     
-			    0,           // wgg    
+			    1./0.125e-03,// wgg    
 			    1./0.35e-06, // ww     
 			    1./0.35e-07, // wz     
 			    0,           // zz     
@@ -230,7 +230,7 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
   
 
   // Create a file to store the best histograms. 
-  TFile bhf("optimizeEPD_templates.root","RECREATE");
+  TFile bhf("optimizeEPD_results.root","RECREATE");
 
 
   // Perform the iterations
@@ -379,7 +379,7 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, DEFS::TagCat tagcat, doub
 // coefficients and then just print them to the output.
 void optimizeEPDCoefficients(){
 
-  // Select the analysis type, only to report to the screen...
+  // Select the analysis type (i.e. DEFS::Ana::HiggsAnalysis or DEFS::Ana::WWAnalysis), only to report to the screen...
   DEFS::Ana::Type anaType = DEFS::Ana::WWAnalysis;
 
   cout<<endl;
