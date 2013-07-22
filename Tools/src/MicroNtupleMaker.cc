@@ -415,6 +415,27 @@ void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned 
     microNtuple->event = meNtuple->getEvent();
 
     microNtuple->epdPretagWWandWZ = microNtuple->calcWZEPD(DEFS::pretag);
+    microNtuple->epd0tagWWandWZ = microNtuple->calcWZEPD(DEFS::eq0TSV);
+    microNtuple->epd1tagWWandWZ = 0;//microNtuple->calcWZEPD(DEFS::eq1TSV);
+    microNtuple->epd2tagWWandWZ = 0;//microNtuple->calcWZEPD(DEFS::eq2TSV);
+    int counterHWW = 0;
+    int counterWH = 0;
+    int counterH = 0;
+    for(int i = 0; i < meNtuple->getNProbStat(); ++i) {
+       if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW) {
+          microNtuple->epd1tagHWW[counterHWW] = 0;//microNtuple->calcHWWEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
+          microNtuple->epd2tagHWW[counterHWW++] = 0;//microNtuple->calcHWWEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+       }
+       if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::WH) {
+          microNtuple->epd1tagWH[counterWH] = 0;//microNtuple->calcWHEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
+          microNtuple->epd2tagWH[counterWH++] = 0;//microNtuple->calcWHEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+       }
+       if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW || meNtuple->getProbStat(i)->tmeType == DEFS::EP::WH) {
+          microNtuple->epdPretagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam);
+          microNtuple->epd1tagHiggs[counterH] = 0;//microNtuple->calcHiggsEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
+          microNtuple->epd2tagHiggs[counterH++] = 0;//microNtuple->calcHiggsEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+       }
+    }
 
     microNtuple->reader = 0;
 
