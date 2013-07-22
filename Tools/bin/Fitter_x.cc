@@ -69,13 +69,13 @@ int main(int argc,char**argv)
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
 
-   string         leptonCL     = cl.getValue<string>  ("lepton",                   "");
-   string         objectCL     = cl.getValue<string>  ("object",                   "");
-   string         inFileLocCL  = cl.getValue<string>  ("readLocation",             "");
-   string         outFileLocCL = cl.getValue<string>  ("writeLocation",            "");
-   vector<string> fproc        = cl.getVector<string> ("fproc",         "WJets:::QCD");
-   vector<string> signals      = cl.getVector<string> ("signals",            "ggH125");
-   double         fom          = cl.getValue<double>  ("fom",                     3.0);
+   string         leptonCL     = cl.getValue<string>  ("lepton",                         "");
+   string         objectCL     = cl.getValue<string>  ("object",                         "");
+   string         inFileLocCL  = cl.getValue<string>  ("readLocation",                   "");
+   string         outFileLocCL = cl.getValue<string>  ("writeLocation",                  "");
+   vector<string> fproc        = cl.getVector<string> ("fproc",               "WJets:::QCD");
+   vector<string> signals      = cl.getVector<string> ("signals", "ggH125:::qqH125:::WH125");
+   double         fom          = cl.getValue<double>  ("fom",                           3.0);
    
    if (!cl.check()) 
       return 0;

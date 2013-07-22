@@ -91,11 +91,11 @@ void Fitter::readHistograms()
          HistogramsFitter::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
    }
 
-   cout << "\tFitter::readHistograms Getting histogram named " << TString(objectName + "_Data_" + leptonName + "_" + leptonName) << endl;
-   if(gDirectory->Get(TString(objectName + "_Data_" + leptonName + "_" + leptonName)))
-      HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_Data_" + leptonName + "_" + leptonName))->Clone());
+   cout << "\tFitter::readHistograms Getting histogram named " << TString(objectName + "_SingleEl_Data_" + leptonName) << endl;
+   if(gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName)))
+      HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName))->Clone());
    else
-      cout << "\t\tFitter::readHistograms Cannot find histogram " << TString(objectName + "_Data_" + leptonName + "_" + leptonName) << endl
+      cout << "\t\tFitter::readHistograms Cannot find histogram " << TString(objectName + "_SingleEl_Data_" + leptonName) << endl
            << "\t\t\tSkipping this histogram." << endl;
 
    if (debug)
@@ -310,7 +310,7 @@ void Fitter::initializeHistNames()
    //histNames.push_back("Diboson");
    histNames.push_back("WW");
    histNames.push_back("WZ");
-   histNames.push_back("ZZ");
+   //histNames.push_back("ZZ");
    //histNames.push_back("STop");
    histNames.push_back("STopS_T");
    histNames.push_back("STopS_Tbar");
@@ -319,9 +319,9 @@ void Fitter::initializeHistNames()
    histNames.push_back("STopTW_T");
    histNames.push_back("STopTW_Tbar");
    histNames.push_back("WJets");
-   histNames.push_back("DYJets");
+   histNames.push_back("ZJets");
    histNames.push_back("TTbar");
-   histNames.push_back("QCD");
+   histNames.push_back("QCD_ElEnriched");
    histNames.push_back("ggH125");
    histNames.push_back("qqH125");
    histNames.push_back("WH125");
@@ -471,7 +471,7 @@ double Fitter::fitFunc(const double *par)
             mcError2 += pow((*it).second->GetBinError(bin), 2);
          }
       }
-      
+
       if(mcError2 == 0 || mc == 0 || data == 0)
          continue;
       else
@@ -491,6 +491,7 @@ double Fitter::fitFunc(const double *par)
          //         << "   Chi2:" << chiSquare << endl;
       }
    }
+
    // cout << endl << "Par0:" << par[0] << " Par1:" << par[1] << " Chi2:" << chiSquare << endl << endl;
    //Add Gaussian Constraints
    for(unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
@@ -500,5 +501,6 @@ double Fitter::fitFunc(const double *par)
          chiSquare+=TMath::Power((par[nproc]-1.0)/(HistogramsFitter::fProcessXsecError[nproc]/HistogramsFitter::fProcessXsec[nproc]),2);
       }
    }
+
    return chiSquare;
 }
