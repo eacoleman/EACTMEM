@@ -69,6 +69,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    doDetectorIso              =         iConfig.getParameter<bool>            ("doDetectorIso");
    doPFIso                    =         iConfig.getParameter<bool>            ("doPFIso");
    doMVAeleSel                =         iConfig.getParameter<bool>            ("doMVAeleSel");
+   noMVAIsoCut                =         iConfig.getParameter<bool>            ("noMVAIsoCut");
 
    //-----Event Variable Inputs
    elcnt_Prim                 =         iConfig.getParameter<int>             ("elcnt_Prim");
@@ -232,7 +233,15 @@ void PerformSelection::beginJob() {
    EvtTree_2pJets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
    if (!Data)
       TPUDist = fs->make<TH1D>("TPUDist","TPUDist",600,0,60);
-   PFIsoDist = fs->make<TH1D>("PFIsoDist","PFIsoDist",1000,-1,1);
+   PFIsoDist = fs->make<TH1D>("PFIsoDist","PFIsoDist",1000,0,2);
+/*
+   PhotonIsoVsEta = fs->make<TH2D>("PhotonIsoVsEta","PhotonIsoVsEta",1000,0,2,200,-5,5);
+   NeutralHadronIsoVsEta = fs->make<TH2D>("NeutralHadronIsoVsEta","NeutralHadronIsoVsEta",1000,0,2,200,-5,5);
+   ChargedHadronIsoVsEta = fs->make<TH2D>("ChargedHadronIsoVsEta","ChargedHadronIsoVsEta",1000,0,2,200,-5,5);
+   EffectiveAreaVsEta = fs->make<TH2D>("EffectiveAreaVsEta","EffectiveAreaVsEta",1000,0,2,200,-5,5);
+   rhoPrimeVsEta = fs->make<TH2D>("rhoPrimeVsEta","rhoPrimeVsEta",1000,0,2,200,-5,5);
+   ptVsEta = fs->make<TH2D>("ptVsEta","ptVsEta",400,0,2000,200,-5,5);
+*/
 }
 
 
@@ -244,6 +253,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    //
    eventNumber       = iEvent.id().event();
    runNumber         = iEvent.id().run();
+   lumiNumber        = iEvent.id().luminosityBlock();
    bxNumber          = iEvent.eventAuxiliary().bunchCrossing();
    orbitNumber       = iEvent.eventAuxiliary().orbitNumber();
    storeNumber       = iEvent.eventAuxiliary().storeNumber();
@@ -251,6 +261,8 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    lumiSegmentNumber = iEvent.eventAuxiliary().luminosityBlock();
       
    //if (eventNumber!=2535884 && eventNumber!=3093466 && eventNumber!=9993322 && eventNumber!=3145918 && eventNumber!=3146025 && eventNumber!=4938770 && eventNumber!=4464867)
+   //   return;
+   //if (eventNumber!=705349865)
    //   return;
 
    //
@@ -568,14 +580,18 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    // Usual option: fill in the elements which pass all of the cuts, *except* the MET cut
    //
    setFlags();
-   if (lp4.size()>0)
-      PFIsoDist->Fill(lp4[0].lpfIso);
+   if (lp4.size()>0) {
+      for(unsigned int i=0; i<lp4.size(); i++){
+         PFIsoDist->Fill(lp4[i].lpfIso);
+      }
+   }
    if ((el_passFlag || mu_passFlag) || OnVsOffShell) {
       //
       // Event Level Information
       //
       EvtNtuple->run=runNumber;
       EvtNtuple->event=eventNumber;
+      EvtNtuple->lumi=lumiNumber;
       EvtNtuple->rho=*rhoHandle;       
 
       if (!Data && saveGenParticles)
@@ -1086,8 +1102,10 @@ void PerformSelection::muonSelection() {
             lp4.back().lpfIso = mu_PFIso;
             if (doDetectorIso)
                lp4.back().lTotIso = mu_DetIso;
-            else
+            else if (doTrackerIso)
                lp4.back().lTotIso = mu_TrkIso;
+            else
+               lp4.back().lTotIso = mu_PFIso;
             lp4.back().mIsGlobal = muisGmTm;
             lp4.back().mIsPF = muisPFm;
             lp4.back().mIsTracker = muIter->isTrackerMuon();
@@ -1200,8 +1218,14 @@ void PerformSelection::eleSelection() {
          lp4.back().lpfIso = el_PFIso;
          if (doDetectorIso)
             lp4.back().lTotIso = el_DetIso;
-         else
+         else if(doTrackerIso)
             lp4.back().lTotIso = el_TrkIso;
+         else
+            lp4.back().lTotIso = el_PFIso;
+         lp4.back().lphotonIso = elIter->photonIso();
+         lp4.back().lchargedHadronIso = elIter->chargedHadronIso();
+         lp4.back().lneutralHadronIso = elIter->neutralHadronIso();
+         lp4.back().lAEff = ElectronEffectiveArea::GetElectronEffectiveArea(ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03, elIter->eta(), ElectronEffectiveArea::kEleEAData2012);
          lp4.back().ldz = abs(elIter->gsfTrack()->dz(pv.position()));
          lp4.back().ldB = abs(elIter->dB());
          lp4.back().emvaTrig = el_mvaTrig;
@@ -1326,6 +1350,9 @@ bool PerformSelection::CutBasedEID(vector< pat::Electron >::const_iterator elIte
 bool PerformSelection::MVABasedEID(vector< pat::Electron >::const_iterator elIter, bool tight){
    el_mvaTrig = elIter->electronID("mvaTrigV0");
    el_mvaNonTrig = elIter->electronID("mvaNonTrigV0");
+   if(noMVAIsoCut) {
+      return true;
+   }
    if (tight) {
       if (invertEID) {
          if (el_PFIso>elPrim_PFIsoMin_invertEID && elIter->electronID("mvaTrigV0") > -1.0)
@@ -1339,10 +1366,16 @@ bool PerformSelection::MVABasedEID(vector< pat::Electron >::const_iterator elIte
       }
    }
    else {
-      if ( (el_aetasc < 0.8 && elIter->electronID("mvaNonTrigV0") > 0.877 && el_PFIso < 0.426)
-           || (el_aetasc > 0.8 && el_aetasc < 1.479 && elIter->electronID("mvaNonTrigV0") > 0.811 && el_PFIso < 0.481)
-           || (el_aetasc > 1.479 && el_aetasc < 2.5 && elIter->electronID("mvaNonTrigV0") > 0.707 && el_PFIso < 0.390) )
-         return true;
+      if (invertEID) {
+         if (el_PFIso>elPrim_PFIsoMin_invertEID && elIter->electronID("mvaNonTrigV0") > -1.0)
+            return true;
+      }
+      else {
+         if ( (el_aetasc < 0.8 && elIter->electronID("mvaNonTrigV0") > 0.877 && el_PFIso < 0.426)
+             || (el_aetasc > 0.8 && el_aetasc < 1.479 && elIter->electronID("mvaNonTrigV0") > 0.811 && el_PFIso < 0.481)
+              || (el_aetasc > 1.479 && el_aetasc < 2.5 && elIter->electronID("mvaNonTrigV0") > 0.707 && el_PFIso < 0.390) )
+            return true;
+      }
    }
    return false;
 }
@@ -1352,9 +1385,14 @@ bool PerformSelection::eleIso(vector< pat::Electron >::const_iterator elIter, bo
    //
    // calculate the pf/detector/tracker isolation of the electron
    //
+   //PF Isolation
    Double_t rhoPrime = std::max((*rhoHandle),0.0);
-   Double_t AEff = ElectronEffectiveArea::GetElectronEffectiveArea(ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03, elIter->eta(), ElectronEffectiveArea::kEleEAData2011);
+   Double_t AEff = ElectronEffectiveArea::GetElectronEffectiveArea(ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03, elIter->eta(), ElectronEffectiveArea::kEleEAData2012);
+   //if (invertEID)
+   //   el_PFIso = (elIter->pfIsolationVariables().chargedHadronIso+ max(0.,elIter->pfIsolationVariables().neutralHadronIso+elIter->pfIsolationVariables().photonIso - AEff*rhoPrime))/elIter->p4().Pt();
+   //else
    el_PFIso = (elIter->chargedHadronIso() + max( 0.0, elIter->neutralHadronIso() + elIter->photonIso() - AEff*rhoPrime )) / elIter->pt();
+   //Detector Isolation
    if (elIter->isEB()) {
       el_DetIso = ( elIter->dr03TkSumPt() + std::max(0.,elIter->dr03EcalRecHitSumEt() -1.) 
                     + elIter->dr03HcalTowerSumEt() - (*rhoHandle)*TMath::Pi()*pow(elDetIsoConeSize,2)) / elIter->p4().Pt();
@@ -1363,6 +1401,7 @@ bool PerformSelection::eleIso(vector< pat::Electron >::const_iterator elIter, bo
       el_DetIso = ( elIter->dr03TkSumPt() + elIter->dr03EcalRecHitSumEt()
                     + elIter->dr03HcalTowerSumEt() - (*rhoHandle)*TMath::Pi()*pow(elDetIsoConeSize,2)) / elIter->p4().Pt();
    }
+   //Tracker Isolation
    el_TrkIso=(elIter->dr03TkSumPt())/elIter->p4().Pt();
 
 

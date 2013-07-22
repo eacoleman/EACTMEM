@@ -91,6 +91,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TLorentzVector.h"
 #include "TString.h"
 #include "TRegexp.h"
@@ -181,6 +182,7 @@ private:
    bool saveGenParticles;
    bool noMETCut;
    bool invertEID;
+   bool noMVAIsoCut;
    bool PFlowLoose;
    bool elONLY;
    bool muONLY;
@@ -212,6 +214,12 @@ private:
    // histogram variables
    TH1D* TPUDist;
    TH1D* PFIsoDist;
+   //TH2D* PhotonIsoVsEta;
+   //TH2D* NeutralHadronIsoVsEta;
+   //TH2D* ChargedHadronIsoVsEta;
+   //TH2D* EffectiveAreaVsEta;
+   //TH2D* rhoPrimeVsEta;
+   //TH2D* ptVsEta;
    // handle InputTags/sources
    edm::InputTag triggerSource;
    edm::InputTag vtxSource;
@@ -243,6 +251,7 @@ private:
    // event variables
    long runNumber;
    long eventNumber;
+   long lumiNumber;
    long bxNumber;
    long orbitNumber;    
    long storeNumber; 
