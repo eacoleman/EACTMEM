@@ -30,7 +30,7 @@ WJets_matchingdown      |   WJets_matchingdown.root           |   microWJets_mat
 WJets_matchingup        |   WJets_matchingup.root             |   microWJets_matchingup_BaseCuts.root  
 WJets_scaledown         |   WJets_scaledown.root              |   microWJets_scaledown_BaseCuts.root   
 WJets_scaleup           |   WJets_scaleup.root                |   microWJets_scaleup_BaseCuts.root     
-ZJets     		|   DYJets.root                        |  microZJets_BaseCuts.root
+ZJets     		|   DYJets.root                       |   microZJets_BaseCuts.root
 DYJets                  |   ZJets.root                        |   microZJets_BaseCuts.root
 ZpJ     		|   ZJets.root                        |   microZJets_BaseCuts.root
 Ztautau                 |                                     |
@@ -38,10 +38,13 @@ QCD     		|                                     |
 QCD_Pt20_MuEnriched     |                                     |
 QCD_MuEnriched          |                                     |
 QCD_ElEnriched          |  QCD_Electron.root                  |   microQCD_Electron_BaseCuts.root
-QCD_ElFULL              |  ../../../../../../uscms_data/d2/aperloff/PS_outfiles_20121102_FullIsoMVA/Full_partial.root                  | ../../../../../../uscms_data/d2/aperloff/PS_outfiles_20121102_FullIsoMVA/Full_partial.root
-QCD_Pt20to30_EMEnriched |                                     |
-QCD_Pt30to80_EMEnriched |                                     |
-QCD_Pt80to170_EMEnriched|                                     |
+QCD_ElFULL              |  SingleEl_Full.root                 |   SingleEl_Full.root
+QCD_Pt20to30_EMEnriched   |  QCD_EM_20to30.root               | QCD_EM_20to30.root               
+QCD_Pt30to80_EMEnriched   |  QCD_EM_30to80.root               | QCD_EM_30to80.root               
+QCD_Pt80to170_EMEnriched  |  QCD_EM_80to170.root              | QCD_EM_80to170.root               
+QCD_Pt170to250_EMEnriched |  QCD_EM_170to250.root             | QCD_EM_170to250.root               
+QCD_Pt250to350_EMEnriched |  QCD_EM_250to350.root             | QCD_EM_250to350.root               
+QCD_Pt350_EMEnriched      |  QCD_EM_350.root                  | QCD_EM_350.root               
 QCD_Pt20to30_BCtoE      |                                     |
 QCD_Pt30to80_BCtoE      |                                     |
 QCD_Pt80to170_BCtoE     |                                     |
@@ -58,7 +61,7 @@ WH105	                |	                              |
 WH110	                |	                              |
 WH115	                |	                              |
 WH120	                |	                              |
-WH125	                |	WH125.root                    |   microWH125_BaseCuts.root
+WH125	                |  WH125.root                         |   microWH125_BaseCuts.root
 WH130	                |	                              |
 WH135	                |	                              |	
 WH140	                |                                     |

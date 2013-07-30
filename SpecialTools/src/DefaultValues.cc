@@ -90,7 +90,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
   // Loop over all the process names
   for (unsigned int prn = 0; prn < processName.size(); prn++){
 
-     PhysicsProcess * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots, ntupleType);
+    PhysicsProcess * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots, ntupleType);
     if (pr == 0) {
       cout<<"ERROR DefaultValues::getProcesses couldnot add process"<<endl;
       continue;
@@ -137,25 +137,25 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    // Get the physics parameters
    map<DEFS::LeptonCat,double> xsec;
    xsec[DEFS::electron] = getCrossSectionAndError(prName).first;
-   xsec[DEFS::muon] = getCrossSectionAndError(prName).first;
+   xsec[DEFS::muon]     = getCrossSectionAndError(prName).first;
    map<DEFS::LeptonCat,double> lumi;
    if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data){
       lumi[DEFS::electron] = 1.0;
-      lumi[DEFS::muon] = 1.0;
+      lumi[DEFS::muon]     = 1.0;
    }
    else{
       lumi[DEFS::electron] = 19148;
-      lumi[DEFS::muon] = 19279;
+      lumi[DEFS::muon]     = 19279;
    }
    map<DEFS::LeptonCat,double> br;
    br[DEFS::electron] = getBranchingRatio(prName);
-   br[DEFS::muon] = getBranchingRatio(prName);
+   br[DEFS::muon]     = getBranchingRatio(prName);
    map<DEFS::LeptonCat,unsigned int> numMCEvts;
    numMCEvts[DEFS::electron] = (unsigned int)getNumMCEvts(prName);
-   numMCEvts[DEFS::muon] = (unsigned int)getNumMCEvts(prName);
+   numMCEvts[DEFS::muon]     = (unsigned int)getNumMCEvts(prName);
    map<DEFS::LeptonCat,double> sf;
    sf[DEFS::electron] = getScaleFactor(prName);
-   sf[DEFS::muon] = getScaleFactor(prName);
+   sf[DEFS::muon]     = getScaleFactor(prName);
 
    // Create the PhysicsProcess
    PhysicsProcess *  proc;
@@ -257,20 +257,20 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   vector<DEFS::PhysicsProcess::Type> procs;
 
 
-  procs.push_back(DEFS::PhysicsProcess::STopS_T   );
-  procs.push_back(DEFS::PhysicsProcess::STopS_Tbar   );
-  procs.push_back(DEFS::PhysicsProcess::STopT_T   );
-  procs.push_back(DEFS::PhysicsProcess::STopT_Tbar   );
-  procs.push_back(DEFS::PhysicsProcess::STopTW_T  );
-  procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar  );
-  procs.push_back(DEFS::PhysicsProcess::TTbar   );
+  procs.push_back(DEFS::PhysicsProcess::STopS_T    );
+  procs.push_back(DEFS::PhysicsProcess::STopS_Tbar );
+  procs.push_back(DEFS::PhysicsProcess::STopT_T    );
+  procs.push_back(DEFS::PhysicsProcess::STopT_Tbar );
+  procs.push_back(DEFS::PhysicsProcess::STopTW_T   );
+  procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
+  procs.push_back(DEFS::PhysicsProcess::TTbar      );
   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
   //procs.push_back(DEFS::PhysicsProcess::WLight  );
-  procs.push_back(DEFS::PhysicsProcess::WJets   ); 
-  procs.push_back(DEFS::PhysicsProcess::ZJets   );
+  procs.push_back(DEFS::PhysicsProcess::WJets     ); 
+  procs.push_back(DEFS::PhysicsProcess::ZJets     );
   //procs.push_back(DEFS::PhysicsProcess::Ztautau );
   //procs.push_back(DEFS::PhysicsProcess::QCDMu               );
   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80      );
@@ -280,7 +280,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
   procs.push_back(DEFS::PhysicsProcess::WW      );
   procs.push_back(DEFS::PhysicsProcess::WZ      );
-  //procs.push_back(DEFS::PhysicsProcess::ZZ      );
+  //procs.push_back(DEFS::PhysicsProcess::ZZ    );
 
   if (include_data) {
     procs.push_back(DEFS::PhysicsProcess::SingleEl_Data    );
@@ -298,9 +298,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
                                                              bool forPlots,
                                                              DEFS::NtupleType ntupleType){
 
-   vector<DEFS::PhysicsProcess::Type> procs;
-   
-   
+   vector<DEFS::PhysicsProcess::Type> procs;   
    procs.push_back(DEFS::PhysicsProcess::STopS_T);
    procs.push_back(DEFS::PhysicsProcess::STopS_Tbar);
    procs.push_back(DEFS::PhysicsProcess::STopT_T);
@@ -322,7 +320,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
    //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
    procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL); // use to derive QCD scale factors
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD250  );
    procs.push_back(DEFS::PhysicsProcess::WW);
@@ -332,10 +330,18 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::qqH125);
    procs.push_back(DEFS::PhysicsProcess::WH125);
    
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
+   procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
+
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
       //procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
+   
 
    return getProcesses(procs, jetBin, tagcat, forPlots, ntupleType);
 

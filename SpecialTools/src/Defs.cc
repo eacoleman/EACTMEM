@@ -126,20 +126,19 @@ namespace DEFS {
       else if(str == "WLL")	               return  DEFS::PhysicsProcess::WLL;
       else if(str == "Wbb")	               return  DEFS::PhysicsProcess::WLb;
       else if(str == "WLb")	               return  DEFS::PhysicsProcess::Wbb;
-      else if(str == "QCDMu")	           return  DEFS::PhysicsProcess::QCDMu;
-      else if(str == "QCDEl_Pt30to80")	   return  DEFS::PhysicsProcess::QCDEl_Pt30to80;
-      else if(str == "QCDEl_Pt80to170")	   return  DEFS::PhysicsProcess::QCDEl_Pt80to170;
-      else if(str == "QCDEl_BCtoE30to80")  return  DEFS::PhysicsProcess::QCDEl_BCtoE30to80;
-      else if(str == "QCDEl_BCtoE80to170") return  DEFS::PhysicsProcess::QCDEl_BCtoE80to170;
-      else if(str == "QCD_ElEnriched")	   return  DEFS::PhysicsProcess::QCD_ElEnriched;
-      else if(str == "QCD_ElFULL")	   return  DEFS::PhysicsProcess::QCD_ElFULL;
-      else if(str == "QCD_MuEnriched")	   return  DEFS::PhysicsProcess::QCD_MuEnriched;
-      //else if(str == "QCD100") 	           return  DEFS::PhysicsProcess::QCD100;
-      //else if(str == "QCD250") 	           return  DEFS::PhysicsProcess::QCD250;
-      else if(str == "WW")	               return  DEFS::PhysicsProcess::WW;
-      else if(str == "WZ")	               return  DEFS::PhysicsProcess::WZ;
-      else if(str == "WZbb")	           return  DEFS::PhysicsProcess::WZbb;
-      else if(str == "ZZ")	               return  DEFS::PhysicsProcess::ZZ;
+      else if(str == "QCD_ElEnriched")	          return  DEFS::PhysicsProcess::QCD_ElEnriched;
+      else if(str == "QCD_ElFULL")	          return  DEFS::PhysicsProcess::QCD_ElFULL;
+      else if(str == "QCD_MuEnriched")	          return  DEFS::PhysicsProcess::QCD_MuEnriched;
+      else if(str == "QCD_Pt20to30_EMEnriched")   return  DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched;
+      else if(str == "QCD_Pt30to80_EMEnriched")   return  DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched;
+      else if(str == "QCD_Pt80to170_EMEnriched")  return  DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched;
+      else if(str == "QCD_Pt170to250_EMEnriched") return  DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched;
+      else if(str == "QCD_Pt250to350_EMEnriched") return  DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched;
+      else if(str == "QCD_Pt350_EMEnriched")      return  DEFS::PhysicsProcess::QCD_Pt350_EMEnriched;
+      else if(str == "WW")	                return  DEFS::PhysicsProcess::WW;
+      else if(str == "WZ")	                return  DEFS::PhysicsProcess::WZ;
+      else if(str == "WZbb")	                return  DEFS::PhysicsProcess::WZbb;
+      else if(str == "ZZ")	                return  DEFS::PhysicsProcess::ZZ;
       else if(str == "TTbar")	           return  DEFS::PhysicsProcess::TTbar;
       else if(str == "TTbarLJ")	           return  DEFS::PhysicsProcess::TTbarLJ;
       else if(str == "TTbarDil")           return  DEFS::PhysicsProcess::TTbarLJ;
@@ -147,7 +146,7 @@ namespace DEFS {
       else if(str == "Ztautau")	           return  DEFS::PhysicsProcess::Ztautau;
       else if(str == "SingleEl_Data")	   return  DEFS::PhysicsProcess::SingleEl_Data;
       else if(str == "SingleMu_Data")	   return  DEFS::PhysicsProcess::SingleMu_Data;
-  
+ 
       cout<<" ERROR  DEFS::getProcessType str ="<<str<<" not found"<<endl;
   
       return  DEFS::PhysicsProcess::WH100;
@@ -241,28 +240,27 @@ namespace DEFS {
       else if (type == qqH900)	 return string("qqH900");
       else if (type == qqH1000)  return string("qqH1000");
 
-      else if (type == STopS_T)	           return string("STopS_T");
+      else if (type == STopS_T)	               return string("STopS_T");
       else if (type == STopS_Tbar)	       return string("STopS_Tbar");
-      else if (type == STopT_T)	           return string("STopT_T");
+      else if (type == STopT_T)	               return string("STopT_T");
       else if (type == STopT_Tbar)	       return string("STopT_Tbar");
       else if (type == STopTW_T)	       return string("STopTW_T");
       else if (type == STopTW_Tbar)	       return string("STopTW_Tbar");
-      else if (type == Wcc) 	           return string("Wcc");
-      else if (type == WJets)	           return string("WJets");
+      else if (type == Wcc) 	               return string("Wcc");
+      else if (type == WJets)	               return string("WJets");
       else if (type == WLg)	               return string("WLg");
       else if (type == Wgg)	               return string("Wgg");
       else if (type == WLL)	               return string("WLL");
       else if (type == Wbb)	               return string("Wbb");
-      else if (type == QCDMu)	           return string("QCDMu");
-      else if (type == QCDEl_Pt30to80)     return string("QCDEl_Pt30to80");
-      else if (type == QCDEl_Pt80to170)	   return string("QCDEl_Pt80to170");
-      else if (type == QCDEl_BCtoE30to80)  return string("QCDEl_BCtoE30to80");
-      else if (type == QCDEl_BCtoE80to170) return string("QCDEl_BCtoE80to170");
-      else if (type == QCD_ElEnriched)	   return string("QCD_ElEnriched");
-      else if (type == QCD_ElFULL)	   return string("QCD_ElFULL");
-      else if (type == QCD_MuEnriched)	   return string("QCD_MuEnriched");
-      //else if (type == QCD100) 	         return string("QCD100");
-      //else if (type == QCD250)             return string("QCD250");
+      else if (type == QCD_ElEnriched)	           return string("QCD_ElEnriched");
+      else if (type == QCD_ElFULL)	           return string("QCD_ElFULL");
+      else if (type == QCD_MuEnriched)	           return string("QCD_MuEnriched");
+      else if (type == QCD_Pt20to30_EMEnriched )   return string ("QCD_Pt20to30_EMEnriched");
+      else if (type == QCD_Pt30to80_EMEnriched )   return string ("QCD_Pt30to80_EMEnriched");
+      else if (type == QCD_Pt80to170_EMEnriched )  return string ("QCD_Pt80to170_EMEnriched");
+      else if (type == QCD_Pt170to250_EMEnriched ) return string ("QCD_Pt170to250_EMEnriched"); 
+      else if (type == QCD_Pt250to350_EMEnriched ) return string ("QCD_Pt250to350_EMEnriched");
+      else if (type == QCD_Pt350_EMEnriched )      return string ("QCD_Pt350_EMEnriched");
       else if (type == WW)	               return string("WW");
       else if (type == WZ)	               return string("WZ");
       else if (type == ZZ)	               return string("ZZ");
@@ -290,51 +288,25 @@ namespace DEFS {
           type == WH145 || type == WH150)
          return true;
 
+      if ( type == ggH100 || type == ggH105 || type == ggH110 || type == ggH115 || type == ggH120 ||
+	   type == ggH125 || type == ggH130 || type == ggH135 || type == ggH140 || type == ggH145 || 
+	   type == ggH150 || type == ggH160 || type == ggH170 || type == ggH180 || type == ggH190 || 
+	   type == ggH200 || type == ggH250 || type == ggH300 || type == ggH350 || type == ggH400 || 
+	   type == ggH450 || type == ggH500 || type == ggH550 || type == ggH600 || type == ggH700 || 
+	   type == ggH800 || type == ggH900 || type == ggH1000)
+	return true;
+
+      if ( type == qqH100 || type == qqH105 || type == qqH110 || type == qqH115 || type == qqH120 ||
+	   type == qqH125 || type == qqH130 || type == qqH135 || type == qqH140 || type == qqH145 ||
+	   type == qqH150 || type == qqH160 || type == qqH170 || type == qqH180 || type == qqH190 ||
+	   type == qqH200 || type == qqH250 || type == qqH300 || type == qqH350 || type == qqH400 ||
+	   type == qqH450 || type == qqH500 || type == qqH550 || type == qqH600 || type == qqH700 ||
+	   type == qqH800 || type == qqH900 || type == qqH1000)
+	return true;
+
       return false;
 
     }//isHiggs
-
-    //---------------------------------------------------------------------------
-    int getHiggsIndexMass(Type type){
-
-      //the returning string
-      if (type == WH100)	  return 0;
-      else if (type == WH105) return 1;
-      else if (type == WH110) return 2;
-      else if (type == WH115) return 3;
-      else if (type == WH120) return 4;
-      else if (type == WH125) return 5;
-      else if (type == WH130) return 6;
-      else if (type == WH135) return 7;
-      else if (type == WH140) return 8;
-      else if (type == WH145) return 9;
-      else if (type == WH150) return 10;
-      else cout<<"ERROR  DEFS::getHiggsIndexMass type does not corresponds to Higgs"<<endl;
-
-      return -1;
-
-    }//getHiggsIndexMass
-
-    //---------------------------------------------------------------------------
-    Type getHiggsType(unsigned HiggsMassIndex){
-
-      //the returning string
-      if (HiggsMassIndex == 0)       return WH100;
-      else if (HiggsMassIndex == 1)	 return WH105;
-      else if (HiggsMassIndex == 2)	 return WH110;
-      else if (HiggsMassIndex == 3)	 return WH115;
-      else if (HiggsMassIndex == 4)	 return WH120;
-      else if (HiggsMassIndex == 5)	 return WH125;
-      else if (HiggsMassIndex == 6)	 return WH130;
-      else if (HiggsMassIndex == 7)	 return WH135;
-      else if (HiggsMassIndex == 8)	 return WH140;
-      else if (HiggsMassIndex == 9)	 return WH145;
-      else if (HiggsMassIndex == 10) return WH150;
-      else cout<<"ERROR  PhysicsProcess::getHiggsType HiggsMassIndex  does not corresponds to Higgs"<<endl;
-
-      return STopS_T;
-
-    }//getHiggsType
      
     //---------------------------------------------------------------------------
     // A routine that returns the title for a given process type
@@ -350,7 +322,10 @@ namespace DEFS {
           return string("W+Jets");
        else if (type == SingleEl_Data || type == SingleMu_Data)
           return string("DATA");
-       else if (type == QCD_ElEnriched || type == QCD_MuEnriched || type == QCD_ElFULL)
+       else if (type == QCD_ElEnriched || type == QCD_MuEnriched || type == QCD_ElFULL ||
+		type == QCD_Pt20to30_EMEnriched   || type == QCD_Pt30to80_EMEnriched   ||
+		type == QCD_Pt80to170_EMEnriched  || type == QCD_Pt170to250_EMEnriched ||
+		type == QCD_Pt250to350_EMEnriched || type == QCD_Pt350_EMEnriched )
           return string("QCD");
        else
           return getTypeString(type);
@@ -365,9 +340,15 @@ namespace DEFS {
        else if (type == ZZ)             return kBlue-1;
        else if (type == WJets)          return kTeal+2;
        else if (type == ZJets)          return kPink-8;
-       else if (type == QCD_ElEnriched) return kYellow+1;
-       else if (type == QCD_ElFULL)     return kYellow+1;
-       else if (type == QCD_MuEnriched) return kYellow+1;
+       else if (type == QCD_ElEnriched)             return kYellow+1;
+       else if (type == QCD_ElFULL)                 return kYellow+1;
+       else if (type == QCD_MuEnriched)             return kYellow+1;
+       else if (type == QCD_Pt20to30_EMEnriched )   return kYellow+1;
+       else if (type == QCD_Pt30to80_EMEnriched )   return kYellow+1;
+       else if (type == QCD_Pt80to170_EMEnriched )  return kYellow+1;
+       else if (type == QCD_Pt170to250_EMEnriched ) return kYellow+1;
+       else if (type == QCD_Pt250to350_EMEnriched ) return kYellow+1;
+       else if (type == QCD_Pt350_EMEnriched )      return kYellow+1;
        else if (type == STopT_T)        return kOrange+1;
        else if (type == STopT_Tbar)     return kOrange+1; //kCyan+3;
        else if (type == STopS_T)        return kOrange+1; //kBlue;

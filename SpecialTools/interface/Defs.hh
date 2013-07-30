@@ -47,7 +47,9 @@ namespace DEFS{
                STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
                Wcc , WJets , WJets_part2 , WLg , Wgg , WLL , WLb , Wbb ,
                WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
-               QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched , QCDMu, QCDEl_Pt30to80, QCDEl_Pt80to170, QCDEl_BCtoE30to80, QCDEl_BCtoE80to170,
+               QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched ,
+	       QCD_Pt20to30_EMEnriched, QCD_Pt30to80_EMEnriched, QCD_Pt80to170_EMEnriched, 
+	       QCD_Pt170to250_EMEnriched, QCD_Pt250to350_EMEnriched, QCD_Pt350_EMEnriched,
                SingleEl_Data , SingleMu_Data};
 
     // A routine that returns the type given a string 
@@ -58,12 +60,6 @@ namespace DEFS{
     
     // A routine that tells whether this process is Higgs or not
     bool isHiggs(Type type);
-    
-    // A routine that give the Higgs Mass Index given the type
-    int getHiggsIndexMass(Type type);
-    
-    // A routine that gives the type given the Higgs Mass index
-    Type getHiggsType(unsigned HiggsMassIndex);
 
     // A routine that returns the title for a given process type
     std::string getTypeTitle(Type type);

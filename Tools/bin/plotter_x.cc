@@ -122,7 +122,10 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Et(),weight);
       plots[leptonCat]["MET_vs_LeptEta"]->Fill(ntuple->lLV[0].Eta(),
 					       ntuple->METLV[0].Et(),
-					       weight);
+					       weight);      
+      plots[leptonCat]["MET_vs_AbsLeptEta"]->Fill(fabs(ntuple->lLV[0].Eta()),
+						  ntuple->METLV[0].Et(),
+						  weight);
       plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
       plots[leptonCat]["WmT"]->Fill(WmT, weight);
       plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
@@ -774,8 +777,15 @@ int main(int argc,char**argv) {
    MapOfPlots plots = getPlots(UserFunctions::leptonCat,norm_data);
    
    // The vector holding all processes.
-   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag, true, true, DEFS::EventNtuple);// DEFS::MicroNtuple);
+   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag,
+								     true, true, 
+								     DEFS::EventNtuple);// DEFS::MicroNtuple);
       
+   // Report Scale Factors
+   for (unsigned p = 0; p< procs.size(); p++)
+     cout<<"Process "<<procs[p]->name<<"\t will be scaled by "<<procs[p]->getScaleFactor(DEFS::electron)<<endl;
+
+
    // Fill all the plots 
    doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, 
              UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, MVAWeightDir,
@@ -806,6 +816,7 @@ int main(int argc,char**argv) {
 void writePlotsToFile(TString histoFileName, TString canvasFileName, 
                       MapOfPlots & plots,  vector<PhysicsProcess*> procs){
 
+
    //Get the canvas and write them to file and as png and eps
    cout<<"Writing canvas to rootfile "<<canvasFileName<<endl;
    TFile * canOutFile = new TFile(canvasFileName,"RECREATE");
@@ -820,17 +831,24 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
          can->SaveAs(canName+".eps");
       }
    canOutFile->Close();
-  
+
+
    //Get the Histos and write them to file
+   //NOTE: this needs to be done AFTER the writing of the canvases as the
+   //      scaling of the histos is done at that stage. 
    cout<<"Writing histos to rootfile "<<histoFileName<<endl;
-   TFile * hisOutFile = new TFile(histoFileName,"RECREATE");
-   hisOutFile->Close();
-   for ( MapOfPlots::iterator p = plots.begin(); p != plots.end() ; p++)
+   bool firstH = true;
+   for ( MapOfPlots::iterator p = plots.begin(); p != plots.end() ; p++){
       for ( map<string,  Plot * >::iterator p2 = p->second.begin();
             p2 != p->second.end() ; p2++){
-         ((FormattedPlot*) p2->second)->saveHistogramsToFile(histoFileName,"UPDATE");
-      }
-  
+	if ( firstH ){
+	  ((FormattedPlot*) p2->second)->saveHistogramsToFile(histoFileName,"RECREATE");
+	  firstH = false;
+	}
+	else
+	  ((FormattedPlot*) p2->second)->saveHistogramsToFile(histoFileName,"UPDATE");
+      }// for histos inside plot
+   }// for plots  
 
 }//writePlotsToFile
 
@@ -887,6 +905,13 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
      -1.218, -1.131, -1.044, -0.957, -0.879, -0.783, -0.696, -0.609, -0.522, 
      -0.435, -0.348, -0.261, -0.174, -0.087, 
      +0.000, 
+     +0.087, +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, 
+     +0.879, +0.957, +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, 
+     +1.653, +1.740, +1.830, +1.930, +2.043, +2.172, +2.322, +2.500, +2.650, 
+     +2.853, +2.964, +3.139, +3.314, +3.489, +3.664, +3.839, +4.013, +4.191, 
+     +4.363, +4.538, +4.716, +4.889, +5.191};
+   
+   Double_t absetabins[42] = {0.000, 
      +0.087, +0.174, +0.261, +0.348, +0.435, +0.522, +0.609, +0.696, +0.783, 
      +0.879, +0.957, +1.044, +1.131, +1.218, +1.305, +1.392, +1.479, +1.566, 
      +1.653, +1.740, +1.830, +1.930, +2.043, +2.172, +2.322, +2.500, +2.650, 
@@ -988,6 +1013,19 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a = new FormattedPlot;
    name = "MET_vs_LeptEta";
    a->templateHisto = new TH2D(name + lepStr, name, 82, etabins, 1000,0,500);
+   a->axisTitles.push_back("Lepton #eta");
+   a->axisTitles.push_back("MET");
+   a->axisTitles.push_back("Number of Events" );
+   a->range = make_pair(-4,4);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "MET_vs_AbsLeptEta";
+   a->templateHisto = new TH2D(name + lepStr, name, 41, absetabins, 1000,0,500);
    a->axisTitles.push_back("Lepton #eta");
    a->axisTitles.push_back("MET");
    a->axisTitles.push_back("Number of Events" );
