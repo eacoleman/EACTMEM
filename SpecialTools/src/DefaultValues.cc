@@ -139,7 +139,8 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    xsec[DEFS::electron] = getCrossSectionAndError(prName).first;
    xsec[DEFS::muon]     = getCrossSectionAndError(prName).first;
    map<DEFS::LeptonCat,double> lumi;
-   if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data){
+   if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data ||
+       process==DEFS::PhysicsProcess::QCD_ElFULL){
       lumi[DEFS::electron] = 1.0;
       lumi[DEFS::muon]     = 1.0;
    }
@@ -273,11 +274,6 @@ vector < PhysicsProcess * > DefaultValues::getProcessesWW(DEFS::JetBin jetBin,
   procs.push_back(DEFS::PhysicsProcess::ZJets     );
   //procs.push_back(DEFS::PhysicsProcess::Ztautau );
   //procs.push_back(DEFS::PhysicsProcess::QCDMu               );
-  //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80      );
-  //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170     );
-  //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80   );
-  //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170  );
-  //procs.push_back(DEFS::PhysicsProcess::QCD250  );
   procs.push_back(DEFS::PhysicsProcess::WW      );
   procs.push_back(DEFS::PhysicsProcess::WZ      );
   //procs.push_back(DEFS::PhysicsProcess::ZZ    );
@@ -315,11 +311,13 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::ZJets);
    //procs.push_back(DEFS::PhysicsProcess::Ztautau);
    //procs.push_back(DEFS::PhysicsProcess::QCDMu);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
    procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL); // use to derive QCD scale factors
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD250  );
@@ -330,12 +328,6 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::qqH125);
    procs.push_back(DEFS::PhysicsProcess::WH125);
    
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
 
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
