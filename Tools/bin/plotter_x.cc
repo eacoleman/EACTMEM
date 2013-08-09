@@ -962,7 +962,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
  
    a = new FormattedPlot;
    name = "LeptEta";
-   a->templateHisto = new TH1D(name + lepStr, name,50,-5,5);
+   a->templateHisto = new TH1D(name + lepStr, name, 82, etabins);
    a->axisTitles.push_back("#eta^{lepton}");
    a->axisTitles.push_back("Number of Events ");
    a->range = make_pair(-3.,3.);
