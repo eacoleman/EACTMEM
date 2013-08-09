@@ -310,29 +310,35 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
             return false;
    }
 
+   // regardless of cut region cut on minimum lepton Pt 
+   if(ntuple->lLV[0].leptonCat == DEFS::electron && ntuple->lLV[0].Pt() < 30)
+     return false;
+   
+   if(ntuple->lLV[0].leptonCat == DEFS::muon && ntuple->lLV[0].Pt() < 25)
+     return false;
+
+
    //X axis cuts
    if (cutRegion.Contains("signal")){
 
-     // leading jet with ET > 30, and second leading with at least 25 GeV
-     if(ntuple->jLV[0].Et() < 30 || ntuple->jLV[1].Et() < 25)
-       return false;
-
-     if(ntuple->lLV[0].leptonCat == DEFS::electron && ntuple->lLV[0].Pt() < 30)
-       return false;
-
-     if(ntuple->lLV[0].leptonCat == DEFS::muon && ntuple->lLV[0].Pt() < 25)
+     // leading jet with PT > 30, and second leading with at least 25 GeV
+     if(ntuple->jLV[0].Pt() < 30 || ntuple->jLV[1].Pt() < 25)
        return false;
 
    }
    else if (cutRegion.Contains("control1")){
      
-     if (ntuple->jLV[0].Et() > 30 || ntuple->jLV[1].Et() > 30)
+     if (ntuple->jLV[0].Pt() > 30 || ntuple->jLV[1].Pt() > 25)
        return false;
    }
    else if (cutRegion.Contains("control2")){
-      if ((ntuple->jLV[0].Et() > 30 && ntuple->jLV[1].Et() > 30) || 
-          (ntuple->jLV[0].Et() < 30 && ntuple->jLV[1].Et() < 30))
+      if ((ntuple->jLV[0].Pt() > 30 && ntuple->jLV[1].Pt() > 25) || 
+          (ntuple->jLV[0].Pt() < 30 && ntuple->jLV[1].Pt() < 25))
          return false;
+   }
+   else if (cutRegion.Contains("control3")){
+     if(ntuple->jLV[0].Pt() > 30 && ntuple->jLV[1].Pt() > 25)
+       return false;
    }
    else if (!cutRegion.Contains("all"))
       return false;
