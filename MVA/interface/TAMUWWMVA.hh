@@ -17,6 +17,7 @@
 // User Defined Includes
 //
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 
 //
 // ROOT includes
@@ -74,8 +75,9 @@ public:
    // Construction/Destruction
    //
    TAMUWWMVA();
-   TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
-             TString tn, double lum, vector<TString> p, TString ofb, TString of);
+   //TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
+   //          TString tn, double lum, vector<TString> p, TString ofb, TString of);
+   TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> p, TString ofb, TString of);
    virtual ~TAMUWWMVA();
 
    //
@@ -112,9 +114,10 @@ private:
    //
    // Member Data
    //
-   TString myMethodList, ifilePath, treeName, ofileBase, ofile;
-   vector<TString> ifilesSignal, ifilesBackground, plots;
-   double luminosity;
+   TString myMethodList, ofileBase, ofile;/*, ifilePath, treeName*/
+   vector<PhysicsProcess*> processes;
+   vector<TString> plots;/*ifilesSignal, ifilesBackground,*/
+   //double luminosity;
 
    ClassDef(TAMUWWMVA,1)
 };

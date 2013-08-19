@@ -21,15 +21,17 @@ TAMUWWMVA::TAMUWWMVA() {
 }
 
 //______________________________________________________________________________
-TAMUWWMVA::TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
-                     TString tn, double lum, vector<TString> p, TString ofb, TString of) {
+//TAMUWWMVA::TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
+//                     TString tn, double lum, vector<TString> p, TString ofb, TString of) {
+TAMUWWMVA::TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> p, TString ofb, TString of) {
    cout << "Making the TAMUWWMVA object...";
    myMethodList     = ml;
-   ifilePath        = ifp;
-   ifilesSignal     = ifs;
-   ifilesBackground = ifb;
-   treeName         = tn;
-   luminosity       = lum;
+   //ifilePath        = ifp;
+   //ifilesSignal     = ifs;
+   //ifilesBackground = ifb;
+   //treeName         = tn;
+   //luminosity       = lum;
+   processes        = proc;
    plots            = p;
    ofileBase        = ofb;
    if (of.IsNull())
@@ -220,33 +222,38 @@ void TAMUWWMVA::TMVAClassification() {
    vector<double> signalWeight;
    vector<double> backgroundWeight;
 
-   cout << "--- Factory                  : Weight = ( xsec * BR * lumi )/(Evts in PATtuple)" << endl;
+   cout << "--- Factory                  : Weight = ( xsec * BR * scale factor * lumi )/(Evts in PATtuple)" << endl;
 
-   for (unsigned int i=0; i<ifilesSignal.size(); i++) {
-      if (ifilesSignal[i].CompareTo("HWWMH150")==0) {
-         //signalWeight.push_back(getCrossSection("ggH150")*getBranchingRatio("ggH150")*luminosity/getNumMCEvts("ggH150"));
-         //evts in mc value in table is zero right now
-         signalWeight.push_back(DefaultValues::getCrossSectionAndError("ggH150").first*DefaultValues::getBranchingRatio("ggH150")*luminosity/109992.0);
+
+   for(unsigned int p=0; p<processes.size(); p++) {
+      if (processes[p]->getName().Contains("WH") || processes[p]->getName().Contains("ggH") || processes[p]->getName().Contains("qqH")){
+         factory->AddSignalTree(processes[p]->chain, processes[p]->getScaleFactor(DEFS::electron));
+
+         cout << "                             : Weight for signal (" << processes[p]->getName() << ") is " 
+              << processes[p]->sigma[DEFS::electron] << " * " << processes[p]->branching_ratio[DEFS::electron] << " * "
+              << processes[p]->scaleFactor[DEFS::electron] << " * " << processes[p]->intLum[DEFS::electron] << " // " 
+              << processes[p]->initial_events[DEFS::electron] << " = " << processes[p]->getScaleFactor(DEFS::electron) << endl;
       }
-      else
-         signalWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first*DefaultValues::getBranchingRatio(ifilesSignal[i])*luminosity/DefaultValues::getNumMCEvts(ifilesSignal[i]));
+      else {
+         factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(DEFS::electron));
+
+         cout << "                             : Weight for background (" << processes[p]->getName() << ") is " 
+              << processes[p]->sigma[DEFS::electron] << " * " << processes[p]->branching_ratio[DEFS::electron] << " * "
+              << processes[p]->scaleFactor[DEFS::electron] << " * " << processes[p]->intLum[DEFS::electron] << " // " 
+              << processes[p]->initial_events[DEFS::electron] << " = " << processes[p]->getScaleFactor(DEFS::electron) << endl;
+      }
+   }
+
+
+/*
+   for (unsigned int i=0; i<ifilesSignal.size(); i++) {
+      signalWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first*DefaultValues::getBranchingRatio(ifilesSignal[i])*luminosity/DefaultValues::getNumMCEvts(ifilesSignal[i]));
       inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesSignal[i] + "_EPDv01.root"));
       signal.push_back((TTree*)inputs.back()->Get("mnt"));
       factory->AddSignalTree(signal.back(), signalWeight.back());
-      if (ifilesSignal[i].CompareTo("HWWMH150")==0) {
-         /*
-         cout << "                             : Weight for signal (ggH150) is " 
-              << getCrossSection("ggH150") << " * " << getBranchingRatio("ggH150") << " * " << luminosity << " // " 
-              << getNumMCEvts("ggH150") << " = " << signalWeight.back() << endl;
-         */
-         cout << "                             : Weight for signal (ggH150) is " 
-              << DefaultValues::getCrossSectionAndError("ggH150").first << " * " << DefaultValues::getBranchingRatio("ggH150") << " * " << luminosity << " // " 
-              << 109992.0 << " = " << signalWeight.back() << endl;
-      }
-      else
-         cout << "                             : Weight for signal (" << ifilesSignal[i] << ") is " 
-              << DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesSignal[i]) << " * " << luminosity << " // " 
-              << DefaultValues::getNumMCEvts(ifilesSignal[i]) << " = " << signalWeight.back() << endl;
+      cout << "                             : Weight for signal (" << ifilesSignal[i] << ") is " 
+           << DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesSignal[i]) << " * " << luminosity << " // " 
+           << DefaultValues::getNumMCEvts(ifilesSignal[i]) << " = " << signalWeight.back() << endl;
    }
 
    for (unsigned int i=0; i<ifilesBackground.size(); i++) {
@@ -258,6 +265,8 @@ void TAMUWWMVA::TMVAClassification() {
            << DefaultValues::getCrossSectionAndError(ifilesBackground[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesBackground[i]) << " * " << luminosity 
            << " // " << DefaultValues::getNumMCEvts(ifilesBackground[i]) << " = " << backgroundWeight.back() << endl;
    }
+*/
+
 
    for (unsigned int i=0; i<inputs.size(); i++) {
       cout << "--- TMVAClassification : Using input file: " << inputs[i]->GetName() << "(METree)" << endl;
