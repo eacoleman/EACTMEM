@@ -32,10 +32,15 @@
 
 //Our libraries
 #include "TAMUWW/MVA/interface/TAMUWWMVA.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
+#include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 
 //ROOT libraries
 #include "TBenchmark.h"
+
+//C++ Libraries
+#include <string>
 
 using namespace TMVA;
 using namespace std;
@@ -57,17 +62,21 @@ int main(int argc, char**argv) {
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
 
-   bool            train            = cl.getValue<bool>     ("train",                                         true);
-   bool            plot             = cl.getValue<bool>     ("plot",                                          true);
-   TString         myMethodList     = cl.getValue<TString>  ("myMethodList",                                    "");
-   TString         ifilePath        = cl.getValue<TString>  ("ifilePath", "/uscms/home/ilyao/nobackup/Spring12ME7TeV/MEResults/microNtuples_oldStructure/");
-   vector<TString> ifilesSignal     = cl.getVector<TString> ("ifilesSignal",                             "WW:::WZ");
-   vector<TString> ifilesBackground = cl.getVector<TString> ("ifilesBackground", "WJets:::DYJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar");
-   TString         treeName         = cl.getValue<TString>  ("treeName",                                  "METree");
-   double          luminosity       = cl.getValue<double>   ("luminosity",                                  5020.0);
-   vector<TString> plots            = cl.getVector<TString> ("plots",                                           "");
-   TString         ofileBase        = cl.getValue<TString>  ("ofileBase",                                   "TMVA");
-   TString         ofile            = cl.getValue<TString>  ("ofile",                                           "");
+   bool            train            = cl.getValue<bool>         ("train",            true);
+   bool            plot             = cl.getValue<bool>         ("plot",             true);
+   TString         myMethodList     = cl.getValue<TString>      ("myMethodList",     "MLP:::BDT:::KNN");
+   vector<TString> plots            = cl.getVector<TString>     ("plots",            "");
+   TString         ofileBase        = cl.getValue<TString>      ("ofileBase",        "TMVA");
+   TString         ofile            = cl.getValue<TString>      ("ofile",            "");
+   string          jetBinS          = cl.getValue<string>       ("jetBin",           "jets2");
+   DEFS::JetBin    jetBin           = DEFS::getJetBin(jetBinS);
+   string          tagcatS          = cl.getValue<string> ("tagcat",           "pretag");
+   DEFS::TagCat    tagcat           = DEFS::getTagCat(tagcatS);
+   //TString         ifilePath        = cl.getValue<TString>  ("ifilePath", "/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples_optimized");
+   //vector<TString> ifilesSignal     = cl.getVector<TString> ("ifilesSignal",     "ggH125:::qqH125:::WH125");
+   //vector<TString> ifilesBackground = cl.getVector<TString> ("ifilesBackground", "WW:::WZ:::WJets:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::QCD_Electron_Dp6p7");
+   //TString         treeName         = cl.getValue<TString>  ("treeName",         "METree");
+   //double          luminosity       = cl.getValue<double>   ("luminosity",       19148.0);
    
    if (!cl.check()) return 0;
    cl.print();
@@ -76,8 +85,11 @@ int main(int argc, char**argv) {
    m_benchmark->Reset();
    m_benchmark->Start("event");
 
-   TAMUWWMVA* mva = new TAMUWWMVA(myMethodList, ifilePath, ifilesSignal, ifilesBackground,
-                                  treeName, luminosity, plots, ofileBase, ofile);
+   vector<PhysicsProcess*> processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
+
+   //TAMUWWMVA* mva = new TAMUWWMVA(myMethodList, ifilePath, ifilesSignal, ifilesBackground,
+   //                               treeName, luminosity, plots, ofileBase, ofile);
+   TAMUWWMVA* mva = new TAMUWWMVA(myMethodList, processes, plots, ofileBase, ofile);
 
    if (train)
       mva->TMVAClassification();
