@@ -378,7 +378,6 @@ void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned 
   TFile outputFile(output, "RECREATE");
   TTree* outputTree = chain.CloneTree(0);
   MicroNtuple * microNtuple = new MicroNtuple(nJets);
-  microNtuple->indexMap = meNtuple->fillIndexMap();
   //MicroNtuple::indexMap1 indexMapWH = indexMap[DEFS::EP::WH];
   //MicroNtuple::indexMap1 indexMapHWW = indexMap[DEFS::EP::HWW];
   outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
@@ -399,6 +398,12 @@ void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned 
   for (unsigned ientry = 0; ientry < nentries; ++ientry){
     // get the entry
     chain.GetEntry(ientry);
+
+    if (ientry%10000 == 0)
+       cout << "MicroNtupleMaker::makeMicroNtuple Doing entry " << ientry << " ..." << endl;
+
+    if (ientry == 0)
+       microNtuple->indexMap = meNtuple->fillIndexMap();
 
     // clear the microNtuple
     microNtuple->clear();
@@ -421,6 +426,7 @@ void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned 
     int counterHWW = 0;
     int counterWH = 0;
     int counterH = 0;
+    microNtuple->epdPretagHiggs.Set(MicroNtuple::nHiggsMasses);
     for(int i = 0; i < meNtuple->getNProbStat(); ++i) {
        if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW) {
           microNtuple->epd1tagHWW[counterHWW] = 0;//microNtuple->calcHWWEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
@@ -431,7 +437,8 @@ void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned 
           microNtuple->epd2tagWH[counterWH++] = 0;//microNtuple->calcWHEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
        }
        if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW || meNtuple->getProbStat(i)->tmeType == DEFS::EP::WH) {
-          microNtuple->epdPretagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam);
+          //microNtuple->epdPretagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam);
+          microNtuple->epdPretagHiggs.AddAt(counterH,microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam));
           microNtuple->epd1tagHiggs[counterH] = 0;//microNtuple->calcHiggsEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
           microNtuple->epd2tagHiggs[counterH++] = 0;//microNtuple->calcHiggsEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
        }

@@ -206,12 +206,12 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
          plots[leptonCat]["Mjj_Mjj_Mt_MET_DeltaR_DeltaR"]->Fill(coord,1.0,weight);
       }
    }
-  
-   if (metree) { 
-      for (unsigned int tep=0; tep<15; tep++) {
-         string name = UserFunctions::concatString("tEventProb",tep) + "";
+
+   if (metree) {
+      for (unsigned int tep=0; tep<MicroNtuple::nEventProb; tep++) {
+         string name = UserFunctions::concatString("tEventProb",tep);
          //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
-         plots[leptonCat][name]->Fill(log(metree->getProbStat(tep)->tEventProb),weight);
+         plots[leptonCat][name]->Fill(TMath::Log10(metree->getProbStat(tep)->tEventProb),weight);
       }
 
       double tEventProb0 = metree->getProbStat(0)->tEventProb;
@@ -224,7 +224,9 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
    }
 
    if (mnt) {
-      plots[leptonCat]["epdPretagWWandWZ"]->Fill(log(mnt->epdPretagWWandWZ),weight); 
+      plots[leptonCat]["epdPretagWWandWZ"]->Fill(TMath::Log10(mnt->epdPretagWWandWZ),weight);
+      plots[leptonCat]["epdPretagHiggs125"]->Fill(TMath::Log10(mnt->epdPretagHiggs.At(6)),weight);
+
       if (!MVAMethods.empty() && ntuple) {
          //cout << "MVADiscriminator_electron = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
          //cout << "MVAProbability_electron = " << mnt->getMVAOutput(MVAMethods).front()["probability"] << endl;
@@ -339,6 +341,20 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
    else if (cutRegion.Contains("control3")){
      if(ntuple->jLV[0].Pt() > 30 && ntuple->jLV[1].Pt() > 25)
        return false;
+   }
+   else if (cutRegion.Contains("control4")){
+      if(ntuple->jLV.size()<4)
+         return false;
+   }
+   else if (cutRegion.Contains("control5")){
+      int nBtag = 0;
+      for(unsigned int j=0; j<ntuple->jLV.size();j++) {
+         if(ntuple->jLV[j].jBtagCSV==1)
+            nBtag++;
+      }
+      if(ntuple->jLV.size()<4 || nBtag>0) {
+         return false;
+      }
    }
    else if (!cutRegion.Contains("all"))
       return false;
@@ -733,8 +749,10 @@ int main(int argc,char**argv) {
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
 
-   string          lepCat            = cl.getValue<string>  ("lep",         "both");
+   string           lepCat           = cl.getValue<string>  ("lep",         "both");
    UserFunctions::leptonCat          = DEFS::getLeptonCat   (lepCat);
+   string           ntype            = cl.getValue<string>  ("ntype","EventNtuple");
+   DEFS::NtupleType ntupleType       = DEFS::getNtupleType  (ntype);
    UserFunctions::doJER              = cl.getValue<bool>    ("doJer",        false);
    UserFunctions::doMETPhiCorrection = cl.getValue<bool>    ("doMETPhi",     false);
    UserFunctions::doPUreweight       = cl.getValue<bool>    ("doPUrewt",      true);
@@ -746,10 +764,10 @@ int main(int argc,char**argv) {
    UserFunctions::QCDweight          = cl.getValue<bool>    ("QCDweight",    false);
    UserFunctions::verbose            = cl.getValue<bool>    ("verbose",      false);
    UserFunctions::fillTMDF           = cl.getValue<bool>    ("fillTMDF",     false);
-   bool            norm_data         = cl.getValue<bool>    ("norm_data",    false);
-   int             maxEvts           = cl.getValue<int>     ("maxEvts",          0);
-   TString         MVAWeightDir      = cl.getValue<TString> ("MVAWeightDir",    "");
-   vector<TString> MVAMethods        = cl.getVector<TString>("MVAMethods",      "");
+   bool             norm_data        = cl.getValue<bool>    ("norm_data",    false);
+   int              maxEvts          = cl.getValue<int>     ("maxEvts",          0);
+   TString          MVAWeightDir     = cl.getValue<TString> ("MVAWeightDir",    "");
+   vector<TString>  MVAMethods       = cl.getVector<TString>("MVAMethods",      "");
 
 
    if (!cl.check()) return 0;
@@ -784,8 +802,8 @@ int main(int argc,char**argv) {
    
    // The vector holding all processes.
    vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag,
-								     true, true, 
-								     DEFS::EventNtuple);// DEFS::MicroNtuple);
+                                                                     true, true, 
+                                                                     ntupleType); //DEFS::EventNtuple);// DEFS::MicroNtuple);
       
    // Report Scale Factors
    for (unsigned p = 0; p< procs.size(); p++)
@@ -892,7 +910,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    // The overlay of a scaled signal. For signalName pick the groupingName 
    // of one of the processes. Or just "" if you don't want a signal overlayed.
    TString signalName = "ggH+WH+qqH(125)";
-   double signalFactor = 500;
+   double signalFactor = 500; //1000?
 
    Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
    Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
@@ -1481,19 +1499,19 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
 
-   for (unsigned int tep=0; tep<15; tep++) {
+   for (unsigned int tep=0; tep<MicroNtuple::nEventProb; tep++) {
       a = new FormattedPlot;
       name = TString(UserFunctions::concatString("tEventProb",tep));
-      string xaxis = UserFunctions::concatString("log(tEventProb[",tep) + "])";
-      a->templateHisto = new TH1D(name + lepStr, name,70,-45,0);
+      string xaxis = UserFunctions::concatString("log10(tEventProb[",tep) + "])";
+      a->templateHisto = new TH1D(name + lepStr, name,180,-45,0);
       a->axisTitles.push_back(xaxis);
       a->axisTitles.push_back("Number of Events");
       if (tep==14)
-         a->range = make_pair(-45,0);
+         a->range = make_pair(-25,0);
       else
-         a->range = make_pair(-35,0);
+         a->range = make_pair(-25,0);
       a->normToData = norm_data;
-      a->stacked = true; a->leptonCat = DEFS::both;
+      a->stacked = true; a->leptonCat = DEFS::electron;
       a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots[leptonCat][string(name)] = a;
@@ -1506,7 +1524,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(-0.05,0.65);
    a->normToData = norm_data;
-   a->stacked = true; a->leptonCat = DEFS::both;
+   a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
@@ -1518,20 +1536,33 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(0,1);
    a->normToData = norm_data;
-   a->stacked = true; a->leptonCat = DEFS::both;
+   a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
 
    a = new FormattedPlot;
    name = "epdPretagWWandWZ";
-   a->templateHisto = new TH1D(name + lepStr, name, 22,-11.0,0.0);
-   a->axisTitles.push_back("log(epdPretagWWandWZ)");
+   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,0.0);
+   a->axisTitles.push_back("log10(epdPretagWWandWZ)");
    a->axisTitles.push_back("Number of Events");
-   a->range = make_pair(-11,0);
+   a->range = make_pair(-7.0,0.0);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
-   a->stacked = true; a->leptonCat = DEFS::both;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "epdPretagHiggs125";
+   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,0.0);
+   a->axisTitles.push_back("log10(epdPretagHiggs125)");
+   a->axisTitles.push_back("Number of Events");
+   a->range = make_pair(-7.0,0.0);
+   a->logxy = make_pair(false,false);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
@@ -1544,7 +1575,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->range = make_pair(0,1);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
-   a->stacked = true; a->leptonCat = DEFS::both;
+   a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
@@ -1557,7 +1588,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->range = make_pair(-pi,pi);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
-   a->stacked = true; a->leptonCat = DEFS::both;
+   a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
@@ -1575,7 +1606,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   ((TProfileMDF*)a->templateHisto)->AddAxis("j2eta",10,0,2.5);
   ((TProfileMDF*)a->templateHisto)->Sumw2();
   a->normToData = norm_data;
-  a->stacked = true; a->leptonCat = DEFS::both;
+  a->stacked = true; a->leptonCat = DEFS::electron;
   a->overlaySignalName = signalName;
   a->overlaySignalFactor = signalFactor;
   plots[leptonCat][string(name)] = a;
@@ -1591,7 +1622,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
   ((TProfileMDF*)a->templateHisto)->AddAxis("p_{T}^{jet_{2}} [GeV]",9,jetptbinshigh);
   ((TProfileMDF*)a->templateHisto)->Sumw2();
   a->normToData = norm_data;
-  a->stacked = true; a->leptonCat = DEFS::both;
+  a->stacked = true; a->leptonCat = DEFS::electron;
   a->overlaySignalName = signalName;
   a->overlaySignalFactor = signalFactor;
   plots[leptonCat][string(name)] = a;
@@ -1606,7 +1637,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
       ((TProfileMDF*)a->templateHisto)->AddAxis("#DeltaR(#mu,jet1) [Radians]",10,DRlepjet1high);
       ((TProfileMDF*)a->templateHisto)->Sumw2();
       a->normToData = norm_data;
-      a->stacked = true; a->leptonCat = DEFS::both;
+      a->stacked = true; a->leptonCat = DEFS::electron;
       a->overlaySignalName = signalName;
       a->overlaySignalFactor = signalFactor;
       plots[leptonCat][string(name)] = a;
