@@ -3,8 +3,9 @@
 CellClass=TableCellText
 
 Process                 |   FilePath_EventNtuple              |   FilePath_MicroNtuple
-#BasePath               | /uscms_data/d3/ilyao/Winter12to13ME8TeV/MEInput/  | /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEResults/microNtuples/
-BasePath                | /uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/    | /uscms_data/d3/ilyao/Winter12to13ME8TeV/MEResults/microNtuples/
+#BasePath               | /uscms_data/d3/ilyao/Winter12to13ME8TeV/MEInput/         | /uscms/home/ilyao/nobackup/Winter12to13ME8TeV/MEResults/microNtuples/
+#BasePath               | /uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/    | /uscms_data/d3/ilyao/Winter12to13ME8TeV/MEResults/microNtuples/
+BasePath                | /uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/    | /uscms/home/aperloff/nobackup/Summer12ME8TeV/MEResults/microNtuples_optimized/
 SingleEl_Data		|   SingleEl_Data_19p148fb.root       |   microSingleEl_Data_19p148fb_BaseCuts.root
 SingleMu_Data		|   SingleMu_Data_19p279fb.root       |   microSingleMu_Data_19p279fb_BaseCuts.root
 STopS_T    		|   STopS_T.root                      |   microSTopS_T_BaseCuts.root   
@@ -37,7 +38,7 @@ Ztautau                 |                                     |
 QCD     		|                                     |
 QCD_Pt20_MuEnriched     |                                     |
 QCD_MuEnriched          |                                     |
-QCD_ElEnriched          |  QCD_Electron.root                  |   microQCD_Electron_BaseCuts.root
+QCD_ElEnriched          |  QCD_Electron.root                  |   microQCD_Electron_Dp6p7_BaseCuts.root
 QCD_ElFULL              |  SingleEl_Full.root                 |   SingleEl_Full.root
 QCD_Pt20to30_EMEnriched   |  QCD_EM_20to30.root               | QCD_EM_20to30.root               
 QCD_Pt30to80_EMEnriched   |  QCD_EM_30to80.root               | QCD_EM_30to80.root               
