@@ -92,9 +92,11 @@ const ProbStat* METree::getProbStat(unsigned index) const
 indexMap2 METree::fillIndexMap(){
 
    indexMap.clear();
-
+   //cout << "fillIndexMap" << endl;
    for(int i=0; i<getNProbStat(); i++) {
-      indexMap[getProbStat(i)->tmeType].insert(make_pair(getProbStat(i)->tmeParam,i));
+      //indexMap[getProbStat(i)->tmeType].insert(make_pair(getProbStat(i)->tmeParam,i));
+      //cout << "tmeType = " << getProbStat(i)->tmeType << " tmeParam = " <<  getProbStat(i)->tmeParam << " index = " << i << endl;
+      indexMap[getProbStat(i)->tmeType].insert(std::pair<double,int>(getProbStat(i)->tmeParam,i));
    }
 
    return indexMap;

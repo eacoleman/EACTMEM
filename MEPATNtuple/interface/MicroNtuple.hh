@@ -2,6 +2,7 @@
 #define MICRONTUPLE_HH
 
 #include "TObject.h"
+#include "TArrayD.h"
 #if not defined(__CINT__) || defined(__MAKECINT__)
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
@@ -11,6 +12,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sstream>
 
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
@@ -64,12 +66,14 @@ public:
   Double_t epd2tagHWW[nHWWmasses];
 
   enum {nHiggsMasses = 49};
-  Double_t epdPretagHiggs[nHiggsMasses];
+  TArrayD epdPretagHiggs;
   Double_t epd1tagHiggs[nHiggsMasses];
   Double_t epd2tagHiggs[nHiggsMasses];
 
   enum EPDType {kSchan = 0, kTchan = 1, kCombined = 2};
 
+  static void printIndexMap(indexMap2 & im);
+  static void checkIndexMap(indexMap2 & im);
   static void setIndexMap(const indexMap2 & im){indexMap = im;}
   static indexMap2 getIndexMap(){return indexMap;}
   static indexMap2 indexMap;
@@ -177,7 +181,7 @@ public:
                    std::vector<Double_t> &cutsMax, Double_t effS = 0.7);
    void setMjjMVA(double mjj);
 
-  ClassDef(MicroNtuple, 12)
+  ClassDef(MicroNtuple, 13)
 
 };
 
