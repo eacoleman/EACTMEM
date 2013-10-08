@@ -161,12 +161,8 @@ void MatrixElement::beginJob() {
   divonneInt_reduceComputingTime.setSampleSet(true);//possibly change
   divonneInt_reduceComputingTime.setPseudoRandom(true);//possibly change
   divonneInt_reduceComputingTime.setNeval(0, static_cast<int>(1e7));
-}
 
-
-//______________________________________________________________________________
-void MatrixElement::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-   //MEJob job((*inputFile), string(outputFilename));
+  //MEJob job((*inputFile), string(outputFilename));
    
 // ************************
 // **** Dynamic Bounds ****
@@ -312,14 +308,18 @@ void MatrixElement::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   // ***************************
   // **** Command execution ****
   // ***************************
+  cout << "Before Event Loop" << endl;
   job->loopOverEvents();
+  cout << "After Event Loop" << endl;
   // job.massScan(100, 150, 10, "Top");
   // job.massScan(100, 150, 50, "Higgs");
   // job.massScan(100, 250, 50,"Top");
   // job.massScan(50, 200, 50,"Top");
 
-
 }
+
+//______________________________________________________________________________
+void MatrixElement::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {}
 
 
 //______________________________________________________________________________
