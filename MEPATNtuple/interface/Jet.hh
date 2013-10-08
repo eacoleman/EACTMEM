@@ -56,7 +56,7 @@ public:
    double jNumberOfDaughters;
 
    //Flavor
-   int partonFlavor;
+   int partonFlavour;
 
   // to sort the Jets in order of decreasing Pt
   static bool sortInDecreasingPt( const Jet & j1, const Jet & j2){

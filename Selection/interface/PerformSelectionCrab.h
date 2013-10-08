@@ -92,6 +92,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TGraph.h"
 #include "TLorentzVector.h"
 #include "TString.h"
 #include "TRegexp.h"
@@ -155,6 +156,9 @@ private:
    // lepton functions
    // MET functions
    void metSelection();
+   pair<double,double> getMETPhiCorrection_JetPhi(TString eraType);
+   pair<double,double> getMETPhiCorrection_NPV(TString eraType);
+   void doMETPhiCorrection(TString eraType_npv, TString eraType_jp);
    // additional (local) functions
    void getCollections(const edm::Event& iEvent, const edm::EventSetup& iSetup);
    void makeTPUDist();
@@ -164,9 +168,13 @@ private:
    bool matchGenParticles(const reco::Candidate* p1, const reco::Candidate* p2);
    /// matches jets to generator level objects
    pair<int, TLorentzVector> matchToGen(double eta, double phi);
+   void fillJetMap(map<Int_t, Int_t> & jetMap, bool jets);
+   vector<int> matchToGen_particleCollection(bool jets);
+   double getJERfactor(double pt, double eta, double ptgen);
    void ptSort(vector<Jet> & vec);
    void swap(TLorentzVector & x, TLorentzVector & y);
    int  max_position(vector<Jet> & vec, int from, int to);
+   int getBin(double x, const vector<double> boundaries, int length);
    /// increments the specified tables
    void incrementCounter(int nCut, unsigned int nJets, Table* t1, Table* t2, Table* t3 = 0);
    void printEventInformation(bool print, int cLevel, bool muon);
@@ -180,6 +188,7 @@ private:
    // program variables
    bool Data;
    bool saveGenParticles;
+   bool saveMETPhiPlots;
    bool noMETCut;
    bool invertEID;
    bool noMVAIsoCut;
@@ -187,12 +196,15 @@ private:
    bool elONLY;
    bool muONLY;
    bool OnVsOffShell;
-   bool StoreJets01;
+   bool StoreJets0;
+   bool StoreJet1;
    int SQWaT_Version;
    bool doTrackerIso;
    bool doDetectorIso;
    bool doPFIso;
    bool doMVAeleSel;
+   bool doJER;
+   bool doMETPhi;
    bool printEventInfo;
    bool printJetInfo;
    bool printLeptonInfo;
@@ -220,6 +232,26 @@ private:
    //TH2D* EffectiveAreaVsEta;
    //TH2D* rhoPrimeVsEta;
    //TH2D* ptVsEta;
+   TH1D* METPhi_BeforeCut;
+   TH1D* METPhi_AfterCut;
+   TH2D* METMagVsMETPhi_BeforeCut;
+   TH2D* METMagVsMETPhi_AfterCut;
+   TGraph* METxVsMETy_BeforeCut;
+   TGraph* METxVsMETy_AfterCut;
+   TH2D* METxVsNPV;
+   TH2D* METyVsNPV;
+   TH2D* METxVsNPV_0J;
+   TH2D* METyVsNPV_0J;
+   TH2D* METxVsNPV_1J;
+   TH2D* METyVsNPV_1J;
+   TH2D* METxVsJetPt;
+   TH2D* METyVsJetPt;
+   TH2D* METparaVsJPhi;
+   TH2D* METperpVsJPhi;
+   TH2D* METparaVsJPhi_1J;
+   TH2D* METperpVsJPhi_1J;
+   TH2D* METparaVsJPhi_1J_Pt[100];
+   TH2D* METperpVsJPhi_1J_Pt[100];
    // handle InputTags/sources
    edm::InputTag triggerSource;
    edm::InputTag vtxSource;
@@ -286,6 +318,7 @@ private:
    double j_phi;
    double j_DRlepton;
    double j_DRelMin;
+   double JERCor;
    double muPrim_DRjMin;
    double adphi;
    double CHEFMin;
@@ -411,7 +444,7 @@ private:
    TVector3 lp3;
    // MET variables
    vector<MET> METp4;
-   double MET_EtMin;
+   double MET_PtMin;
    bool MET_Pass;
    // additional variables
    double Mjj;
@@ -419,4 +452,6 @@ private:
    double lEta;
    //constants
    double etaBarrelMax;
+   int NPtBins;
+   vector<double> vpt;
 };

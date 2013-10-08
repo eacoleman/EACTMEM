@@ -29,17 +29,17 @@ inputFiles = cms.untracked.vstring(
 ##################
 # WZ Monte Carlo #
 ##################
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_9_1_Lph.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_99_1_pzW.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_98_1_77z.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_97_1_GnJ.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_96_1_wKp.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_95_1_2Ke.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_94_1_Aj2.root',
-#    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_93_1_LYz.root'
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_94_1_jEA.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_95_1_4be.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_96_1_hKm.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_97_1_KXp.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_98_1_0Yo.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_99_1_gd7.root',
+#'/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/WZ_TuneZ2star_8TeV_pythia6_tauola/SQWaT_PAT_43X_Fall12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_9_1_cBY.root'
 #####################
 # WJets Monte Carlo #
 #####################
+#'/store/user/lnujj/PatTuples_8TeV_53X-v1/jdamgov/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_217_0_c0L.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_518_1_QXj.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_517_1_N8m.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_510_1_87t.root'
@@ -54,17 +54,25 @@ inputFiles = cms.untracked.vstring(
 #############
 # Muon Data #
 #############
-#    '/store/user/lnujj/PATtuples/sboutle/SingleMu/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_jB0.root',
-#    '/store/user/lnujj/PATtuples/sboutle/SingleMu/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_RdL.root',
-#    '/store/user/lnujj/PATtuples/sboutle/SingleMu/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_RD8.root'
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_90_1_elI.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_91_1_OmO.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_WN4.root'
 #################
 # Electron Data #
 #################
-#    '/store/user/lnujj/PATtuples/sboutle/SingleElectron/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_qLJ.root',
-#    '/store/user/lnujj/PATtuples/sboutle/SingleElectron/SQWaT_PAT_52X_2012A-PromptReco-v1_v5//79dd4263edc1b886eee0f23fb76cda69/pat_52x_test_9_1_fwF.root'
+	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_9_1_Odn.root',
+#	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_86_1_9Fu.root',
+#	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_88_1_D3l.root',
+#	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_94_1_3Y2.root',
+#	'dcap:///pnfs/cms/WAX/11/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_v1_Electron2012B_Test/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_4_1_eDN.root',
+#	'dcap:///pnfs/cms/WAX/11/store/user/lnujj/PatTuples_8TeV_53X/jdg6y/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_v1_Electron2012B_Test/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_1_1_nnt.root'
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_107_1_FAG.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_99_1_Xl0.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_98_1_bH1.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_2js.root'
     )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.source = cms.Source("PoolSource",
                             skipEvents = cms.untracked.uint32(0),
                             fileNames = inputFiles )
@@ -91,7 +99,9 @@ process.PS.pileupSource      = cms.InputTag('addPileupInfo')                    
 
     #-----Trigger Information
 process.PS.muTrigger         = cms.vstring('HLT_IsoMu24_eta2p1_v*')                 # Muon trigger name
-process.PS.eleTrigger        = cms.vstring('HLT_Ele27_WP80_v*')                     # Electron trigger name 
+#process.PS.muTrigger         = cms.vstring('HLT_IsoMu24_*',"HLT_IsoMu30_*")                 # Muon trigger name
+process.PS.eleTrigger        = cms.vstring('HLT_Ele27_WP80_v*')                     # Electron trigger name
+#process.PS.eleTrigger        = cms.vstring('HLT_Ele27_*','HLT_Ele32_*')                     # Electron trigger name 
 
     #-----Program Level Inputs
 process.PS.outtablefilename  = cms.string("outputTable.txt") # name of the file containing the output/efficiency tables
@@ -107,17 +117,22 @@ process.PS.doTrackerIso      = cms.bool(False)               # if true, use a tr
 process.PS.doDetectorIso     = cms.bool(False)               # if true, use a rho corrected, detector based isolation cut
 process.PS.doPFIso           = cms.bool(True)                # if true, use a rho corrected, PF based isolation cut
 process.PS.doMVAeleSel       = cms.bool(True)                # if true, use the MVA based electron selection
+process.PS.noMVAIsoCut       = cms.bool(False)               # if true, turn off the MVA and PF isolation requirements to make a "Full" sample
+process.PS.doJER             = cms.bool(True)                # if true, JER corrections will be applied to all of the jets before passing selection
+process.PS.doMETPhi          = cms.bool(True)                # if true, the inherent METx and METy shifts will be corrected for using hard coded functions only needed before CMSSW_6_2_X
 
-process.PS.Data              = cms.bool(False)               # is the dataset from real data or Monte Carlo
-process.PS.MCpTrigger        = cms.bool(True)                # if true, only event that pass the trigger requirements will be saved
-process.PS.saveGenParticles  = cms.bool(True)                # save the generated particle information for hard scatter decays
+process.PS.Data              = cms.bool(True)               # is the dataset from real data or Monte Carlo
+process.PS.MCpTrigger        = cms.bool(False)                # if true, only event that pass the trigger requirements will be saved
+process.PS.saveGenParticles  = cms.bool(False)                # save the generated particle information for hard scatter decays
+process.PS.saveMETPhiPlots   = cms.bool(False)               # save the TH1D and TH2D plots that have to do with MET Phi Corrections.
 process.PS.noMETCut          = cms.bool(False)               # disregard the MET cut when storing the events
 process.PS.invertEID         = cms.bool(False)               # electrons which *fail* at least two of the EID requirements will be kept instead
 process.PS.PFlowLoose        = cms.bool(False)               # use the collections with the PF2PAT postfix=PFlowLoose (instead of PFlow)
 process.PS.elONLY            = cms.bool(False)               # only save the output if the lepton is an electron
 process.PS.muONLY            = cms.bool(False)               # only save the output if the lepton is a muon
 process.PS.OnVsOffShell      = cms.bool(False)               # save all the trees in the 2 jets tree and don't use any cuts
-process.PS.StoreJets01       = cms.bool(False)               # save the jets0 and jet1 trees
+process.PS.StoreJets0        = cms.bool(False)               # save the jets0 tree
+process.PS.StoreJet1         = cms.bool(True)                # save the jet1 tree
 
     #-----Event Variable Inputs
 process.PS.elcnt_Prim                 = cms.int32(0)
@@ -204,7 +219,7 @@ process.PS.elPrim_nMissingHits        = cms.int32(0)
 process.PS.elPrim_TrkIsoMax           = cms.double(0.1)
 process.PS.elPrim_DetIsoMax           = cms.double(0.05)
 process.PS.elPrim_PFIsoMax            = cms.double(0.1)
-process.PS.elPrim_PFIsoMin_invertEID  = cms.double(0.15)
+process.PS.elPrim_PFIsoMin_invertEID  = cms.double(0.3)
 
 process.PS.elLoose_ptMin              = cms.double(15.0)
 process.PS.elLoose_sigmaIetaIetaMaxEB = cms.double(0.01)
@@ -229,8 +244,8 @@ process.PS.elPFIsoConeSize            = cms.double(0.3)
     #-----Lepton Variable Inputs
 
     #-----MET Variable Inputs
-process.PS.MET_EtMin                  = cms.double(25)
-process.PS.MET_EtMin_invertEID        = cms.double(20)
+process.PS.MET_PtMin                  = cms.double(25)
+process.PS.MET_PtMin_invertEID        = cms.double(20)
 
     #-----Additional Variable Inputs
 process.PS.lTotIso                    = cms.double(-1)
@@ -245,6 +260,8 @@ process.PS.lEta                       = cms.double(-1)
 
     #-----Constant Inputs
 process.PS.etaBarrelMax               = cms.double(1.442) # the Maximum value of eta for the Barrel
+process.PS.NPtBins                       = cms.int32(13)
+process.PS.vpt                           = cms.vdouble(25,35,45,55,70,85,100,150,200,400,600,800,1000,1500)
 
 #!
 #! PATH

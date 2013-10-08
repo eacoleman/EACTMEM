@@ -55,13 +55,15 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    printLeptonInfo            =         iConfig.getParameter<bool>            ("printLeptonInfo");
    Data                       =         iConfig.getParameter<bool>            ("Data");
    saveGenParticles           =         iConfig.getParameter<bool>            ("saveGenParticles");
+   saveMETPhiPlots            =         iConfig.getParameter<bool>            ("saveMETPhiPlots");
    noMETCut                   =         iConfig.getParameter<bool>            ("noMETCut");
    invertEID                  =         iConfig.getParameter<bool>            ("invertEID");
    PFlowLoose                 =         iConfig.getParameter<bool>            ("PFlowLoose");
    elONLY                     =         iConfig.getParameter<bool>            ("elONLY");
    muONLY                     =         iConfig.getParameter<bool>            ("muONLY");
    OnVsOffShell               =         iConfig.getParameter<bool>            ("OnVsOffShell");
-   StoreJets01                =         iConfig.getParameter<bool>            ("StoreJets01");
+   StoreJets0                 =         iConfig.getParameter<bool>            ("StoreJets0");
+   StoreJet1                  =         iConfig.getParameter<bool>            ("StoreJet1");
 
    MCpTrigger                 =         iConfig.getParameter<bool>            ("MCpTrigger");
    SQWaT_Version              =         iConfig.getParameter<int>             ("SQWaT_Version");
@@ -70,6 +72,8 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    doPFIso                    =         iConfig.getParameter<bool>            ("doPFIso");
    doMVAeleSel                =         iConfig.getParameter<bool>            ("doMVAeleSel");
    noMVAIsoCut                =         iConfig.getParameter<bool>            ("noMVAIsoCut");
+   doJER                      =         iConfig.getParameter<bool>            ("doJER");
+   doMETPhi                   =         iConfig.getParameter<bool>            ("doMETPhi");
 
    //-----Event Variable Inputs
    elcnt_Prim                 =         iConfig.getParameter<int>             ("elcnt_Prim");
@@ -180,9 +184,9 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
 
    //-----MET Variable Inputs
    if (invertEID)
-      MET_EtMin               =         iConfig.getParameter<double>          ("MET_EtMin_invertEID");
+      MET_PtMin               =         iConfig.getParameter<double>          ("MET_PtMin_invertEID");
    else
-      MET_EtMin               =         iConfig.getParameter<double>          ("MET_EtMin");
+      MET_PtMin               =         iConfig.getParameter<double>          ("MET_PtMin");
 
    //-----Additional Variable Inputs
    Mjj                        =         iConfig.getParameter<double>          ("Mjj");
@@ -191,6 +195,8 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
 
    //-----Constant Inputs
    etaBarrelMax               =         iConfig.getParameter<double>          ("etaBarrelMax");
+   NPtBins                    =         iConfig.getParameter<int>             ("NPtBins");
+   vpt                        =         iConfig.getParameter<vector<double> > ("vpt");
 
 }
 
@@ -223,10 +229,12 @@ void PerformSelection::beginJob() {
    tableMu = fs->make<Table>(string(outtablenameMu),cuts,jets,"TableCellVal");
    tableLp = fs->make<Table>(string(outtablenameLp),cuts,jets,"TableCellVal");
    EvtNtuple = new EventNtuple();
-   if (StoreJets01) {
+   if (StoreJets0) {
       EvtTree_0Jets = fs->make<TTree>(getJetBinString(DEFS::jets0).c_str(), "Output tree");
-      EvtTree_1Jets = fs->make<TTree>(getJetBinString(DEFS::jet1).c_str(), "Output tree");
       EvtTree_0Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
+   }
+   if (StoreJet1) {
+      EvtTree_1Jets = fs->make<TTree>(getJetBinString(DEFS::jet1).c_str(), "Output tree");
       EvtTree_1Jets->Branch("EvtNtuple", "EventNtuple", &EvtNtuple);
    }
    EvtTree_2pJets = fs->make<TTree>((getJetBinString(DEFS::jets2)+"p").c_str(), "Output tree for matrix element");
@@ -234,6 +242,45 @@ void PerformSelection::beginJob() {
    if (!Data)
       TPUDist = fs->make<TH1D>("TPUDist","TPUDist",600,0,60);
    PFIsoDist = fs->make<TH1D>("PFIsoDist","PFIsoDist",1000,0,2);
+   if (saveMETPhiPlots) {
+      METPhi_BeforeCut = fs->make<TH1D>("METPhi_BeforeCut","METPhi_BeforeCut",63,-TMath::Pi(),TMath::Pi());
+      METPhi_AfterCut = fs->make<TH1D>("METPhi_AfterCut","METPhi_AfterCut",63,-TMath::Pi(),TMath::Pi());
+      METMagVsMETPhi_BeforeCut = fs->make<TH2D>("METMagVsMETPhi_BeforeCut","METMagVsMETPhi_BeforeCut",63,-TMath::Pi(),TMath::Pi(),2000,-1000,1000);
+      METMagVsMETPhi_AfterCut = fs->make<TH2D>("METMagVsMETPhi_AfterCut","METMagVsMETPhi_AfterCut",63,-TMath::Pi(),TMath::Pi(),2000,-1000,1000);
+      METxVsMETy_BeforeCut = fs->make<TGraph>();
+      METxVsMETy_AfterCut = fs->make<TGraph>();
+      METxVsNPV = fs->make<TH2D>("METxVsNPV","METxVsNPV",60,0,60,2000,-1000,1000);
+      METyVsNPV = fs->make<TH2D>("METyVsNPV","METyVsNPV",60,0,60,2000,-1000,1000);
+      METxVsNPV->Sumw2();
+      METyVsNPV->Sumw2();
+      METxVsNPV_0J = fs->make<TH2D>("METxVsNPV_0J","METxVsNPV_0J",60,0,60,2000,-1000,1000);
+      METyVsNPV_0J = fs->make<TH2D>("METyVsNPV_0J","METyVsNPV_0J",60,0,60,2000,-1000,1000);
+      METxVsNPV_0J->Sumw2();
+      METyVsNPV_0J->Sumw2();
+      METxVsNPV_1J = fs->make<TH2D>("METxVsNPV_1J","METxVsNPV_1J",60,0,60,2000,-1000,1000);
+      METyVsNPV_1J = fs->make<TH2D>("METyVsNPV_1J","METyVsNPV_1J",60,0,60,2000,-1000,1000);
+      METxVsNPV_1J->Sumw2();
+      METyVsNPV_1J->Sumw2();
+      METxVsJetPt = fs->make<TH2D>("METxVsJetPt","METxVsJetPt",200,0,1000,2000,-1000,1000);
+      METyVsJetPt = fs->make<TH2D>("METyVsJetPt","METyVsJetPt",200,0,1000,2000,-1000,1000);
+      METxVsJetPt->Sumw2();
+      METyVsJetPt->Sumw2();
+      METparaVsJPhi = fs->make<TH2D>("METparaVsJPhi","METparaVsJPhi",80,-4,4,2000,-1000,1000);
+      METperpVsJPhi = fs->make<TH2D>("METperpVsJPhi","METperpVsJPhi",80,-4,4,2000,-1000,1000);
+      METparaVsJPhi->Sumw2();
+      METperpVsJPhi->Sumw2();
+      METparaVsJPhi_1J = fs->make<TH2D>("METparaVsJPhi_1J","METparaVsJPhi_1J",80,-4,4,2000,-1000,1000);
+      METperpVsJPhi_1J = fs->make<TH2D>("METperpVsJPhi_1J","METperpVsJPhi_1J",80,-4,4,2000,-1000,1000);
+      METparaVsJPhi_1J->Sumw2();
+      METperpVsJPhi_1J->Sumw2();
+      for(int i=0; i<NPtBins; i++) {
+         METparaVsJPhi_1J_Pt[i] = fs->make<TH2D>(Form("METparaVsJPhi_1J_%.0fto%.0fGeV",vpt[i],vpt[i+1]),Form("METparaVsJPhi_1J_%.0fto%.0fGeV",vpt[i],vpt[i+1]),80,-4,4,2000,-1000,1000);
+         METparaVsJPhi_1J_Pt[i]->Sumw2();
+         METperpVsJPhi_1J_Pt[i] = fs->make<TH2D>(Form("METperpVsJPhi_1J_%.0fto%.0fGeV",vpt[i],vpt[i+1]),Form("METperpVsJPhi_1J_%.0fto%.0fGeV",vpt[i],vpt[i+1]),80,-4,4,2000,-1000,1000);
+         METperpVsJPhi_1J_Pt[i]->Sumw2();
+      }
+   }
+
 /*
    PhotonIsoVsEta = fs->make<TH2D>("PhotonIsoVsEta","PhotonIsoVsEta",1000,0,2,200,-5,5);
    NeutralHadronIsoVsEta = fs->make<TH2D>("NeutralHadronIsoVsEta","NeutralHadronIsoVsEta",1000,0,2,200,-5,5);
@@ -262,7 +309,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       
    //if (eventNumber!=2535884 && eventNumber!=3093466 && eventNumber!=9993322 && eventNumber!=3145918 && eventNumber!=3146025 && eventNumber!=4938770 && eventNumber!=4464867)
    //   return;
-   //if (eventNumber!=705349865)
+   //if (eventNumber!=5735078)
    //   return;
 
    //
@@ -316,6 +363,10 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    muonClear();
    muonSelection();
 
+   //
+   // MET Selection
+   //
+   metSelection();
       
    //
    // Jet Selection (without muon cleaning)
@@ -328,10 +379,16 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    if (jp4.size()>1)
       ptSort(jp4);
 
-   //
-   // MET Selection
-   //
-   metSelection();
+   if(doMETPhi) {
+      if(Data) {
+         //doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_data","pfMEtSysShiftCorrParameters_2012runAvsJPhi_TAMUWW_data");
+         doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_data","");
+      }
+      else {
+         //doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_mc","pfMEtSysShiftCorrParameters_2012runAvsJPhi_TAMUWW_mc");
+         doMETPhiCorrection("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_mc","");
+      }
+   }
 
    //
    // Set any further quantities that require all of the physics objects to be selected first
@@ -380,10 +437,44 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                         incrementCounter(6,Nj,tableEl,tableLp);
                         if (!muONLY) printEventInformation(printEventInfo, 5, false);
                         el_passStandard=true;
-                        if (MET_Pass) {
+                        if(saveMETPhiPlots) {
+                           METPhi_BeforeCut->Fill(METp4[0].Phi());
+                           METMagVsMETPhi_BeforeCut->Fill(METp4[0].Phi(),METp4[0].Mag());
+                           METxVsNPV->Fill(vp4[0].npv,METp4[0].X());
+                           METyVsNPV->Fill(vp4[0].npv,METp4[0].Y());
+                           METxVsMETy_BeforeCut->SetPoint(METxVsMETy_BeforeCut->GetN(),METp4[0].X(),METp4[0].Y());
+                           if(jp4.size()==0) {
+                              METxVsNPV_0J->Fill(vp4[0].npv,METp4[0].X());
+                              METyVsNPV_0J->Fill(vp4[0].npv,METp4[0].Y());
+                           }
+                           if(jp4.size()==1) {
+                              METxVsNPV_1J->Fill(vp4[0].npv,METp4[0].X());
+                              METyVsNPV_1J->Fill(vp4[0].npv,METp4[0].Y());
+                           }
+                           if(jp4.size()>0 && METp4.size()>0) {
+                              METxVsJetPt->Fill(jp4[0].Pt(),METp4[0].X());
+                              METyVsJetPt->Fill(jp4[0].Pt(),METp4[0].Y());
+                              METparaVsJPhi->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              METperpVsJPhi->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              if(jp4.size()==1) {
+                                 METparaVsJPhi_1J->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METperpVsJPhi_1J->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METparaVsJPhi_1J_Pt[getBin(jp4[0].Pt(),vpt,NPtBins)]->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METperpVsJPhi_1J_Pt[getBin(jp4[0].Pt(),vpt,NPtBins)]->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              }
+                           }
+                        }
+                        if (METp4[0].Pt() > MET_PtMin) {
                            incrementCounter(7,Nj,tableEl,tableLp);
                            if (!muONLY) printEventInformation(printEventInfo, 6, false);
                            el_passAll=true;
+                           //METp4[0].SetX(METp4[0].Px() + 0.179189);
+                           //METp4[0].SetY(METp4[0].Py() + 3.32732);
+                           if(saveMETPhiPlots) {
+                              METxVsMETy_AfterCut->SetPoint(METxVsMETy_BeforeCut->GetN(),METp4[0].X(),METp4[0].Y());
+                              METPhi_AfterCut->Fill(METp4[0].Phi());
+                              METMagVsMETPhi_AfterCut->Fill(METp4[0].Phi(),METp4[0].Mag());
+                           }
                            //
                            // Record the Btag info
                            //
@@ -484,10 +575,44 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                         incrementCounter(6,Nj,tableMu,tableLp);
                         if (!elONLY) printEventInformation(printEventInfo, 5, true);
                         mu_passStandard=true;
-                        if (MET_Pass) {
+                        if (saveMETPhiPlots) {
+                           METPhi_BeforeCut->Fill(METp4[0].Phi());
+                           METMagVsMETPhi_BeforeCut->Fill(METp4[0].Phi(),METp4[0].Mag());
+                           METxVsNPV->Fill(vp4[0].npv,METp4[0].X());
+                           METyVsNPV->Fill(vp4[0].npv,METp4[0].Y());
+                           METxVsMETy_BeforeCut->SetPoint(METxVsMETy_BeforeCut->GetN(),METp4[0].X(),METp4[0].Y());
+                           if(jp4.size()==0) {
+                              METxVsNPV_0J->Fill(vp4[0].npv,METp4[0].X());
+                              METyVsNPV_0J->Fill(vp4[0].npv,METp4[0].Y());
+                           }
+                           if(jp4.size()==1) {
+                              METxVsNPV_1J->Fill(vp4[0].npv,METp4[0].X());
+                              METyVsNPV_1J->Fill(vp4[0].npv,METp4[0].Y());
+                           }
+                           if(jp4.size()>0 && METp4.size()>0) {
+                              METxVsJetPt->Fill(jp4[0].Pt(),METp4[0].X());
+                              METyVsJetPt->Fill(jp4[0].Pt(),METp4[0].Y());
+                              METparaVsJPhi->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              METperpVsJPhi->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              if(jp4.size()==1) {
+                                 METparaVsJPhi_1J->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METperpVsJPhi_1J->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METparaVsJPhi_1J_Pt[getBin(jp4[0].Pt(),vpt,NPtBins)]->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].X())+(METp4[0].Y()*jp4[0].Y()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                                 METperpVsJPhi_1J_Pt[getBin(jp4[0].Pt(),vpt,NPtBins)]->Fill(jp4[0].Phi(),((METp4[0].X()*jp4[0].Y())-(METp4[0].Y()*jp4[0].X()))/TMath::Sqrt(TMath::Power(jp4[0].X(),2)+TMath::Power(jp4[0].Y(),2)));
+                              }
+                           }
+                        }
+                        if (METp4[0].Pt() > MET_PtMin) {
                            incrementCounter(7,Nj,tableMu,tableLp);
                            if (!elONLY) printEventInformation(printEventInfo, 6, true);
                            mu_passAll=true;
+                           //METp4[0].SetX(METp4[0].Px() + 0.179189);
+                           //METp4[0].SetY(METp4[0].Py() + 3.32732);
+                           if(saveMETPhiPlots) {
+                              METxVsMETy_AfterCut->SetPoint(METxVsMETy_BeforeCut->GetN(),METp4[0].X(),METp4[0].Y());
+                              METPhi_AfterCut->Fill(METp4[0].Phi());
+                              METMagVsMETPhi_AfterCut->Fill(METp4[0].Phi(),METp4[0].Mag());
+                           }
                            //
                            // Record the Btag info
                            //
@@ -617,10 +742,15 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       // Do the matching between the pat::Jets and the reco::genParticles
       pair<int, TLorentzVector> matchedPair;
       if (!Data) {
+         vector<int> pdgId = matchToGen_particleCollection(true);
+         if(pdgId.size()!=jp4.size()) cout <<"PerformSelection::Analyze::WARNING:: sizes don't match!!!"  << endl
+                                           << "recJets.size()=" << jp4.size() << "\t matches.size()=" << pdgId.size() << endl;
          for (unsigned int j = 0; j<jp4.size(); j++) {
             matchedPair = matchToGen(jp4[j].Eta(),jp4[j].Phi());
             EvtNtuple->jLV[j].matchedGenParticles = matchedPair.second;
-            EvtNtuple->jLV[j].matchedpdgId = matchedPair.first;
+            if(pdgId.size()==jp4.size()) {
+               EvtNtuple->jLV[j].matchedpdgId = pdgId[j];//matchedPair.first;
+            }
             EvtNtuple->jLV[j].matchedDeltaR = reco::deltaR(matchedPair.second.Eta(), matchedPair.second.Phi(), jp4[j].Eta(), jp4[j].Phi());
          }
       }
@@ -670,11 +800,11 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
          treeSwitch = 2;
       switch (treeSwitch) {
          case 0:
-            if (StoreJets01)
+            if (StoreJets0)
                EvtTree_0Jets->Fill();
             break;
          case 1:
-            if (StoreJets01)
+            if (StoreJet1)
                EvtTree_1Jets->Fill();
             break;
          case 2:
@@ -857,9 +987,26 @@ void PerformSelection::jetSelection() {
 
    const vector< pat::Jet >::const_iterator pfJetEnd = pfJetHandle->end();
    for (vector<pat::Jet>::const_iterator jetIter = pfJetHandle->begin(); pfJetEnd != jetIter; ++jetIter) { 
-      j_pt=jetIter->pt();
-      j_eta=jetIter->eta();
-      j_phi=jetIter->phi();
+
+      math::XYZTLorentzVector vvv = jetIter->p4();
+
+      if (doJER && !Data) {
+         // get the JER correction factor for this jet
+         jetIter->genJet() ? JERCor = getJERfactor(jetIter->pt(), jetIter->eta(), jetIter->genJet()->pt()) : JERCor = 1.0;
+
+         // recompute the met for this change
+         double newMetX = (1 - JERCor)*jetIter->p4().X() + METp4[0].X();
+         double newMetY = (1 - JERCor)*jetIter->p4().Y() + METp4[0].Y();
+
+         METp4[0].SetX(newMetX);
+         METp4[0].SetY(newMetY);
+
+         vvv *= JERCor;
+      }
+
+      j_pt=vvv.pt();
+      j_eta=vvv.eta();
+      j_phi=vvv.phi();
 
       //
       // loop through all of the leptons to check the DR with the current jet
@@ -880,7 +1027,7 @@ void PerformSelection::jetSelection() {
          else
             continue;
       }
-      
+
       //
       // Apply The Cut
       //
@@ -897,7 +1044,7 @@ void PerformSelection::jetSelection() {
          //
          // Corrected (reco) jet
          //
-         math::XYZTLorentzVector vvv = jetIter->p4();
+         //math::XYZTLorentzVector vvv = jetIter->p4();
          jp4.push_back(Jet(vvv.Px(),vvv.Py(),vvv.Pz(),vvv.E()));
          jp4.back().jChargedMultiplicity = jetIter->chargedMultiplicity();
          jp4.back().jNeutralMultiplicity = jetIter->neutralMultiplicity();
@@ -906,6 +1053,7 @@ void PerformSelection::jetSelection() {
          jp4.back().jChargedHadronEnergyFraction = jetIter->chargedHadronEnergyFraction();
          jp4.back().jChargedEmEnergyFraction = jetIter->chargedEmEnergyFraction();
          jp4.back().jNumberOfDaughters = jetIter->numberOfDaughters();
+         jp4.back().partonFlavour = jetIter->partonFlavour();
          //PFConstituents not in SQWaT PATtuples created by V00-00-04 or earlier
          if (SQWaT_Version >= 5)
             jp4.back().jPtD = getPtD(jetIter->getPFConstituents());
@@ -950,8 +1098,8 @@ void PerformSelection::jetSelection() {
          //
          jp4.back().jBtagDiscriminatorSSV = jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags");
          jp4.back().jBtagDiscriminatorTC = jetIter->bDiscriminator("trackCountingHighEffBJetTags");
-         jp4.back().jBtagDiscriminatorCSV = jetIter->bDiscriminator("combinedSVBJetTags");
-         jp4.back().jBtagDiscriminatorCSVMVA = jetIter->bDiscriminator("combinedSVMVABJetTags");
+         jp4.back().jBtagDiscriminatorCSV = jetIter->bDiscriminator("combinedSecondaryVertexBJetTags");
+         jp4.back().jBtagDiscriminatorCSVMVA = jetIter->bDiscriminator("combinedSecondaryVertexMVABJetTags");
          if (jetIter->bDiscriminator("simpleSecondaryVertexHighEffBJetTags")>bDiscriminatorSSVMin) {
             jp4.back().jBtagSSV = 1;
             nBtagSSV++;
@@ -970,7 +1118,7 @@ void PerformSelection::jetSelection() {
          } 
          else
             jp4.back().jBtagCSV = 0;
-         if (jetIter->bDiscriminator("combinedSVMVABJetTags")>bDiscriminatorCSVMVAMin) {
+         if (jetIter->bDiscriminator("combinedSecondaryVertexMVABJetTags")>bDiscriminatorCSVMVAMin) {
             jp4.back().jBtagCSVMVA = 1;
             nBtagCSVMVA++;
          } 
@@ -1455,13 +1603,179 @@ bool PerformSelection::eleEP(vector< pat::Electron >::const_iterator elIter) {
 
 //______________________________________________________________________________
 void PerformSelection::metSelection() {
-   MET_Pass = false;
+   //MET_Pass = false;
    METp4.clear();
 
    math::XYZTLorentzVector v = METHandle->front().p4();
    METp4.push_back(TLorentzVector(v.Px(),v.Py(),v.Pz(),v.E()));
 
-   MET_Pass = METp4[0].Et() > MET_EtMin;
+   //MET_Pass = METp4[0].Et() > MET_EtMin;
+}
+
+//______________________________________________________________________________
+pair<double,double> PerformSelection::getMETPhiCorrection_NPV(TString eraType) {
+   pair<double,double> METCor = std::make_pair(0,0);
+
+   //From SingleElectron RunD v1 p8
+   /*
+   METxVsNPV_0J
+   ****************************************
+   Minimizer is Linear
+   Chi2                      =      37.4033
+   NDf                       =           40
+   p0                        =     0.201051   +/-   0.10382
+   p1                        =     0.426627   +/-   0.0062184
+
+   METyVsNPV_0J
+   ****************************************
+   Minimizer is Linear
+   Chi2                      =      38.4546
+   NDf                       =           40
+   p0                        =    -0.913497   +/-   0.104427
+   p1                        =    -0.231199   +/-   0.0062539
+   */
+   if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_data")==0) {
+      //METCor.first  = +1.62143 + (0.489774*vp4[0].npv);
+      //METCor.second = -1.41580 - (0.314019*vp4[0].npv);
+      METCor.first  = +2.01051137751020431e-01 + (4.26626581124211535e-01*vp4[0].npv);
+      METCor.second = -9.13496683888803562e-01 - (2.31198930335691499e-01*vp4[0].npv);
+   }
+
+   //From WJets_part1 sample
+   /*
+   METxVsNPV_0J
+   ****************************************
+   Minimizer is Linear
+   Chi2                      =      43.6772
+   NDf                       =           48
+   p0                        =     0.290594   +/-   0.051253
+   p1                        =  -0.00352926   +/-   0.00320029
+   
+   METyVsNPV_0J
+   ****************************************
+   Minimizer is Linear
+   Chi2                      =      87.9294
+   NDf                       =           48
+   p0                        =     0.301828   +/-   0.0515022
+   p1                        =    -0.199738   +/-   0.00321429
+   */
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsNvtx_TAMUWW_mc")==0) {
+      METCor.first  = +2.90593612787009126e-01 - (3.52925900447996705e-03*vp4[0].npv);
+      METCor.second = +3.01827976672935872e-01 - (1.99738437329797819e-01*vp4[0].npv);
+   }
+   else {
+      METCor.first  = 0;
+      METCor.second = 0;
+   }
+
+   METCor.first*=-1;
+   METCor.second*=-1;
+
+   return  METCor;
+}
+
+//______________________________________________________________________________
+pair<double,double> PerformSelection::getMETPhiCorrection_JetPhi(TString eraType) {
+   pair<double,double> METCor = std::make_pair(0,0);
+
+   if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsJPhi_TAMUWW_data")==0) {
+      METCor.first  = +0.0 + (0.0*vp4[0].npv);
+      METCor.second = +0.0 - (0.0*vp4[0].npv);
+   }
+
+   //From WJets_part1 sample
+   /*
+     TProfile* p = new TProfile("p","p",80,-4,4)
+     jet1->Draw("((METLV[0].fP.fX*jLV[0].fP.fX)+(METLV[0].fP.fY*jLV[0].fP.fY))/TMath::Sqrt(TMath::Power(jLV[0].fP.fX,2)+TMath::Power(jLV[0].fP.fY,2)):jLV[0].Phi()>>p","","")
+
+     Parallel Component
+     root [11]  FCN=51.5277 FROM MIGRAD    STATUS=CONVERGED      61 CALLS          62 TOTAL
+     EDM=5.05296e-07    STRATEGY= 1      ERROR MATRIX ACCURATE
+     EXT PARAMETER                                   STEP         FIRST
+     NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+     1  p0          -3.75112e+00   7.75361e-02   2.64725e-04  -7.32284e-04
+     2  p1           9.88865e-01   1.08493e-02   3.70402e-05  -8.51341e-02
+     3  p2          -1.74725e+01   5.32091e-02   1.88268e-04   8.01995e-03
+
+     TProfile* p2 = new TProfile("p2","p2",80,-4,4)
+     jet1->Draw("((METLV[0].fP.fX*jLV[0].fP.fY)-(METLV[0].fP.fY*jLV[0].fP.fX))/TMath::Sqrt(TMath::Power(jLV[0].fP.fX,2)+TMath::Power(jLV[0].fP.fY,2)):jLV[0].Phi()>>p2","","")
+     
+     Perpendicular Component
+     EDM=9.02122e-09    STRATEGY= 1      ERROR MATRIX ACCURATE
+     EXT PARAMETER                                   STEP         FIRST
+     NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+     1  p0           3.79709e+00   7.89306e-02   3.08818e-04   1.33880e-03
+     2  p1           1.02242e+00   2.34708e-02   5.06172e-05  -1.50613e-03
+     3  p2           2.90239e-02   9.78729e-02   2.20350e-04   1.61557e-03
+
+
+    x'=x \cos \theta - y \sin \theta
+    y'=x \sin \theta + y \cos \theta 
+    */
+   /*
+     Attempt 2: No MET cut
+     METparaVsJPhi_pfx
+     [0]*sin([1]*x)+[2]
+     FCN=61.0499 FROM MIGRAD    STATUS=CONVERGED      60 CALLS          61 TOTAL
+     EDM=3.58299e-07    STRATEGY= 1      ERROR MATRIX ACCURATE
+     EXT PARAMETER                                   STEP         FIRST
+     NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+     1  p0          -2.98529e+00   5.65000e-02   2.09765e-04  -1.32546e-02
+     2  p1           9.90985e-01   9.89128e-03   3.67579e-05  -6.38539e-02
+     3  p2          -1.44748e+01   3.87877e-02   1.49187e-04  -1.50330e-03
+
+     METperpVsJPhi_pfx
+     [0]*cos([1]*x)
+     FCN=82.6718 FROM MIGRAD    STATUS=CONVERGED      83 CALLS          84 TOTAL
+     EDM=1.7879e-07    STRATEGY= 1      ERROR MATRIX ACCURATE
+     EXT PARAMETER                                   STEP         FIRST
+     NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+     1  p0           2.97787e+00   5.01198e-02   2.13845e-04   1.11023e-02
+     2  p1           1.01031e+00   1.02443e-02   4.36243e-05  -1.06512e-02
+    */
+   
+   else if (eraType.CompareTo("pfMEtSysShiftCorrParameters_2012runAvsJPhi_TAMUWW_mc")==0) {
+      if(jp4.size()>0) {
+         //METCor.first  = (-3.75112*TMath::Sin(0.988865*jp4[0].Phi()) * TMath::Cos(jp4[0].Phi())) + (3.79709*TMath::Cos(1.02242*jp4[0].Phi()) * TMath::Sin(jp4[0].Phi()));
+         //METCor.second = (-3.75112*TMath::Sin(0.988865*jp4[0].Phi()) * TMath::Sin(jp4[0].Phi())) - (3.79709*TMath::Cos(1.02242*jp4[0].Phi()) * TMath::Cos(jp4[0].Phi()));
+         METCor.first  = (-2.98529*TMath::Sin(0.990985*jp4[0].Phi()) * TMath::Cos(jp4[0].Phi())) + (2.97787*TMath::Cos(1.01031*jp4[0].Phi()) * TMath::Sin(jp4[0].Phi()));
+         METCor.second = (-2.98529*TMath::Sin(0.990985*jp4[0].Phi()) * TMath::Sin(jp4[0].Phi())) - (2.97787*TMath::Cos(1.01031*jp4[0].Phi()) * TMath::Cos(jp4[0].Phi()));
+      }
+      else {
+         METCor.first  = 0;
+         METCor.second = 0;
+      }
+   }
+   else {
+      METCor.first  = 0;
+      METCor.second = 0;
+   }
+   
+   METCor.first*=-1;
+   METCor.second*=-1;
+
+   return  METCor;
+}
+
+//______________________________________________________________________________
+void PerformSelection::doMETPhiCorrection(TString eraType_npv, TString eraType_jp) {
+   //Loop over the MET lorentz vectors
+   for (unsigned int m=0; m < METp4.size(); m++){
+      
+      // get the correction factor for this MET
+      pair<double,double> cor_npv = getMETPhiCorrection_NPV(eraType_npv);
+      pair<double,double> cor_jp = getMETPhiCorrection_JetPhi(eraType_jp);
+      //cout << "\tPx before correction = " << METp4[0].Px() << endl
+      //     << "\tPy before correction = " << METp4[0].Py() << endl
+      //     << "\tPx_jp correction = " << cor.first << endl
+      //     << "\tPy_jp correction = " << cor.second << endl
+      //     << "\tPx_npv correction = " << cor.first << endl
+      //     << "\tPy_npv correction = " << cor.second << endl;
+      METp4[0].SetX(METp4[0].Px()+cor_jp.first+cor_npv.first);
+      METp4[0].SetY(METp4[0].Py()+cor_jp.second+cor_npv.second);
+      //cout << "\tPx after correction = " << METp4[0].Px() << endl
+      //     << "\tPy after correction = " << METp4[0].Py() << endl;
+   }// for METs
 }
 
 
@@ -1616,6 +1930,147 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
 }
 
 //______________________________________________________________________________
+void PerformSelection::fillJetMap(map<Int_t, Int_t> & jetMap, bool jets){
+
+   typedef map<double, pair<Int_t, Int_t> > ITJ;
+   TLorentzVector theGenObject(0,0,0,0);
+
+   // Create an aux map with the dR of all the possible
+   // combinations of jets in both events
+   map<double, pair<Int_t, Int_t> >  auxMap;
+   for (unsigned int recIndex = 0; recIndex<jp4.size(); recIndex++) {
+      bool matchMade = false;
+      int genIndex = -1;
+      for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle) {
+         genIndex++;
+         if (genParticle->pt()==0)
+            continue;
+         if (jets && (fabs(genParticle->pdgId())>6 && fabs(genParticle->pdgId())!=21))
+            continue;
+         /*
+         bool skip = false;
+         for (unsigned int i = 0; i<genParticle->numberOfMothers(); i++) {
+            //g.motherPositions.push_back(size_t(genParticle->mother(i)));
+            //cout << "Part pdgId = " << genParticle->pdgId() << "\tMother pdgId=" << genParticle->mother(i)->pdgId() << endl;
+
+            //if (genParticle->mother(i)->pdgId()==2212)
+            //   continue;
+            if (genParticle->mother(i)->pdgId()==genParticle->pdgId()){
+               //cout << "WARNING::PerformSelection::fillJetMap Both genParticle and mother have same pdgId (" << genParticle->pdgId() << ")" << endl;
+               skip = true;
+            }
+         }
+         if(skip)
+            continue;
+         */
+         if (genParticle->status() == 3) {
+            theGenObject.SetPxPyPzE(genParticle->px(),genParticle->py(),genParticle->pz(),genParticle->energy());
+            double dR = reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), jp4[recIndex].Eta(), jp4[recIndex].Phi());
+            //if(auxMap.find(dR) != auxMap.end())
+            //   cout << "PerformSelection::fillJetMap::WARNING Duplicate DeltaR when doing matching." << endl;
+            auxMap[dR] = std::make_pair(recIndex, genIndex);
+            matchMade = true;
+            //if (recIndex == 1)
+            //   cout << "RecIndex == 1 and a match made and entered into auxMap[" << dR << "] = std::make_pair(" << recIndex << "," << genIndex << ")" << endl;
+         }
+      }
+      if (!matchMade) {
+         cout << "No match" << endl;
+         auxMap[-1-recIndex] = std::make_pair(recIndex,-1-recIndex);
+      }
+   }
+
+   // First clear the map for this new set of events
+   jetMap.clear();
+
+   // 1-Find the pair of jets with the smallest dr. Add them to resulting map
+   // 2-Remove the pair from the map, rinse and repeat.
+   while (auxMap.size() > 0){
+
+      // 1- The first element which is the one with the smallest dR. Get the jet indexes
+      int j1 = auxMap.begin()->second.first;
+      int j2 = auxMap.begin()->second.second;
+
+      // Add to the results
+      //if (auxMap.begin()->first < 0.25 && fabs(jp4[j1].refLV.Pt()-(genParticleHandle->begin()+j2)->pt())<1)
+      jetMap[j1] = j2;
+      //cout << "RecJet = " << j1 << "\tGenJet = " << j2 << endl;
+      
+      // 2- Now remove all elements from the auxMap that contain either the first or second jet
+      ITJ::iterator itr = auxMap.begin();
+      while(itr != auxMap.end()){
+         if (itr->second.first == j1 || itr->second.second == j2)
+            auxMap.erase(itr++);
+         else
+            ++itr;
+
+      }//while removing
+
+   }//while
+
+   //Double check that each rec jet has a gen jet match. If not, put a placeholder in.
+   for (unsigned int iRec = 0; iRec<jp4.size(); iRec++) {
+      if (jetMap.find(iRec)!=jetMap.end())
+         continue;
+      else {
+         cout << "PerformSelection::fillJetMap::WARNING Did not find gen particle match for reco jet index " << iRec << endl;
+         jetMap[iRec] = -1-iRec;
+      }
+   }
+
+}//fillJetMap
+
+//______________________________________________________________________________
+vector<int> PerformSelection::matchToGen_particleCollection(bool jets) {
+   typedef map<Int_t, Int_t> ITJ;
+
+   map<Int_t, Int_t> jetMap;
+   fillJetMap(jetMap, jets);
+
+   vector<int> ret(jetMap.size(),0);
+
+   for (ITJ::const_iterator itj = jetMap.begin(); itj != jetMap.end(); itj++) {
+      int jrec = itj->first;
+      int jgen = itj->second;
+
+      if (jgen>=0)
+         ret[jrec] = (genParticleHandle->begin()+jgen)->pdgId();
+      else {
+         ret[jrec] = 0;
+      }
+   }
+
+   //if(jetMap.size()!=jp4.size()) cout <<"PerformSelection::matchToGen_particleCollection::WARNING:: sizes don't match!!!"  << endl
+   //                                << "recJets.size()=" << jp4.size() << "\t matches.size()=" << jetMap.size() << endl;
+   //if(ret.size()!=jp4.size()) cout <<"PerformSelection::matchToGen_particleCollection::WARNING:: sizes don't match!!!"  << endl
+   //                                << "recJets.size()=" << jp4.size() << "\t matches.size()=" << ret.size() << endl;
+
+   return ret;   
+}
+
+//______________________________________________________________________________
+double PerformSelection::getJERfactor(double pt, double eta, double ptgen){
+
+  double jer = 1;
+
+  if (fabs(eta) < 0.5)
+    jer = 1.052;
+  else if (fabs(eta) < 1.1)
+    jer = 1.057;
+  else if (fabs(eta) < 1.7)
+    jer = 1.096;
+  else if (fabs(eta) < 2.3)
+    jer = 1.134;
+  else if (fabs(eta) < 5)
+    jer = 1.288;
+
+  double corr = ptgen / pt;
+
+  return  max(0.0,corr + jer * (1 - corr));
+
+}
+
+//______________________________________________________________________________
 void PerformSelection::ptSort(vector<Jet> & vec) {
    for (unsigned int next = 0; next < vec.size()-1; next++) {
       unsigned int max_pos = (unsigned int)max_position(vec, next, vec.size()-1);
@@ -1638,6 +2093,21 @@ int PerformSelection::max_position(vector<Jet> & vec, int from, int to) {
    for (i = from + 1; i <= to; i++)
       if (vec[i].Pt() > vec[max_pos].Pt()) max_pos = i;
    return max_pos;
+}
+
+//______________________________________________________________________________
+int PerformSelection::getBin(double x, const vector<double> boundaries, int length) {
+   int i;
+   int n = length;
+   if (n<=0) return -1;
+   if (x<boundaries[0] || x>=boundaries[n])
+      return -1;
+   for(i=0;i<n;i++)
+   {
+      if (x>=boundaries[i] && x<boundaries[i+1])
+         return i;
+   }
+   return 0;
 }
 
 //______________________________________________________________________________
