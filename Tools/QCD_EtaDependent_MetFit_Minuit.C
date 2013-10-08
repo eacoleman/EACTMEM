@@ -109,7 +109,7 @@ void getHistosFromDrawOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq,  int rebinEta, 
 
 }//getHistosFromDrawOutput
 
-void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr, int rebinEta, int rebinMet){
+void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr, int rebinEta, int rebinMet, bool full){
 
   bool removesw2 = false;// true;
 
@@ -123,8 +123,11 @@ void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr,
   TString wj = hn+"WJets_electron";
 
   // Name of the QCD histo
-  //TString qcd = hn+"QCD_ElEnriched_electron"; // 1169 pb-1
-  TString qcd = hn+"QCD_ElFULL_electron"; // 19148 pb-1
+  TString qcd;
+  if(full)
+     qcd = hn+"QCD_ElFULL_electron"; // 19148 pb-1
+  else
+     qcd = hn+"QCD_ElEnriched_electron"; // 1169 pb-1
 
   // Vector containing all other histos. Proper normalization 
   // to the luminosity of the signal data is assumed
@@ -175,7 +178,7 @@ void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr,
 }// getHistosFromPlotterOutput
 
 
-void QCD_EtaDependent_MetFit_Minuit(){
+void QCD_EtaDependent_MetFit_Minuit(bool full = true){
 
   // ============ GET THE INPUT HISTOS ==============
   int rebinMet = 5; // best value: 5
@@ -183,15 +186,20 @@ void QCD_EtaDependent_MetFit_Minuit(){
   bool fixQCDFraction = false;
 
   double lum_data = 19148; // units of pb-1
-  //double lum_qcd = 1169; // units of pb-1
-  double lum_qcd = 19148;// 8607; // units of pb-1
+  double lum_qcd;
+  if(full)
+     lum_qcd = 4759.97251668627;// units of pb-1
+     //lum_qcd = 19148;// units of pb-1
+  else
+     lum_qcd = 1143.95; // units of pb-1
+     //lum_qcd = 1169; // units of pb-1
 
   // ============ CREATE THE OUTPUT HISTOS ==============
   TFile *fout1 = new TFile("QCD_EtaDependent_MetFit_output.root","RECREATE");
 
   // Data, WJets, QCD
   TH2D * hd, *hw, *hq, *hr;
-  getHistosFromPlotterOutput(hd,hw,hq,hr,rebinEta,rebinMet);
+  getHistosFromPlotterOutput(hd,hw,hq,hr,rebinEta,rebinMet,full);
   //getHistosFromDrawOutput(hd,hw,hq, rebinEta,rebinMet);
 
 
