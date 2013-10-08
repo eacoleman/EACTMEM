@@ -565,9 +565,13 @@ namespace DEFS {
    }
 
    // A routine that returns the treename for a given NtupleType
-   std::string getTreeName(NtupleType type){
+   std::string getTreeName(NtupleType type, JetBin nJets){
 
-      if (type == EventNtuple)      return "PS/jets2p";
+      if (type == EventNtuple) {
+         if(nJets == jets0)         return "PS/jets0";
+         else if (nJets == jet1)    return "PS/jet1";
+         else                       return "PS/jets2p";
+      }
       else if (type == METree)      return "METree";
       else if (type == MicroNtuple) return "METree";
       else if (type == Other)       return "Other";
