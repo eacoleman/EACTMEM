@@ -9,6 +9,7 @@
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
+#include "TAMUWW/Tools/interface/CSVreweight.hh"
 
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
@@ -47,9 +48,11 @@ namespace UserFunctions
    TString cutRegion;
    DEFS::LeptonCat leptonCat;
    PUreweight* puweight;
+   CSVreweight* csvweight;
    bool doJER;
    bool doMETPhiCorrection;
    bool doPUreweight;
+   bool doCSVreweight;
    bool doFNAL;
    bool doMetPhiWeight;
    TH1D* metPhiWeight= 0;
@@ -107,14 +110,40 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
    //WARNING!!! Make sure that ntuple, metree, and mnt are set before using!!! 
    // Example::metree and mnt will not be set if you are running on an MEInput file.
    if (ntuple) {
-      double Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
       double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) -
                         pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) -
                         pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+      double Mjj = 0;
+      if (ntuple->jLV.size()>1) {
+         Mjj = (ntuple->jLV[0] + ntuple->jLV[1]).M();
+         plots[leptonCat]["Mjj"]->Fill(Mjj,weight);
+         plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
+         plots[leptonCat]["j1Pt_Mjj"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
+         plots[leptonCat]["j2Pt_Mjj"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
+         plots[leptonCat]["Jet2Pt"]->Fill(ntuple->jLV[1].Pt(),weight);
+         plots[leptonCat]["Jet2Eta"]->Fill(ntuple->jLV[1].Eta(),weight);
+         plots[leptonCat]["Jet2Phi"]->Fill(ntuple->jLV[1].Phi(),weight);
+         plots[leptonCat]["DeltaEtaJ1J2"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
+         plots[leptonCat]["Ptjj"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
+         plots[leptonCat]["Mlvjj"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] 
+                                          + ntuple->METLV[0]).M(),weight);
+         plots[leptonCat]["EJ1EJ2"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
+         plots[leptonCat]["BetaJ1BetaJ2"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
+         plots[leptonCat]["DeltaRJ1J2"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+
+                                                   pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
+         plots[leptonCat]["AngleJ1J2"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
+         plots[leptonCat]["DeltaPhi_J1J2"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+         plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), 
+                                                        ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
+         plots[leptonCat]["DeltaEta_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(), 
+                                                        ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),weight); 
+         plots[leptonCat]["jjlvPhi"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() -
+                                           (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
+         plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),
+                                                                   ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), 
+                                                                   (ntuple->lLV[0].lQ)*weight);
+      }
 
-      pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
-
-      plots[leptonCat]["Mjj"]->Fill(Mjj,weight);
       plots[leptonCat]["LeptPt"]->Fill(ntuple->lLV[0].Pt(),weight);
       plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
       plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
@@ -128,46 +157,27 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 						  weight);
       plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
       plots[leptonCat]["WmT"]->Fill(WmT, weight);
-      plots[leptonCat]["MjjmWmT"]->Fill(Mjj - WmT, weight);
       plots[leptonCat]["Jet1Pt"]->Fill(ntuple->jLV[0].Pt(),weight);
       plots[leptonCat]["Jet1Eta"]->Fill(ntuple->jLV[0].Eta(),weight);
       plots[leptonCat]["Jet1Phi"]->Fill(ntuple->jLV[0].Phi(),weight);
-      plots[leptonCat]["Jet2Pt"]->Fill(ntuple->jLV[1].Pt(),weight);
-      plots[leptonCat]["Jet2Eta"]->Fill(ntuple->jLV[1].Eta(),weight);
-      plots[leptonCat]["Jet2Phi"]->Fill(ntuple->jLV[1].Phi(),weight);
-      plots[leptonCat]["DeltaEtaJ1J2"]->Fill(TMath::Abs(ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta()),weight);
-      plots[leptonCat]["Ptjj"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Pt(),weight);
-      plots[leptonCat]["j1Pt_Mjj"]->Fill(ntuple->jLV[0].Pt() / ntuple->Mjj,weight);
-      plots[leptonCat]["j2Pt_Mjj"]->Fill(ntuple->jLV[1].Pt() / ntuple->Mjj,weight);
-      plots[leptonCat]["Mlvjj"]->Fill((ntuple->jLV[0] + ntuple->jLV[1] + ntuple->lLV[0] 
-                                       + ntuple->METLV[0]).M(),weight);
       plots[leptonCat]["DeltaRLepMET"]->Fill(sqrt(pow(ntuple->lLV[0].Eta()-ntuple->METLV[0].Eta(),2)+
                                                   pow(ntuple->lLV[0].Phi()-ntuple->METLV[0].Phi(),2) ),weight);
-      plots[leptonCat]["EJ1EJ2"]->Fill(ntuple->jLV[0].E() * ntuple->jLV[1].E(),weight);
-      plots[leptonCat]["BetaJ1BetaJ2"]->Fill(ntuple->jLV[0].Beta() * ntuple->jLV[1].Beta(),weight);
-      plots[leptonCat]["DeltaRJ1J2"]->Fill(sqrt(pow(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),2)+
-                                                pow(ntuple->jLV[0].Phi()-ntuple->jLV[1].Phi(),2)),weight);
-      plots[leptonCat]["AngleJ1J2"]->Fill(ntuple->jLV[0].Angle(ntuple->jLV[1].Vect()),weight);
       plots[leptonCat]["DeltaPhi_LJ1"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),weight);
       plots[leptonCat]["DeltaPhi_METJ1"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->METLV[0]),weight);
-      plots[leptonCat]["DeltaPhi_J1J2"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
       plots[leptonCat]["DeltaPhi_LMET"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->METLV[0]),weight);
-      plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), 
-                                                     ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]),weight);
-      plots[leptonCat]["DeltaEta_LJ1_vs_J1J2"]->Fill(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(), 
-                                                     ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),weight); 
       plots[leptonCat]["npv"]->Fill(ntuple->vLV[0].npv,weight);
-      plots[leptonCat]["jjlvPhi"]->Fill((ntuple->jLV[0] + ntuple->jLV[1]).Phi() -
-                                        (ntuple->lLV[0] + ntuple->METLV[0]).Phi(),weight);
+
+      pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
       plots[leptonCat]["MWjjVsMWlv"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
-      if (ntuple->lLV[0].lQ == 1){
+
+      if (ntuple->lLV[0].lQ == 1 && ntuple->jLV.size()>1){
          plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2_Positive"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]), 
                                                                  ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots[leptonCat]["DeltaEta_LJ1_vs_J1J2_Positive"]->Fill(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(), 
                                                                  ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta(),weight);
          plots[leptonCat]["WmT_Positive"]->Fill(WmT, weight);
       }
-      if (ntuple->lLV[0].lQ == -1){
+      if (ntuple->lLV[0].lQ == -1 && ntuple->jLV.size()>1){
          plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2_Negative"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),
                                                                  ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), weight);
          plots[leptonCat]["DeltaEta_LJ1_vs_J1J2_Negative"]->Fill(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(), 
@@ -175,9 +185,6 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
          plots[leptonCat]["WmT_Negative"]->Fill(WmT, weight);
       }
       plots[leptonCat]["WmT_Subtracted"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
-      plots[leptonCat]["DeltaPhi_LJ1_vs_J1J2_Subtracted"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0]),
-                                                                ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), 
-                                                                (ntuple->lLV[0].lQ)*weight);
 
       if (UserFunctions::fillTMDF){
          vector<Double_t> coord;
@@ -224,8 +231,8 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
    }
 
    if (mnt) {
-      plots[leptonCat]["epdPretagWWandWZ"]->Fill(TMath::Log10(mnt->epdPretagWWandWZ),weight);
-      plots[leptonCat]["epdPretagHiggs125"]->Fill(TMath::Log10(mnt->epdPretagHiggs.At(6)),weight);
+      plots[leptonCat]["epdPretagWWandWZ"]->Fill(-TMath::Log10(mnt->epdPretagWWandWZ),weight);
+      plots[leptonCat]["epdPretagHiggs125"]->Fill(-TMath::Log10(mnt->epdPretagHiggs.At(6)),weight);
 
       if (!MVAMethods.empty() && ntuple) {
          //cout << "MVADiscriminator_electron = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
@@ -356,6 +363,10 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
          return false;
       }
    }
+   else if (cutRegion.Contains("control6")){
+      if(ntuple->jLV.size()!=1)
+         return false;
+   }
    else if (!cutRegion.Contains("all"))
       return false;
 
@@ -386,9 +397,16 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
   
    // Pileup reweighting
    if (doPUreweight){
-      if(!auxName.Contains("DATA") && !auxName.Contains("QCD"))
+      if(!auxName.Contains("DATA") && auxName.Contains("QCD"))
+         weight *= puweight->getWeight(ntuple->vLV[0].npv);
+      else if(!auxName.Contains("DATA"))// && !auxName.Contains("QCD"))
          weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
    }
+
+   //CSV reweighting
+   if (doCSVreweight)
+      if (!auxName.Contains("DATA") && !auxName.Contains("QCD"))
+         weight *= csvweight->getWeight(ntuple);
    
    // WJets weighting (specific to fix shape issues)
    if (WJweight && auxName.Contains("WJETS")){
@@ -496,7 +514,7 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
    }
   
    auxName.ToUpper();
-   if(auxName.Contains("DATA") || auxName.Contains("QCD"))
+   if(auxName.Contains("DATA"))// || auxName.Contains("QCD"))
       return;
    
    // Initializes PU Reweighting
@@ -504,6 +522,8 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
    string MCname   = DefaultValues::getConfigPath()+"TPUDistributions.root";
    puweight = new PUreweight(dataname,MCname,"pileup_noTrig",
                              string(TString("TPUDist_")+proc->name));
+
+   csvweight = new CSVreweight();
 
 } // processFunc
 
@@ -728,7 +748,7 @@ std::string UserFunctions::concatString(const T& obj1, const U& obj2)
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
 void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
-               bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, 
+               bool doCSVrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, 
                vector<TString> MVAMethods, bool verbose);
 
 // write the Canvases and plots to output files 
@@ -753,9 +773,12 @@ int main(int argc,char**argv) {
    UserFunctions::leptonCat          = DEFS::getLeptonCat   (lepCat);
    string           ntype            = cl.getValue<string>  ("ntype","EventNtuple");
    DEFS::NtupleType ntupleType       = DEFS::getNtupleType  (ntype);
+   string           jBin             = cl.getValue<string>  ("jBin",       "jets2");      
+   DEFS::JetBin     jetBin           = DEFS::getJetBin      (jBin);
    UserFunctions::doJER              = cl.getValue<bool>    ("doJer",        false);
    UserFunctions::doMETPhiCorrection = cl.getValue<bool>    ("doMETPhi",     false);
    UserFunctions::doPUreweight       = cl.getValue<bool>    ("doPUrewt",      true);
+   UserFunctions::doCSVreweight      = cl.getValue<bool>    ("doCSVrewt",     true);
    UserFunctions::doFNAL             = cl.getValue<bool>    ("doFNAL",       false);
    UserFunctions::doMetPhiWeight     = cl.getValue<bool>    ("doMetPhiWeight",false);
    UserFunctions::cutRegion          = cl.getValue<string>  ("cutRegion",    "all");
@@ -801,7 +824,7 @@ int main(int argc,char**argv) {
    MapOfPlots plots = getPlots(UserFunctions::leptonCat,norm_data);
    
    // The vector holding all processes.
-   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(DEFS::jets2, DEFS::pretag,
+   vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(jetBin, DEFS::pretag,
                                                                      true, true, 
                                                                      ntupleType); //DEFS::EventNtuple);// DEFS::MicroNtuple);
       
@@ -811,7 +834,7 @@ int main(int argc,char**argv) {
 
 
    // Fill all the plots 
-   doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, 
+   doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doCSVreweight,
              UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, MVAWeightDir,
              MVAMethods, UserFunctions::verbose);
    
@@ -878,7 +901,7 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
 
 //______________________________________________________________________________
 void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
-               bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir,
+               bool doCSVrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir,
                vector<TString> MVAMethods, bool verbose) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
@@ -1543,10 +1566,11 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
 
    a = new FormattedPlot;
    name = "epdPretagWWandWZ";
-   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,0.0);
-   a->axisTitles.push_back("log10(epdPretagWWandWZ)");
+   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,10.0);
+   a->axisTitles.push_back("-log10(epdPretagWWandWZ)");
    a->axisTitles.push_back("Number of Events");
-   a->range = make_pair(-7.0,0.0);
+   //a->range = make_pair(-7.0,0.0);
+   a->range = make_pair(0.0,7.0);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
@@ -1556,10 +1580,11 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
 
    a = new FormattedPlot;
    name = "epdPretagHiggs125";
-   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,0.0);
-   a->axisTitles.push_back("log10(epdPretagHiggs125)");
+   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,10.0);
+   a->axisTitles.push_back("-log10(epdPretagHiggs125)");
    a->axisTitles.push_back("Number of Events");
-   a->range = make_pair(-7.0,0.0);
+   //a->range = make_pair(-7.0,0.0);
+   a->range = make_pair(0.0,7.0);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
