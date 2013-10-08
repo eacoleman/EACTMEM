@@ -90,6 +90,10 @@ public:
                                                              bool include_data,
                                                              bool for_plots,
                                                              DEFS::NtupleType ntuple_type);
+   static std::vector < PhysicsProcess * > getProcessesTest(DEFS::JetBin jetBin,
+                                                            DEFS::TagCat tagcat, 
+                                                            bool include_data,
+                                                            bool forPlots);
 
    // Returns the cross section for the given process
    static pair<double,double> getCrossSectionAndError(TString channelName);

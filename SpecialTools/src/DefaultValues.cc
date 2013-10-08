@@ -161,9 +161,9 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    // Create the PhysicsProcess
    PhysicsProcess *  proc;
    if(forPlots)
-      proc =  new PlotterPhysicsProcess(prName, getTypeTitle(process), cellFile->text, getProcessColor(process), DEFS::getTreeName(ntupleType));
+      proc =  new PlotterPhysicsProcess(prName, getTypeTitle(process), cellFile->text, getProcessColor(process), DEFS::getTreeName(ntupleType,jetBin));
    else
-      proc =  new PhysicsProcess(prName, getTypeTitle(process), cellFile->text, DEFS::getTreeName(ntupleType));
+      proc =  new PhysicsProcess(prName, getTypeTitle(process), cellFile->text, DEFS::getTreeName(ntupleType,jetBin));
    proc->setPhysicsParameters(xsec, lumi, br, numMCEvts, sf);
    
    // and return it.
@@ -338,6 +338,54 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    return getProcesses(procs, jetBin, tagcat, forPlots, ntupleType);
 
 }//getProcessesWW
+
+// ----------------------------------------------------------------------------
+vector < PhysicsProcess * > DefaultValues::getProcessesTest(DEFS::JetBin jetBin,
+                                                                DEFS::TagCat tagcat, 
+                                                                bool include_data,
+                                                                bool forPlots){
+
+   vector<DEFS::PhysicsProcess::Type> procs;
+   
+   
+   //procs.push_back(DEFS::PhysicsProcess::STopS_T);
+   //procs.push_back(DEFS::PhysicsProcess::STopS_Tbar);
+   //procs.push_back(DEFS::PhysicsProcess::STopT_T);
+   //procs.push_back(DEFS::PhysicsProcess::STopT_Tbar);
+   //procs.push_back(DEFS::PhysicsProcess::STopTW_T);
+   //procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
+   //procs.push_back(DEFS::PhysicsProcess::TTbar);
+   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
+   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
+   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
+   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
+   //procs.push_back(DEFS::PhysicsProcess::WLight  );
+   procs.push_back(DEFS::PhysicsProcess::WJets); 
+   procs.push_back(DEFS::PhysicsProcess::ZJets);
+   //procs.push_back(DEFS::PhysicsProcess::Ztautau);
+   //procs.push_back(DEFS::PhysicsProcess::QCDMu);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
+   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
+   procs.push_back(DEFS::PhysicsProcess::WW);
+   //procs.push_back(DEFS::PhysicsProcess::WZ);
+   //procs.push_back(DEFS::PhysicsProcess::ZZ);
+   procs.push_back(DEFS::PhysicsProcess::ggH125);
+   procs.push_back(DEFS::PhysicsProcess::qqH125);
+   //procs.push_back(DEFS::PhysicsProcess::WH125);
+   
+   if (include_data) {
+      procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
+      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+   }
+
+   return getProcesses(procs, jetBin, tagcat, forPlots, DEFS::MicroNtuple);
+
+}//getProcessesTest
 
 // ----------------------------------------------------------------------------
 pair<double,double> DefaultValues::getCrossSectionAndError(TString channelName)
