@@ -102,7 +102,6 @@ namespace UserFunctions
 void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree * metree, MicroNtuple * mnt,
                               vector<TString> MVAMethods, double weight)
 {
-
    //Weird events with  ntuple->lLV[0].leptonCat different than electrons
    // or muons are killed in eventCuts so they never reach this stage
    DEFS::LeptonCat leptonCat = ntuple->lLV[0].leptonCat;
@@ -265,7 +264,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
       return false;
 
    //MET Cut
-   if ( ntuple->METLV[0].Et() <= 25.0 )
+   if ( ntuple->METLV[0].Pt() <= 25.0 )
       return false;
 
    // PFISO cut for FULL sample
