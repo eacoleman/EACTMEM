@@ -992,7 +992,7 @@ void PerformSelection::jetSelection() {
 
       if (doJER && !Data) {
          // get the JER correction factor for this jet
-         jetIter->genJet() ? JERCor = getJERfactor(jetIter->pt(), jetIter->eta(), jetIter->genJet()->pt()) : JERCor = 1.0;
+         (jetIter->genJet() && vvv.pt()>10)? JERCor = getJERfactor(jetIter->pt(), jetIter->eta(), jetIter->genJet()->pt()) : JERCor = 1.0;
 
          // recompute the met for this change
          double newMetX = (1 - JERCor)*jetIter->p4().X() + METp4[0].X();
