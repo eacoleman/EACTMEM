@@ -176,3 +176,28 @@ void saveHistograms(TString ofilename, vector<TH1D*> hists) {
 
 
 }//saveHistograms
+
+
+//Method to save QCD histos. To be implemented.
+//QCD_ElEnriched
+/*
+TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/QCD_Electron.root","READ")
+TFile* fTPU = new TFile("TPUDistributions.root","UPDATE")
+fQCD->cd("PS")
+TH1D* TPUDist_QCD_ElEnriched = new TH1D("TPUDist_QCD_ElEnriched","TPUDist_QCD_ElEnriched",600,0,60)
+jets2p->Draw("vLV[0].npv>>TPUDist_QCD_ElEnriched")
+fTPU->cd()
+TPUDist_QCD_ElEnriched->Write()
+.q
+*/
+//QCD_ElFULL
+/*
+TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/SingleEl_Full.root","READ")
+TFile* fTPU = new TFile("TPUDistributions.root","UPDATE")
+fQCD->cd("PS")
+TH1D* TPUDist_QCD_ElFULL = new TH1D("TPUDist_QCD_ElFULL","TPUDist_QCD_ElFULL",600,0,60)
+jets2p->Draw("vLV[0].npv>>TPUDist_QCD_ElFULL")
+fTPU->cd()
+TPUDist_QCD_ElFULL->Write()
+.q
+*/
