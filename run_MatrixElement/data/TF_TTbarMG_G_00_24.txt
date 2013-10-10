@@ -1,0 +1,1 @@
+../../ConfigFiles/Official/TransferFunctions/TF_TTbarMG_G_00_24.txt
