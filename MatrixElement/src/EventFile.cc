@@ -48,17 +48,16 @@ EventFile::EventFile(string filename, unsigned nEvents, unsigned nSkip,
 bool EventFile::fillNextEvent(PartonColl& partons)
 {
    do {
-     if (m_nEvents != 0 && m_counter >= m_nEvents * m_nPrescale + m_nSkip) {
-       return false;
-     }
+      if (m_nEvents != 0 && m_counter >= m_nEvents * m_nPrescale + m_nSkip) {
+         //cout << "\tm_nSkip = " << m_nSkip << "\tm_nEvents = " << m_nEvents << "\tm_counter = " << m_counter << "\tm_nEvents * m_nPrescale = " << m_nEvents * m_nPrescale << endl;
+         return false;
+      }
       do {
          partons.clear();
          if (!m_fillNextEvent(partons)) {
-	   return false;
-	 }
-
+            return false;
+         }
       } while (m_doCut && !m_cut(partons));
-
       ++m_counter;
    } while (m_counter - 1 < m_nSkip || (m_counter - 1) % m_nPrescale != 0);
 

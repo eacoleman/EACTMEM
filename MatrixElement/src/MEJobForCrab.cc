@@ -61,7 +61,7 @@ MEJobForCrab::MEJobForCrab(EventFile& inputFile, const std::string& outputFilena
    // not-so-elegant code to attach tnt to tree if it's a tnt input
    EventFile* myfile = &m_inputFile;
    if (dynamic_cast<EventNtupleEventFile*>(myfile)){
-      EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
+      myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
       outputTree->Branch("EvtTree","EventNtuple",&myntuple);
    }
    
@@ -100,23 +100,17 @@ void MEJobForCrab::loopOverEvents()
   //  EventNtuple* myntuple = dynamic_cast<EventNtupleEventFile*>(myfile)->getPointer();
   //  outputTree->Branch("EvtTree","EventNtuple",&myntuple);
   //}
-   std::cout << "sfsg1" << endl;
 
   PartonColl partons;
-  
+
   unsigned counter = 1;
   while (m_inputFile.fillNextEvent(partons)){
-     std::cout << "sfsg2" << endl;
     m_output->clear();
     std::cout << "  Processing event " << counter++ << " with " << partons.getNJets() << " jets." << std::endl;
     m_doEvent(partons);
-    std::cout << "sfsg3" << endl;
     outputTree->Fill();
-    std::cout << "sfsg4" << endl;
     //outputTree->Write("", TObject::kOverwrite);
   }
-  std::cout << "sfsg5" << endl;
-  //delete outputTree;
 
 }// loopOverEvents
 

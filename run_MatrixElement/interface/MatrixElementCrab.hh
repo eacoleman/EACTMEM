@@ -65,6 +65,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdlib.h>
 
 //
 // Namespaces
@@ -107,7 +108,7 @@ private:
 
    // input file type
    EventNtupleEventFile* inputFile;
-   
+
    // trees
    TTree* outputTree;
 

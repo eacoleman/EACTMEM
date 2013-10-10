@@ -38,8 +38,10 @@ Ztautau                 |                                     |
 QCD     		|                                     |
 QCD_Pt20_MuEnriched     |                                     |
 QCD_MuEnriched          |                                     |
-QCD_ElEnriched          |  QCD_Electron.root                  |   microQCD_Electron_Dp6p7_BaseCuts.root
-QCD_ElFULL              |  SingleEl_Full.root                 |   SingleEl_Full.root
+#QCD_ElEnriched          |  QCD_Electron.root                  |
+microQCD_Electron_Dp6p7_BaseCuts.root
+QCD_ElEnriched          |  QCD_Electron_Dp6p7_partial.root                  |   microQCD_Electron_Dp6p7_BaseCuts.root
+QCD_ElFULL              |  SingleEl_Full_partial.root                 |   SingleEl_Full.root
 QCD_Pt20to30_EMEnriched   |  QCD_EM_20to30.root               | QCD_EM_20to30.root               
 QCD_Pt30to80_EMEnriched   |  QCD_EM_30to80.root               | QCD_EM_30to80.root               
 QCD_Pt80to170_EMEnriched  |  QCD_EM_80to170.root              | QCD_EM_80to170.root               
@@ -81,32 +83,32 @@ ggH110	                |	ggH110.root                   |   microggH100_BaseCuts.
 ggH115	                |	                              |
 ggH120	                |	ggH120.root                   |	microggH120_BaseCuts.root
 ggH125	                |	ggH125.root                   |	microggH125_BaseCuts.root
-ggh130	                |	ggH130.root                   |	microggH130_BaseCuts.root
-ggh135	                |	                              |
-ggh140	                |	ggH140.root                   |	microggH140_BaseCuts.root
-ggh145	                |	                              |
-ggh150	                |	ggH150.root                   |	microggH150_BaseCuts.root
-ggh160	                |	ggH160.root                   |	microggH160_BaseCuts.root
-ggh170	                |	ggH170.root                   |	microggH170_BaseCuts.root
-ggh180	                |	ggH180.root                   |	microggH180_BaseCuts.root
-ggh190	                |	ggH190.root                   |	microggH190_BaseCuts.root
-ggh200	                |	ggH200.root                   |	microggH200_BaseCuts.root
-ggh250	                |	ggH250.root                   |	microggH250_BaseCuts.root
-ggh300	                |	ggH300.root                   |	microggH300_BaseCuts.root
-ggh350	                |	ggH350.root                   |	microggH350_BaseCuts.root
-ggh400	                |	ggH400.root                   |	microggH400_BaseCuts.root
-ggh450	                |	ggH450.root                   |	microggH450_BaseCuts.root
-ggh500	                |	ggH500.root                   |	microggH500_BaseCuts.root
-ggh550	                |	ggH550.root                   |	microggH550_BaseCuts.root
-ggh600	                |	ggH600.root                   |	microggH600_BaseCuts.root
-ggh650	                |	                              |
-ggh700	                |	ggH700.root                   |	microggH700_BaseCuts.root
-ggh750	                |	                              |
-ggh800	                |	ggH800.root                   |	microggH800_BaseCuts.root
-ggh850	                |	                              |
-ggh900	                |	ggH900.root                   |	microggH900_BaseCuts.root
-ggh950	                |	                              |
-ggh1000	                |	ggH1000.root                  |	microggH1000_BaseCuts.root
+ggH130	                |	ggH130.root                   |	microggH130_BaseCuts.root
+ggH135	                |	                              |
+ggH140	                |	ggH140.root                   |	microggH140_BaseCuts.root
+ggH145	                |	                              |
+ggH150	                |	ggH150.root                   |	microggH150_BaseCuts.root
+ggH160	                |	ggH160.root                   |	microggH160_BaseCuts.root
+ggH170	                |	ggH170.root                   |	microggH170_BaseCuts.root
+ggH180	                |	ggH180.root                   |	microggH180_BaseCuts.root
+ggH190	                |	ggH190.root                   |	microggH190_BaseCuts.root
+ggH200	                |	ggH200.root                   |	microggH200_BaseCuts.root
+ggH250	                |	ggH250.root                   |	microggH250_BaseCuts.root
+ggH300	                |	ggH300.root                   |	microggH300_BaseCuts.root
+ggH350	                |	ggH350.root                   |	microggH350_BaseCuts.root
+ggH400	                |	ggH400.root                   |	microggH400_BaseCuts.root
+ggH450	                |	ggH450.root                   |	microggH450_BaseCuts.root
+ggH500	                |	ggH500.root                   |	microggH500_BaseCuts.root
+ggH550	                |	ggH550.root                   |	microggH550_BaseCuts.root
+ggH600	                |	ggH600.root                   |	microggH600_BaseCuts.root
+ggH650	                |	                              |
+ggH700	                |	ggH700.root                   |	microggH700_BaseCuts.root
+ggH750	                |	                              |
+ggH800	                |	ggH800.root                   |	microggH800_BaseCuts.root
+ggH850	                |	                              |
+ggH900	                |	ggH900.root                   |	microggH900_BaseCuts.root
+ggH950	                |	                              |
+ggH1000	                |	ggH1000.root                  |	microggH1000_BaseCuts.root
 qqH100	                |	                              |
 qqH105	                |	                              |
 qqH110	                |	                              |

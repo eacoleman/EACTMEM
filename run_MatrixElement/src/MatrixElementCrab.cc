@@ -27,8 +27,15 @@ MatrixElement::MatrixElement(const edm::ParameterSet& iConfig) {
    inputDirectoryName = TString(iConfig.getParameter<string> ("inputDirectoryName"));
    inputTreeName      = TString(iConfig.getParameter<string> ("inputTreeName"));
    nEvents            =         iConfig.getParameter<int>    ("nEvents");
-   nSkip              =         iConfig.getParameter<int>    ("nSkip");
    nPrescale          =         iConfig.getParameter<int>    ("nPrescale");
+   char* nJobChar;
+   int nJob;
+   nJobChar = getenv ("NJob");
+   if (nJobChar!=NULL)
+      nJob = atoi(nJobChar);
+   else
+      nJob = -1;
+   nSkip              =  nJob * iConfig.getParameter<int>    ("nSkip");
 
   if (inputDirectoryName!="") {
     useTDirectoryFile = true;
@@ -37,12 +44,13 @@ MatrixElement::MatrixElement(const edm::ParameterSet& iConfig) {
      useTDirectoryFile = false;
 
   cout << " ++++ Reading from " << inputFilename << " ++++\n"
-       << " ++++ Writing to " << outputFilename << " ++++\n";
-  cout << " ++++ Reading TDirectoryFile " << inputDirectoryName << " ++++\n";
-  cout << " ++++ Reading tree " << inputTreeName << " ++++\n"
+       << " ++++ Writing to " << outputFilename << " ++++\n"
+       << " ++++ Reading TDirectoryFile " << inputDirectoryName << " ++++\n"
+       << " ++++ Reading tree " << inputTreeName << " ++++\n"
        << " ++++ Running over " << nEvents << " events ++++\n"
        << " ++++ Skipping the first " << nSkip << " events ++++\n"
-       << " ++++ Prescale by " << nPrescale << " ++++" << endl;
+       << " ++++ Prescale by " << nPrescale << " ++++" << endl
+       << " ++++ Job number is " << nJob << " ++++\n";
 }
 
 

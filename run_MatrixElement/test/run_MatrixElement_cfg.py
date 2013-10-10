@@ -89,9 +89,9 @@ process.ME.outputFilename     = process.TFileService.fileName
 process.ME.inputDirectoryName = cms.string("PS")     # name of the directory where the input tree is stored
 process.ME.inputTreeName      = cms.string("jets2p") # name of the tree where the events are stored
 process.ME.nEvents            = cms.int32(options.totalNumberOfEvents)
-NJob =  os.getenv('NJob', '-1')
-if int(NJob)==-1:
-	os.environ['NJob'] = '-1';
+NJob =  os.getenv('NJob', '1')
+if int(NJob)==1:
+	os.environ['NJob'] = '1';
 process.ME.jobID              = cms.int32(int(NJob))
 process.ME.eventsPerJob       = cms.int32(options.eventsPerJob)
 process.ME.nSkip              = cms.int32(int(NJob)*options.eventsPerJob)

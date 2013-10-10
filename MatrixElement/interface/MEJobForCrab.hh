@@ -13,6 +13,7 @@ class EventFile;
 class EventProb;
 class Integrator;
 class METree;
+class EventNtuple;
 class PartonColl;
 
 class MEJobForCrab{
@@ -38,6 +39,7 @@ private:
   EventFile& m_inputFile;
   TFile* m_outputFile;
   METree* m_output;
+  EventNtuple* myntuple;
   TTree* outputTree;
 
   typedef std::vector<EventProb*> EventProbVec;

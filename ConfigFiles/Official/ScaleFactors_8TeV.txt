@@ -32,7 +32,10 @@ ZpJ     			|  1.000    +/- 1.000
 QCD       			|  1.000    +/- 1.000 
 QCD_Pt20_MuEnriched      	|  1.000    +/-  1.000
 QCD_MuEnriched           	|  1.000    +/-  1.000
-QCD_ElEnriched           	| 63.053    +/-  1.11578
+#Scale factor for QCD_ElEnriched with control4 QCDWeight_electron.root file
+#QCD_ElEnriched           	| 63.053    +/-  1.11578
+#Standard QCD Scale factor
+QCD_ElEnriched           	|  1.000    +/-  0.00
 QCD_ElFULL               	|  1.000    +/-  0.00
 QCD_Pt20to30_EMEnriched  	|  1.000    +/-  0.00
 QCD_Pt30to80_EMEnriched  	|  1.000    +/-  0.00
