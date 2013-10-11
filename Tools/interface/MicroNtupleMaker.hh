@@ -8,6 +8,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <map>
+#include <utility>
+#include <sstream>
 
 // ROOT libraries
 #include "TChain.h"
@@ -19,17 +22,14 @@
 #include "TBranch.h"
 #include "TString.h"
 #include "TBenchmark.h"
+#include "TTreeIndex.h"
 
 // This code libraries
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
-using std::string;
-using std::vector;
-using std::cout;
-using std::endl;
-using std::set;
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  class declaration
@@ -101,11 +101,23 @@ public:
    //Created by RE to automatize the doing of MicroNtuples
    void makeMicroNtuple(vector<TString> locations, TString output, unsigned nJets, bool doLight=false, bool doNonW= false, bool doUntag= false);
    // This is the core of the makeMicroNtuple algorithm.
-   void makeMicroNtuple(TChain & chain, TString output, unsigned nJets, 
+   void makeMicroNtuple(TTree* chain, TString output, unsigned nJets, 
                         bool doLight=false, bool doNonW= false, bool doUntag=false);
-   
+   void setEventNtuplePath(TString mnen) {mergeNewEventNtuple = mnen;}
+   void setProcess(TString p) {currentProcess = p;}
 
 private:
+
+   TString currentProcess;
+   unsigned nentries;
+   TString mergeNewEventNtuple;   
+   TChain* mergeChain;
+   TTree* mergeTree;
+   TTreeIndex* index;
+   EventNtuple * mergeEventNtuple;
+   map<int,int> eventIndex;
+   bool imFilled;
+   map<int,int> missingME;
 
 };
 #endif

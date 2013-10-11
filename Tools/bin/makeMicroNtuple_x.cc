@@ -17,8 +17,9 @@ using namespace std;
    TString         inputPath                 = cl.getValue<TString>  ("inputPath",   "/uscms_data/d3/ilyao/Winter12to13ME8TeV/MEResults/rootOutput/");
    TString         outputPath                = cl.getValue<TString>  ("outputPath", "/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples/");
    int             largeProcessCase          = cl.getValue<int>      ("largeProcessCase",                                                          0);
-   TString         smallProcessLabel         = cl.getValue<TString>  ("smallProcessLabel",                                                  "ggH170");
-//   vector<TString> processes                 = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
+   //TString         smallProcessLabel         = cl.getValue<TString>  ("smallProcessLabel",                                                  "ggH170");
+   vector<TString> processes                 = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
+   TString         mergeNewEventNtuple       = cl.getValue<TString>  ("mergeNewEventNtuple",       "/uscms_data/d2/aperloff/Summer12ME8TeV/MEInput/");
 
    if (!cl.check()) return 0;
    cl.print();
@@ -30,7 +31,11 @@ using namespace std;
 //   if(!scriptDir.EndsWith("/")) scriptDir += "/";
 
    MicroNtupleMaker* mnm = new MicroNtupleMaker();
-   mnm->createMicroNtuple(inputPath,outputPath,largeProcessCase,smallProcessLabel);
+   for(unsigned int i=0; i<processes.size(); i++) {
+      mnm->setEventNtuplePath(mergeNewEventNtuple);
+      mnm->setProcess(processes[i]);
+      mnm->createMicroNtuple(inputPath,outputPath,largeProcessCase,processes[i]);
+   }      
 
    m_benchmark->Stop("event");
    cout << "makeMicroNtuple_x" << endl << "\tCPU time = " << m_benchmark->GetCpuTime("event") << " s" << endl
