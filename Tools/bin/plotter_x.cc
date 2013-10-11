@@ -109,7 +109,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
    //WARNING!!! Make sure that ntuple, metree, and mnt are set before using!!! 
    // Example::metree and mnt will not be set if you are running on an MEInput file.
    if (ntuple) {
-      double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) -
+      double WmT = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Pt(), 2) -
                         pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) -
                         pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
       double Mjj = 0;
@@ -147,12 +147,12 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
       plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
       plots[leptonCat]["LeptPFIso"]->Fill(ntuple->lLV[0].lpfIso ,weight);
-      plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Et(),weight);
+      plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Pt(),weight);
       plots[leptonCat]["MET_vs_LeptEta"]->Fill(ntuple->lLV[0].Eta(),
-					       ntuple->METLV[0].Et(),
+					       ntuple->METLV[0].Pt(),
 					       weight);      
       plots[leptonCat]["MET_vs_AbsLeptEta"]->Fill(fabs(ntuple->lLV[0].Eta()),
-						  ntuple->METLV[0].Et(),
+						  ntuple->METLV[0].Pt(),
 						  weight);
       plots[leptonCat]["METPhi"]->Fill(ntuple->METLV[0].Phi(),weight);
       plots[leptonCat]["WmT"]->Fill(WmT, weight);
@@ -199,7 +199,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
          coord[2] = WmT;
          //coord[3] = TMath::Abs(ntuple->jLV[0].Eta());
          //coord[3] = ntuple->jLV[0].Pt();
-         coord[3] = ntuple->METLV[0].Et();
+         coord[3] = ntuple->METLV[0].Pt();
          //coord[4] = ntuple->jLV[1].Pt();
          coord[4] = sqrt(pow(ntuple->lLV[0].Eta()-ntuple->jLV[0].Eta(),2)
                          +pow(ntuple->lLV[0].Phi()-ntuple->jLV[0].Phi(),2));
