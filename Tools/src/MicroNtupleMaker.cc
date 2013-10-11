@@ -400,7 +400,6 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
          local = index->GetIndex()[i];
          chain->GetEntry(local);
          eventIndex[eventNtuple->event] = local;
-         //cout << "Event = " << eventNtuple->event << "\tIndex = " << local << endl;
       }
    }
 
@@ -447,13 +446,9 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
             missingME[ientry] = mergeEventNtuple->event;
             outputTree->SetBranchAddress("mnt", &microNtupleBlank);
             outputTree->SetBranchAddress("METree", &meNtupleBlank);
-            //outputTree->SetBranchStatus("mnt",0);
-            //outputTree->SetBranchStatus("METree",0);
             outputTree->Fill();
             outputTree->SetBranchAddress("mnt", &microNtuple);
             outputTree->SetBranchAddress("METree", &meNtuple);
-            //outputTree->SetBranchStatus("mnt",1);
-            //outputTree->SetBranchStatus("METree",1);
             continue;
          }
       }
