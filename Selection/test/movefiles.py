@@ -49,7 +49,7 @@ parser.add_argument("-u", "--user", help="username of the person transfering the
                     default=os.environ['USER'])
 group.add_argument("-v", "--verbose", help="Increase output verbosity of lcg-cp (-v) or srm (-debug) commands",
                     action="store_true")
-parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+parser.add_argument('--version', action='version', version='%(prog)s 1.5')
 args = parser.parse_args()
 
 if(args.debug):

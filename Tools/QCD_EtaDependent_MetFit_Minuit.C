@@ -1,5 +1,6 @@
 #include "TFile.h"
 #include "TH1.h"
+#include "TH1D.h"
 #include "TH2D.h"
 #include "TCanvas.h"
 #include "THStack.h"
@@ -202,6 +203,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   getHistosFromPlotterOutput(hd,hw,hq,hr,rebinEta,rebinMet,full);
   //getHistosFromDrawOutput(hd,hw,hq, rebinEta,rebinMet);
 
+  fout1->cd();
 
   // set the styles
   hd->UseCurrentStyle();
@@ -497,7 +499,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
 	st->GetXaxis()->SetTitle("MET");
 	st->GetXaxis()->SetRangeUser(0,200);
 	met_s->Draw("Epsame");
-
+    
 	// Draw the legend too
 	TLegend *legend=new TLegend(0.66,0.6,0.99,0.9);
 	legend->SetFillStyle(0);
@@ -526,7 +528,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
 
   // also save the chi2 in cfits
   cfits->cd(icfits);
-  chi2->GetYaxis()->SetTitle("#chi^2/NDF");
+  chi2->GetYaxis()->SetTitle("#chi^{2}/NDF");
   chi2->GetXaxis()->SetTitle("|#eta|");
 
   chi2->Draw("E");
@@ -541,46 +543,68 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cint->cd(5); qcd_nev->Draw("E");
   cint->cd(6); wj_nev->Draw("E");
   cint->SaveAs("Stats.pdf");
+  cint->Write();
+  da_int->Write();
+  qcd_int->Write();
+  wj_int->Write();
+  da_nev->Write();
+  qcd_nev->Write();
+  wj_nev->Write();
 
   TCanvas * cfr = new TCanvas("fraction","fraction",800,400);
   cfr->Divide(2,1);
   cfr->cd(1); qcd_fr->Draw("E");
   cfr->cd(2); wj_fr->Draw("E");
   cfr->SaveAs("FractionsVsEta.pdf");
+  cfr->Write();
+  qcd_fr->Write();
+  wj_fr->Write();
 
   TCanvas * cyi = new TCanvas("yields","yields",800,400);
   cyi->Divide(2,1); 
   cyi->cd(1); qcd_yield->Draw("E");
   cyi->cd(2); wj_yield->Draw("E");
   cyi->SaveAs("EventYieldsVsEta.pdf");
+  cyi->Write();
+  qcd_yield->Write();
+  wj_yield->Write();
 
   TCanvas * cxs = new TCanvas("prod xs","prod xs",800,400);
   cxs->Divide(2,1); 
   cxs->cd(1); qcd_xs->Draw("E");
   cxs->cd(2); wj_xs->Draw("E");
   cxs->SaveAs("EventXSVsEta.pdf");
+  cxs->Write();
+  qcd_xs->Write();
+  wj_xs->Write();
 
   TCanvas * cwe = new TCanvas("sfs","sfs",800,400);
   cwe->Divide(2,1); 
   cwe->cd(1); qcd_sf->Draw("E");
   cwe->cd(2); wj_sf->Draw("E"); wjsm_sf->Draw("sameE3"); wj_sf->Draw("sameE");
   cwe->SaveAs("SfVsEta.pdf");
+  cwe->Write();
+  qcd_sf->Write();
+  wj_sf->Write();
 
   TCanvas * ccl = new TCanvas("Closure","closure" ,800,400);
   ccl->Divide(2,1); 
   ccl->cd(1); qcd_close->Draw("E");
   ccl->cd(2); wj_close->Draw("E");
   ccl->SaveAs("ClosureVsEta.pdf");
+  ccl->Write();
+  qcd_close->Write();
+  wj_close->Write();
 
   TCanvas * cchi2 = new TCanvas("chi2","chi2",400,400);
   chi2->Draw("E");
   cchi2->SaveAs("chi2.pdf");
-
+  chi2->Write();
+  cchi2->Write();
 
   cfits->SaveAs("AllMetFits.pdf");
   cfits->SaveAs("AllMetFits.png");
-
-
+  cfits->Write();
   
   // ============ CREATE THE OUTPUT HISTOS ==============
   TFile *fout = new TFile("QCDWeight_electron.root","RECREATE");
@@ -589,8 +613,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   qcdweight->SetDirectory(0);
   qcdweight->Write();
   fout->Close();
-  
-  //fout->Write();
-  //fout->Close();
+
+  fout1->Close();
 
 }//QCD_EtaDependent_MetFit
