@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import os, sys, getopt, argparse, fnmatch, errno
+import os, sys, getopt, argparse, fnmatch, errno, subprocess
 from subprocess import call
 
 class Error(EnvironmentError):
@@ -49,7 +49,7 @@ parser.add_argument("-u", "--user", help="username of the person transfering the
                     default=os.environ['USER'])
 group.add_argument("-v", "--verbose", help="Increase output verbosity of lcg-cp (-v) or srm (-debug) commands",
                     action="store_true")
-parser.add_argument('--version', action='version', version='%(prog)s 1.5')
+parser.add_argument('--version', action='version', version='%(prog)s 1.6')
 args = parser.parse_args()
 
 if(args.debug):
@@ -77,10 +77,8 @@ ecommand = ""
 def run_checks():
     global RECURSIVE
     global END
-    if(RECURSIVE and not END.find("FNAL")>0):
-        print "Cannot perform recursive copy with remote directory ad the endpoint.\nMust be able to make directories."
-        sys.exit()
-    elif(RECURSIVE):
+
+    if RECURSIVE :
         global DEPTH
         DEPTH = 9999
         
@@ -96,9 +94,9 @@ def run_checks():
 def init_commands():
     if(LCG):
         if(VERBOSE):
-            scommand = "lcg-cp -v -b -n 10 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
+            scommand = "lcg-cp -v -b -n 15 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
         else:
-            scommand = "lcg-cp -b -n 10 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
+            scommand = "lcg-cp -b -n 15 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
     else:
         if(VERBOSE):
             scommand = "srmcp -2 -pushmode=true -debug=true"
@@ -120,17 +118,36 @@ def init_commands():
 
 
 def make_directory(END, path):
-    if(END.find("FNAL") > 0):
-        if(not os.path.exists(path)):
+    if END.find("FNAL") > 0 :
+        if not os.path.exists(path) :
             print "making directory "+path
             #os.mkdir(siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/")
             os.makedirs(path)
+    else:
+        if LCG :
+            cmd = "lcg-ls -v -b -D srmv2 \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+        else:
+            cmd = "srmls -2 -pushmode=true \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+        if os.system(cmd)!=0 :
+            print "making directory "+path
+            cmd = "srmmkdir -2 -pushmode=true \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+            os.system(cmd)
 
 def get_list_of_files(SAMPLE, path):
-    FILES_UNFILTERED = os.listdir(path)
+    FILES_UNFILTERED = []
+    if START.find("FNAL") > 0 :
+        FILES_UNFILTERED = os.listdir(path)
+    else:
+        options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
+        #proc = subprocess.Popen(['srmls',options], stdout=subprocess.PIPE)
+        #FILES_UNFILTERED = proc.stdout.readlines()
+        proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+        FILES_UNFILTERED = proc.splitlines()
+        FILES_UNFILTERED = [x.strip(' ') for x in FILES_UNFILTERED]
+        FILES_UNFILTERED = [x.strip('\n') for x in FILES_UNFILTERED]
     FILES = []
-    if(len(SAMPLE)==1):
-        SAMPLE = ["*"]
+    #if(len(SAMPLE)==1):
+    #    SAMPLE = ["*"]
     for ss in SAMPLE:
         FILES += fnmatch.filter(FILES_UNFILTERED, '*'+ss+'*')
     return FILES
@@ -167,13 +184,25 @@ def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
         return
     
     make_directory(END,dst)
-    
+
+    global SAMPLE
     #FILES = get_list_of_files(SAMPLE, CURRENTpath)
     FILES = get_list_of_files(SAMPLE, src)
-    if(DIFF):
+    if DIFF :
         FILES1 = FILES
         #FILES2 = os.listdir(siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/")
-        FILES2 = os.listdir(dst)
+        if END.find("FNAL") > 0 :
+            FILES2 = os.listdir(dst)
+        else:
+            options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
+            proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+            proc_splitlines = proc.splitlines()
+            #FILES2 = [x.strip(' ') for x in FILES2]
+            #FILES2 = [x.strip('\n') for x in FILES2]
+            FILES2 = []
+            for f in proc_splitlines :
+                if len(f.split()) > 0 and f.split()[0].isdigit() :
+                    FILES2.append(os.path.basename(f.split()[1]))
         FILES_DIFF = [f for f in FILES1 if f not in FILES2 or os.path.isdir(dst+"/"+f)]
         print "Adding an additional "+str(len(FILES_DIFF))+" files/folders"
         FILES = FILES_DIFF
