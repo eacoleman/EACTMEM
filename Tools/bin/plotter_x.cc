@@ -166,6 +166,11 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       plots[leptonCat]["DeltaPhi_LMET"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->METLV[0]),weight);
       plots[leptonCat]["npv"]->Fill(ntuple->vLV[0].npv,weight);
 
+      for (unsigned int j=0; j<ntuple->jLV.size(); j++) {
+         plots[leptonCat][string(Form("JetEta_%luJets",ntuple->jLV.size()))]->Fill(ntuple->jLV[j].Eta(),weight);
+         plots[leptonCat]["nJets_JetEta"]->Fill(ntuple->jLV[j].Eta(),ntuple->jLV.size(),weight);
+      }
+
       pair<double,double> leptVsHadWMass = onVsOffShellInclusive(ntuple);
       plots[leptonCat]["MWjjVsMWlv"]->Fill(leptVsHadWMass.first,leptVsHadWMass.second,weight);
 
@@ -1528,6 +1533,32 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->overlaySignalName = signalName;
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "nJets_JetEta";
+   a->templateHisto = new TH2D(name + lepStr, name,70,-3.5,3.5,20,0,20);
+   a->axisTitles.push_back("#eta^{jet_{i}}");
+   a->axisTitles.push_back("Number of Jets");
+   a->range = make_pair(-TMath::Pi(),TMath::Pi());
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   for (unsigned int nj=0; nj<20; nj++) {
+      a = new FormattedPlot;
+      name = Form("JetEta_%uJets",nj);
+      a->templateHisto = new TH1D(name + lepStr, name,70,-3.5,3.5);
+      a->axisTitles.push_back("#eta^{jets} ");
+      a->axisTitles.push_back("Number of Events ");
+      a->range = make_pair(-pi,pi);
+      a->normToData = norm_data;
+      a->stacked = true; a->leptonCat = DEFS::electron;
+      a->overlaySignalName = signalName;
+      a->overlaySignalFactor = signalFactor;
+      plots[leptonCat][string(name)] = a;
+   }
 
    for (unsigned int tep=0; tep<MicroNtuple::nEventProb; tep++) {
       a = new FormattedPlot;
