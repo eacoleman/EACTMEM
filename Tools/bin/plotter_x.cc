@@ -366,6 +366,14 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
       if(ntuple->jLV.size()!=1)
          return false;
    }
+   else if (cutRegion.Contains("control7")){
+      if(ntuple->jLV.size()!=2)
+         return false;
+   }
+   else if (cutRegion.Contains("control8")){
+      if(ntuple->jLV.size()!=3)
+         return false;
+   }
    else if (!cutRegion.Contains("all"))
       return false;
 
