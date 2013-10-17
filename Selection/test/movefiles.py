@@ -81,15 +81,13 @@ def run_checks():
     if RECURSIVE :
         global DEPTH
         DEPTH = 9999
-        
-    voms = raw_input("Have you run the command \"voms-proxy-init -voms cms\" recently? (y/n)")
-    if(voms=="n"):
-        call(["voms-proxy-init","-voms","cms"])
-    elif(voms=="y"):
-        print "Okay, but if you didn't, this will fail spectacularly.\n"
-    else:
-        print voms,"is an unknown option. Try again."
-        sys.exit()
+
+	if os.system("voms-proxy-info")!=0 :
+		print "WARNING::You must have a valid proxy for this script to work.\nRunning \"voms-proxy-init -voms cms\"...\n"
+		call(["voms-proxy-init","-voms","cms"])
+		if os.system("voms-proxy-info")!=0 :
+			print "ERROR::Sorry, but I still could not find your proxy.\nWithout a valid proxy, this program will fail spectacularly.\nThe program will now exit." 
+			sys.exit()
 
 def init_commands():
     if(LCG):
@@ -104,7 +102,6 @@ def init_commands():
             scommand = "srmcp -2 -pushmode=true"
         
     if(START == 'T1_US_FNAL_LPC'):
-        #scommand += " \"file:////"+siteDBDict[START][0]+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
 		scommand += " \"file:////"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
     else:
         scommand += " \"srm://"+siteDBDict[START][0]+":8443"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/"
@@ -121,7 +118,6 @@ def make_directory(END, path):
     if END.find("FNAL") > 0 :
         if not os.path.exists(path) :
             print "making directory "+path
-            #os.mkdir(siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/")
             os.makedirs(path)
     else:
         if LCG :
@@ -139,8 +135,6 @@ def get_list_of_files(SAMPLE, path):
         FILES_UNFILTERED = os.listdir(path)
     else:
         options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
-        #proc = subprocess.Popen(['srmls',options], stdout=subprocess.PIPE)
-        #FILES_UNFILTERED = proc.stdout.readlines()
         proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
         FILES_UNFILTERED = proc.splitlines()
         FILES_UNFILTERED = [x.strip(' ') for x in FILES_UNFILTERED]
@@ -178,27 +172,25 @@ def ignore_patterns(patterns):
     return _ignore_patterns
 
 def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
+    global args
 
-    #print "CURRENTdepth="+str(CURRENTdepth)
-    if (CURRENTdepth >= DEPTH):
+    if args.debug :
+        print "CURRENTdepth="+str(CURRENTdepth)
+    if CURRENTdepth >= DEPTH :
         return
     
     make_directory(END,dst)
 
     global SAMPLE
-    #FILES = get_list_of_files(SAMPLE, CURRENTpath)
     FILES = get_list_of_files(SAMPLE, src)
     if DIFF :
         FILES1 = FILES
-        #FILES2 = os.listdir(siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/")
         if END.find("FNAL") > 0 :
             FILES2 = os.listdir(dst)
         else:
             options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
             proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
             proc_splitlines = proc.splitlines()
-            #FILES2 = [x.strip(' ') for x in FILES2]
-            #FILES2 = [x.strip('\n') for x in FILES2]
             FILES2 = []
             for f in proc_splitlines :
                 if len(f.split()) > 0 and f.split()[0].isdigit() :
@@ -246,13 +238,13 @@ run_checks()
 
 TOPsrc = ""
 if(START == 'T1_US_FNAL_LPC'):
-	#TOPsrc = siteDBDict[START][3]+"/"+siteDBDict[START][2]+"/"+STARTpath+"/"
 	TOPsrc = STARTpath+"/"
 else:
 	TOPsrc = siteDBDict[START][3]+"/"+siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/"
 
 TOPdst = siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/"
 
-#print "DEPTH="+str(DEPTH)
+if args.debug:
+	print "DEPTH="+str(DEPTH)
 #copytree(TOPsrc,TOPdst, DEPTH, 0, False, ignore_patterns('DYJets','WJets','TTJets','STopT_T','ggH1?0'))
 copytree(TOPsrc,TOPdst, DEPTH, 0, False, ignore_patterns(IGNORE))
