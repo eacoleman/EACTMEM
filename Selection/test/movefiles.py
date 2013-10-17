@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import os, sys, getopt, argparse, fnmatch, errno, subprocess
+import os, sys, getopt, argparse, fnmatch, errno, subprocess, tempfile
 from subprocess import call
 
 class Error(EnvironmentError):
@@ -136,6 +136,8 @@ def get_list_of_files(SAMPLE, path):
     else:
         options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
         proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+		# if output is too long
+        #proc = subprocess.Popen(['srmls',options], stdout=tempfile.TemporaryFile()).communicate()[0]
         FILES_UNFILTERED = proc.splitlines()
         FILES_UNFILTERED = [x.strip(' ') for x in FILES_UNFILTERED]
         FILES_UNFILTERED = [x.strip('\n') for x in FILES_UNFILTERED]
