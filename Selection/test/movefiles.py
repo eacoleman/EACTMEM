@@ -131,7 +131,7 @@ def make_directory(END, path):
 
 def get_list_of_files(SAMPLE, path):
     FILES_UNFILTERED = []
-    if START.find("FNAL") > 0 :
+    if START.find("FNAL") > 0 and os.environ['HOSTNAME'].find("fnal.gov") > 0 :
         FILES_UNFILTERED = os.listdir(path)
     else:
         options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
@@ -185,7 +185,7 @@ def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
     FILES = get_list_of_files(SAMPLE, src)
     if DIFF :
         FILES1 = FILES
-        if END.find("FNAL") > 0 :
+        if END.find("FNAL") > 0 and os.environ['HOSTNAME'].find("fnal.gov") > 0 :
             FILES2 = os.listdir(dst)
         else:
             options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
