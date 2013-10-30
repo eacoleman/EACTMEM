@@ -6,57 +6,30 @@ using namespace std;
 int Fitter_x(string lep, string cat, string inFileLoc, string outFileLoc, vector<string> fproc, vector<string> signals, double FOM=3.0)
 {
    Fitter histFit(lep, cat, fproc, inFileLoc, outFileLoc);
-   
    histFit.readHistograms();
    
    // DEBUG
-   double sum = 0;
-   cout << "Data Integral: "
-        << HistogramsFitter::dataHistogram->Integral(0,HistogramsFitter::dataHistogram->GetNbinsX()+1) << endl;
-   for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
-   {
-      cout << mapit->first << " Integral: ";
-      if(mapit->second) {
-         cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
-         sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
-      }
-      else
-         cout << "ERROR::" << mapit->first << " histogram not found!" << endl;
-   }
-   cout << "SUM: " << sum << endl;
+   histFit.printDataIntegral();
+   histFit.printMCIntegrals();
+   cout << "SUM: " << histFit.getMCSum() << endl;
 
    histFit.addSigBkgHistograms(signals);
    histFit.fitHistograms();
    
    // DEBUG
-   sum = 0;
-   cout << "Data Integral: ";
-   cout << HistogramsFitter::dataHistogram->Integral(0,HistogramsFitter::dataHistogram->GetNbinsX()+1) << endl;
-   for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
-   {
-      cout << mapit->first << " Integral: ";
-      if(mapit->second)
-         cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
-      else
-         cout << "ERROR::" << mapit->first << " histogram not found!" << endl;
-
-      if(mapit->second)
-         sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
-   }
-   cout << "SUM: " << sum << endl;
+   histFit.printDataIntegral();
+   histFit.printMCIntegrals();
+   cout << "SUM: " << histFit.getMCSum() << endl;
 
    if (signals.size()>0) {
       //histFit.addSigBkgHistograms(signals);
-      cout << endl <<"Signal Integral: " 
-           << HistogramsFitter::signalHistogram->Integral(0,HistogramsFitter::signalHistogram->GetNbinsX()+1) 
-           << endl;
-      cout <<"Background Integral: " 
-           << HistogramsFitter::backgroundHistogram->Integral(0,HistogramsFitter::backgroundHistogram->GetNbinsX()+1) 
-           << endl;
+      histFit.printSignalIntegral();
+      histFit.printBackgroundIntegral();
       cout << "FOM: " << histFit.getFOM(FOM) << endl;
    }
 
-   //histFit.writeHistograms();
+   histFit.writeHistograms();
+   
    return 0;
 }
 

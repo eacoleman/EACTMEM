@@ -16,57 +16,57 @@ using namespace ROOT::Minuit2;
 
 Fitter::Fitter(string lepton, string object, vector<string> fproc, string inFileLoc, string outFileLoc)
 {
+   // Set default debug options
+   rebinSizeDEBUG = 1;
+   debug = false;
+
    leptonName = lepton;
    objectName = object;
+   initializeFileLocations(inFileLoc, outFileLoc);
+   initializeHistNames();
+
+   // The default values (before fitting) of Chi2 and parameters
+   scaleParameters = vector<double> (2,1.0);
+   reducedChiSquared = 0.0;
+
+   //resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
+
    HistogramsFitter::fProcessNames = fproc;
    for(unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
       HistogramsFitter::fProcessXsec.push_back(DV.getCrossSectionAndError(HistogramsFitter::fProcessNames[nproc]).first);
       HistogramsFitter::fProcessXsecError.push_back(DV.getCrossSectionAndError(HistogramsFitter::fProcessNames[nproc]).second);
    }
-
-   initializeFileLocations(inFileLoc, outFileLoc);
-   initializeHistNames();
-   
-   //resultStack = new THStack((objectName + "_MonteCarlo").c_str(), (objectName + "_MonteCarlo").c_str());
-   
-   // The default values (before fitting) of Chi2 and parameters
-   scaleParameters = vector<double> (2,1.0);
-   reducedChiSquared = 0.0;
-   
-   // Set default debug options
-   rebinSizeDEBUG = 1;
-   debug = false;
 }
 
-Fitter::~Fitter()
-{
-   // Destroy montecarlo histograms
-   for(map<string, TH1D*>::iterator mapIt = HistogramsFitter::monteCarloHistograms.begin(); mapIt != HistogramsFitter::monteCarloHistograms.begin(); mapIt++)
-   {
-      mapIt->second->~TH1D();
-      delete mapIt->second;
-   }
-
+Fitter::~Fitter() {
    HistogramsFitter::fProcessNames.clear();
    HistogramsFitter::fProcessXsec.clear();
    HistogramsFitter::fProcessXsecError.clear();
-
+   
    // Destroy the MC histograms
    for(map<string,TH1D*>::iterator it=HistogramsFitter::monteCarloHistograms.begin(); it!=HistogramsFitter::monteCarloHistograms.end(); it++) {
       (*it).second->~TH1D();
-      delete (*it).second;
+      if((*it).second)
+         delete (*it).second;
    }
    HistogramsFitter::monteCarloHistograms.clear();
 
    // Destroy data histogram
-   HistogramsFitter::dataHistogram->~TH1D();
-   delete HistogramsFitter::dataHistogram;
+   if(HistogramsFitter::dataHistogram) {
+      HistogramsFitter::dataHistogram->~TH1D();
+      delete HistogramsFitter::dataHistogram;
+   }
 
    // Destroy other histograms
-   HistogramsFitter::signalHistogram->~TH1D();
-   delete HistogramsFitter::signalHistogram;
-   HistogramsFitter::backgroundHistogram->~TH1D();
-   delete HistogramsFitter::backgroundHistogram;
+   if(HistogramsFitter::signalHistogram) {
+      HistogramsFitter::signalHistogram->~TH1D();
+      delete HistogramsFitter::signalHistogram;
+   }
+
+   if(HistogramsFitter::backgroundHistogram) {
+      HistogramsFitter::backgroundHistogram->~TH1D();
+      delete HistogramsFitter::backgroundHistogram;
+   }
 }
 
 void Fitter::readHistograms()
@@ -150,27 +150,32 @@ void Fitter::writeHistograms()
       //inputCanvas = (TCanvas*)(key->ReadObj())->Clone();
       inputCanvas = (TCanvas*)(gDirectory->Get((prefix).c_str()))->Clone();
       inputPad = (TPad *) inputCanvas->GetPrimitive((prefix + "_1").c_str());
-      inputMCStack = (THStack*) inputPad->GetPrimitive((prefix + "_stackMC").c_str());
+      inputMCStack = (THStack*) inputPad->GetPrimitive((prefix + "_" + leptonName + "_stackMC").c_str());
+      if(!inputMCStack) {
+         cout << endl << "ERROR Fitter::writeHistograms inputMCStack not found!" << endl;
+         return;
+      }
       inputMCList = inputMCStack->GetHists();
 
       for (unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
          if(HistogramsFitter::fProcessNames[nproc] == "QCD") {
             if(leptonName == "electron")
-               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_electronEnriched").c_str()));
+               //histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched").c_str()));
+               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElFULL_electron_clone").c_str()));
             else if (leptonName == "muon")
-               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_muonEnriched").c_str()));
+               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched").c_str()));
             else
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD").c_str()));
          }
          else if(HistogramsFitter::fProcessNames[nproc] == "WJets") {
            if(leptonName == "electron")
-               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_electron").c_str()));
+               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_electron_clone").c_str()));
             else if (leptonName == "muon")
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_muon").c_str()));
             else
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str()));
          }
-         else histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_" + HistogramsFitter::fProcessNames[nproc]).c_str()));
+         else histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_" + HistogramsFitter::fProcessNames[nproc]+ "_" + leptonName + "_clone").c_str()));
 
          histsToScale[nproc]->Scale(scaleParameters[nproc]);
       }
@@ -179,7 +184,6 @@ void Fitter::writeHistograms()
       
       inputCanvases.push_back(inputCanvas);
    }
-   rootInFile->Close();  
    cout << "DONE" << endl; 
 
    cout << "\tFitter::writeHistograms Writing output histograms...";
@@ -194,10 +198,11 @@ void Fitter::writeHistograms()
    }
    HistogramsFitter::signalHistogram->Write();
    HistogramsFitter::backgroundHistogram->Write();
-
    
-   rootOutFile.Close();
    cout << "DONE" << endl;
+
+   rootOutFile.Close();
+   rootInFile->Close();
 }
 
 void Fitter::addSigBkgHistograms(vector<string> sig) {
@@ -321,7 +326,8 @@ void Fitter::initializeHistNames()
    histNames.push_back("WJets");
    histNames.push_back("ZJets");
    histNames.push_back("TTbar");
-   histNames.push_back("QCD_ElEnriched");
+   //histNames.push_back("QCD_ElEnriched");
+   histNames.push_back("QCD_ElFULL");
    histNames.push_back("ggH125");
    histNames.push_back("qqH125");
    histNames.push_back("WH125");
@@ -432,6 +438,72 @@ vector<string> Fitter::getPlotNames()
    //names.push_back("npv");
    
    return names;
+}
+
+void Fitter::printDataIntegral(bool includeOverflowUnderflow) {
+   double i = 0;
+   if(includeOverflowUnderflow)
+      i = HistogramsFitter::dataHistogram->Integral(0, HistogramsFitter::dataHistogram->GetNbinsX()+1);
+   else
+      i = HistogramsFitter::dataHistogram->Integral(1, HistogramsFitter::dataHistogram->GetNbinsX());
+
+   cout << "Data Integral: "
+        << i << endl;
+}
+
+void Fitter::printMCIntegrals(bool includeOverflowUnderflow) {
+   for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
+   {
+      cout << mapit->first << " Integral: ";
+      if(mapit->second) {
+         if(includeOverflowUnderflow)
+            cout << mapit->second->Integral(0,mapit->second->GetNbinsX()+1) << endl;
+         else
+            cout << mapit->second->Integral(1,mapit->second->GetNbinsX()) << endl;
+      }
+      else
+         cout << "ERROR Fitter::printMCIntegrals" << mapit->first << " histogram not found!" << endl;
+   }
+}
+
+void Fitter::printSignalIntegral(bool includeOverflowUnderflow) {
+   double i = 0;
+   if(includeOverflowUnderflow)
+      i = HistogramsFitter::signalHistogram->Integral(0, HistogramsFitter::signalHistogram->GetNbinsX()+1);
+   else
+      i = HistogramsFitter::signalHistogram->Integral(1, HistogramsFitter::signalHistogram->GetNbinsX());
+
+   cout << endl <<"Signal Integral: " 
+        << i << endl;
+}
+
+void Fitter::printBackgroundIntegral(bool includeOverflowUnderflow) {
+   double i = 0;
+   if(includeOverflowUnderflow)
+      i =  HistogramsFitter::backgroundHistogram->Integral(0, HistogramsFitter::backgroundHistogram->GetNbinsX()+1);
+   else
+      i =  HistogramsFitter::backgroundHistogram->Integral(1, HistogramsFitter::backgroundHistogram->GetNbinsX());
+
+   cout << endl <<"Background Integral: " 
+        << i << endl;
+}
+
+double Fitter::getMCSum(bool includeOverflowUnderflow) {
+   double sum = 0;
+   for(map<string, TH1D*>::iterator mapit = HistogramsFitter::monteCarloHistograms.begin(); mapit != HistogramsFitter::monteCarloHistograms.end(); mapit++)
+   {
+      if(mapit->second) {
+         if(includeOverflowUnderflow)
+            sum += mapit->second->Integral(0,mapit->second->GetNbinsX()+1);
+         else
+            sum += mapit->second->Integral(1,mapit->second->GetNbinsX());
+      }
+      else {
+         sum += 0;
+         cout << "ERROR Fitter::GetMCSum " << mapit->first << " histogram not found!" << endl;
+      }
+   }
+   return sum;
 }
 
 //##################################################

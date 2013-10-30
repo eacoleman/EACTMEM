@@ -39,9 +39,9 @@ namespace HistogramsFitter
    std::map<std::string, TH1D*> monteCarloHistograms;
    TH1D* dataHistogram;
    //names of the processes that will vary
-   std::vector<std::string> fProcessNames;
-   std::vector<double> fProcessXsec;
-   std::vector<double> fProcessXsecError;
+   static std::vector<std::string> fProcessNames;
+   static std::vector<double> fProcessXsec;
+   static std::vector<double> fProcessXsecError;
    TH1D* signalHistogram;
    TH1D* backgroundHistogram;
 }
@@ -117,6 +117,13 @@ public:
    // Returns a FOM for the specified signal and background
    double getFOM(double FOM);
    
+   // Print the integral of the histogram for the requested process
+   void printDataIntegral(bool includeOverflowUnderflow = true);
+   void printMCIntegrals(bool includeOverflowUnderflow = true);
+   void printSignalIntegral(bool includeOverflowUnderflow = true);
+   void printBackgroundIntegral(bool includeOverflowUnderflow = true);
+   double getMCSum(bool includeOverflowUnderflow = true);
+
 private:
    void initializeFileLocations(std::string inFileLoc, std::string outFileLoc);
    void initializeHistNames();
