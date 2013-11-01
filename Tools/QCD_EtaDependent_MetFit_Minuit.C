@@ -182,14 +182,14 @@ void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr,
 void QCD_EtaDependent_MetFit_Minuit(bool full = true){
 
   // ============ GET THE INPUT HISTOS ==============
-  int rebinMet = 5; // best value: 5
-  int rebinEta = 2; // best value: 2
+  int rebinMet = 20; // best value(s): 5 or 20
+  int rebinEta = 2; // best value(s): 2 or 41
   bool fixQCDFraction = false;
 
   double lum_data = 19148; // units of pb-1
   double lum_qcd;
   if(full)
-     lum_qcd = 4759.97251668627;// units of pb-1
+     lum_qcd = 18937.6012264;// units of pb-1
      //lum_qcd = 19148;// units of pb-1
   else
      lum_qcd = 1143.95; // units of pb-1
