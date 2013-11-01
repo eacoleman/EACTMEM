@@ -166,7 +166,8 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       plots[leptonCat]["DeltaPhi_LMET"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->METLV[0]),weight);
       plots[leptonCat]["npv"]->Fill(ntuple->vLV[0].npv,weight);
 
-      for (unsigned int j=0; j<ntuple->jLV.size(); j++) {
+      for (unsigned int j=0; j<ntuple->jLV.size() && j<31; j++) {
+         //cout << "sfsg2.1\t" << string(Form("JetEta_%luJets",ntuple->jLV.size())) << endl;
          plots[leptonCat][string(Form("JetEta_%luJets",ntuple->jLV.size()))]->Fill(ntuple->jLV[j].Eta(),weight);
          plots[leptonCat]["nJets_JetEta"]->Fill(ntuple->jLV[j].Eta(),ntuple->jLV.size(),weight);
       }
@@ -276,42 +277,6 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
    if (proc->name.Contains("QCD") && ntuple->lLV[0].lpfIso < 0.3)
      return false;
 
-   /*
-   // Keep only specific events
-   if (ntuple->event!=2663602)
-   return false;
-   */
- 
-   /*
-   // Diboson analysis cuts
-   TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
-   double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
-
-   if (ntuple->leptonCat == DEFS::muon)
-   if ((ntuple->lLV[0].Pt()) <= 25.0                                  ||
-   (ntuple->METLV[0].Et()) <= 25.0                                ||
-   (ntuple->jLV[0].Pt()) <= 35.0                                  ||
-   (ntuple->jLV[1].Pt()) <= 35.0                                  ||
-   (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
-   ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
-   (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
-   (mt.M()) <= 30.0                                               ||
-   wmt <= 50.0                                                     )
-   return false;
-  
-   if (ntuple->leptonCat == DEFS::electron) 
-   if ((ntuple->lLV[0].Pt()) <= 35.0                                  ||
-   (ntuple->METLV[0].Et()) <= 30.0                                ||
-   (ntuple->jLV[0].Pt()) <= 35.0                                  ||
-   (ntuple->jLV[1].Pt()) <= 35.0                                  ||
-   (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
-   ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
-   (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
-   (mt.M()) <= 30.0                                               ||
-   wmt <= 50.0                                                     )
-   return false;
-   */
-
    //Implement FNAL cuts
    if (doFNAL){
       if (ntuple->lLV[0].leptonCat == DEFS::muon){
@@ -379,6 +344,66 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
       if(ntuple->jLV.size()!=3)
          return false;
    }
+   else if (cutRegion.Contains("UVa")){
+      if(ntuple->lLV[0].leptonCat == DEFS::electron){
+         if(ntuple->METLV[0].Pt() <= 25.0           ||
+            ntuple->lLV[0].Pt() <= 30.0             ||
+            TMath::Abs(ntuple->lLV[0].Eta()) >= 2.5 ||
+            ntuple->jLV[0].Pt() <= 30.0             ||
+            ntuple->jLV[1].Pt() <= 25.0             ||
+            TMath::Abs(ntuple->jLV[0].Eta()) >= 2.4 ||
+            TMath::Abs(ntuple->jLV[1].Eta()) >= 2.4)
+            return false;
+         if (proc->name.Contains("QCD") && (ntuple->lLV[0].lpfIso < 0.3 || ntuple->lLV[0].lpfIso > 0.7))
+            return false;
+      }
+      if(ntuple->lLV[0].leptonCat == DEFS::muon){
+         if(ntuple->METLV[0].Pt() <= 25.0           ||
+            ntuple->lLV[0].Pt() <= 25.0             ||
+            TMath::Abs(ntuple->lLV[0].Eta()) >= 2.1 ||
+            ntuple->jLV[0].Pt() <= 30.0             ||
+            ntuple->jLV[1].Pt() <= 25.0             ||
+            TMath::Abs(ntuple->jLV[0].Eta()) >= 2.4 ||
+            TMath::Abs(ntuple->jLV[1].Eta()) >= 2.4)
+            return false;
+         if (proc->name.Contains("QCD") && (ntuple->lLV[0].lpfIso < 0.3 || ntuple->lLV[0].lpfIso > 0.7))
+            return false;
+      }
+   }
+   else if (cutRegion.Contains("event")){
+      // Keep only specific events
+      if(ntuple->event!=2663602)
+         return false;
+   }
+   else if (cutRegion.Contains("Diboson")){
+      // Diboson analysis cuts
+      TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
+      double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+
+      if (ntuple->lLV[0].leptonCat == DEFS::muon)
+         if ((ntuple->lLV[0].Pt()) <= 25.0                                  ||
+             (ntuple->METLV[0].Pt()) <= 25.0                                ||
+             (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+             (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+             (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
+             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
+             (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
+             (mt.M()) <= 30.0                                               ||
+             wmt <= 50.0                                                     )
+            return false;
+  
+      if (ntuple->lLV[0].leptonCat == DEFS::electron) 
+         if ((ntuple->lLV[0].Pt()) <= 35.0                                  ||
+             (ntuple->METLV[0].Pt()) <= 30.0                                ||
+             (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+             (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+             (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
+             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
+             (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
+             (mt.M()) <= 30.0                                               ||
+             wmt <= 50.0                                                     )
+            return false;
+   }
    else if (!cutRegion.Contains("all"))
       return false;
 
@@ -437,6 +462,7 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
       
       // find lepton eta and apply weight
       double leptonEta = ntuple->lLV[0].Eta();
+      //cout << "\tQCDWeight = " << QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta))) << " for eta = " << fabs(leptonEta) << endl;
       weight *= QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta)));
    }
    
@@ -803,6 +829,7 @@ int main(int argc,char**argv) {
    int              maxEvts          = cl.getValue<int>     ("maxEvts",          0);
    TString          MVAWeightDir     = cl.getValue<TString> ("MVAWeightDir",    "");
    vector<TString>  MVAMethods       = cl.getVector<TString>("MVAMethods",      "");
+   bool             debug            = cl.getValue<bool>    ("debug",        false);
 
 
    if (!cl.check()) return 0;
@@ -839,6 +866,7 @@ int main(int argc,char**argv) {
    vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(jetBin, DEFS::pretag,
                                                                      true, true, 
                                                                      ntupleType); //DEFS::EventNtuple);// DEFS::MicroNtuple);
+   if(debug) procs.erase(procs.begin(),procs.begin()+12);
       
    // Report Scale Factors
    for (unsigned p = 0; p< procs.size(); p++)
@@ -1546,7 +1574,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->overlaySignalFactor = signalFactor;
    plots[leptonCat][string(name)] = a;
 
-   for (unsigned int nj=0; nj<20; nj++) {
+   for (unsigned int nj=0; nj<31; nj++) {
       a = new FormattedPlot;
       name = Form("JetEta_%uJets",nj);
       a->templateHisto = new TH1D(name + lepStr, name,70,-3.5,3.5);
