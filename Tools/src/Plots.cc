@@ -511,8 +511,8 @@ void FormattedPlot::formatColors(vector<PhysicsProcess*> procs)
 // ------------------------------------------------------------
 void FormattedPlot::formatRatio(TH1* hRatio)
 {
-   hRatio->SetMinimum(-0.99);
-   hRatio->SetMaximum(0.99);
+   hRatio->SetMinimum(-0.50); //formerly -0.99
+   hRatio->SetMaximum(0.50); //formerly -0.99
    hRatio->SetLineWidth(2);
 
    hRatio->GetXaxis()->SetLabelFont(42);
