@@ -21,6 +21,8 @@ TTbarDil  			|  1.000    +/- 1.000
 Wbb       			|  1.000    +/- 1.000 
 Wcc       			|  1.000    +/- 1.000 
 WLight    			|  1.000    +/- 1.000 
+#Scale factor for QCD with QCDWeight_electron_control6_rebinMET20_rebinEta2.root
+#WJets              |  0.903475 +/- 0.0235
 #Scale factor for WJets with Ricardo's QCDWeight_electron.root file
 #WJets     			|  1.0286   +/- 0.0024
 #Standard WJets scale factor
@@ -36,6 +38,9 @@ QCD_MuEnriched           	|  1.000    +/-  1.000
 #QCD_ElEnriched           	| 63.053    +/-  1.11578
 #Standard QCD Scale factor
 QCD_ElEnriched           	|  1.000    +/-  0.00
+#scale factor with only 4759.97 pb-1
+#QCD_ElFULL               	|  4.0227   +/-  0.00
+#Standars QCD Scale factor
 QCD_ElFULL               	|  1.000    +/-  0.00
 QCD_Pt20to30_EMEnriched  	|  1.000    +/-  0.00
 QCD_Pt30to80_EMEnriched  	|  1.000    +/-  0.00
