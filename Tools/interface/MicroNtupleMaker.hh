@@ -101,7 +101,7 @@ public:
    //Created by RE to automatize the doing of MicroNtuples
    void makeMicroNtuple(vector<TString> locations, TString output, unsigned nJets, bool doLight=false, bool doNonW= false, bool doUntag= false);
    // This is the core of the makeMicroNtuple algorithm.
-   void makeMicroNtuple(TTree* chain, TString output, unsigned nJets, 
+   void makeMicroNtuple(TChain& chain, TString output, unsigned nJets, 
                         bool doLight=false, bool doNonW= false, bool doUntag=false);
    void setEventNtuplePath(TString mnen) {mergeNewEventNtuple = mnen;}
    void setProcess(TString p) {currentProcess = p;}

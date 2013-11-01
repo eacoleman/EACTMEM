@@ -9,6 +9,13 @@ MicroNtupleMaker::MicroNtupleMaker() {
 //______________________________________________________________________________
 MicroNtupleMaker::~MicroNtupleMaker() {
 
+   if(mergeChain)
+      delete mergeChain;
+   if(index)
+      delete index;
+   if(mergeEventNtuple)
+      delete mergeEventNtuple;
+
 }//D'tor
 
 //______________________________________________________________________________
@@ -363,13 +370,26 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
    }
 
    chain.LoadTree(0);
-   makeMicroNtuple(chain.GetTree(), output, nJets, doLight, doNonW, doUntag);
+   Int_t treeEntries = chain.GetTree()->GetEntries();
+   vector<TTree*> trees;
+   index = new TTreeIndex();
+   for(Int_t t=0; t<chain.GetNtrees(); t++) {
+      cout << "MicroNtupleMaker::makeMicroNtuple Building index for tree " << chain.GetTreeNumber() << " ... ";
+      chain.LoadTree(t*150);
+      trees.push_back(chain.GetTree()->CloneTree());
+      trees.back()->BuildIndex("m_event");
+      index->Append((TTreeIndex*)trees.back()->GetTreeIndex());
+      cout << "DONE" << endl;
+   }
+
+   //makeMicroNtuple(chain.GetTree(), output, nJets, doLight, doNonW, doUntag);
+   makeMicroNtuple(chain, output, nJets, doLight, doNonW, doUntag);
 
 }
 
 //______________________________________________________________________________
 //void MicroNtupleMaker::makeMicroNtuple(TChain & chain, TString output, unsigned nJets, 
-void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJets, 
+void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned nJets, 
                                        bool doLight, bool doNonW, bool doUntag)
 {
 
@@ -382,8 +402,8 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
    
 
    // and set the meNtuple to read from it
-   chain->SetBranchAddress("METree", &meNtuple);
-   chain->SetBranchAddress("EvtTree", &eventNtuple);
+   chain.SetBranchAddress("METree", &meNtuple);
+   chain.SetBranchAddress("EvtTree", &eventNtuple);
 
    //sort chains by event number
    if(mergeNewEventNtuple.CompareTo("")!=0) {
@@ -392,21 +412,23 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
       mergeChain->GetFile()->cd();
       mergeTree->SetBranchAddress("EvtNtuple", &mergeEventNtuple);
 
-      chain->BuildIndex("m_event");
-      index = (TTreeIndex*)chain->GetTreeIndex();
+      //chain->BuildIndex("m_event");
+      //index = (TTreeIndex*)chain->GetTreeIndex();
 
       Long64_t local = -1;
+      cout << "MicroNtupleMaker::makeMicroNtuple Making event index map ... ";
       for( int i = 0; i < index->GetN() ; ++i ) {
          local = index->GetIndex()[i];
-         chain->GetEntry(local);
+         chain.GetEntry(local);
          eventIndex[eventNtuple->event] = local;
       }
+      cout << "DONE" << endl;
    }
 
    // Create and output file and clone the tree that will be in the output and set microNtuple that fills it
    TFile outputFile(output, "RECREATE");
    //TTree* outputTree = chain->CloneTree(0);
-   TTree* outputTree = new TTree(chain->GetName(),chain->GetTitle());
+   TTree* outputTree = new TTree(chain.GetName(),chain.GetTitle());
    //MicroNtuple::indexMap1 indexMapWH = indexMap[DEFS::EP::WH];
    //MicroNtuple::indexMap1 indexMapHWW = indexMap[DEFS::EP::HWW];
    outputTree->Branch("METree", "METree", &meNtuple);
@@ -414,7 +436,7 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
    outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
 
    // Get the entries and report if zero
-   mergeNewEventNtuple.CompareTo("")!=0 ? nentries = static_cast<unsigned>(mergeTree->GetEntries()) : nentries = static_cast<unsigned>(chain->GetEntries());
+   mergeNewEventNtuple.CompareTo("")!=0 ? nentries = static_cast<unsigned>(mergeTree->GetEntries()) : nentries = static_cast<unsigned>(chain.GetEntries());
    cout << "\tOriginal chain has " << nentries << " entries" << endl;
    if (nentries == 0){
       cout << "\tNo entries found!  Aborting.\n";
@@ -438,7 +460,7 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
          mergeTree->GetEntry(ientry);
          if(eventIndex.find(mergeEventNtuple->event)!=eventIndex.end()) {
             //cout << "Not missing entry " << ientry << endl;
-            chain->GetEntry(eventIndex[mergeEventNtuple->event]);
+            chain.GetEntry(eventIndex[mergeEventNtuple->event]);
          }
          else {
             //cout << "Missing entry " << ientry << endl;
@@ -453,7 +475,7 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
          }
       }
       else {
-         chain->GetEntry(ientry);
+         chain.GetEntry(ientry);
       }
 
       if (!imFilled) {
@@ -512,6 +534,9 @@ void MicroNtupleMaker::makeMicroNtuple(TTree* chain, TString output, unsigned nJ
   
    delete meNtuple;
    delete microNtuple;
+   delete eventNtuple;    
+   delete meNtupleBlank;
+   delete microNtupleBlank;
 
    if(mergeNewEventNtuple.CompareTo("")!=0) {
       cout << "\tMissing Information ..." << endl;
