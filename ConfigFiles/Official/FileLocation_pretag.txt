@@ -40,8 +40,8 @@ QCD_Pt20_MuEnriched     |                                     |
 QCD_MuEnriched          |                                     |
 #QCD_ElEnriched          |  QCD_Electron.root                  |
 microQCD_Electron_Dp6p7_BaseCuts.root
-QCD_ElEnriched          |  QCD_Electron_Dp6p7_partial.root                  |   microQCD_Electron_Dp6p7_BaseCuts.root
-QCD_ElFULL              |  SingleEl_Full_partial.root                 |   SingleEl_Full.root
+QCD_ElEnriched          |  QCD_Electron_Dp6p7.root                  |   microQCD_Electron_Dp6p7_BaseCuts.root
+QCD_ElFULL              |  SingleEl_Full.root                 |   SingleEl_Full.root
 QCD_Pt20to30_EMEnriched   |  QCD_EM_20to30.root               | QCD_EM_20to30.root               
 QCD_Pt30to80_EMEnriched   |  QCD_EM_30to80.root               | QCD_EM_30to80.root               
 QCD_Pt80to170_EMEnriched  |  QCD_EM_80to170.root              | QCD_EM_80to170.root               

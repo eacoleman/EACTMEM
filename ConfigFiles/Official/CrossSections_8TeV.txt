@@ -2,6 +2,7 @@
 # CrossSections (pb) : Single top taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SingleTopSigma
 # CrossSections (pb) : Other SM processes taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV?skin=drupal
 # CrossSections (pb) : Higgs taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt8TeV
+# CrossSections (pb) : TTbar error taken from http://cms.cern.ch/iCMS/jsp/analysis/admin/analysismanagement.jsp?ancode=TOP-12-007
 # On the left is the process name.
 CellClass=TableCellVal
 
@@ -15,7 +16,7 @@ STopT_T    			|  56.40  	+/-     2.370654
 STopT_Tbar 			|  30.70 	+/-     1.303840
 STopTW_T   			|  11.10  	+/-     0.761577
 STopTW_Tbar			|  11.10  	+/-     0.761577
-TTbar     			|  225.197 	+/-     0.00
+TTbar     			|  225.197 	+/-     14.00
 TTbarLJ   			|  0.00   	+/-     0.00 
 TTbarDil  			|  0.00   	+/-     0.00  
 Wbb       			|  0.00   	+/-     0.00 
