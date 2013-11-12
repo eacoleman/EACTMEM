@@ -202,11 +202,11 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
   if (type == DEFS::Data ){
     if (tagcat == DEFS::pretag )    
       wei += "*1";
-    else if (tagcat == DEFS::eq0TSV)
+    else if (tagcat == DEFS::eq0tag)
       wei += "*(h.ntag==0)";
-    else if (tagcat == DEFS::eq1TSV)
+    else if (tagcat == DEFS::eq1tag)
       wei += "*(h.ntag==1)";
-    else if (tagcat == DEFS::eq2TSV)
+    else if (tagcat == DEFS::eq2tag)
       wei += "*(h.ntag==2)";      
     else
       cout<<"ERROR DefaultValues::getWeightForCategory (data) called with tagcat="<<tagcat<<endl;     
@@ -217,7 +217,7 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
     // I have to apply this for the 1 and the 2 tags. Do I need it for the 0 tag ??
     if (type != DEFS::WLight && type != DEFS::NonW)
       if (tagcat != DEFS::pretag &&
-	  tagcat != DEFS::eq0TSV )
+	  tagcat != DEFS::eq0tag )
 	wei += "*(h.ntag>0)";
 
     // Pretag
@@ -227,11 +227,11 @@ string  DefaultValues::getWeightForCategory(DEFS::TagCat tagcat, DEFS::PhysicsPr
     //switch on ntags
     if (tagcat == DEFS::pretag )      // pretag sample 
       wei += "*(h.wgt*h.passQCD)";
-    else if (tagcat == DEFS::eq0TSV )      // untag sample 
+    else if (tagcat == DEFS::eq0tag )      // untag sample 
       wei += "*(h.tagProb0*h.wgt*h.passQCD)";
-    else if (tagcat == DEFS::eq1TSV) // single tag sample
+    else if (tagcat == DEFS::eq1tag) // single tag sample
       wei += "*(h.tagProb1*h.wgt*h.passQCD)";
-    else if (tagcat == DEFS::eq2TSV) // double tags sample
+    else if (tagcat == DEFS::eq2tag) // double tags sample
       wei += "*(h.tagProb2*h.wgt*( (h.det==2)*h.passQCD+(h.det!=2) ))";      
     else
       cout<<"ERROR DefaultValues::getWeightForCategory (MC) called with tagcat="<<tagcat<<endl;     

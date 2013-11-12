@@ -113,12 +113,12 @@ namespace DEFS{
   enum TagCat {
 
     pretag,   // The pretag category
-    eq0TSV,   // Exactly zero SVX tags, i.e. the untag category.
-    eq1TSV,   // Exactly one SVX tag 
-    eq2TSV,   // Exactly two SVX tags 
-    ge0TSV,   // Greater equal than 0 SVX tags 
-    ge1TSV,   // Greater equal than 1 SVX tag 
-    ge2TSV,   // Greater equal than 2 SVX tags 
+    eq0tag,   // Exactly zero SVX tags, i.e. the untag category.
+    eq1tag,   // Exactly one SVX tag 
+    eq2tag,   // Exactly two SVX tags 
+    ge0tag,   // Greater equal than 0 SVX tags 
+    ge1tag,   // Greater equal than 1 SVX tag 
+    ge2tag,   // Greater equal than 2 SVX tags 
 
     // For the tagging with JP in descendant exclusive orthogonal category
     TSVTSV,   // for some reason this is not exactly equal to eq2TSV
@@ -162,6 +162,19 @@ namespace DEFS{
 
   // A routine that returns a CutLevel given a string
   CutLevel getCutLevel(std::string str);
+
+  // ---------------------------------------------------------------
+  //            ALL ABOUT THE CONTROL REGIONS
+  // ---------------------------------------------------------------
+
+   enum ControlRegion {all, signal, control1, control2, control3, control4, control5, control6, control7, control8, control9, UVa, event, Diboson, AntiMVAEleID, None};
+  static const unsigned int nControlRegion = 16;
+
+  //A routine that returns a string given the type
+  std::string getControlRegionString(ControlRegion type);
+
+  // A routine that returns a CutLevel given a string
+  ControlRegion getControlRegion(std::string str);
 
   // ---------------------------------------------------------------
   //            ALL ABOUT THE NTUPLE TYPES

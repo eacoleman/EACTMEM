@@ -258,7 +258,7 @@ namespace DEFS {
       else if (type == QCD_Pt20to30_EMEnriched )   return string ("QCD_Pt20to30_EMEnriched");
       else if (type == QCD_Pt30to80_EMEnriched )   return string ("QCD_Pt30to80_EMEnriched");
       else if (type == QCD_Pt80to170_EMEnriched )  return string ("QCD_Pt80to170_EMEnriched");
-      else if (type == QCD_Pt170to250_EMEnriched ) return string ("QCD_Pt170to250_EMEnriched"); 
+      else if (type == QCD_Pt170to250_EMEnriched ) return string ("QCD_Pt170to250_EMEnriched");
       else if (type == QCD_Pt250to350_EMEnriched ) return string ("QCD_Pt250to350_EMEnriched");
       else if (type == QCD_Pt350_EMEnriched )      return string ("QCD_Pt350_EMEnriched");
       else if (type == WW)	               return string("WW");
@@ -426,7 +426,6 @@ namespace DEFS {
 
   }//getJetBinString
 
-
   //---------------------------------------------------------------------------
   JetBin getJetBin(std::string str){
 
@@ -448,12 +447,12 @@ namespace DEFS {
   string getTagCatString(TagCat type){
 
     if (type == pretag)  return "pretag";
-    if (type == eq0TSV)  return "eq0TSV";
-    if (type == eq1TSV)  return "eq1TSV";
-    if (type == eq2TSV)  return "eq2TSV";
-    if (type == ge0TSV)  return "ge0TSV";
-    if (type == ge1TSV)  return "ge1TSV";
-    if (type == ge2TSV)  return "ge2TSV";
+    if (type == eq0tag)  return "eq0tag";
+    if (type == eq1tag)  return "eq1tag";
+    if (type == eq2tag)  return "eq2tag";
+    if (type == ge0tag)  return "ge0tag";
+    if (type == ge1tag)  return "ge1tag";
+    if (type == ge2tag)  return "ge2tag";
 
     cout <<"ERROR  PhysicsProcess::getTagCatString cannot find the given type"<<endl;
     return "ERROR";
@@ -464,12 +463,12 @@ namespace DEFS {
   DEFS::TagCat getTagCat(std::string str){
     
     if (str == "pretag")  return pretag;
-    if (str == "eq0TSV")  return eq0TSV;
-    if (str == "eq1TSV")  return eq1TSV;
-    if (str == "eq2TSV")  return eq2TSV;
-    if (str == "ge0TSV")  return ge0TSV;
-    if (str == "ge1TSV")  return ge1TSV;
-    if (str == "ge2TSV")  return ge2TSV;
+    if (str == "eq0tag")  return eq0tag;
+    if (str == "eq1tag")  return eq1tag;
+    if (str == "eq2tag")  return eq2tag;
+    if (str == "ge0tag")  return ge0tag;
+    if (str == "ge1tag")  return ge1tag;
+    if (str == "ge2tag")  return ge2tag;
 
     cout<<"ERROR  PhysicsProcess::getTagCat cannot find the given string"<<endl;
     return pretag;
@@ -539,6 +538,57 @@ namespace DEFS {
    
    //---------------------------------------------------------------------------
    // A routine that returns a string given the type
+   std::string getControlRegionString(ControlRegion type){
+      
+      if (type == all)               return "all";
+      else if (type == signal)       return "signal";
+      else if (type == control1)     return "control1";
+      else if (type == control2)     return "control2";
+      else if (type == control3)     return "control3";
+      else if (type == control4)     return "control4";
+      else if (type == control5)     return "control5";
+      else if (type == control6)     return "control6";
+      else if (type == control7)     return "control7";
+      else if (type == control8)     return "control8";
+      else if (type == control9)     return "control9";
+      else if (type == UVa)          return "UVa";
+      else if (type == event)        return "event";
+      else if (type == Diboson)      return "Diboson";
+      else if (type == AntiMVAEleID) return "AntiMVAEleID";
+      else if (type == None)         return "None";
+
+      cout<<"ERROR DEFS::getControlregionString cannot find the given type"<<endl;
+      return "ERROR";
+
+   }
+
+   // A routine that returns a ControlRegion given a string
+   DEFS::ControlRegion getControlRegion(std::string str){
+      
+      if (str == "all")               return all;
+      else if (str == "signal")       return signal;
+      else if (str == "control1")     return control1;
+      else if (str == "control2")     return control2;
+      else if (str == "control3")     return control3;
+      else if (str == "control4")     return control4;
+      else if (str == "control5")     return control5;
+      else if (str == "control6")     return control6;
+      else if (str == "control7")     return control7;
+      else if (str == "control8")     return control8;
+      else if (str == "control9")     return control9;
+      else if (str == "UVa")          return UVa;
+      else if (str == "event")        return event;
+      else if (str == "Diboson")      return Diboson;
+      else if (str == "AntiMVAEleID") return AntiMVAEleID;
+      else if (str == "None")         return None;
+
+      cout<<"ERROR  DEFS::getControlRegion cannot find the given string"<<endl;
+      return None;
+
+   }
+
+   //---------------------------------------------------------------------------
+   // A routine that returns a string given the type
    std::string getNtupleTypeString(NtupleType type){
       
       if (type == EventNtuple)      return "EventNtuple";
@@ -550,7 +600,7 @@ namespace DEFS {
       return "ERROR";
 
    }
-   
+
    // A routine that returns a NtupleType given a string
    DEFS::NtupleType getNtupleType(std::string str){
       
@@ -564,21 +614,21 @@ namespace DEFS {
 
    }
 
-   // A routine that returns the treename for a given NtupleType
-   std::string getTreeName(NtupleType type, JetBin nJets){
-
-      if (type == EventNtuple) {
-         if(nJets == jets0)         return "PS/jets0";
-         else if (nJets == jet1)    return "PS/jet1";
-         else                       return "PS/jets2p";
-      }
-      else if (type == METree)      return "METree";
-      else if (type == MicroNtuple) return "METree";
-      else if (type == Other)       return "Other";
-
-      cout<<"ERROR DEFS::getTreeName cannot find the given type"<<endl;
-      return "ERROR";
-
-   }
+  // A routine that returns the treename for a given NtupleType
+  std::string getTreeName(NtupleType type, JetBin nJets){
+     
+     if (type == EventNtuple) {
+        if(nJets == jets0)         return "PS/jets0";
+        else if (nJets == jet1)    return "PS/jet1";
+        else                       return "PS/jets2p";
+     }
+     else if (type == METree)      return "METree";
+     else if (type == MicroNtuple) return "METree";
+     else if (type == Other)       return "Other";
+     
+     cout<<"ERROR DEFS::getTreeName cannot find the given type"<<endl;
+     return "ERROR";
+     
+  }
 
 }// end of namespace DEFS
