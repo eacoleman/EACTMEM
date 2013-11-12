@@ -373,13 +373,15 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
    Int_t treeEntries = chain.GetTree()->GetEntries();
    vector<TTree*> trees;
    index = new TTreeIndex();
-   for(Int_t t=0; t<chain.GetNtrees(); t++) {
-      cout << "MicroNtupleMaker::makeMicroNtuple Building index for tree " << chain.GetTreeNumber() << " ... ";
-      chain.LoadTree(t*150);
-      trees.push_back(chain.GetTree()->CloneTree());
-      trees.back()->BuildIndex("m_event");
-      index->Append((TTreeIndex*)trees.back()->GetTreeIndex());
-      cout << "DONE" << endl;
+   if(mergeNewEventNtuple.CompareTo("")!=0) {
+      for(Int_t t=0; t<chain.GetNtrees(); t++) {
+         cout << "MicroNtupleMaker::makeMicroNtuple Building index for tree " << chain.GetTreeNumber() << " ... ";
+         chain.LoadTree(t*150);
+         trees.push_back(chain.GetTree()->CloneTree());
+         trees.back()->BuildIndex("m_event");
+         index->Append((TTreeIndex*)trees.back()->GetTreeIndex());
+         cout << "DONE" << endl;
+      }
    }
 
    //makeMicroNtuple(chain.GetTree(), output, nJets, doLight, doNonW, doUntag);
@@ -498,32 +500,36 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
       microNtuple->event = meNtuple->getEvent();
 
       microNtuple->epdPretagWWandWZ = microNtuple->calcWZEPD(DEFS::pretag);
-      microNtuple->epd0tagWWandWZ = microNtuple->calcWZEPD(DEFS::eq0TSV);
-      microNtuple->epd1tagWWandWZ = 0;//microNtuple->calcWZEPD(DEFS::eq1TSV);
-      microNtuple->epd2tagWWandWZ = 0;//microNtuple->calcWZEPD(DEFS::eq2TSV);
+      microNtuple->epd0tagWWandWZ = microNtuple->calcWZEPD(DEFS::eq0tag);
+      microNtuple->epd1tagWWandWZ = microNtuple->calcWZEPD(DEFS::eq1tag);
+      microNtuple->epd2tagWWandWZ = microNtuple->calcWZEPD(DEFS::eq2tag);
       int counterHWW = 0;
       int counterWH = 0;
       int counterH = 0;
-      microNtuple->epdPretagHiggs.Set(MicroNtuple::nHiggsMasses);
+      //If using TArrayD
+      //microNtuple->epdPretagHiggs.Set(MicroNtuple::nHiggsMasses);
       for(int i = 0; i < meNtuple->getNProbStat(); ++i) {
          if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW) {
-            microNtuple->epd1tagHWW[counterHWW] = 0;//microNtuple->calcHWWEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
-            microNtuple->epd2tagHWW[counterHWW++] = 0;//microNtuple->calcHWWEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd1tagHWW[counterHWW] = microNtuple->calcHWWEPD(DEFS::eq1tag,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd2tagHWW[counterHWW++] = microNtuple->calcHWWEPD(DEFS::eq2tag,meNtuple->getProbStat(i)->tmeParam);
          }
          if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::WH) {
-            microNtuple->epd1tagWH[counterWH] = 0;//microNtuple->calcWHEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
-            microNtuple->epd2tagWH[counterWH++] = 0;//microNtuple->calcWHEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd1tagWH[counterWH] = microNtuple->calcWHEPD(DEFS::eq1tag,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd2tagWH[counterWH++] = microNtuple->calcWHEPD(DEFS::eq2tag,meNtuple->getProbStat(i)->tmeParam);
          }
          if(meNtuple->getProbStat(i)->tmeType == DEFS::EP::HWW || meNtuple->getProbStat(i)->tmeType == DEFS::EP::WH) {
-            //microNtuple->epdPretagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam);
-            microNtuple->epdPretagHiggs.AddAt(counterH,microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam));
-            microNtuple->epd1tagHiggs[counterH] = 0;//microNtuple->calcHiggsEPD(DEFS::eq1TSV,meNtuple->getProbStat(i)->tmeParam);
-            microNtuple->epd2tagHiggs[counterH++] = 0;//microNtuple->calcHiggsEPD(DEFS::eq2TSV,meNtuple->getProbStat(i)->tmeParam);
+            //Used to absorb the error of the missing first entry
+            microNtuple->absorbError[counterH] = -1;
+            //If using TArrayD
+            //microNtuple->epdPretagHiggs.AddAt(counterH,microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam));
+            microNtuple->epdPretagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::pretag,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd1tagHiggs[counterH] = microNtuple->calcHiggsEPD(DEFS::eq1tag,meNtuple->getProbStat(i)->tmeParam);
+            microNtuple->epd2tagHiggs[counterH++] = microNtuple->calcHiggsEPD(DEFS::eq2tag,meNtuple->getProbStat(i)->tmeParam);
          }
       }
 
       microNtuple->reader = 0;
-
+      
       outputTree->Fill();
    }//for entries
 
