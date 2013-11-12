@@ -85,11 +85,11 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
                                             const ProbsForEPD & coeffs){
 
    int tag = 0;
-   if ((tagcat ==  DEFS::pretag) || (tagcat ==  DEFS::eq0TSV ))
+   if ((tagcat ==  DEFS::pretag) || (tagcat ==  DEFS::eq0tag ))
       tag=0; 
-   else if (tagcat ==  DEFS::eq1TSV)
+   else if (tagcat ==  DEFS::eq1tag)
       tag=1;
-   else if (tagcat ==  DEFS::eq2TSV)
+   else if (tagcat ==  DEFS::eq2tag)
       tag=2;
 
    MicroNtuple::setIndexMap(indexMapOfME);
