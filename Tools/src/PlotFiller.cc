@@ -17,7 +17,7 @@ using namespace std;
 
 PlotFiller::PlotFiller(MapOfPlots &plotsTemp,
                        vector<PhysicsProcess*> &procsTemp,
-                       void (*userFillFuncTemp) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
+                       void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
    plots(plotsTemp),
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
@@ -82,9 +82,9 @@ void PlotFiller::run()
       
       // Tell all plots to prepare for filling 
       for (MapOfPlots::iterator p = plots.begin() ; p != plots.end() ; p++) {
-	TString suffix = "_"+processes[i]->name + "_" + DEFS::getLeptonCatString(p->first);
-	for (map<string,  Plot * >::iterator p2 = p->second.begin(); p2 != p->second.end(); p2++)
-	  p2->second->prepareToFillProcess(suffix, processes[i]->groupName);
+         TString suffix = "_"+processes[i]->name + "_" + DEFS::getLeptonCatString(p->first);
+         for (map<string,  Plot * >::iterator p2 = p->second.begin(); p2 != p->second.end(); p2++)
+            p2->second->prepareToFillProcess(suffix, processes[i]->groupName);
       }//for 
       
       // Create the eventntuple and set the branch address
@@ -169,7 +169,7 @@ void PlotFiller::run()
          
          // Fill plots
          //cout << "Entry = " << ev << endl; 
-         userFillFunc(plots, ntuple, metree, mnt, MVAMethods, weight);
+         userFillFunc(plots, processes[i]->name, ntuple, metree, mnt, MVAMethods, weight);
          
          // Keep track of the total number of events & weights passing the cuts 
          sumW += weight;

@@ -33,7 +33,7 @@ public:
    // NOTE That the user must provide the fill function at construction (because it is a required function).
    PlotFiller(MapOfPlots &plotsTemp,
               std::vector<PhysicsProcess*> &procsTemp,
-              void (*userFillFuncTemp) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double) );
+              void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double) );
    ~PlotFiller();
    
    // Simple functions to change the functionality of the code.
@@ -62,7 +62,7 @@ private:
 
    // These are the custom functions.
    // Fills the plots
-   void (*userFillFunc) (MapOfPlots &, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double);
+   void (*userFillFunc) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double);
    // Returns a double that will multiply the weight
    double (*userWeightFunc) (EventNtuple*, const PhysicsProcess*);
    // Returns true if the event passes the cut
