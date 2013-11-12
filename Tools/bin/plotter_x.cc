@@ -45,7 +45,8 @@ typedef PlotFiller::MapOfPlots MapOfPlots;
 namespace UserFunctions
 {
    TString outDir;
-   TString cutRegion;
+   DEFS::ControlRegion controlRegion;
+   DEFS::TagCat tagCat;
    DEFS::LeptonCat leptonCat;
    PUreweight* puweight;
    CSVreweight* csvweight;
@@ -53,6 +54,7 @@ namespace UserFunctions
    bool doMETPhiCorrection;
    bool doPUreweight;
    bool doCSVreweight;
+   bool doTTbarreweight;
    bool doFNAL;
    bool doMetPhiWeight;
    TH1D* metPhiWeight= 0;
@@ -71,7 +73,7 @@ namespace UserFunctions
    // Is run once for each process before events are cut (initialize)
    void initEventFunc(EventNtuple* ntuple, const PhysicsProcess* proc);
    // this function fills all of the plots for a given process
-   void fillPlots(MapOfPlots &  plots, EventNtuple * ntuple, METree * metree, 
+   void fillPlots(MapOfPlots &  plots, TString processName, EventNtuple * ntuple, METree * metree, 
                   MicroNtuple * mnt, vector<TString>, double weight = 1.0);
    // returns a boolean if the event passes the specified cuts
    bool eventPassCuts(EventNtuple * ntuple, const PhysicsProcess*);
@@ -86,6 +88,8 @@ namespace UserFunctions
    // returns the mass of the hadronic W and the leptonic W
    pair<double,double> onVsOffShell(EventNtuple * ntuple);
    pair<double,double> onVsOffShellInclusive(EventNtuple * ntuple);
+   pair<double,double> ttbarPt(const EventNtuple * ntuple);
+   double ttbarWeight(const EventNtuple * ntuple, const PhysicsProcess* proc = 0);
    // returns a number rounded away from zero
    double round(double r);
    int round_int(double r);
@@ -99,7 +103,7 @@ namespace UserFunctions
 ////////////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree * metree, MicroNtuple * mnt,
+void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtuple * ntuple,  METree * metree, MicroNtuple * mnt,
                               vector<TString> MVAMethods, double weight)
 {
    //Weird events with  ntuple->lLV[0].leptonCat different than electrons
@@ -191,6 +195,9 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
       }
       plots[leptonCat]["WmT_Subtracted"]->Fill(WmT, (ntuple->lLV[0].lQ)*weight);
 
+      if(processName.Contains("TTbar"))
+         plots[leptonCat]["TTbarWeights"]->Fill(ttbarWeight(ntuple,0),1.0);
+
       if (UserFunctions::fillTMDF){
          vector<Double_t> coord;
          //coord.assign(((TProfileMDF*)plots[leptonCat]["lpt_leta_j1pt_j1eta_j2pt_j2eta"]->templateHisto)->GetNaxis(),0);
@@ -237,7 +244,8 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, EventNtuple * ntuple,  METree
 
    if (mnt) {
       plots[leptonCat]["epdPretagWWandWZ"]->Fill(-TMath::Log10(mnt->epdPretagWWandWZ),weight);
-      plots[leptonCat]["epdPretagHiggs125"]->Fill(-TMath::Log10(mnt->epdPretagHiggs.At(6)),weight);
+      //plots[leptonCat]["epdPretagHiggs125"]->Fill(-TMath::Log10(mnt->epdPretagHiggs.At(6)),weight);
+      plots[leptonCat]["epdPretagHiggs125"]->Fill(-TMath::Log10(mnt->epdPretagHiggs[6]),weight);
 
       if (!MVAMethods.empty() && ntuple) {
          //cout << "MVADiscriminator_electron = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
@@ -297,32 +305,58 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
 
 
    //X axis cuts
-   if (cutRegion.Contains("signal")){
+   if (controlRegion == DEFS::signal || controlRegion == DEFS::AntiMVAEleID) {
 
      // leading jet with PT > 30, and second leading with at least 25 GeV
      if(ntuple->jLV[0].Pt() < 30 || ntuple->jLV[1].Pt() < 25)
        return false;
 
+     if (controlRegion == DEFS::AntiMVAEleID) {
+        double aeta = TMath::Abs(ntuple->lLV[0].Eta());
+        double emvaTrig = ntuple->lLV[0].emvaTrig;
+        double pfIso = ntuple->lLV[0].lpfIso;
+        if ((aeta<0.8 && pfIso<0.093 && emvaTrig > 0.977) ||
+            (aeta>0.8 && aeta<1.479 && pfIso<0.095 && emvaTrig>0.956) ||
+            (aeta>1.479 && aeta<2.5 && pfIso<0.171 && emvaTrig>0.966) ) {
+          return false;
+        }
+     }
+
+     int nBtag = 0;
+     if(tagCat != DEFS::pretag){
+        for(unsigned int j=0; j<ntuple->jLV.size();j++) {
+           if(ntuple->jLV[j].jBtagCSV==1)
+              nBtag++;
+        }
+ 
+        if(tagCat == DEFS::eq0tag && nBtag!=0) {
+           return false;
+        }
+        if(tagCat == DEFS::ge1tag && nBtag<1) {
+           return false;
+        }
+     }
+
    }
-   else if (cutRegion.Contains("control1")){
+   else if (controlRegion == DEFS::control1){
      
      if (ntuple->jLV[0].Pt() > 30 || ntuple->jLV[1].Pt() > 25)
        return false;
    }
-   else if (cutRegion.Contains("control2")){
+   else if (controlRegion == DEFS::control2){
       if ((ntuple->jLV[0].Pt() > 30 && ntuple->jLV[1].Pt() > 25) || 
           (ntuple->jLV[0].Pt() < 30 && ntuple->jLV[1].Pt() < 25))
          return false;
    }
-   else if (cutRegion.Contains("control3")){
+   else if (controlRegion == DEFS::control3){
      if(ntuple->jLV[0].Pt() > 30 && ntuple->jLV[1].Pt() > 25)
        return false;
    }
-   else if (cutRegion.Contains("control4")){
+   else if (controlRegion == DEFS::control4){
       if(ntuple->jLV.size()<4)
          return false;
    }
-   else if (cutRegion.Contains("control5")){
+   else if (controlRegion == DEFS::control5){
       int nBtag = 0;
       for(unsigned int j=0; j<ntuple->jLV.size();j++) {
          if(ntuple->jLV[j].jBtagCSV==1)
@@ -332,19 +366,23 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
          return false;
       }
    }
-   else if (cutRegion.Contains("control6")){
+   else if (controlRegion == DEFS::control6){
       if(ntuple->jLV.size()!=1)
          return false;
    }
-   else if (cutRegion.Contains("control7")){
+   else if (controlRegion == DEFS::control7){
       if(ntuple->jLV.size()!=2)
          return false;
    }
-   else if (cutRegion.Contains("control8")){
+   else if (controlRegion == DEFS::control8){
       if(ntuple->jLV.size()!=3)
          return false;
    }
-   else if (cutRegion.Contains("UVa")){
+   else if (controlRegion == DEFS::control9){
+      if(ntuple->jLV.size()!=1 && ntuple->jLV.size()<4)
+         return false;
+   }
+   else if (controlRegion == DEFS::UVa){
       if(ntuple->lLV[0].leptonCat == DEFS::electron){
          if(ntuple->METLV[0].Pt() <= 25.0           ||
             ntuple->lLV[0].Pt() <= 30.0             ||
@@ -370,12 +408,12 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
             return false;
       }
    }
-   else if (cutRegion.Contains("event")){
+   else if (controlRegion == DEFS::event){
       // Keep only specific events
       if(ntuple->event!=2663602)
          return false;
    }
-   else if (cutRegion.Contains("Diboson")){
+   else if (controlRegion == DEFS::Diboson){
       // Diboson analysis cuts
       TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
       double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
@@ -404,7 +442,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
              wmt <= 50.0                                                     )
             return false;
    }
-   else if (!cutRegion.Contains("all"))
+   else if (controlRegion == DEFS::all)
       return false;
 
    return true;  
@@ -434,9 +472,9 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
   
    // Pileup reweighting
    if (doPUreweight){
-      if(!auxName.Contains("DATA") && auxName.Contains("QCD"))
+      if(!auxName.Contains("DATA") && auxName.Contains("QCD") && auxName.Contains("ENRICHED"))
          weight *= puweight->getWeight(ntuple->vLV[0].npv);
-      else if(!auxName.Contains("DATA"))// && !auxName.Contains("QCD"))
+      else if(!auxName.Contains("DATA") && !auxName.Contains("QCD"))
          weight *= puweight->getWeight(ntuple->vLV[0].tnpus[1]);
    }
 
@@ -445,6 +483,11 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
       if (!auxName.Contains("DATA") && !auxName.Contains("QCD"))
          weight *= csvweight->getWeight(ntuple);
    
+   //TTbar reweighting
+   if (doTTbarreweight)
+      if(auxName.Contains("TTBAR"))
+         weight *= ttbarWeight(ntuple,proc);
+
    // WJets weighting (specific to fix shape issues)
    if (WJweight && auxName.Contains("WJETS")){
 
@@ -555,11 +598,20 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
    if(auxName.Contains("DATA"))// || auxName.Contains("QCD"))
       return;
    
+   if(auxName.Contains("QCD") && auxName.Contains("FULL"))
+      return;
+
    // Initializes PU Reweighting
    string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
    string MCname   = DefaultValues::getConfigPath()+"TPUDistributions.root";
-   puweight = new PUreweight(dataname,MCname,"pileup_noTrig",
-                             string(TString("TPUDist_")+proc->name));
+   if(auxName.Contains("QCD") && auxName.Contains("ENRICHED")) {
+      puweight = new PUreweight(dataname,MCname,"pileup_QCD",
+                                string(TString("TPUDist_")+proc->name));      
+   }
+   else {
+      puweight = new PUreweight(dataname,MCname,"pileup_noTrig",
+                                string(TString("TPUDist_")+proc->name));
+   }
 
    csvweight = new CSVreweight();
 
@@ -763,6 +815,47 @@ pair<double,double> UserFunctions::onVsOffShellInclusive(EventNtuple * ntuple)
    }
 } // UserFunctions::onVsOffShellInclusive
 
+pair<double,double> UserFunctions::ttbarPt(const EventNtuple * ntuple) {
+   if (ntuple->genParticleCollection.size()==0) {
+      cout << "WARNING::plotter_x::ttbarPt::No genParticleCollection present in this sample" << endl;
+      return make_pair(-1.0,-1.0);
+   }
+   
+   vector<int> Tpositions;
+   for (unsigned int i=0; i<ntuple->genParticleCollection.size(); i++) {
+      if (abs(ntuple->genParticleCollection[i].pdgId)==6) {
+         Tpositions.push_back(i);
+      }
+   }
+   if(Tpositions.size()!=2) {
+      cout << "WARNING::plotter_x::ttbarPt::There are " << Tpositions.size() << "top quarks in the TTbar sample, not 2" << endl;
+      return make_pair(-1.0,-1.0);
+   }
+
+   return make_pair(ntuple->genParticleCollection[Tpositions[0]].p4.Pt(),ntuple->genParticleCollection[Tpositions[1]].p4.Pt());
+
+}
+
+double UserFunctions::ttbarWeight(const EventNtuple * ntuple, const PhysicsProcess* proc) {
+   if(proc) {
+      TString auxName = proc->name;
+      auxName.ToUpper();
+      if(!auxName.Contains("TTBAR")) {
+         cout << "WARNING::plotter_x::ttbarWeight::Cannot apply TTbar reweighting to process " << proc->name << endl
+              << "\tReturning a weight of 1" << endl;
+         return 1.0;
+      }
+   }
+
+   const double topFactor_A = 0.159;
+   const double topFactor_B = -0.00141;
+   //Calculate SF and weight
+   pair<double,double> ttbarPtPair = ttbarPt(ntuple);
+   double hadronicSF = exp(topFactor_A+topFactor_B*ttbarPtPair.second);
+   double leptonicSF = exp(topFactor_A+topFactor_B*ttbarPtPair.first);
+   //Top Event Weight
+   return sqrt(hadronicSF*leptonicSF);
+}
 
 double UserFunctions::round(double r) {
    return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
@@ -786,8 +879,8 @@ std::string UserFunctions::concatString(const T& obj1, const U& obj2)
 
 ///  fills the histograms and controls the output canvas and file for the rest of the program
 void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
-               bool doCSVrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir, 
-               vector<TString> MVAMethods, bool verbose);
+               bool doCSVrewt, bool doTTbarrewt, bool doFNAL, int maxEvts, bool WJweight,
+               TString MVAWeightDir, vector<TString> MVAMethods, bool verbose);
 
 // write the Canvases and plots to output files 
 void writePlotsToFile(TString histoFileName, TString canvasFileName,
@@ -807,29 +900,33 @@ int main(int argc,char**argv) {
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
 
-   string           lepCat           = cl.getValue<string>  ("lep",         "both");
-   UserFunctions::leptonCat          = DEFS::getLeptonCat   (lepCat);
-   string           ntype            = cl.getValue<string>  ("ntype","EventNtuple");
-   DEFS::NtupleType ntupleType       = DEFS::getNtupleType  (ntype);
-   string           jBin             = cl.getValue<string>  ("jBin",       "jets2");      
-   DEFS::JetBin     jetBin           = DEFS::getJetBin      (jBin);
-   UserFunctions::doJER              = cl.getValue<bool>    ("doJer",        false);
-   UserFunctions::doMETPhiCorrection = cl.getValue<bool>    ("doMETPhi",     false);
-   UserFunctions::doPUreweight       = cl.getValue<bool>    ("doPUrewt",      true);
-   UserFunctions::doCSVreweight      = cl.getValue<bool>    ("doCSVrewt",     true);
-   UserFunctions::doFNAL             = cl.getValue<bool>    ("doFNAL",       false);
-   UserFunctions::doMetPhiWeight     = cl.getValue<bool>    ("doMetPhiWeight",false);
-   UserFunctions::cutRegion          = cl.getValue<string>  ("cutRegion",    "all");
-   UserFunctions::outDir             = cl.getValue<string>  ("outDir",         ".");
-   UserFunctions::WJweight           = cl.getValue<bool>    ("WJweight",     false);
-   UserFunctions::QCDweight          = cl.getValue<bool>    ("QCDweight",    false);
-   UserFunctions::verbose            = cl.getValue<bool>    ("verbose",      false);
-   UserFunctions::fillTMDF           = cl.getValue<bool>    ("fillTMDF",     false);
-   bool             norm_data        = cl.getValue<bool>    ("norm_data",    false);
-   int              maxEvts          = cl.getValue<int>     ("maxEvts",          0);
-   TString          MVAWeightDir     = cl.getValue<TString> ("MVAWeightDir",    "");
-   vector<TString>  MVAMethods       = cl.getVector<TString>("MVAMethods",      "");
-   bool             debug            = cl.getValue<bool>    ("debug",        false);
+   string           lepCat           = cl.getValue<string>    ("lep",          "both");
+   UserFunctions::leptonCat          = DEFS::getLeptonCat     (lepCat);
+   string           ntype            = cl.getValue<string>    ("ntype", "EventNtuple");
+   DEFS::NtupleType ntupleType       = DEFS::getNtupleType    (ntype);
+   string           jBin             = cl.getValue<string>    ("jBin",        "jets2");      
+   DEFS::JetBin     jetBin           = DEFS::getJetBin        (jBin);
+   UserFunctions::doJER              = cl.getValue<bool>      ("doJer",         false);
+   UserFunctions::doMETPhiCorrection = cl.getValue<bool>      ("doMETPhi",      false);
+   UserFunctions::doPUreweight       = cl.getValue<bool>      ("doPUrewt",       true);
+   UserFunctions::doCSVreweight      = cl.getValue<bool>      ("doCSVrewt",      true);
+   UserFunctions::doTTbarreweight    = cl.getValue<bool>      ("doTTbarrewt",    true);
+   UserFunctions::doFNAL             = cl.getValue<bool>      ("doFNAL",        false);
+   UserFunctions::doMetPhiWeight     = cl.getValue<bool>      ("doMetPhiWeight",false);
+   string           cutRegion        = cl.getValue<string>    ("cutRegion",     "all");
+   UserFunctions::controlRegion      = DEFS::getControlRegion (cutRegion);
+   string           tcat             = cl.getValue<string>    ("tcat",       "pretag");
+   UserFunctions::tagCat             = DEFS::getTagCat(tcat);
+   UserFunctions::outDir             = cl.getValue<string>    ("outDir",          ".");
+   UserFunctions::WJweight           = cl.getValue<bool>      ("WJweight",      false);
+   UserFunctions::QCDweight          = cl.getValue<bool>      ("QCDweight",     false);
+   UserFunctions::verbose            = cl.getValue<bool>      ("verbose",       false);
+   UserFunctions::fillTMDF           = cl.getValue<bool>      ("fillTMDF",      false);
+   bool             norm_data        = cl.getValue<bool>      ("norm_data",     false);
+   int              maxEvts          = cl.getValue<int>       ("maxEvts",           0);
+   TString          MVAWeightDir     = cl.getValue<TString>   ("MVAWeightDir",     "");
+   vector<TString>  MVAMethods       = cl.getVector<TString>  ("MVAMethods",       "");
+   bool             debug            = cl.getValue<bool>      ("debug",         false);
 
 
    if (!cl.check()) return 0;
@@ -865,8 +962,11 @@ int main(int argc,char**argv) {
    // The vector holding all processes.
    vector <PhysicsProcess*> procs = DefaultValues::getProcessesHiggs(jetBin, DEFS::pretag,
                                                                      true, true, 
-                                                                     ntupleType); //DEFS::EventNtuple);// DEFS::MicroNtuple);
-   if(debug) procs.erase(procs.begin(),procs.begin()+12);
+                                                                     ntupleType);
+   if(debug) {
+      procs.erase(procs.begin(),procs.begin()+9);
+      //procs.erase(procs.begin()+1,procs.begin()+8);
+   }
       
    // Report Scale Factors
    for (unsigned p = 0; p< procs.size(); p++)
@@ -874,7 +974,7 @@ int main(int argc,char**argv) {
 
 
    // Fill all the plots 
-   doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doCSVreweight,
+   doPlotter(plots, procs, UserFunctions::doJER, UserFunctions::doPUreweight, UserFunctions::doCSVreweight, UserFunctions::doTTbarreweight,
              UserFunctions::doFNAL, maxEvts, UserFunctions::WJweight, MVAWeightDir,
              MVAMethods, UserFunctions::verbose);
    
@@ -941,8 +1041,8 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
 
 //______________________________________________________________________________
 void doPlotter(MapOfPlots & plots, vector<PhysicsProcess*> procs, bool doJER, bool doPUrewt,
-               bool doCSVrewt, bool doFNAL, int maxEvts, bool WJweight, TString MVAWeightDir,
-               vector<TString> MVAMethods, bool verbose) {
+               bool doCSVrewt, bool doTTbarrewt, bool doFNAL, int maxEvts, bool WJweight,
+               TString MVAWeightDir, vector<TString> MVAMethods, bool verbose) {
 
    PlotFiller pFill(plots, procs, &UserFunctions::fillPlots);
    pFill.setCutFunction(&UserFunctions::eventPassCuts);
@@ -1664,6 +1764,19 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->axisTitles.push_back("EPD(WW,WZ)");
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(0,1);
+   a->logxy = make_pair(false,false);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "TTbarWeights";
+   a->templateHisto = new TH1D(name + lepStr, name, 400,-2,2);
+   a->axisTitles.push_back("TTbar Weight");
+   a->axisTitles.push_back("Number of Events");
+   a->range = make_pair(0,1.3);
    a->logxy = make_pair(false,false);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
