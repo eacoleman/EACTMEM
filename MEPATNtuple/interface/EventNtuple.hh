@@ -118,7 +118,7 @@ public:
    // Generator-Level Particle Information
    //
    // Print Event Information
-   void printDecayInformation(int decayParticle);
+   void printDecayInformation(int decayParticle, Int_t instance, Int_t depth, TString option = "");
    void printHiggsDecayInformation();
 
     //

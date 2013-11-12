@@ -66,7 +66,9 @@ public:
   Double_t epd2tagHWW[nHWWmasses];
 
   enum {nHiggsMasses = 49};
-  TArrayD epdPretagHiggs;
+  Double_t absorbError[nHiggsMasses];
+   //TArrayD epdPretagHiggs;
+  Double_t epdPretagHiggs[nHiggsMasses];
   Double_t epd1tagHiggs[nHiggsMasses];
   Double_t epd2tagHiggs[nHiggsMasses];
 

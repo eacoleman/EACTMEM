@@ -391,47 +391,76 @@ bool EventNtuple::FNALcutsMuon(){
 
 }//First FNAL Cut muon
 
+
+void printPrimeFactors(int num, int div = 2)
+{
+        if (num % div == 0) {
+                std::cout << div << " ";
+                printPrimeFactors(num / div, div);
+        } else if (div <= num) {
+                printPrimeFactors(num, div + 1);
+        }
+}
+
 //______________________________________________________________________________
-void EventNtuple::printDecayInformation(int decayParticle) {
+void EventNtuple::printDecayInformation(int decayParticle, Int_t instance, Int_t depth, TString option) {
+
+   option.ToLower();
+   
+   if(option.Contains("debug")){
+      for(int i=depth; i>-1;i--)
+         cout << "\t";
+      cout << "printDecayInformation::At depth = " << depth << "\tdecayParticle = " << decayParticle << endl;
+   }
+
    if (genParticleCollection.size()==0) {
       cout << "WARNING::No genParticleCollection present." << endl;
       return;
    }
-   
-   vector<int> W;
-   for (unsigned int i=0; i<genParticleCollection.size(); i++) {
-      if (abs(genParticleCollection[i].pdgId)!=decayParticle)
-         continue;
-      else {
-         cout << "H->";
-         for (unsigned int j=0; j<genParticleCollection[i].daughterPositions.size(); j++) {
-            if (genParticleCollection[i].daughterPositions[j]<=500) {
-               cout << genParticleCollection[genParticleCollection[i].daughterPositions[j]].pdgId
-                    << ",";
-               W.push_back(genParticleCollection[i].daughterPositions[j]);
-            }
-         } //loop through the daughters of the Higgs
-         cout << "->";
-         if(W.size()==2) { //TAKE ME OUT
-            for (unsigned int j=0; j<W.size(); j++) {
-               for (unsigned int k=0; k<genParticleCollection[W[j]].daughterPositions.size(); k++) {
-                  //if (genParticleCollection[W[j]].daughterPositions[k]<=500 && genParticleCollection[genParticleCollection[W[j]].daughterPositions[k]].pdgId!=0) //TAKE ME OUT
-                  if (genParticleCollection[W[j]].daughterPositions[k]<=500)
-                     cout << genParticleCollection[genParticleCollection[W[j]].daughterPositions[k]].pdgId
-                          << ",";
-               } //loop through the daughters of the W
-            } //loop through all of the W
-         } //if there are only 2 W
-         cout << endl;
-      } //find the Higgs
-   } //loop through the gen particles
 
+   int i=0;
+   int tempInst = 1;
+   bool foundParticle = false;
+   for (unsigned int p=0; p<genParticleCollection.size(); p++) {
+      if (genParticleCollection[p].pdgId==decayParticle && tempInst==instance) {
+         i=p;
+         foundParticle = true;
+      }
+      else if(genParticleCollection[p].pdgId==decayParticle && tempInst!=instance) {
+         tempInst++;
+      }
+      else if(tempInst!=instance && p==genParticleCollection.size()-1){
+         cout << " " << decayParticle << " ";
+         return;
+      }
+   }
+
+   if(!foundParticle) {
+      cout << " " <<decayParticle << " ";
+      return;
+   }
+
+   if(genParticleCollection[i].daughterPositions.size()==0) {
+      cout << " " <<decayParticle << " ";
+      return;
+   }
+   if (0 >= depth) {
+      cout << " " << decayParticle << " ";
+      return;
+   }
+   // print the decay 
+   cout << " ( " << decayParticle << " ->" ;
+   for (std::vector<unsigned long>::iterator daughters = genParticleCollection[i].daughterPositions.begin(); genParticleCollection[i].daughterPositions.end() != daughters ; ++daughters ) {
+      if(*daughters<=500)
+         printDecayInformation(genParticleCollection[*daughters].pdgId, 1, depth - 1, option) ; 
+   }// RECURSION
+   cout << ") ";
    return;
 }
 
 //______________________________________________________________________________
 void EventNtuple::printHiggsDecayInformation() {
-   printDecayInformation(25);
+   printDecayInformation(25,1,10,"");
 }
 
 //______________________________________________________________________________

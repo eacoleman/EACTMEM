@@ -320,7 +320,7 @@ const ProbsForEPD MicroNtuple::getWHEPDCoefficients(double mhiggs, DEFS::TagCat 
   // The returning object
   ProbsForEPD coeffs;
 
-  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
+  if (tagcat == DEFS::pretag){
   
     if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -328,7 +328,7 @@ const ProbsForEPD MicroNtuple::getWHEPDCoefficients(double mhiggs, DEFS::TagCat 
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     
-  }else if (tagcat ==  DEFS::eq1TSV){
+  }else if(tagcat == DEFS::eq0tag){
 
     if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -336,7 +336,15 @@ const ProbsForEPD MicroNtuple::getWHEPDCoefficients(double mhiggs, DEFS::TagCat 
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
-  } else if (tagcat == DEFS::eq2TSV){
+  }else if (tagcat ==  DEFS::eq1tag){
+
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+
+  } else if (tagcat == DEFS::eq2tag){
 
     if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -406,7 +414,7 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
   // The returning object
   ProbsForEPD coeffs;
 
-  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
+  if (tagcat == DEFS::pretag){
   
     if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -414,7 +422,7 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
     else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
  
-  }else if (tagcat ==  DEFS::eq1TSV){   
+  }else if (tagcat == DEFS::eq0tag){
 
     if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -422,7 +430,15 @@ const ProbsForEPD MicroNtuple::getHWWEPDCoefficients(double mhiggs, DEFS::TagCat
     else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
-  } else if (tagcat == DEFS::eq2TSV){
+  }else if (tagcat ==  DEFS::eq1tag){   
+
+    if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 140) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 150) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+
+  } else if (tagcat == DEFS::eq2tag){
 
     if      (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -498,7 +514,7 @@ const ProbsForEPD MicroNtuple::getHiggsEPDCoefficients(double mhiggs, DEFS::TagC
   // The returning object
   ProbsForEPD coeffs;
 
-  if (tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV){
+  if (tagcat == DEFS::pretag){
   
     if      (mhiggs <= 115) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
@@ -506,7 +522,7 @@ const ProbsForEPD MicroNtuple::getHiggsEPDCoefficients(double mhiggs, DEFS::TagC
     else if (mhiggs <= 130) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
     else                    coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
     
-  }else if (tagcat ==  DEFS::eq1TSV){
+  }else if (tagcat == DEFS::eq0tag){
 
     if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -514,7 +530,15 @@ const ProbsForEPD MicroNtuple::getHiggsEPDCoefficients(double mhiggs, DEFS::TagC
     else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
 
-  } else if (tagcat == DEFS::eq2TSV){
+  }else if (tagcat ==  DEFS::eq1tag){
+
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+    else                    coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+
+  } else if (tagcat == DEFS::eq2tag){
 
     if      (mhiggs <= 115) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
     else if (mhiggs <= 120) coeffs = ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
@@ -580,11 +604,13 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJe
   // The returning object
   ProbsForEPD coeffs;
 
-  if(tagcat == DEFS::pretag || tagcat == DEFS::eq0TSV)
+  if(tagcat == DEFS::pretag)
      return ProbsForEPD(2.85714e+09,2e+10,5.37021e+07,1.3351e+07,0,333.333,4000,357143,1.6571e+07,0,8000,2.86161e+06,5.03532e+06,0,0.259127); // DEFS::TagCat=0 figOfMerit=11.0944
-  else if (tagcat == DEFS::eq1TSV)
+  else if (tagcat == DEFS::eq0tag)
     return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
-  else if (tagcat != DEFS::eq2TSV)
+  else if (tagcat == DEFS::eq1tag)
+    return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
+  else if (tagcat != DEFS::eq2tag)
     throw std::runtime_error("ERROR MicroNtuple::getWZEPDCoefficients. Invalid tag requested");
 
 
@@ -620,9 +646,9 @@ const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (DEFS::TagCat tagcat,
 					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0),
 					    ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0)};
 
-  if (tagcat == DEFS::eq1TSV)
+  if (tagcat == DEFS::eq1tag)
     return params1tag[type];
-  else if (tagcat != DEFS::eq2TSV)
+  else if (tagcat != DEFS::eq2tag)
     throw std::runtime_error("ERROR MicroNtuple::getSingleTopEPDCoefficients. Invalid tag requested");
 
   return  params2tag[type];
