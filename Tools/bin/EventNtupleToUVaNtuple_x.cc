@@ -1,6 +1,7 @@
 //Our libraries
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
+#include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 #include "/uscms/home/jdg6y/nobackup/CMSSW_5_3_2_patch4/src/SHyFT/TemplateMakers/bin/AngularVars.h"
@@ -108,14 +109,22 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
       for(int i=0; i<nEventNtuple; i++)
       {
          itree->GetEntry(i);
+         if(i==0) {
+            assert(ntuple!=0);
+         }
          if (i%10000==0) cout << "\tEntry " << i << " of " << nEventNtuple << endl;
          if (leptonCat != ntuple->lLV[0].leptonCat && leptonCat!=DEFS::both) continue;
 
-
          setInitialValues(doubleBranches,uintBranches);
 
-         (*doubleBranches["nIntxn"]) = ntuple->vLV[0].npus[1];
-         (*doubleBranches["nIntxnT"]) = ntuple->vLV[0].tnpus[1];
+         if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("QCD") && !ifiles[f].Contains("Full")) {
+            (*doubleBranches["nIntxn"]) = ntuple->vLV[0].npus[1];
+            (*doubleBranches["nIntxnT"]) = ntuple->vLV[0].tnpus[1];
+         }
+         else {
+            (*doubleBranches["nIntxn"]) = 0;
+            (*doubleBranches["nIntxnT"]) = 0;
+         }
 
          if(ntuple->lLV[0].leptonCat==DEFS::muon) {
             (*doubleBranches["muPt"]) = ntuple->lLV[0].Pt();         
@@ -173,7 +182,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
                 (*doubleBranches["deta_EB"]) = ntuple->lLV[0].eDeltaEta;
              }
          }
-
+         if(i>=70000 && i<80000) cout << "sfsg1" << endl;
          int nLowJets = 0;
          double sumJetEt = 0.0;
          double minDPhiMetJet = 9e20;
@@ -181,9 +190,9 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          int nbtagsSSV = 0;  
          int nbtagsTC = 0;  
          int nbtagsCSV =0;
-         for(unsigned int j=0; j<ntuple->jLV.size(); j++) {
+         for(unsigned int j=0; j<ntuple->jLV.size() && j<10; j++) {
 
-             TString histName = "jet"; histName += (j+1);
+            TString histName = "jet"; histName += (j+1);
 
             (*doubleBranches[histName + "Pt"]) = ntuple->jLV[j].Pt();
             (*doubleBranches[histName + "Eta"]) = ntuple->jLV[j].Eta();
@@ -203,7 +212,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             if ( fabs(tempDPhi) < minDPhiMetJet ) minDPhiMetJet = tempDPhi;
             if((j+1) == 1 ){dPhiMetJet = ntuple->METLV[0].DeltaPhi(ntuple->jLV[j].Phi());}
 
-            (*doubleBranches[histName + "discrCSV"]) = ntuple->jLV[j].jBtagCSV;
+            (*doubleBranches[histName + "discrCSV"]) = ntuple->jLV[j].jBtagDiscriminatorCSV;
 
             if ( ntuple->jLV[j].Pt() >= 20 && ntuple->jLV[j].Pt() <30) nLowJets++;
 
@@ -211,6 +220,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             if (ntuple->jLV[j].jBtagTC) nbtagsTC++;
             if (ntuple->jLV[j].jBtagCSV) nbtagsCSV++;
          }
+
          if(ntuple->jLV.size() >= 2) {
             (*doubleBranches["Mjj"]) = (ntuple->jLV[0]+ntuple->jLV[1]).M();
             TLorentzVector m2jjTemp = ntuple->jLV[0] + ntuple->jLV[1] ;
@@ -232,7 +242,6 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["Ptlnujj"]) = MWWjjTemp.Pt();
             (*doubleBranches["JacobePeak"]) = ntuple->jLV[1].Pt() / ntuple->Mjj; 
          }
-
 
          (*doubleBranches["nPV"]) = ntuple->vLV[0].npv;
          
@@ -285,19 +294,31 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          // (*doubleBranches["MWWTop2jets_an"]) = mWWjj ;
          // (*doubleBranches["minDPhiLepJet_an"]) = dPhilj ;
          // (*doubleBranches["Ptlnujj_an"]) = Ptlnujj;
-         // (*doubleBranches["JacobePeak_an"]) = Jacobe;
-         
+         // (*doubleBranches["JacobePeak_an"]) = Jacobe
+
          //FIX!!! FIX!!! FIX!!!
          // (*doubleBranches["dRlepjj"]) = dRljj;
-         PUreweight* puweight;
-         string dataname = string("/uscms/home/aperloff/MatrixElement/CMSSW_5_3_2_patch4/src/TAMUWW/Tools/bin/pileup12_noTrig.root");
-         string MCname   = string(ifilePath+ifiles[f]+ifileFormat);
-         puweight = new PUreweight(dataname,MCname,"pileup_noTrig","PS/TPUDist");
-         double weight = puweight->getWeight(ntuple->vLV[0].npus[1]);
-         double weight_true = puweight->getWeight(ntuple->vLV[0].tnpus[1]);
-         (*doubleBranches["weight"]) = weight ;
-         (*doubleBranches["weight_true"]) = weight_true ;
-         
+         if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("Full")) {
+            PUreweight* puweight;
+            string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
+            string MCname   = string(ifilePath+ifiles[f]+ifileFormat);
+            if(ifiles[f].Contains("Dp6p7")) {
+               cout << "ERROR EventNtupleToUVaNtuple_x::main() PU reweighting for QCD_ElEnriched has not been implemented yet." << endl;
+               return 0;
+            }
+            else {
+               puweight = new PUreweight(dataname,MCname,"pileup_noTrig","PS/TPUDist");
+            }
+            double weight = puweight->getWeight(ntuple->vLV[0].npus[1]);
+            double weight_true = puweight->getWeight(ntuple->vLV[0].tnpus[1]);
+            (*doubleBranches["weight"]) = weight;
+            (*doubleBranches["weight_true"]) = weight_true;
+         }
+         else{
+            (*doubleBranches["weight"]) = 0;
+            (*doubleBranches["weight_true"]) = 0;
+         }
+
          // (*doubleBranches["Pt1st"]) = Pt1st ;
          // (*doubleBranches["Pt2nd"]) = Pt2nd ;
          // (*doubleBranches["Pt3rd"]) = Pt3rd ;
@@ -307,7 +328,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          (*doubleBranches["nBTagsSSV"]) = nbtagsSSV;
          (*doubleBranches["nBTagsTC"]) = nbtagsTC;
          (*doubleBranches["nBTagsCSV"]) = nbtagsCSV;
-       
+
          if(ntuple->jLV.size() >= 2) {
 
             //------solve neutrino Pz                                                                                           
@@ -341,7 +362,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             }
 
             (*doubleBranches["real"]) = real;
-            
+
             double nvEt = TMath::Sqrt(ntuple->METLV[0].E()*ntuple->METLV[0].E() + nvPz1*nvPz1);
             TLorentzVector pu(ntuple->lLV[0].Px(),ntuple->lLV[0].Py(),ntuple->lLV[0].Pz(),ntuple->lLV[0].E());
             TLorentzVector pv(ntuple->METLV[0].Px(),ntuple->METLV[0].Py(),nvPz1,nvEt);
@@ -655,7 +676,7 @@ void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString
 
 //______________________________________________________________________________
 void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*> &uintBranches) {
-
+   //cout << "\tEventNtupleToUVaNtuple_x::setInitialValues() Setting the initial values for all variables...";
    for (std::map<TString, double*>::iterator iDMap = doubleBranches.begin();
         iDMap != doubleBranches.end();
         iDMap ++) {
@@ -668,6 +689,6 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
         iIMap ++) {
       
       (* (iIMap->second)) = 9999; // not a lot of good choices here
-      
    }
+   //cout << "DONE" << endl;
 }
