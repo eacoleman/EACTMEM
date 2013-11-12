@@ -16,6 +16,7 @@
 #include "TSystem.h"
 #include "TBenchmark.h"
 #include "TFile.h"
+#include "TTree.h"
 #include "TH1.h"
 #include "TH1D.h"
 #include "TString.h"
@@ -57,7 +58,6 @@ int main(int argc,char**argv) {
    string  histogramName = cl.getValue<string>  ("histogramName",               "PS/TPUDist");
    bool    verbose       = cl.getValue<bool>    ("verbose",                            false);
    TString ofilename     = cl.getValue<TString> ("ofilename",        "TPUDistributions.root");
-   TString ofilepath     = cl.getValue<TString> ("ofilepath", "TAMUWW/ConfigFiles/Official/");
 
    if (!cl.check()) return 0;
    cl.print();
@@ -73,14 +73,7 @@ int main(int argc,char**argv) {
 
    vector<TH1D*> hists = skimHistograms(procs, fileTable, histogramName, verbose);
 
-   // The location of the table with the file locations
-   string basePath = gSystem->pwd();
-   basePath = basePath.substr(0,basePath.find("TAMUWW"));
-   if(!TString(basePath).EndsWith("/")) basePath+="/";
-   ofilepath = TString(basePath)+ofilepath;
-   if(!ofilepath.EndsWith("/")) ofilepath+="/";
-
-   saveHistograms(ofilepath+ofilename, hists);
+   saveHistograms(DefaultValues::getConfigPath()+ofilename, hists);
 
    m_benchmark->Stop("event");
    cout << "SkimTPUDist_x" << endl << "\tCPU time = " << m_benchmark->GetCpuTime("event") << " s" << endl
@@ -129,7 +122,36 @@ vector<TH1D*> skimHistograms(vector<PhysicsProcess*> procs, Table& fileTable, st
       return;
    }
       */
-      TH1D* temp = (TH1D*) file->Get(histogramName.c_str());
+      TH1D* temp;
+      if(procs[p]->name.Contains("QCD") && procs[p]->name.Contains("Enriched")) {
+         temp = new TH1D("TPUDist_QCD_ElEnriched","TPUDist_QCD_ElEnriched (jet1+jets2p)",600,0,60);
+         if (!file->cd("PS"))
+         {
+            cout << "ERROR SkimTPUDist_x::skimHistograms() could not CD into directory PS in file " << cellFile->text << endl;
+            assert(file->cd("PS"));
+         }
+         TTree* jet1 = (TTree*)gDirectory->Get("jet1");
+         TTree* jets2p = (TTree*)gDirectory->Get("jets2p");
+         if(jet1)
+            jet1->Draw("vLV[0].npv>>j1(600,0,60)","","goff");
+         else {
+            cout << "ERROR SkimTPUDist_x::skimHistograms() TTree jet1 is NULL" << endl;
+            assert(jet1 != 0);
+         }
+         if(jets2p)
+            jets2p->Draw("vLV[0].npv>>j2p(600,0,60)","","goff");
+         else {
+            cout << "ERROR SkimTPUDist_x::skimHistograms() TTree jets2p is NULL" << endl;
+            assert(jets2p != 0);
+         }
+         TH1D* j1 = (TH1D*) gDirectory->Get("j1");
+         TH1D* j2p = (TH1D*) gDirectory->Get("j2p");
+         temp->Add(j1);
+         temp->Add(j2p);
+      }
+      else{
+         temp = (TH1D*) file->Get(histogramName.c_str());
+      }
 
       if (temp == 0)
       {
@@ -181,7 +203,7 @@ void saveHistograms(TString ofilename, vector<TH1D*> hists) {
 //Method to save QCD histos. To be implemented.
 //QCD_ElEnriched
 /*
-TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/QCD_Electron.root","READ")
+TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/QCD_Electron_Dp6p7.root","READ")
 TFile* fTPU = new TFile("TPUDistributions.root","UPDATE")
 fQCD->cd("PS")
 TH1D* TPUDist_QCD_ElEnriched = new TH1D("TPUDist_QCD_ElEnriched","TPUDist_QCD_ElEnriched",600,0,60)
@@ -201,3 +223,21 @@ fTPU->cd()
 TPUDist_QCD_ElFULL->Write()
 .q
 */
+//Save jet1 + jet2p
+/*
+TFile* _file0 = new TFile("pileup12_noTrig.root","UPDATE")
+TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/SingleEl_Full.root","READ")
+fQCD->cd("PS")
+TH1D* temp = new TH1D("pileup_QCD","pileup_QCD (jet1+jets2p)",600,0,60)
+TH1D* j1 = new TH1D("j1","pileup_QCD jet1",600,0,60)
+TH1D* j2p = new TH1D("j2p","pileup_QCD jets2p",600,0,60)
+TTree* j1t = (TTree*)gDirectory->Get("jet1")
+TTree* j2pt = (TTree*)gDirectory->Get("jets2p")
+j1t->Draw("vLV[0].npv>>j1")
+j2pt->Draw("vLV[0].npv>>j2p")
+temp->Add(j1)
+temp->Add(j2p)
+_file0->cd()
+temp->Write()
+_file0->Write()
+ */
