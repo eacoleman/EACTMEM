@@ -363,6 +363,7 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
 
    if (mergeNewEventNtuple.CompareTo("")!=0) {
       mergeChain = new TChain("jets2p","Output tree for matrix element");
+      if(currentProcess=="ZJets") currentProcess="DYJets";
       cout << "\tAdding " << mergeNewEventNtuple << currentProcess << ".root/PS/jets2p" << endl;
       mergeChain->Add(mergeNewEventNtuple+currentProcess+".root/PS/jets2p");
       mergeChain->LoadTree(0);
@@ -371,19 +372,26 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
 
    chain.LoadTree(0);
    Int_t treeEntries = chain.GetTree()->GetEntries();
-   vector<TTree*> trees;
+   //vector<TTree*> trees;
+   TTree* tmpTree;
    index = new TTreeIndex();
    if(mergeNewEventNtuple.CompareTo("")!=0) {
       for(Int_t t=0; t<chain.GetNtrees(); t++) {
          cout << "MicroNtupleMaker::makeMicroNtuple Building index for tree " << chain.GetTreeNumber() << " ... ";
-         chain.LoadTree(t*150);
-         trees.push_back(chain.GetTree()->CloneTree());
-         trees.back()->BuildIndex("m_event");
-         index->Append((TTreeIndex*)trees.back()->GetTreeIndex());
+         if(currentProcess=="DYJets")
+            chain.LoadTree(t*400);
+         else
+            chain.LoadTree(t*150);
+         //trees.push_back(chain.GetTree()->CloneTree());
+         tmpTree = chain.GetTree();
+         //trees.back()->BuildIndex("m_event");
+         tmpTree->BuildIndex("m_event");
+         index->Append((TTreeIndex*)tmpTree->GetTreeIndex());
          cout << "DONE" << endl;
       }
    }
 
+   cout << "\t\tmakeMicroNtuple(TChain& chain, TString output, unsigned nJets, bool doLight, bool doNonW, bool doUntag) ... " << endl;
    //makeMicroNtuple(chain.GetTree(), output, nJets, doLight, doNonW, doUntag);
    makeMicroNtuple(chain, output, nJets, doLight, doNonW, doUntag);
 
@@ -394,39 +402,50 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
 void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned nJets, 
                                        bool doLight, bool doNonW, bool doUntag)
 {
-
+   cout << "\t\tMicroNtupleMaker::makeMicroNtuple Make ntuples ... ";
    // Create the base objects
    EventNtuple * eventNtuple      = new EventNtuple();
    METree      * meNtuple         = new METree();
    METree      * meNtupleBlank    = new METree();
    MicroNtuple * microNtuple      = new MicroNtuple(nJets);
    MicroNtuple * microNtupleBlank = new MicroNtuple(nJets);
-   
+   cout << "DONE" << endl;
 
+   cout << "\t\tMicroNtupleMaker::makeMicroNtuple Set METree and EvtTree branches ... ";
    // and set the meNtuple to read from it
    chain.SetBranchAddress("METree", &meNtuple);
    chain.SetBranchAddress("EvtTree", &eventNtuple);
+   cout << "DONE" << endl;
 
    //sort chains by event number
    if(mergeNewEventNtuple.CompareTo("")!=0) {
       
+      cout << "\t\tMicroNtupleMaker::makeMicroNtuple Set merge EvtNtuple branch ... ";
       mergeEventNtuple = new EventNtuple();
       mergeChain->GetFile()->cd();
       mergeTree->SetBranchAddress("EvtNtuple", &mergeEventNtuple);
+      cout << "DONE" << endl;
 
       //chain->BuildIndex("m_event");
       //index = (TTreeIndex*)chain->GetTreeIndex();
 
       Long64_t local = -1;
-      cout << "MicroNtupleMaker::makeMicroNtuple Making event index map ... ";
+      cout << "\t\tMicroNtupleMaker::makeMicroNtuple Making event index map ";
+      cout.flush();
       for( int i = 0; i < index->GetN() ; ++i ) {
+         //cout << i << " out of " << index->GetN() << endl;
+         if(i%10000 == 0) {
+            cout << ".";
+            cout.flush();
+         }
          local = index->GetIndex()[i];
          chain.GetEntry(local);
          eventIndex[eventNtuple->event] = local;
       }
-      cout << "DONE" << endl;
+      cout << " DONE" << endl;
    }
 
+   cout << "\t\tMicroNtupleMaker::makeMicroNtuple Create output file and setup output tree ... ";
    // Create and output file and clone the tree that will be in the output and set microNtuple that fills it
    TFile outputFile(output, "RECREATE");
    //TTree* outputTree = chain->CloneTree(0);
@@ -436,12 +455,13 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
    outputTree->Branch("METree", "METree", &meNtuple);
    outputTree->Branch("EvtTree", "EventNtuple", &mergeEventNtuple);
    outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
+   cout << "DONE" << endl;
 
    // Get the entries and report if zero
    mergeNewEventNtuple.CompareTo("")!=0 ? nentries = static_cast<unsigned>(mergeTree->GetEntries()) : nentries = static_cast<unsigned>(chain.GetEntries());
-   cout << "\tOriginal chain has " << nentries << " entries" << endl;
+   cout << "\t\tOriginal chain has " << nentries << " entries" << endl;
    if (nentries == 0){
-      cout << "\tNo entries found!  Aborting.\n";
+      cout << "\t\tNo entries found!  Aborting.\n";
       return;
    }
 
@@ -455,7 +475,7 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
    for (unsigned ientry = 0; ientry < nentries; ++ientry){
 
       if (ientry%10000 == 0)
-         cout << "MicroNtupleMaker::makeMicroNtuple Doing entry " << ientry << " ..." << endl;
+         cout << "\t\tMicroNtupleMaker::makeMicroNtuple Doing entry " << ientry << " ..." << endl;
 
       // get the entry
       if (mergeNewEventNtuple.CompareTo("")!=0) {
@@ -534,7 +554,7 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
    }//for entries
 
    // Report some results
-   cout << "\tWrote " << output << " with " << outputTree->GetEntries()
+   cout << "\t\tWrote " << output << " with " << outputTree->GetEntries()
         << " entries" << endl;
    outputFile.Write();
   
@@ -545,7 +565,7 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
    delete microNtupleBlank;
 
    if(mergeNewEventNtuple.CompareTo("")!=0) {
-      cout << "\tMissing Information ..." << endl;
+      cout << "\t\tMissing Information ..." << endl;
       stringstream missingIndex;
       stringstream missingEvents;
       map<int,int>::iterator finalIter = missingME.end();
