@@ -61,6 +61,8 @@ namespace UserFunctions
    bool fillTMDF;
    bool  QCDweight;
    TH1D* QCDWeightFunc = 0;
+   bool  PtWeight;
+   TH1D* PtWeightFunc = 0;
    bool WJweight;
    TH2D* WJetsWeightFunc= 0;
    TF2 * WJetsWeightTF2 = 0;
@@ -154,7 +156,10 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
       plots[leptonCat]["MET"]->Fill(ntuple->METLV[0].Pt(),weight);
       plots[leptonCat]["MET_vs_LeptEta"]->Fill(ntuple->lLV[0].Eta(),
 					       ntuple->METLV[0].Pt(),
-					       weight);      
+					       weight);
+      plots[leptonCat]["MET_vs_LeptPt"]->Fill(ntuple->lLV[0].Pt(),
+                                              ntuple->METLV[0].Pt(),
+                                              weight); 
       plots[leptonCat]["MET_vs_AbsLeptEta"]->Fill(fabs(ntuple->lLV[0].Eta()),
 						  ntuple->METLV[0].Pt(),
 						  weight);
@@ -305,11 +310,28 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
 
 
    //X axis cuts
-   if (controlRegion == DEFS::signal || controlRegion == DEFS::AntiMVAEleID) {
+   if (controlRegion == DEFS::signal || controlRegion == DEFS::MVAEleID || controlRegion == DEFS::AntiMVAEleID || controlRegion == DEFS::FlatMVAEleID) {
 
      // leading jet with PT > 30, and second leading with at least 25 GeV
-     if(ntuple->jLV[0].Pt() < 30 || ntuple->jLV[1].Pt() < 25)
-       return false;
+     if (ntuple->jLV[0].Pt() < 30 || ntuple->jLV[1].Pt() < 25)
+        return false;
+
+     if (controlRegion == DEFS::FlatMVAEleID) {
+        if (ntuple->lLV[0].emvaTrig < 0.95) {
+          return false;
+        }
+     }
+
+     if (controlRegion == DEFS::MVAEleID) {
+        double aeta = TMath::Abs(ntuple->lLV[0].Eta());
+        double emvaTrig = ntuple->lLV[0].emvaTrig;
+        double pfIso = ntuple->lLV[0].lpfIso;
+        if ((aeta<0.8 && pfIso<0.093 && emvaTrig < 0.977) ||
+            (aeta>0.8 && aeta<1.479 && pfIso<0.095 && emvaTrig<0.956) ||
+            (aeta>1.479 && aeta<2.5 && pfIso<0.171 && emvaTrig<0.966) ) {
+          return false;
+        }
+     }
 
      if (controlRegion == DEFS::AntiMVAEleID) {
         double aeta = TMath::Abs(ntuple->lLV[0].Eta());
@@ -508,6 +530,11 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
       //cout << "\tQCDWeight = " << QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta))) << " for eta = " << fabs(leptonEta) << endl;
       weight *= QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta)));
    }
+
+   if (PtWeight && !auxName.Contains("DATA")) {
+      double leptonPt = ntuple->lLV[0].Pt();
+      weight *= PtWeightFunc->GetBinContent(PtWeightFunc->FindBin(leptonPt));
+   }
    
    return weight;
 
@@ -573,6 +600,20 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
       QCDWeightFunc = (TH1D*) DefaultValues::getConfigTH1(filename,hname,"QCDweightClone");
 
    }// QCD weight
+
+   if (PtWeight && !auxName.Contains("DATA")) {
+      TString filename = "PtWeight_";
+      filename += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
+      TString hname;
+      if (auxName.Contains("QCD")) {
+        hname = "QCDWeight_";
+      } 
+      else{
+        hname = "MCWeight_";
+      }
+      hname += DEFS::getLeptonCatString(UserFunctions::leptonCat);
+      PtWeightFunc = (TH1D*) DefaultValues::getConfigTH1(filename,hname,hname+"_Clone");
+   }
 
    if (WJweight){
       if(auxName.Contains("WJETS")){
@@ -920,6 +961,8 @@ int main(int argc,char**argv) {
    UserFunctions::outDir             = cl.getValue<string>    ("outDir",          ".");
    UserFunctions::WJweight           = cl.getValue<bool>      ("WJweight",      false);
    UserFunctions::QCDweight          = cl.getValue<bool>      ("QCDweight",     false);
+   UserFunctions::PtWeight           = cl.getValue<bool>      ("PtWeight",      false);
+   //UserFunctions::PtShift
    UserFunctions::verbose            = cl.getValue<bool>      ("verbose",       false);
    UserFunctions::fillTMDF           = cl.getValue<bool>      ("fillTMDF",      false);
    bool             norm_data        = cl.getValue<bool>      ("norm_data",     false);
@@ -1073,7 +1116,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    // The overlay of a scaled signal. For signalName pick the groupingName 
    // of one of the processes. Or just "" if you don't want a signal overlayed.
    TString signalName = "ggH+WH+qqH(125)";
-   double signalFactor = 500; //1000?
+   double signalFactor = 500;
 
    Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
    Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
@@ -1204,6 +1247,19 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->axisTitles.push_back("MET");
    a->axisTitles.push_back("Number of Events" );
    a->range = make_pair(-4,4);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "MET_vs_LeptPt";
+   a->templateHisto = new TH2D(name + lepStr, name, 1000, 0, 500, 1000,0,500);
+   a->axisTitles.push_back("p_{T}^{lepton} [GeV]");
+   a->axisTitles.push_back("MET");
+   a->axisTitles.push_back("Number of Events" );
+   a->range = make_pair(20.0,150.0);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;

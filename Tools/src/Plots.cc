@@ -304,6 +304,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
    l->SetName(tempName+"_legend");
    l->SetBorderSize(0);
    l->SetFillColor(0);
+   l->SetFillStyle(0); 
   
    // Create the totalHistos and Stacks for the MC and Data processes
    for (unsigned int h = 0 ; h < groupedHistos.size() ; h++)
@@ -338,6 +339,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
 	  signalNameStream <<  groupedHistos[h]->GetName() << "_x" << overlaySignalFactor;
 	  signal = (TH1*)groupedHistos[h]->Clone(TString(signalNameStream.str()));
 	  signal->SetFillColor(0);
+     signal->SetLineColor(kRed-4);
 	  signal->Scale(overlaySignalFactor);
           
 	  ostringstream legendTitleStream;
@@ -384,7 +386,15 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
       sDa->Draw(gOption+"ep,SAME");
    else
       sDa->Draw(gOption+"ep");
+   //Draw the MC error bars
+   if(tMC != 0)
+   {
+      tMC->SetFillColor(kGray+2);
+      tMC->SetFillStyle(3005);
+      tMC->Draw("E2 SAME");
+   }
    
+   //Draw the signal overlay
    if (signal != 0)
    {
       signal->SetLineWidth(2);
@@ -494,12 +504,18 @@ void FormattedPlot::formatColors(vector<PhysicsProcess*> procs)
 {
    for(unsigned int i = 0; i < procs.size(); i++)
    {
-      histos[i]->SetLineColor(((PlotterPhysicsProcess*)procs[i])->color);
+      //histos[i]->SetLineColor(((PlotterPhysicsProcess*)procs[i])->color);
+      histos[i]->SetLineColor(kBlack);
       histos[i]->SetMarkerColor(((PlotterPhysicsProcess*)procs[i])->color);
       histos[i]->SetFillColor(((PlotterPhysicsProcess*)procs[i])->color);
       
       TString pname = procs[i]->name;
       pname.ToUpper();
+
+      if(!pname.Contains("DATA"))
+      {
+         histos[i]->SetFillStyle(1001);   
+      }
       if (pname.Contains("DATA"))
       { 
          histos[i]->SetMarkerStyle(20);
