@@ -6,11 +6,12 @@ class Error(EnvironmentError):
     pass
 
 siteDBDict = {
-    'T1_US_FNAL_STORE' : ('cmssrm.fnal.gov', '//srm/managerv2?SFN=',         '/11/store/user/',   '/pnfs/cms/WAX/'),
-    'T1_US_FNAL_EOS'   : ('cmseos.fnal.gov', '/srm/v2/server?SFN=' ,  '/eos/uscms/store/user/',                 ''),
-    'T1_US_FNAL_RES'   : ('cmssrm.fnal.gov', '//srm/managerv2?SFN=',             '/resilient/',   '/pnfs/cms/WAX/'),
-    'T1_US_FNAL_LPC'   : ('localhost/'     , ''                    ,                        '', os.environ['HOME']),
-    'T3_US_TAMU'       : ('hurr.tamu.edu'  , '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '')
+    'T1_US_FNAL_STORE' : ('cmssrm.fnal.gov'    , '//srm/managerv2?SFN=',         '/11/store/user/',   '/pnfs/cms/WAX/'),
+    'T1_US_FNAL_EOS'   : ('cmseos.fnal.gov'    , '/srm/v2/server?SFN=' ,  '/eos/uscms/store/user/',                 ''),
+    'T1_US_FNAL_RES'   : ('cmssrm.fnal.gov'    , '//srm/managerv2?SFN=',             '/resilient/',   '/pnfs/cms/WAX/'),
+    'T1_US_FNAL_LPC'   : ('localhost/'         , ''                    ,                        '', os.environ['HOME']),
+#    'T3_US_TAMU'       : ('hurr.tamu.edu'      , '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '')	
+    'T3_US_TAMU'       : ('srm.brazos.tamu.edu', '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '')
 }
 
 #program name available through the %(prog)s command
