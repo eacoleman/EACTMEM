@@ -1,5 +1,6 @@
 // User includes
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
+#include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 
 // ROOT libraries
 #include "TROOT.h"
@@ -35,6 +36,13 @@
 using namespace std; 
 
 ////////////////////////////////////////////////////////////////////////////////
+//  local functions
+////////////////////////////////////////////////////////////////////////////////
+
+/// get the index of the histogram corresponding to x
+int get_index(double x,const vector<double>& binsx);
+
+////////////////////////////////////////////////////////////////////////////////
 //  main
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +61,7 @@ int main(int argc,char**argv)
    TString         ofilename      = cl.getValue<TString>  ("ofilename", "IP_output.root");
    vector<TString> formats        = cl.getVector<TString> ("formats",      ".eps:::.png");
    TString         plots          = cl.getValue<TString>  ("plots",                "all");
+   Int_t           maxEvts        = cl.getValue<Int_t>    ("maxEvts",                  0);
 
    if (!cl.check()) 
       return 0;
@@ -321,7 +330,137 @@ int main(int argc,char**argv)
          cout << "DONE" << endl;
       }
 
-      if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0) {
+      if((plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION_FAST")==0 || plots.CompareTo("CORRECTION")==0) && (ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0)) {
+
+         vector<double> isos;
+         EventNtuple * ntuple = new EventNtuple();
+         t->SetBranchAddress("EvtNtuple", &ntuple);
+         Int_t nentries = t->GetEntries();
+         t->SetBranchStatus("*",0);
+         t->SetBranchStatus("lLV*");
+         for(Int_t ientry = 0; ientry<nentries; ientry++) {
+            if(maxEvts!=0 && ientry>maxEvts)
+               continue;
+            if(ientry==0) {
+               hname.push_back(Form("hptDistributions_antiMVA_signalIso_uncor_%s",ifilePostFixes[f].Data()));
+               hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributions.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
+               hptDistributions.back()->GetXaxis()->SetRangeUser(0,150);
+               hptDistributions.back()->GetYaxis()->SetTitle("Events / 1 GeV");
+               hptDistributions.back()->GetYaxis()->SetRangeUser(0,0.07);
+               hptDistributions.back()->SetMarkerColor(kBlack);
+               hptDistributions.back()->SetLineColor(kBlack);
+               hname.push_back(Form("hptDistributions_antiMVA_qcdIso_uncor_%s",ifilePostFixes[f].Data()));
+               hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributions.back()->SetMarkerColor(kBlue);
+               hptDistributions.back()->SetLineColor(kBlue);
+               hname.push_back(Form("hptDistributions_antiMVA_qcdIso_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributions.back()->SetMarkerColor(kRed);
+               hptDistributions.back()->SetLineColor(kRed);
+
+               hname.push_back(Form("hShiftedPt_antiMVA_0p0to0p2_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsShifted.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
+               hptDistributionsShifted.back()->GetXaxis()->SetRangeUser(0,150);
+               hptDistributionsShifted.back()->GetYaxis()->SetTitle("Events / 1 GeV");
+               hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.07);
+               hptDistributionsShifted.back()->SetMarkerColor(kBlack);
+               hptDistributionsShifted.back()->SetLineColor(kBlack);
+               hname.push_back(Form("hShiftedPt_antiMVA_0p2to0p4_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsShifted.back()->SetMarkerColor(kRed);
+               hptDistributionsShifted.back()->SetLineColor(kRed);
+               hname.push_back(Form("hShiftedPt_antiMVA_0p4to0p6_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsShifted.back()->SetMarkerColor(kBlue);
+               hptDistributionsShifted.back()->SetLineColor(kBlue);
+               hname.push_back(Form("hShiftedPt_antiMVA_0p6to0p8_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsShifted.back()->SetMarkerColor(kGreen);
+               hptDistributionsShifted.back()->SetLineColor(kGreen);
+
+               hname.push_back(Form("hCorrectedPt_antiMVA_0p0to0p2_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsCorrected.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
+               hptDistributionsCorrected.back()->GetXaxis()->SetRangeUser(0,150);
+               hptDistributionsCorrected.back()->GetYaxis()->SetTitle("Events / 1 GeV");
+               hptDistributionsCorrected.back()->GetYaxis()->SetRangeUser(0,0.07);
+               hptDistributionsCorrected.back()->SetMarkerColor(kBlack);
+               hptDistributionsCorrected.back()->SetLineColor(kBlack);
+               hname.push_back(Form("hCorrectedPt_antiMVA_0p2to0p4_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsCorrected.back()->SetMarkerColor(kRed);
+               hptDistributionsCorrected.back()->SetLineColor(kRed);
+               hname.push_back(Form("hCorrectedPt_antiMVA_0p4to0p6_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsCorrected.back()->SetMarkerColor(kBlue);
+               hptDistributionsCorrected.back()->SetLineColor(kBlue);
+               hname.push_back(Form("hCorrectedPt_antiMVA_0p6to0p8_cor_%s",ifilePostFixes[f].Data()));
+               hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
+               hptDistributionsCorrected.back()->SetMarkerColor(kGreen);
+               hptDistributionsCorrected.back()->SetLineColor(kGreen);
+
+               for(double iso=0.0; iso<10.0; iso+=0.1) {
+                  isos.push_back(iso);
+                  if(iso==9.9)
+                     isos.push_back(iso+0.1);
+                  hname.push_back(Form("hIsoEVsPt_antiMVA_%.1fto%.1f_uncor_%s",iso,iso+0.1,ifilePostFixes[f].Data()));
+                  hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
+                  hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
+                  hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
+                  hIsoEVsPt.back()->SetMarkerColor((iso*10.0)+1);
+                  hIsoEVsPt.back()->SetLineColor((iso*10.0)+1);
+               }
+            }
+            if (ientry%10000 == 0)
+               cout << "\tIsolationPlotter_x Doing entry " << ientry << " ..." << endl;
+            t->GetEntry(ientry);
+
+            if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso<0.2&&ntuple->lLV[0].Pt()>30) {
+               hptDistributions[0]->Fill(ntuple->lLV[0].Pt());
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.3&&ntuple->lLV[0].Pt()>30) {
+               hptDistributions[1]->Fill(ntuple->lLV[0].Pt());
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.3&&(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.4948,2))/TMath::Sqrt(1.0+TMath::Power(0.1,2)))>30) {
+               //t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(lLV[0].lpfIso,2))/TMath::Sqrt(1.0+TMath::Power(0.48,2))>>"+hanme.back().Data(),
+               //        "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&(lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(lLV[0].lpfIso,2))/TMath::Sqrt(1.0+TMath::Power(0.48,2)))>30");
+               hptDistributions[2]->Fill(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.4948,2))/TMath::Sqrt(1.0+TMath::Power(0.1,2)));
+            }
+
+            if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.0&&ntuple->lLV[0].lpfIso<0.2) {
+               hptDistributionsShifted[0]->Fill(ntuple->lLV[0].Pt());
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.2&&ntuple->lLV[0].lpfIso<0.4) {
+               hptDistributionsShifted[1]->Fill(ntuple->lLV[0].Pt());
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.4&&ntuple->lLV[0].lpfIso<0.6) {
+               hptDistributionsShifted[2]->Fill(ntuple->lLV[0].Pt());
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.6&&ntuple->lLV[0].lpfIso<0.8) {
+               hptDistributionsShifted[3]->Fill(ntuple->lLV[0].Pt());
+            }
+
+            if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.0&&ntuple->lLV[0].lpfIso<0.2) {
+               hptDistributionsCorrected[0]->Fill(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.0871531,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2)));
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.2&&ntuple->lLV[0].lpfIso<0.4) {
+               hptDistributionsCorrected[1]->Fill(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.259677,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2)));
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.4&&ntuple->lLV[0].lpfIso<0.6) {
+               hptDistributionsCorrected[2]->Fill(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.452971,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2)));
+            }
+            else if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso>0.6&&ntuple->lLV[0].lpfIso<0.8) {
+               hptDistributionsCorrected[3]->Fill(ntuple->lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.604066,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2)));
+            }
+
+            if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso<10.0) {
+               int hindex = get_index(ntuple->lLV[0].lpfIso,isos);
+               hIsoEVsPt[hindex]->Fill(ntuple->lLV[0].Pt(),ntuple->lLV[0].lpfIso*ntuple->lLV[0].Pt());
+            }
+
+         }
 
          /*******************************************************************************************/
          //pT Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) 
@@ -329,58 +468,31 @@ int main(int argc,char**argv)
          cout << "\tDoing pT distribution comparison ..." << std::flush;
          cname.push_back(Form("cptDistributions_%s",ifilePostFixes[f].Data()));
          cptDistributions.push_back(new TCanvas(cname.back(),cname.back(),800,800));
-         legs.push_back(new TLegend(0.6,0.4,0.9,0.6));
+         THStack* sptDistributions = new THStack(Form("sptDistributions_%s",ifilePostFixes[f].Data()),
+                                                 Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()));
+         for(unsigned int hh=0; hh<hptDistributions.size();hh++) {
+            hptDistributions[hh]->Scale(1.0/hptDistributions[hh]->Integral());
+            sptDistributions->Add(hptDistributions[hh]);
+         }
+         sptDistributions->Draw("nostack");
+         sptDistributions->GetXaxis()->SetTitle("p_{T} [GeV]");
+         sptDistributions->GetXaxis()->SetRangeUser(0,150);
+         sptDistributions->GetYaxis()->SetTitle("Events / 1 GeV");
+         //sptDistributions->GetYaxis()->SetRangeUser(0,0.07);
+         legs.push_back(new TLegend(0.5,0.4,0.9,0.6));
          legs.back()->SetFillColor(0);
          legs.back()->SetFillStyle(0);
          legs.back()->SetLineColor(0);
          legs.back()->SetLineWidth(0);
          legs.back()->SetBorderSize(0);
-         hname.push_back(Form("hptDistributions_antiMVA_signalIso_uncor_%s",ifilePostFixes[f].Data()));
-         hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributions.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributions.back()->GetXaxis()->SetRangeUser(0,200);
-         hptDistributions.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributions.back()->SetMarkerColor(kBlack);
-         hptDistributions.back()->SetLineColor(kBlack);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso<0.2&&lLV[0].Pt()>30","goff");
-         }
-         hptDistributions.back()->Scale(1.0/hptDistributions.back()->Integral());
-         hptDistributions.back()->Draw();
-         legs.back()->AddEntry(hptDistributions.back(),"Uncorrected && 0.05<MVA EID<0.95 && pfIso<0.2 && p_{T}^{Lepton}>30 GeV","l");
-         hname.push_back(Form("hptDistributions_antiMVA_qcdIso_uncor_%s",ifilePostFixes[f].Data()));
-         hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributions.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributions.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributions.back()->SetMarkerColor(kBlue);
-         hptDistributions.back()->SetLineColor(kBlue);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&lLV[0].Pt()>30","goff");
-         }
-         hptDistributions.back()->Scale(1.0/hptDistributions.back()->Integral());
-         hptDistributions.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributions.back(),"Uncorrected && 0.05<MVA EID<0.95 && pfIso>0.3 && p_{T}^{Lepton}>30 GeV","l");
-         hname.push_back(Form("hptDistributions_antiMVA_qcdIso_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributions.push_back(new TH1D(hname.back(),Form("p_{T} Distribution (in control region and signal region) Comparison (Corrected Vs. Uncorrected) (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributions.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributions.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributions.back()->SetMarkerColor(kRed);
-         hptDistributions.back()->SetLineColor(kRed);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-         //t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(lLV[0].lpfIso,2))/TMath::Sqrt(1.0+TMath::Power(0.48,2))>>"+hanme.back().Data(),
-         //        "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&(lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(lLV[0].lpfIso,2))/TMath::Sqrt(1.0+TMath::Power(0.48,2)))>30");
-            t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.4948,2))/TMath::Sqrt(1.0+TMath::Power(0.1,2))>>"+hname.back(),
-                    "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&(lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.4948,2))/TMath::Sqrt(1.0+TMath::Power(0.1,2)))>30","goff");
-         }
-         hptDistributions.back()->Scale(1.0/hptDistributions.back()->Integral());
-         hptDistributions.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributions.back(),"Corrected && 0.05<MVA EID<0.95 && pfIso>0.3 && p_{T}^{Lepton}>30 GeV","l");
+         legs.back()->AddEntry(hptDistributions[0],"Uncorrected && 0.05<MVA EID<0.95 && pfIso<0.2 && p_{T}^{Lepton}>30 GeV","l");
+         legs.back()->AddEntry(hptDistributions[1],"Uncorrected && 0.05<MVA EID<0.95 && pfIso>0.3 && p_{T}^{Lepton}>30 GeV","l");
+         legs.back()->AddEntry(hptDistributions[2],"Corrected && 0.05<MVA EID<0.95 && pfIso>0.3 && p_{T}^{Lepton}>30 GeV","l");
          legs.back()->Draw("sames");
          cout << "DONE" << endl;
 
          /*
          Terminal Version
-
          PS->cd()
          gStyle->SetPalette(1)
          TCanvas * c = new TCanvas("c","c",800,800)
@@ -403,7 +515,6 @@ int main(int argc,char**argv)
          asIs->Draw()
          asIs2->Draw("sames")
          cor->Draw("sames")
-
          */
 
          /*******************************************************************************************/
@@ -412,68 +523,26 @@ int main(int argc,char**argv)
          cout << "\tDoing shifted pT peaks ... " << std::flush;
          cname.push_back(Form("cShiftedPt_%s",ifilePostFixes[f].Data()));
          cptDistributionsShifted.push_back(new TCanvas(cname.back(),cname.back(),800,800));
+         THStack* sptDistributionsShifted = new THStack(Form("sShiftedPt_%s",ifilePostFixes[f].Data()),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()));
+         for(unsigned int hh=0; hh<hptDistributionsShifted.size();hh++) {
+            hptDistributionsShifted[hh]->Scale(1.0/hptDistributionsShifted[hh]->Integral());
+            sptDistributionsShifted->Add(hptDistributionsShifted[hh]);
+         }
+         sptDistributionsShifted->Draw("nostack");
+         sptDistributionsShifted->GetXaxis()->SetTitle("p_{T} [GeV]");
+         sptDistributionsShifted->GetXaxis()->SetRangeUser(0,150);
+         sptDistributionsShifted->GetYaxis()->SetTitle("Events / 1 GeV");
+         //sptDistributionsShifted->GetYaxis()->SetRangeUser(0,0.07);
          legs.push_back(new TLegend(0.6,0.4,0.9,0.6));
          legs.back()->SetFillColor(0);
          legs.back()->SetFillStyle(0);
          legs.back()->SetLineColor(0);
          legs.back()->SetLineWidth(0);
          legs.back()->SetBorderSize(0);
-         hname.push_back(Form("hShiftedPt_antiMVA_0p0to0p2_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsShifted.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsShifted.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsShifted.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsShifted.back()->SetMarkerColor(kBlack);
-         hptDistributionsShifted.back()->SetLineColor(kBlack);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.0&&lLV[0].lpfIso<0.2","goff");
-         }
-         hptDistributionsShifted.back()->Scale(1.0/hptDistributionsShifted.back()->Integral());
-         hptDistributionsShifted.back()->Draw("");
-         legs.back()->AddEntry(hptDistributionsShifted.back(),"0.05<MVA EID<0.95 && 0.0<pfIso<0.2","l");
-         hname.push_back(Form("hShiftedPt_antiMVA_0p2to0p4_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsShifted.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsShifted.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsShifted.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsShifted.back()->SetMarkerColor(kRed);
-         hptDistributionsShifted.back()->SetLineColor(kRed);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.2&&lLV[0].lpfIso<0.4","goff");
-         }
-         hptDistributionsShifted.back()->Scale(1.0/hptDistributionsShifted.back()->Integral());
-         hptDistributionsShifted.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsShifted.back(),"0.05<MVA EID<0.95 && 0.2<pfIso<0.4","l");
-         hname.push_back(Form("hShiftedPt_antiMVA_0p4to0p6_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsShifted.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsShifted.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsShifted.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsShifted.back()->SetMarkerColor(kBlue);
-         hptDistributionsShifted.back()->SetLineColor(kBlue);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.4&&lLV[0].lpfIso<0.6","goff");
-         }
-         hptDistributionsShifted.back()->Scale(1.0/hptDistributionsShifted.back()->Integral());
-         hptDistributionsShifted.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsShifted.back(),"0.05<MVA EID<0.95 && 0.4<pfIso<0.6","l");
-         hname.push_back(Form("hShiftedPt_antiMVA_0p6to0p8_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsShifted.push_back(new TH1D(hname.back(),Form("Uncorrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsShifted.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsShifted.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsShifted.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsShifted.back()->SetMarkerColor(kGreen);
-         hptDistributionsShifted.back()->SetLineColor(kGreen);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.6&&lLV[0].lpfIso<0.8","colz sames");
-         }
-         hptDistributionsShifted.back()->Scale(1.0/hptDistributionsShifted.back()->Integral());
-         hptDistributionsShifted.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsShifted.back(),"0.05<MVA EID<0.95 && 0.6<pfIso<0.8","l");
+         legs.back()->AddEntry(hptDistributionsShifted[0],"0.05<MVA EID<0.95 && 0.0<pfIso<0.2","l");
+         legs.back()->AddEntry(hptDistributionsShifted[1],"0.05<MVA EID<0.95 && 0.2<pfIso<0.4","l");
+         legs.back()->AddEntry(hptDistributionsShifted[2],"0.05<MVA EID<0.95 && 0.4<pfIso<0.6","l");
+         legs.back()->AddEntry(hptDistributionsShifted[3],"0.05<MVA EID<0.95 && 0.6<pfIso<0.8","l");
          legs.back()->Draw("sames");
          cout << "DONE" << endl;
 
@@ -483,78 +552,31 @@ int main(int argc,char**argv)
          cout << "\tDoing corrected pT peaks ... " << std::flush;
          cname.push_back(Form("cCorrectedPt_%s",ifilePostFixes[f].Data()));
          cptDistributionsCorrected.push_back(new TCanvas(cname.back(),cname.back(),800,800));
+         THStack* sptDistributionsCorrected = new THStack(Form("sCorrectedPt_%s",ifilePostFixes[f].Data()),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()));
+         for(unsigned int hh=0; hh<hptDistributionsCorrected.size();hh++) {
+            hptDistributionsCorrected[hh]->Scale(1.0/hptDistributionsCorrected[hh]->Integral());
+            sptDistributionsCorrected->Add(hptDistributionsCorrected[hh]);
+         }
+         sptDistributionsCorrected->Draw("nostack");
+         sptDistributionsCorrected->GetXaxis()->SetTitle("p_{T} [GeV]");
+         sptDistributionsCorrected->GetXaxis()->SetRangeUser(0,150);
+         sptDistributionsCorrected->GetYaxis()->SetTitle("Events / 1 GeV");
+         //sptDistributionsCorrected->GetYaxis()->SetRangeUser(0,0.07);
          legs.push_back(new TLegend(0.6,0.4,0.9,0.6));
          legs.back()->SetFillColor(0);
          legs.back()->SetFillStyle(0);
          legs.back()->SetLineColor(0);
          legs.back()->SetLineWidth(0);
          legs.back()->SetBorderSize(0);
-         hname.push_back(Form("hCorrectedPt_antiMVA_0p0to0p2_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsCorrected.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsCorrected.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsCorrected.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsCorrected.back()->SetMarkerColor(kBlack);
-         hptDistributionsCorrected.back()->SetLineColor(kBlack);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.0871531,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2))>>"+hname.back(),
-                    "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.0&&lLV[0].lpfIso<0.2","goff");
-         }
-         hptDistributionsCorrected.back()->Scale(1.0/hptDistributionsCorrected.back()->Integral());
-         hptDistributionsCorrected.back()->Draw("");
-         legs.back()->AddEntry(hptDistributionsCorrected.back(),"0.05<MVA EID<0.95 && 0.0<pfIso<0.2","l");
-         hname.push_back(Form("hCorrectedPt_antiMVA_0p2to0p4_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsCorrected.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsCorrected.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsCorrected.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsCorrected.back()->SetMarkerColor(kRed);
-         hptDistributionsCorrected.back()->SetLineColor(kRed);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.259677,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2))>>"+hname.back(),
-                    "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.2&&lLV[0].lpfIso<0.4","goff");
-         }
-         hptDistributionsCorrected.back()->Scale(1.0/hptDistributionsCorrected.back()->Integral());
-         hptDistributionsCorrected.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsCorrected.back(),"0.05<MVA EID<0.95 && 0.2<pfIso<0.4","l");
-         hname.push_back(Form("hCorrectedPt_antiMVA_0p4to0p6_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsCorrected.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsCorrected.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsCorrected.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsCorrected.back()->SetMarkerColor(kBlue);
-         hptDistributionsCorrected.back()->SetLineColor(kBlue);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.452971,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2))>>"+hname.back(),
-                    "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.4&&lLV[0].lpfIso<0.6","goff");
-         }
-         hptDistributionsCorrected.back()->Scale(1.0/hptDistributionsCorrected.back()->Integral());
-         hptDistributionsCorrected.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsCorrected.back(),"0.05<MVA EID<0.95 && 0.4<pfIso<0.6","l");
-         hname.push_back(Form("hCorrectedPt_antiMVA_0p6to0p8_cor_%s",ifilePostFixes[f].Data()));
-         hptDistributionsCorrected.push_back(new TH1D(hname.back(),Form("Corrected p_{T} Distributions (%s)",ifilePostFixes[f].Data()),1000,0,1000));
-         hptDistributionsCorrected.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hptDistributionsCorrected.back()->GetXaxis()->SetRangeUser(0,150);
-         hptDistributionsCorrected.back()->GetYaxis()->SetTitle("Events / 1 GeV");
-         hptDistributionsShifted.back()->GetYaxis()->SetRangeUser(0,0.06);
-         hptDistributionsCorrected.back()->SetMarkerColor(kGreen);
-         hptDistributionsCorrected.back()->SetLineColor(kGreen);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].Pt()*TMath::Sqrt(1.0+TMath::Power(0.604066,2))/TMath::Sqrt(1.0+TMath::Power(0.0871531,2))>>"+hname.back(),
-                    "lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.6&&lLV[0].lpfIso<0.8","goff");
-         }
-         hptDistributionsCorrected.back()->Scale(1.0/hptDistributionsCorrected.back()->Integral());
-         hptDistributionsCorrected.back()->Draw("sames");
-         legs.back()->AddEntry(hptDistributionsCorrected.back(),"0.05<MVA EID<0.95 && 0.6<pfIso<0.8","l");
+         legs.back()->AddEntry(hptDistributionsCorrected[0],"0.05<MVA EID<0.95 && 0.0<pfIso<0.2","l");
+         legs.back()->AddEntry(hptDistributionsCorrected[1],"0.05<MVA EID<0.95 && 0.2<pfIso<0.4","l");
+         legs.back()->AddEntry(hptDistributionsCorrected[2],"0.05<MVA EID<0.95 && 0.4<pfIso<0.6","l");
+         legs.back()->AddEntry(hptDistributionsCorrected[3],"0.05<MVA EID<0.95 && 0.6<pfIso<0.8","l");
          legs.back()->Draw("sames");
          cout << "DONE" << endl;
 
          /*
          Terminal Version
-
          PS->cd()
          gStyle->SetPalette(1)
          TCanvas * c = new TCanvas("After","After",800,800)
@@ -586,12 +608,12 @@ int main(int argc,char**argv)
          h23->Draw("sames")
          h45->Draw("sames")
          h67->Draw("sames")
-
          */
 
          /*******************************************************************************************/
          //Show Isolation Energy Vs. pT
          /*******************************************************************************************/
+         cout << "\tDoing isolation energy vs. pT ... " << std::flush;
          //Setting a smoother palette
          const Int_t NRGBs = 5;
          const Int_t NCont = 104;
@@ -601,138 +623,21 @@ int main(int argc,char**argv)
          Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
          TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
          gStyle->SetNumberContours(NCont);
-
-         cout << "\tDoing isolation energy vs. pT ... " << std::flush;
          cname.push_back(Form("cIsoEVsPt_%s",ifilePostFixes[f].Data()));
          cIsoEVsPt.push_back(new TCanvas(cname.back(),cname.back(),800,800));
-         THStack* sIsoEVsPt = new THStack(Form("sIsoEVsPt_%s",ifilePostFixes[f].Data()),Form("sIsoEVsPt_%s",ifilePostFixes[f].Data()));
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p0to0p1_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kBlack);
-         hIsoEVsPt.back()->SetLineColor(kBlack);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.0&&lLV[0].lpfIso<0.1","goff");
+         THStack* sIsoEVsPt = new THStack(Form("sIsoEVsPt_%s",ifilePostFixes[f].Data()),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()));
+         for(unsigned int h=0; h<hIsoEVsPt.size(); h++) {
+            cout << "(" << Form("%.1f",h/10.0) << " < PF Isolation < " << Form("%.1f",(h/10.0)+0.1) << ")" << endl;
+            hIsoEVsPt[h]->Fit("pol1");
+            sIsoEVsPt->Add(hIsoEVsPt[h]);
          }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p1to0p2_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kRed);
-         hIsoEVsPt.back()->SetLineColor(kRed);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.1&&lLV[0].lpfIso<0.2","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p2to0p3_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kBlue);
-         hIsoEVsPt.back()->SetLineColor(kBlue);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.2&&lLV[0].lpfIso<0.3","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p3to0p4_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kGreen);
-         hIsoEVsPt.back()->SetLineColor(kGreen);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&lLV[0].lpfIso<0.4","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p4to0p5_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kMagenta);
-         hIsoEVsPt.back()->SetLineColor(kMagenta);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.4&&lLV[0].lpfIso<0.5","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p5to0p6_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kOrange);
-         hIsoEVsPt.back()->SetLineColor(kOrange);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.5&&lLV[0].lpfIso<0.6","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p6to0p7_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kCyan);
-         hIsoEVsPt.back()->SetLineColor(kCyan);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.6&&lLV[0].lpfIso<0.7","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p7to0p8_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kRed+3);
-         hIsoEVsPt.back()->SetLineColor(kRed+3);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.7&&lLV[0].lpfIso<0.8","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p8to0p9_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kBlue+3);
-         hIsoEVsPt.back()->SetLineColor(kBlue+3);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.8&&lLV[0].lpfIso<0.9","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         hname.push_back(Form("hIsoEVsPt_antiMVA_0p9to1p0_uncor_%s",ifilePostFixes[f].Data()));
-         hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-         hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
-         hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
-         hIsoEVsPt.back()->SetMarkerColor(kGreen+3);
-         hIsoEVsPt.back()->SetLineColor(kGreen+3);
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>"+hname.back(),"lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.9&&lLV[0].lpfIso<1.0","goff");
-         }
-         hIsoEVsPt.back()->Fit("pol1");
-         sIsoEVsPt->Add(hIsoEVsPt.back());
-         /*
-         for (unsigned int i=0; i<hIsoEVsPt.size(); i++) {
-            if(i==0)
-               hIsoEVsPt[i]->Draw("colz");
-            else
-               hIsoEVsPt[i]->Draw("colz sames");
-         }
-         */
          sIsoEVsPt->Draw("colz nostack");
          sIsoEVsPt->GetXaxis()->SetTitle("p_{T} [GeV]");
          sIsoEVsPt->GetYaxis()->SetTitle("Isolation Energy");
          cout << "DONE" << endl;
 
-
          /*
          Terminal Version
-
          PS->cd()
          gStyle->SetPalette(1)
          TCanvas * c = new TCanvas("c","c",800,800)
@@ -779,8 +684,15 @@ int main(int argc,char**argv)
          h56->Draw("colz sames")
          h67->Draw("colz sames")
 
+         PS->cd()
+         gStyle->SetPalette(1)
+         TCanvas * c = new TCanvas("c","c",800,800)
+         TH2D* h = new TH2D("h","h",500,0,500,500,0,500)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()>>h","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95","colz")
+         TCanvas * cc = new TCanvas("cc","cc",800,800)
+         TH2D* hh = new TH2D("hh","hh",500,0,500,500,0,500)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>hh","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95","colz")
          */
-
       }
 
       /*******************************************************************************************/
@@ -798,7 +710,7 @@ int main(int argc,char**argv)
             cmvaNonTrigV0.back()->SaveAs(ofilepath+cmvaNonTrigV0.back()->GetTitle()+formats[ff]);
             cpfIsoMVATrigV0.back()->SaveAs(ofilepath+cpfIsoMVATrigV0.back()->GetTitle()+formats[ff]);
          }
-         if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0) {
+         if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0 || plots.CompareTo("CORRECTION_FAST")==0) {
             cptDistributions.back()->SaveAs(ofilepath+cptDistributions.back()->GetTitle()+formats[ff]);
             cptDistributionsShifted.back()->SaveAs(ofilepath+cptDistributionsShifted.back()->GetTitle()+formats[ff]);
             cptDistributionsCorrected.back()->SaveAs(ofilepath+cptDistributionsCorrected.back()->GetTitle()+formats[ff]);
@@ -818,7 +730,7 @@ int main(int argc,char**argv)
          cmvaNonTrigV0.back()->Write();
          cpfIsoMVATrigV0.back()->Write();
       }
-      if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0) {
+      if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0 || plots.CompareTo("CORRECTION_FAST")==0) {
          cptDistributions.back()->Write();
          cptDistributionsShifted.back()->Write();
          cptDistributionsCorrected.back()->Write();
@@ -872,6 +784,14 @@ int main(int argc,char**argv)
    delete m_benchmark;
 
    return 0;
+}
+
+//______________________________________________________________________________
+int get_index(double x,const vector<double>& binsx)
+{
+  for (unsigned int ix=0;ix<binsx.size()-1;ix++)
+    if (x>=binsx[ix]&&x<binsx[ix+1]) return ix;
+  return -1;
 }
 
 
