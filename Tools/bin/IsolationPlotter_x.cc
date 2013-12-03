@@ -113,6 +113,7 @@ int main(int argc,char**argv)
    vector<TCanvas*> cptDistributionsShifted;
    vector<TCanvas*> cptDistributionsCorrected;
    vector<TCanvas*> cIsoEVsPt;
+   vector<TCanvas*> cIsoEVsPtCoshEta;
    vector<TH2D*> hpfIso;
    vector<TH2D*> hchargedHadronIso;
    vector<TH2D*> hneutralHadronIso;
@@ -124,6 +125,7 @@ int main(int argc,char**argv)
    vector<TH1D*> hptDistributionsShifted;
    vector<TH1D*> hptDistributionsCorrected;
    vector<TH2D*> hIsoEVsPt;
+   vector<TH2D*> hIsoEVsPtCoshEta;
    vector<TProfile*> ppfIso;
    vector<TProfile*> pchargedHadronIso;
    vector<TProfile*> pneutralHadronIso;
@@ -407,10 +409,17 @@ int main(int argc,char**argv)
                      isos.push_back(iso+0.1);
                   hname.push_back(Form("hIsoEVsPt_antiMVA_%.1fto%.1f_uncor_%s",iso,iso+0.1,ifilePostFixes[f].Data()));
                   hIsoEVsPt.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
-                  hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV]");
+                  hIsoEVsPt.back()->GetXaxis()->SetTitle("p_{T} [GeV/c]");
                   hIsoEVsPt.back()->GetYaxis()->SetTitle("Isolation Energy");
                   hIsoEVsPt.back()->SetMarkerColor((iso*10.0)+1);
                   hIsoEVsPt.back()->SetLineColor((iso*10.0)+1);
+
+                  hname.push_back(Form("hIsoEVsPtCoshEta_antiMVA_%.1fto%.1f_uncor_%s",iso,iso+0.1,ifilePostFixes[f].Data()));
+                  hIsoEVsPtCoshEta.push_back(new TH2D(hname.back(),Form("Isolation Energy Vs. p_{T} x cosh(#eta) (%s)",ifilePostFixes[f].Data()),500,0,500,500,0,500));
+                  hIsoEVsPtCoshEta.back()->GetXaxis()->SetTitle("p_{T} x cosh(#eta)[GeV]");
+                  hIsoEVsPtCoshEta.back()->GetYaxis()->SetTitle("Isolation Energy");
+                  hIsoEVsPtCoshEta.back()->SetMarkerColor((iso*10.0)+1);
+                  hIsoEVsPtCoshEta.back()->SetLineColor((iso*10.0)+1);
                }
             }
             if (ientry%10000 == 0)
@@ -458,6 +467,7 @@ int main(int argc,char**argv)
             if(ntuple->lLV[0].emvaTrig>0.05&&ntuple->lLV[0].emvaTrig<0.95&&ntuple->lLV[0].lpfIso<10.0) {
                int hindex = get_index(ntuple->lLV[0].lpfIso,isos);
                hIsoEVsPt[hindex]->Fill(ntuple->lLV[0].Pt(),ntuple->lLV[0].lpfIso*ntuple->lLV[0].Pt());
+               hIsoEVsPtCoshEta[hindex]->Fill(ntuple->lLV[0].Pt()*TMath::CosH(ntuple->lLV[0].Eta()),ntuple->lLV[0].lpfIso*ntuple->lLV[0].Pt());
             }
 
          }
@@ -632,7 +642,7 @@ int main(int argc,char**argv)
             sIsoEVsPt->Add(hIsoEVsPt[h]);
          }
          sIsoEVsPt->Draw("colz nostack");
-         sIsoEVsPt->GetXaxis()->SetTitle("p_{T} [GeV]");
+         sIsoEVsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
          sIsoEVsPt->GetYaxis()->SetTitle("Isolation Energy");
          cout << "DONE" << endl;
 
@@ -683,7 +693,8 @@ int main(int argc,char**argv)
          h45->Draw("colz sames")
          h56->Draw("colz sames")
          h67->Draw("colz sames")
-
+         */
+         /*
          PS->cd()
          gStyle->SetPalette(1)
          TCanvas * c = new TCanvas("c","c",800,800)
@@ -692,6 +703,71 @@ int main(int argc,char**argv)
          TCanvas * cc = new TCanvas("cc","cc",800,800)
          TH2D* hh = new TH2D("hh","hh",500,0,500,500,0,500)
          jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>hh","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95","colz")
+         */
+
+         /*******************************************************************************************/
+         //Show Isolation Energy Vs. pT x cosh(eta)
+         /*******************************************************************************************/
+         cout << "\tDoing isolation energy vs. pT x cosh(eta) ... " << std::flush;
+         cname.push_back(Form("cIsoEVsPtCoshEta_%s",ifilePostFixes[f].Data()));
+         cIsoEVsPtCoshEta.push_back(new TCanvas(cname.back(),cname.back(),800,800));
+         THStack* sIsoEVsPtCoshEta = new THStack(Form("sIsoEVsPtCoshEta_%s",ifilePostFixes[f].Data()),Form("Isolation Energy Vs. p_{T} x cosh(#eta) (%s)",ifilePostFixes[f].Data()));
+         for(unsigned int h=0; h<hIsoEVsPt.size(); h++) {
+            cout << "(" << Form("%.1f",h/10.0) << " < PF Isolation < " << Form("%.1f",(h/10.0)+0.1) << ")" << endl;
+            hIsoEVsPtCoshEta[h]->Fit("pol1");
+            sIsoEVsPtCoshEta->Add(hIsoEVsPtCoshEta[h]);
+         }
+         sIsoEVsPtCoshEta->Draw("colz nostack");
+         sIsoEVsPtCoshEta->GetXaxis()->SetTitle("p_{T} x cosh(#eta) [GeV]");
+         sIsoEVsPtCoshEta->GetYaxis()->SetTitle("Isolation Energy");
+         cout << "DONE" << endl;
+
+         /*
+         PS->cd()
+         gStyle->SetPalette(1)
+         TCanvas * c = new TCanvas("c","c",800,800)
+         TH2D* h01 = new TH2D("h01","h01",500,0,500,500,0,500)
+         h01->SetMarkerColor(kBlack)
+         h01->SetLineColor(kBlack)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h01","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.0&&lLV[0].lpfIso<0.1","colz")
+         TH2D* h12 = new TH2D("h12","h12",500,0,500,500,0,500)
+         h12->SetMarkerColor(kRed)
+         h12->SetLineColor(kRed)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h12","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.1&&lLV[0].lpfIso<0.2","colz sames")
+         TH2D* h23 = new TH2D("h23","h23",500,0,500,500,0,500)
+         h23->SetMarkerColor(kBlue)
+         h23->SetLineColor(kBlue)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h23","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.2&&lLV[0].lpfIso<0.3","colz sames")
+         TH2D* h34 = new TH2D("h34","h34",500,0,500,500,0,500)
+         h34->SetMarkerColor(kGreen)
+         h34->SetLineColor(kGreen)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h34","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.3&&lLV[0].lpfIso<0.4","colz sames")
+         TH2D* h45 = new TH2D("h45","h45",500,0,500,500,0,500)
+         h45->SetMarkerColor(kMagenta)
+         h45->SetLineColor(kMagenta)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h45","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.4&&lLV[0].lpfIso<0.5","colz sames")
+         TH2D* h56 = new TH2D("h56","h56",500,0,500,500,0,500)
+         h56->SetMarkerColor(kOrange)
+         h56->SetLineColor(kOrange)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h56","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.5&&lLV[0].lpfIso<0.6","colz sames")
+         TH2D* h67 = new TH2D("h67","h67",500,0,500,500,0,500)
+         h67->SetMarkerColor(kCyan)
+         h67->SetLineColor(kCyan)
+         jets2p->Draw("lLV[0].lpfIso*lLV[0].Pt():lLV[0].Pt()*TMath::CosH(lLV[0].Eta())>>h67","lLV[0].emvaTrig>0.05&&lLV[0].emvaTrig<0.95&&lLV[0].lpfIso>0.6&&lLV[0].lpfIso<0.7","colz sames")
+         h01->Fit("pol1")
+         h12->Fit("pol1")
+         h23->Fit("pol1")
+         h34->Fit("pol1")
+         h45->Fit("pol1")
+         h56->Fit("pol1")
+         h67->Fit("pol1")
+         h01->Draw("colz")
+         h12->Draw("colz sames")
+         h23->Draw("colz sames")
+         h34->Draw("colz sames")
+         h45->Draw("colz sames")
+         h56->Draw("colz sames")
+         h67->Draw("colz sames")
          */
       }
 
@@ -715,6 +791,7 @@ int main(int argc,char**argv)
             cptDistributionsShifted.back()->SaveAs(ofilepath+cptDistributionsShifted.back()->GetTitle()+formats[ff]);
             cptDistributionsCorrected.back()->SaveAs(ofilepath+cptDistributionsCorrected.back()->GetTitle()+formats[ff]);
             cIsoEVsPt.back()->SaveAs(ofilepath+cIsoEVsPt.back()->GetTitle()+formats[ff]);
+            cIsoEVsPtCoshEta.back()->SaveAs(ofilepath+cIsoEVsPtCoshEta.back()->GetTitle()+formats[ff]);
          }
       }
       cout << "DONE" << endl;
@@ -735,6 +812,7 @@ int main(int argc,char**argv)
          cptDistributionsShifted.back()->Write();
          cptDistributionsCorrected.back()->Write();
          cIsoEVsPt.back()->Write();
+         cIsoEVsPtCoshEta.back()->Write();
       }
       cout << "DONE" << endl;
 
@@ -753,6 +831,7 @@ int main(int argc,char**argv)
       cptDistributionsShifted.clear();
       cptDistributionsCorrected.clear();
       cIsoEVsPt.clear();
+      cIsoEVsPtCoshEta.clear();
       hpfIso.clear();
       hchargedHadronIso.clear();
       hneutralHadronIso.clear();
@@ -764,6 +843,7 @@ int main(int argc,char**argv)
       hptDistributionsShifted.clear();
       hptDistributionsCorrected.clear();
       hIsoEVsPt.clear();
+      hIsoEVsPtCoshEta.clear();
       ppfIso.clear();
       pchargedHadronIso.clear();
       pneutralHadronIso.clear();
