@@ -1233,7 +1233,7 @@ void PerformSelection::muonSelection() {
           muIter->numberOfMatchedStations()>muPrim_nMatchedStationsMin) {
          isProperlyIsolatedMu=false;
          
-         if ( mu_PFIso<muPrim_PFIsoMax ) //((doDetectorIso && mu_DetIso<muPrim_DetIsoMax)||(doTrackerIso && mu_TrkIso<muPrim_TrkIsoMax)) )
+         if ( mu_PFIso<muPrim_PFIsoMax || noMVAIsoCut) //((doDetectorIso && mu_DetIso<muPrim_DetIsoMax)||(doTrackerIso && mu_TrkIso<muPrim_TrkIsoMax)) )
             isProperlyIsolatedMu=true;
             
          //
@@ -1277,7 +1277,7 @@ void PerformSelection::muonSelection() {
       if (mu_pt>muLoose_ptMin && abs(mu_eta)<muLoose_aetaMax &&
           (muIter->isGlobalMuon() || muIter->isTrackerMuon()) && muisPFm &&
           //((doDetectorIso && mu_DetIso<muLoose_DetIsoMax)||(doTrackerIso && mu_TrkIso<muLoose_TrkIsoMax))
-          mu_PFIso<muLoose_PFIsoMax) {
+          (mu_PFIso<muLoose_PFIsoMax || noMVAIsoCut) ) {
          mucnt_Loose++;
 
          lstream << "mu_loose pt " << mu_pt << " eta " << abs(mu_eta) << " mu_vtxPass " << mu_vtxPass << " dz " << abs(muIter->innerTrack()->dz(vtxHandle->at(0).position())) << " d0 " << abs(muIter->dB()) << " PFIso " << mu_PFIso << " global " << muIter->isGlobalMuon() << " pf " << muIter->isPFMuon() << " nMuonHits " << muIter->globalTrack()->hitPattern().numberOfValidMuonHits() << " nHits " << muIter->innerTrack()->numberOfValidHits() << " nPixelHits " << muIter->innerTrack()->hitPattern().numberOfValidPixelHits() << " Chi2 " << muIter->globalTrack()->normalizedChi2() << " nMatchedStations " << muIter->numberOfMatchedStations() << endl;
