@@ -167,8 +167,8 @@ namespace DEFS{
   //            ALL ABOUT THE CONTROL REGIONS
   // ---------------------------------------------------------------
 
-   enum ControlRegion {all, signal, control1, control2, control3, control4, control5, control6, control7, control8, control9, UVa, event, Diboson, AntiMVAEleID, None};
-  static const unsigned int nControlRegion = 16;
+   enum ControlRegion {all, signal, control1, control2, control3, control4, control5, control6, control7, control8, control9, UVa, event, Diboson, MVAEleID, AntiMVAEleID, FlatMVAEleID, None};
+  static const unsigned int nControlRegion = 18;
 
   //A routine that returns a string given the type
   std::string getControlRegionString(ControlRegion type);
