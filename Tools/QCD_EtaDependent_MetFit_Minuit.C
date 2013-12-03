@@ -544,6 +544,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cint->cd(5); qcd_nev->Draw("E");
   cint->cd(6); wj_nev->Draw("E");
   cint->SaveAs("Stats.pdf");
+  cint->SaveAs("Stats.eps");
   cint->Write();
   da_int->Write();
   qcd_int->Write();
@@ -557,6 +558,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cfr->cd(1); qcd_fr->Draw("E");
   cfr->cd(2); wj_fr->Draw("E");
   cfr->SaveAs("FractionsVsEta.pdf");
+  cfr->SaveAs("FractionsVsEta.eps");
   cfr->Write();
   qcd_fr->Write();
   wj_fr->Write();
@@ -566,6 +568,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cyi->cd(1); qcd_yield->Draw("E");
   cyi->cd(2); wj_yield->Draw("E");
   cyi->SaveAs("EventYieldsVsEta.pdf");
+  cyi->SaveAs("EventYieldsVsEta.eps");
   cyi->Write();
   qcd_yield->Write();
   wj_yield->Write();
@@ -575,6 +578,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cxs->cd(1); qcd_xs->Draw("E");
   cxs->cd(2); wj_xs->Draw("E");
   cxs->SaveAs("EventXSVsEta.pdf");
+  cxs->SaveAs("EventXSVsEta.eps");
   cxs->Write();
   qcd_xs->Write();
   wj_xs->Write();
@@ -584,6 +588,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cwe->cd(1); qcd_sf->Draw("E");
   cwe->cd(2); wj_sf->Draw("E"); wjsm_sf->Draw("sameE3"); wj_sf->Draw("sameE");
   cwe->SaveAs("SfVsEta.pdf");
+  cwe->SaveAs("SfVsEta.eps");
   cwe->Write();
   qcd_sf->Write();
   wj_sf->Write();
@@ -593,6 +598,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   ccl->cd(1); qcd_close->Draw("E");
   ccl->cd(2); wj_close->Draw("E");
   ccl->SaveAs("ClosureVsEta.pdf");
+  ccl->SaveAs("ClosureVsEta.eps");
   ccl->Write();
   qcd_close->Write();
   wj_close->Write();
@@ -600,11 +606,13 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   TCanvas * cchi2 = new TCanvas("chi2","chi2",400,400);
   chi2->Draw("E");
   cchi2->SaveAs("chi2.pdf");
+  cchi2->SaveAs("chi2.eps");
   chi2->Write();
   cchi2->Write();
 
   cfits->SaveAs("AllMetFits.pdf");
   cfits->SaveAs("AllMetFits.png");
+  cfits->SaveAs("AllMetFits.eps");
   cfits->Write();
   
   // ============ CREATE THE OUTPUT HISTOS ==============
