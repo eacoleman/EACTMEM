@@ -54,13 +54,13 @@ inputFiles = cms.untracked.vstring(
 #############
 # Muon Data #
 #############
-#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_90_1_elI.root',
-#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_91_1_OmO.root',
-#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_WN4.root'
+	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_90_1_elI.root',
+	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_91_1_OmO.root',
+	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_WN4.root'
 #################
 # Electron Data #
 #################
-	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_9_1_Odn.root',
+#	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_9_1_Odn.root',
 #	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_86_1_9Fu.root',
 #	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_88_1_D3l.root',
 #	'/store/user/eusebi/PatTuples_8TeV_53X/goodell/SingleElectron/SQWaT_PAT_53X_Fall12_Electron2012D_p7_loose/40abd2242537ef01a4e068cea4bb511b/pat_53x_test_v03_94_1_3Y2.root',
@@ -99,6 +99,7 @@ process.PS.pileupSource      = cms.InputTag('addPileupInfo')                    
 
     #-----Trigger Information
 process.PS.muTrigger         = cms.vstring('HLT_IsoMu24_eta2p1_v*')                 # Muon trigger name
+#process.PS.muTrigger         = cms.vstring('HLT_Mu24_eta2p1_v*')                    # Muon trigger name
 #process.PS.muTrigger         = cms.vstring('HLT_IsoMu24_*',"HLT_IsoMu30_*")                 # Muon trigger name
 process.PS.eleTrigger        = cms.vstring('HLT_Ele27_WP80_v*')                     # Electron trigger name
 #process.PS.eleTrigger        = cms.vstring('HLT_Ele27_*','HLT_Ele32_*')                     # Electron trigger name 
