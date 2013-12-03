@@ -294,7 +294,9 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
                                                              bool forPlots,
                                                              DEFS::NtupleType ntupleType){
 
-   vector<DEFS::PhysicsProcess::Type> procs;   
+   vector<DEFS::PhysicsProcess::Type> procs;
+   //procs.push_back(DEFS::PhysicsProcess::ZZ);
+   procs.push_back(DEFS::PhysicsProcess::WZ);
    procs.push_back(DEFS::PhysicsProcess::STopS_T);
    procs.push_back(DEFS::PhysicsProcess::STopS_Tbar);
    procs.push_back(DEFS::PhysicsProcess::STopT_T);
@@ -302,13 +304,20 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::STopTW_T);
    procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    procs.push_back(DEFS::PhysicsProcess::TTbar);
+   procs.push_back(DEFS::PhysicsProcess::WW);
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL); // use to derive QCD scale factors
+   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
+   procs.push_back(DEFS::PhysicsProcess::ZJets);
+   procs.push_back(DEFS::PhysicsProcess::WJets);
+   procs.push_back(DEFS::PhysicsProcess::ggH125);
+   procs.push_back(DEFS::PhysicsProcess::qqH125);
+   procs.push_back(DEFS::PhysicsProcess::WH125);
    //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
    //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
    //procs.push_back(DEFS::PhysicsProcess::Wbb     );
    //procs.push_back(DEFS::PhysicsProcess::Wcc     );
    //procs.push_back(DEFS::PhysicsProcess::WLight  );
-   procs.push_back(DEFS::PhysicsProcess::WJets); 
-   procs.push_back(DEFS::PhysicsProcess::ZJets);
    //procs.push_back(DEFS::PhysicsProcess::Ztautau);
    //procs.push_back(DEFS::PhysicsProcess::QCDMu);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
@@ -317,17 +326,7 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL); // use to derive QCD scale factors
-   //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD250  );
-   procs.push_back(DEFS::PhysicsProcess::WW);
-   procs.push_back(DEFS::PhysicsProcess::WZ);
-   //procs.push_back(DEFS::PhysicsProcess::ZZ);
-   procs.push_back(DEFS::PhysicsProcess::ggH125);
-   procs.push_back(DEFS::PhysicsProcess::qqH125);
-   procs.push_back(DEFS::PhysicsProcess::WH125);
-   
 
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);

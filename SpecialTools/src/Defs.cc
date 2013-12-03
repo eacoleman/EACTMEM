@@ -335,33 +335,32 @@ namespace DEFS {
     // A  routine that returns the Color_t for a given process type
     Color_t getProcessColor(Type type){
        
-       if (type == WW)                  return kPink;
-       else if (type == WZ)             return kBlue;
-       else if (type == ZZ)             return kBlue-1;
-       else if (type == WJets)          return kTeal+2;
-       else if (type == ZJets)          return kPink-8;
-       else if (type == QCD_ElEnriched)             return kYellow+1;
-       else if (type == QCD_ElFULL)                 return kYellow+1;
-       else if (type == QCD_MuEnriched)             return kYellow+1;
-       else if (type == QCD_Pt20to30_EMEnriched )   return kYellow+1;
-       else if (type == QCD_Pt30to80_EMEnriched )   return kYellow+1;
-       else if (type == QCD_Pt80to170_EMEnriched )  return kYellow+1;
-       else if (type == QCD_Pt170to250_EMEnriched ) return kYellow+1;
-       else if (type == QCD_Pt250to350_EMEnriched ) return kYellow+1;
-       else if (type == QCD_Pt350_EMEnriched )      return kYellow+1;
-       else if (type == STopT_T)        return kOrange+1;
-       else if (type == STopT_Tbar)     return kOrange+1; //kCyan+3;
-       else if (type == STopS_T)        return kOrange+1; //kBlue;
-       else if (type == STopS_Tbar)     return kOrange+1; //kBlue+3;
-       else if (type == STopTW_T)       return kOrange+1; //kMagenta;
-       else if (type == STopTW_Tbar)    return kOrange+1; //kGreen+3;
-       else if (type == STopTW_Tbar)    return kOrange+1; //kGreen+3;
-       else if (type == TTbar)          return kAzure-2; 
-       else if (type == ggH125)         return kRed+2; 
-       else if (type == qqH125)         return kRed+2; 
-       else if (type == WH125)          return kRed+2; 
-       else if (type == SingleEl_Data)  return kBlack;
-       else if (type == SingleMu_Data)  return kBlack;
+       if (type == WW)                              return kMagenta+1;//kPink;
+       else if (type == WZ)                         return kCyan+1;//kBlue;
+       else if (type == ZZ)                         return kYellow;//kBlue-1;
+       else if (type == WJets)                      return kGreen-3;//kTeal+2;
+       else if (type == ZJets)                      return kBlue-3;//kPink-8;
+       else if (type == QCD_ElEnriched)             return kRed-6;//kYellow+1;
+       else if (type == QCD_ElFULL)                 return kRed-6;//kYellow+1;
+       else if (type == QCD_MuEnriched)             return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt20to30_EMEnriched )   return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt30to80_EMEnriched )   return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt80to170_EMEnriched )  return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt170to250_EMEnriched ) return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt250to350_EMEnriched ) return kRed-6;//kYellow+1;
+       else if (type == QCD_Pt350_EMEnriched )      return kRed-6;//kYellow+1;
+       else if (type == STopT_T)                    return kOrange+1;
+       else if (type == STopT_Tbar)                 return kOrange+1; //kCyan+3;
+       else if (type == STopS_T)                    return kOrange+1; //kBlue;
+       else if (type == STopS_Tbar)                 return kOrange+1; //kBlue+3;
+       else if (type == STopTW_T)                   return kOrange+1; //kMagenta;
+       else if (type == STopTW_Tbar)                return kOrange+1; //kGreen+3;
+       else if (type == TTbar)                      return kRed-3;//kAzure-2; 
+       else if (type == ggH125)                     return kMagenta-3;//kRed-4;//was kRed+2; 
+       else if (type == qqH125)                     return kMagenta-3;//kRed-4; 
+       else if (type == WH125)                      return kMagenta-3;//kRed-4; 
+       else if (type == SingleEl_Data)              return kBlack;
+       else if (type == SingleMu_Data)              return kBlack;
        else{
           cout << "WARNING Plotter::GetProcessColor() Unknown process name=|"<<getTypeString(type)
                <<"|. Returning process color as kBlack." << endl;
@@ -554,7 +553,9 @@ namespace DEFS {
       else if (type == UVa)          return "UVa";
       else if (type == event)        return "event";
       else if (type == Diboson)      return "Diboson";
+      else if (type == MVAEleID)     return "MVAEleID";
       else if (type == AntiMVAEleID) return "AntiMVAEleID";
+      else if (type == FlatMVAEleID) return "FlatMVAEleID";
       else if (type == None)         return "None";
 
       cout<<"ERROR DEFS::getControlregionString cannot find the given type"<<endl;
@@ -579,7 +580,9 @@ namespace DEFS {
       else if (str == "UVa")          return UVa;
       else if (str == "event")        return event;
       else if (str == "Diboson")      return Diboson;
+      else if (str == "MVAEleID")     return MVAEleID;
       else if (str == "AntiMVAEleID") return AntiMVAEleID;
+      else if (str == "FlatMVAEleID") return FlatMVAEleID;
       else if (str == "None")         return None;
 
       cout<<"ERROR  DEFS::getControlRegion cannot find the given string"<<endl;
