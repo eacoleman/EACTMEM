@@ -564,3 +564,356 @@ TH2* DefaultValues::getConfigTH2(TString histoFile, TString hname, TString newNa
    return h;
 
 }
+
+// ----------------------------------------------------------------------------
+TH2* DefaultValues::Rebin2D(TH2* old, Int_t nxgroup, Int_t nygroup, const char*newname, const Double_t *xbins, const Double_t *ybins, TString Options) {
+
+  Options.ToUpper();
+  bool verbose = false;
+  if(Options.Contains("VERBOSE")) {
+    verbose = true;
+  }
+
+   Int_t nxbins   = old->GetXaxis()->GetNbins();
+   Double_t xmin  = old->GetXaxis()->GetXmin();
+   Double_t xmax  = old->GetXaxis()->GetXmax();
+   Int_t nybins   = old->GetYaxis()->GetNbins();
+   Double_t ymin  = old->GetYaxis()->GetXmin();
+   Double_t ymax  = old->GetYaxis()->GetXmax();
+   if ((nxgroup <= 0) || (nxgroup > nxbins)) {
+      Error("Rebin", "Illegal value of nxgroup=%d",nxgroup);
+      return 0;
+   }
+   if ((nygroup <= 0) || (nygroup > nybins)) {
+      Error("Rebin", "Illegal value of nygroup=%d",nygroup);
+      return 0;
+   }
+
+   if (!newname && (xbins || ybins)) {
+      Error("Rebin","if xbins or ybins are specified, newname must be given");
+      return 0;
+   }
+
+   Int_t newbinsx = nxbins/nxgroup;
+   Int_t newbinsy = nybins/nygroup;
+   if (!xbins) {
+      Int_t nbg = nxbins/nxgroup;
+      if (nbg*nxgroup != nxbins) {
+         Warning("Rebin", "nxgroup=%d is not an exact divider of nxbins=%d.",nxgroup,nxbins);
+      }
+   }
+   else {
+   // in the case that xbins is given (rebinning in variable bins), ngroup is
+   // the new number of bins and number of grouped bins is not constant.
+   // when looping for setting the contents for the new histogram we
+   // need to loop on all bins of original histogram.  Then set ngroup=nbins
+      newbinsx = nxgroup;
+      nxgroup = nxbins;
+   }
+   if (!ybins) {
+      Int_t nbg = nybins/nygroup;
+      if (nbg*nygroup != nybins) {
+         Warning("Rebin", "nygroup=%d is not an exact divider of nybins=%d.",nygroup,nybins);
+      }
+   }
+   else {
+   // in the case that xbins is given (rebinning in variable bins), ngroup is
+   // the new number of bins and number of grouped bins is not constant.
+   // when looping for setting the contents for the new histogram we
+   // need to loop on all bins of original histogram.  Then set ngroup=nbins
+      newbinsy = nygroup;
+      nygroup = nybins;
+   }
+
+   // Save old bin contents into a new array
+   Double_t entries = old->GetEntries();
+   Double_t* oldBins = new Double_t[(nxbins+2)*(nybins+2)];
+   Int_t i, j, binx, biny;
+   for (binx=0;binx<nxbins+2;binx++) {
+     for (biny=0;biny<nybins+2;biny++) { 
+         oldBins[binx*(nybins+2)+biny] = old->GetBinContent(binx,biny);
+     }
+   }
+   Double_t* oldErrors = 0;
+   if (old->GetSumw2N() != 0) {
+      oldErrors = new Double_t[(nxbins+2)*(nybins+2)];
+      for (binx=0;binx<nxbins+2;binx++) {
+          for (biny=0;biny<nybins+2;biny++) {
+            oldErrors[binx*(nybins+2)+biny] = old->GetBinError(binx,biny);
+          }
+      }
+   }
+
+   // create a clone of the old histogram if newname is specified
+   TH2 *hnew = old;
+   if ((newname && strlen(newname) > 0) || xbins || ybins) {
+      hnew = (TH2*)old->Clone(newname);
+   }
+
+   //reset kCanRebin bit to avoid a rebinning in SetBinContent
+   Int_t bitRebin = hnew->TestBit(old->kCanRebin);
+   hnew->SetBit(old->kCanRebin,0);
+
+   // save original statistics
+   const Int_t kNstat2D = 7;
+   Double_t stat[kNstat2D];
+   old->GetStats(stat);
+   bool resetStat = false;
+
+   // change axis specs and rebuild bin contents array::RebinAx
+   if(!xbins && (newbinsx*nxgroup != nxbins)) {
+      xmax = old->GetXaxis()->GetBinUpEdge(newbinsx*nxgroup);
+      resetStat = true; //stats must be reset because top bins will be moved to overflow bin
+   }
+   if(!ybins && (newbinsy*nygroup != nybins)) {
+      ymax = old->GetYaxis()->GetBinUpEdge(newbinsy*nygroup);
+      resetStat = true; //stats must be reset because top bins will be moved to overflow bin
+   }
+   // save the TAttAxis members (reset by SetBins)
+   Int_t    xnDivisions  = old->GetXaxis()->GetNdivisions();
+   Color_t  xaxisColor   = old->GetXaxis()->GetAxisColor();
+   Color_t  xlabelColor  = old->GetXaxis()->GetLabelColor();
+   Style_t  xlabelFont   = old->GetXaxis()->GetLabelFont();
+   Float_t  xlabelOffset = old->GetXaxis()->GetLabelOffset();
+   Float_t  xlabelSize   = old->GetXaxis()->GetLabelSize();
+   Float_t  xtickLength  = old->GetXaxis()->GetTickLength();
+   Float_t  xtitleOffset = old->GetXaxis()->GetTitleOffset();
+   Float_t  xtitleSize   = old->GetXaxis()->GetTitleSize();
+   Color_t  xtitleColor  = old->GetXaxis()->GetTitleColor();
+   Style_t  xtitleFont   = old->GetXaxis()->GetTitleFont();
+   Int_t    ynDivisions  = old->GetYaxis()->GetNdivisions();
+   Color_t  yaxisColor   = old->GetYaxis()->GetAxisColor();
+   Color_t  ylabelColor  = old->GetYaxis()->GetLabelColor();
+   Style_t  ylabelFont   = old->GetYaxis()->GetLabelFont();
+   Float_t  ylabelOffset = old->GetYaxis()->GetLabelOffset();
+   Float_t  ylabelSize   = old->GetYaxis()->GetLabelSize();
+   Float_t  ytickLength  = old->GetYaxis()->GetTickLength();
+   Float_t  ytitleOffset = old->GetYaxis()->GetTitleOffset();
+   Float_t  ytitleSize   = old->GetYaxis()->GetTitleSize();
+   Color_t  ytitleColor  = old->GetYaxis()->GetTitleColor();
+   Style_t  ytitleFont   = old->GetYaxis()->GetTitleFont();
+
+   if(!xbins && !ybins) { //&& (old->GetXaxis()->GetXbins()->GetSize() > 0) && (old->GetYaxis()->GetXbins()->GetSize() > 0)){ // variable bin sizes
+      if (verbose) cout << "Case 1" << endl;
+      Double_t *binsx = new Double_t[newbinsx+1];
+      Double_t *binsy = new Double_t[newbinsy+1];
+      for(i = 0; i <= newbinsx; ++i) {
+        binsx[i] = old->GetXaxis()->GetBinLowEdge(1+i*nxgroup);
+      }
+      for(i = 0; i <= newbinsy; ++i) {
+        binsy[i] = old->GetYaxis()->GetBinLowEdge(1+i*nygroup);
+      }
+      hnew->SetBins(newbinsx,binsx,newbinsy,binsy); //this also changes errors array (if any)
+      delete [] binsx;
+      delete [] binsy;
+   } else if (!xbins && ybins) { //&& (old->GetXaxis()->GetXbins()->GetSize() > 0)) {
+      if (verbose) cout << "Case 2" << endl;
+      Double_t *binsx = new Double_t[newbinsx+1];
+      for(i = 0; i <= newbinsx; ++i) {
+        binsx[i] = old->GetXaxis()->GetBinLowEdge(1+i*nxgroup);
+      }
+      hnew->SetBins(newbinsx,binsx,newbinsy,ybins); //this also changes errors array (if any)
+      delete [] binsx;
+   } else if (!ybins && xbins) {//&& (old->GetYaxis()->GetXbins()->GetSize() > 0)) {
+      if (verbose) cout << "Case 3" << endl;
+      Double_t *binsy = new Double_t[newbinsy+1];
+      for(i = 0; i <= newbinsy; ++i) {
+        binsy[i] = old->GetYaxis()->GetBinLowEdge(1+i*nygroup);
+      }
+      hnew->SetBins(newbinsx,xbins,newbinsy,binsy); //this also changes errors array (if any)
+      delete [] binsy;
+   } else if (xbins && ybins) {
+      if (verbose) cout << "Case 4" << endl;
+      hnew->SetBins(newbinsx,xbins,newbinsy,ybins);
+   } else {
+      if (verbose) cout << "Case 5" << endl;
+      hnew->SetBins(newbinsx,xmin,xmax,newbinsy,ymin,ymax);
+   }
+
+   // Restore axis attributes
+   old->GetXaxis()->SetNdivisions(xnDivisions);
+   old->GetXaxis()->SetAxisColor(xaxisColor);
+   old->GetXaxis()->SetLabelColor(xlabelColor);
+   old->GetXaxis()->SetLabelFont(xlabelFont);
+   old->GetXaxis()->SetLabelOffset(xlabelOffset);
+   old->GetXaxis()->SetLabelSize(xlabelSize);
+   old->GetXaxis()->SetTickLength(xtickLength);
+   old->GetXaxis()->SetTitleOffset(xtitleOffset);
+   old->GetXaxis()->SetTitleSize(xtitleSize);
+   old->GetXaxis()->SetTitleColor(xtitleColor);
+   old->GetXaxis()->SetTitleFont(xtitleFont);
+   old->GetYaxis()->SetNdivisions(ynDivisions);
+   old->GetYaxis()->SetAxisColor(yaxisColor);
+   old->GetYaxis()->SetLabelColor(ylabelColor);
+   old->GetYaxis()->SetLabelFont(ylabelFont);
+   old->GetYaxis()->SetLabelOffset(ylabelOffset);
+   old->GetYaxis()->SetLabelSize(ylabelSize);
+   old->GetYaxis()->SetTickLength(ytickLength);
+   old->GetYaxis()->SetTitleOffset(ytitleOffset);
+   old->GetYaxis()->SetTitleSize(ytitleSize);
+   old->GetYaxis()->SetTitleColor(ytitleColor);
+   old->GetYaxis()->SetTitleFont(ytitleFont);
+
+   // copy merged bin contents (ignore under/overflows)
+   // Start merging only once the new lowest edge is reached
+   if (nxgroup != 1 || nygroup != 1) {
+     Int_t startbinx = 1;
+     Int_t startbiny = 1;
+     const Double_t newxmin = hnew->GetXaxis()->GetBinLowEdge(1);
+     const Double_t newymin = hnew->GetYaxis()->GetBinLowEdge(1);
+     while( old->GetXaxis()->GetBinCenter(startbinx) < newxmin && startbinx <= nxbins ) {
+      startbinx++;
+    }
+    while( old->GetYaxis()->GetBinCenter(startbiny) < newymin && startbiny <= nybins ) {
+      startbiny++;
+    }
+    Int_t oldbinx = startbinx;
+    Int_t oldbiny = startbiny;
+    if(verbose) {
+      cout << "startbinx = " << oldbinx << endl;
+      cout << "startbiny = " << oldbiny << endl;
+    }
+
+    Double_t binContent, binError;
+
+    for (binx = 1;binx<=newbinsx;binx++) {
+      oldbiny = startbiny;
+      Int_t ixmax = nxgroup;
+      Double_t xbinmax = hnew->GetXaxis()->GetBinUpEdge(binx);
+      for (biny = 1;biny<=newbinsy;biny++) {
+        binContent = 0;
+        binError   = 0;
+        Int_t iymax = nygroup;
+        Double_t ybinmax = hnew->GetYaxis()->GetBinUpEdge(biny);
+        for (i=0;i<nxgroup;i++) {
+          if (verbose) cout << "i = " << i << endl;
+          if( ((hnew == old) && (oldbinx+i > nxbins)) || ((hnew != old) && (old->GetXaxis()->GetBinCenter(oldbinx+i) > xbinmax))) {
+            ixmax = i;
+            if(verbose) {
+              cout << "WARNING::Before X Break!!!!" << endl;
+              //cout << "old->GetXaxis()->GetBinCenter(oldbinx+i) > xbinmax\t" << (old->GetXaxis()->GetBinCenter(oldbinx+i) > xbinmax) << endl;
+              //cout << "old->GetXaxis()->GetBinCenter(oldbinx+i) = " << old->GetXaxis()->GetBinCenter(oldbinx+i) << endl;
+              //cout << "xbinmax = " << xbinmax << endl;
+              //cout << "oldbinx = " << oldbinx << endl;
+              //cout << "i = " << i << endl;
+              //cout << "nxgroup = " << nxgroup << endl;
+            }
+            break;
+          }
+          for (j=0;j<nygroup;j++) {
+            if (verbose) cout << "j = " << j << endl;
+            if( ((hnew == old) && (oldbiny+j > nybins)) || ((hnew != old) && (old->GetYaxis()->GetBinCenter(oldbiny+j) > ybinmax))) {
+              iymax = j;
+              if(verbose) {
+                cout << "WARNING::Before Y Break!!!!" << endl;
+              //cout << "hnew==old = " << (hnew==old) << endl;
+              //cout << "oldbinx+i > nxbins || oldbiny+j > nybins\t" << (oldbinx+i > nxbins || oldbiny+j > nybins) << endl;
+              //cout << "old->GetYaxis()->GetBinCenter(oldbiny+j) > ybinmax\t" << (old->GetYaxis()->GetBinCenter(oldbiny+j) > ybinmax) << endl;
+              //cout << "old->GetYaxis()->GetBinCenter(oldbiny+j) = " << old->GetYaxis()->GetBinCenter(oldbiny+j) << endl;
+              //cout << "ybinmax = " << ybinmax << endl;
+              //cout << "oldbiny = " << oldbiny << endl;
+              //cout << "j = " << j << endl;
+              //cout << "nygroup = " << nygroup << endl;
+              }
+              break;
+            }
+            binContent += oldBins[(oldbiny+j) + (oldbinx+i)*(nybins+2)];
+            if (oldErrors) binError += oldErrors[(oldbiny+j)+(oldbinx+i)*(nybins+2)]*oldErrors[(oldbiny+j)+(oldbinx+i)*(nybins+2)];
+          }
+        }
+        if (verbose) cout << "binx = " << binx << "\tbiny = " << biny << endl;
+        hnew->SetBinContent(binx,biny,binContent);
+        if (oldErrors) hnew->SetBinError(binx,biny,TMath::Sqrt(binError));
+        oldbiny += iymax;
+      }
+      oldbinx += ixmax;
+    }
+
+    //  recompute under/overflow contents in y for the new  x bins 
+    Double_t binContent0, binContent2;
+    Double_t binError0, binError2;
+    oldbinx = 1;
+    for (binx = 1; binx<=newbinsx; binx++) {
+     binContent0 = binContent2 = 0;
+     binError0 = binError2 = 0;
+     for (i=0; i<nxgroup; i++) {
+      if (oldbinx+i > nxbins) break;
+            //N.B  convention used for index is opposite than TH1::GetBin(ix,iy)
+            Int_t ufbin = (oldbinx+i)*(nybins+2);   // index for y underflow bins 
+            Int_t ofbin = (oldbinx+i)*(nybins+2) + (nybins+1);   // index for y overflow bins 
+            binContent0 += oldBins[ufbin];
+            binContent2 += oldBins[ofbin];
+            if (oldErrors)  { 
+             binError0 += oldErrors[ufbin] * oldErrors[ufbin];
+             binError2 += oldErrors[ofbin] * oldErrors[ofbin];
+           }
+         }
+         hnew->SetBinContent(binx,0,binContent0);
+         hnew->SetBinContent(binx,newbinsy+1,binContent2);
+         if (oldErrors) { 
+          hnew->SetBinError(binx,0,TMath::Sqrt(binError0));
+          hnew->SetBinError(binx,newbinsy+1,TMath::Sqrt(binError2) );
+        }
+        oldbinx += nxgroup;
+      }
+
+      //  recompute under/overflow contents in x for the new y bins
+      Int_t oldybin = 1;
+      for (biny = 1; biny<=newbinsy; biny++) {
+       binContent0 = binContent2 = 0;
+       binError0 = binError2 = 0;
+       for (i=0; i<nygroup; i++) {
+        if (oldbiny+i > nybins) break;
+            Int_t ufbin = (oldbiny+i);   // global index for x underflow bins 
+            Int_t ofbin = (nxbins+1)*(nybins+2) + (oldbiny+i);   // global index for x overflow bins 
+            binContent0 += oldBins[ufbin];
+            binContent2 += oldBins[ofbin];
+            if (oldErrors)  { 
+             binError0 += oldErrors[ufbin] * oldErrors[ufbin];
+             binError2 += oldErrors[ofbin] * oldErrors[ofbin];
+           }
+         }
+         hnew->SetBinContent(0,biny,binContent0);
+         hnew->SetBinContent(newbinsx+1,biny,binContent2);
+         if (oldErrors) { 
+          hnew->SetBinError(0,biny, TMath::Sqrt(binError0));
+          hnew->SetBinError(newbinsx+1, biny, TMath::Sqrt(binError2));
+        }
+        oldbiny += nygroup;
+      }
+    }
+
+   // restore statistics and entries modified by SetBinContent
+   hnew->SetEntries(entries);
+   if (!resetStat) hnew->PutStats(stat);
+
+   delete [] oldBins;
+   if (oldErrors) delete [] oldErrors;
+   return hnew;
+}
+
+// ----------------------------------------------------------------------------
+void DefaultValues::Rebin2DTest(TString Options) {
+  /*
+  Options:
+    Verbose
+  */
+  TH2D* h = new TH2D("h","h",4,0,40,4,0,40);
+  h->Sumw2();
+  h->Fill(5,5);
+  h->Fill(15,15);
+  h->Fill(25,25);
+  h->Fill(35,25);
+  h->Fill(35,10);
+  h->Fill(35,10);
+  h->Fill(35,10);
+  h->Fill(-1,-1);
+  h->Fill(50,50);
+  h->Fill(-1,50);
+  h->Fill(50,-1);
+  Double_t x[3] = {0,30,40};
+  TH2D* hh = (TH2D*)Rebin2D(h,2,2,"test",x,0,Options);
+  //Print options: range (no uf/of), all (with uf/of)
+  h->Print("all");
+  hh->Print("all");
+}

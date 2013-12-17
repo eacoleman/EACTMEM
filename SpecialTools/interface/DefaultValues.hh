@@ -4,6 +4,8 @@
 //ROOT libraries
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TError.h"
+#include "TMath.h"
 #include "TList.h"
 #include "TString.h"
 #include "TObject.h"
@@ -118,6 +120,14 @@ public:
    static TObject* getConfigTObject(TString histoFile, TString hname, TString newName);
    static TH1* getConfigTH1(TString histoFile, TString hname, TString newName);
    static TH2* getConfigTH2(TString histoFile, TString hname, TString newName);
+
+   // Returns a rebinned TH2 object
+   // There is still a problem with rebinning the underflow and overflow bins
+   // Everything else works though
+   TH2* Rebin2D(TH2* old, Int_t nxgroup, Int_t nygroup, const char*newname, const Double_t *xbins, const Double_t *ybins, TString Options = "");
+
+   // Tests the Rebin2D function
+   void Rebin2DTest(TString Options = "");
 
 };
  
