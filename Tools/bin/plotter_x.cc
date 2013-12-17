@@ -174,6 +174,8 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
       plots[leptonCat]["DeltaPhi_METJ1"]->Fill(ntuple->jLV[0].DeltaPhi(ntuple->METLV[0]),weight);
       plots[leptonCat]["DeltaPhi_LMET"]->Fill(ntuple->lLV[0].DeltaPhi(ntuple->METLV[0]),weight);
       plots[leptonCat]["npv"]->Fill(ntuple->vLV[0].npv,weight);
+      plots[leptonCat]["IsolationEnergyVsPt"]->Fill(ntuple->lLV[0].Pt(),ntuple->lLV[0].lpfIso*ntuple->lLV[0].Pt());
+      plots[leptonCat]["IsolationEnergyVsPtCoshEta"]->Fill(ntuple->lLV[0].Pt()*TMath::CosH(ntuple->lLV[0].Eta()),ntuple->lLV[0].lpfIso*ntuple->lLV[0].Pt());
 
       for (unsigned int j=0; j<ntuple->jLV.size() && j<31; j++) {
          //cout << "sfsg2.1\t" << string(Form("JetEta_%luJets",ntuple->jLV.size())) << endl;
@@ -317,7 +319,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
         return false;
 
      if (controlRegion == DEFS::FlatMVAEleID) {
-        if (ntuple->lLV[0].emvaTrig < 0.95) {
+        if (ntuple->lLV[0].emvaTrig > 0.95 || ntuple->lLV[0].emvaTrig < 0.05) {
           return false;
         }
      }
@@ -531,7 +533,7 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
       weight *= QCDWeightFunc->GetBinContent(QCDWeightFunc->FindBin(fabs(leptonEta)));
    }
 
-   if (PtWeight && !auxName.Contains("DATA")) {
+   if (PtWeight && !auxName.Contains("DATA") && auxName.Contains("QCD")) {
       double leptonPt = ntuple->lLV[0].Pt();
       weight *= PtWeightFunc->GetBinContent(PtWeightFunc->FindBin(leptonPt));
    }
@@ -601,12 +603,12 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
 
    }// QCD weight
 
-   if (PtWeight && !auxName.Contains("DATA")) {
+   if (PtWeight && !auxName.Contains("DATA") && auxName.Contains("QCD")) {
       TString filename = "PtWeight_";
       filename += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
       TString hname;
       if (auxName.Contains("QCD")) {
-        hname = "QCDWeight_";
+        hname = "weights/QCDWeight_";
       } 
       else{
         hname = "MCWeight_";
@@ -1834,6 +1836,30 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(0,1.3);
    a->logxy = make_pair(false,false);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "IsolationEnergyVsPt";
+   a->templateHisto = new TH2D(name + lepStr, name,500,0,500,500,0,500);
+   a->axisTitles.push_back("p_{T}^{Lepton} [GeV/c]");
+   a->axisTitles.push_back("Isolation Energy [GeV]");
+   a->range = make_pair(0,500);
+   a->normToData = norm_data;
+   a->stacked = true; a->leptonCat = DEFS::electron;
+   a->overlaySignalName = signalName;
+   a->overlaySignalFactor = signalFactor;
+   plots[leptonCat][string(name)] = a;
+
+   a = new FormattedPlot;
+   name = "IsolationEnergyVsPtCoshEta";
+   a->templateHisto = new TH2D(name + lepStr, name,1000,0,1000,500,0,500);
+   a->axisTitles.push_back("p_{T} x cosh(#eta) [GeV]");
+   a->axisTitles.push_back("Isolation Energy [GeV]");
+   a->range = make_pair(0,1000);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
    a->overlaySignalName = signalName;
