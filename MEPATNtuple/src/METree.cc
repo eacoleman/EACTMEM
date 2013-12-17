@@ -251,61 +251,6 @@ const ProbStat& ProbStat::operator=(const ProbStat& rhs){
   return *this;
 }
 
-/*
-//------------------------------------------------------------------------------
-void ProbStat::addtMEProfile(const TProfile3D& stat)
-{
-  new((*tME)[tME_tSize]) TProfile3D(stat);
-  tME_tSize++;
-
-}
-void ProbStat::addtTFProfile(const TProfile3D& stat)
-{
-  new((*tTF)[tTF_tSize++]) TProfile3D(stat);
- tTF_tSize++;
-}
-void ProbStat::addtPDFProfile(const TProfile3D& stat)
-{
-  new((*tPDF)[tPDF_tSize++]) TProfile3D(stat);
-  tPDF_tSize++;
-}
-void ProbStat::addtPSProfile(const TProfile3D& stat)
-{
-  new((*tPS)[tPS_tSize++]) TProfile3D(stat);
-  tPS_tSize++;
-}
-
-//------------------------------------------------------------------------------
-const TProfile3D* ProbStat::getMEProfile(unsigned index) const
-{
-  if (index >= static_cast<unsigned>(tME->GetSize()))
-    throw std::runtime_error("Invalid index for getMEProfile");
-
-  return dynamic_cast<TProfile3D*>((*tME)[index]);
-}
-const TProfile3D* ProbStat::getTFProfile(unsigned index) const
-{
-  if (index >= static_cast<unsigned>(tTF->GetSize()))
-    throw std::runtime_error("Invalid index for getTFProfile");
-
-  return dynamic_cast<TProfile3D*>((*tTF)[index]);
-}
-const TProfile3D* ProbStat::getPDFProfile(unsigned index) const
-{
-  if (index >= static_cast<unsigned>(tPDF->GetSize()))
-    throw std::runtime_error("Invalid index for getPDFProfile");
-
-  return dynamic_cast<TProfile3D*>((*tPDF)[index]);
-}
-const TProfile3D* ProbStat::getPSProfile(unsigned index) const
-{
-  if (index >= static_cast<unsigned>(tPS->GetSize()))
-    throw std::runtime_error("Invalid index for getPSProfile");
-
-  return dynamic_cast<TProfile3D*>((*tPS)[index]);
-}
-*/
-
 //------------------------------------------------------------------------------
 ProbStat::~ProbStat(){
 
