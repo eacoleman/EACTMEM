@@ -4,8 +4,8 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
-#include "/uscms/home/jdg6y/nobackup/CMSSW_5_3_2_patch4/src/SHyFT/TemplateMakers/bin/AngularVars.h"
-#include "/uscms/home/jdg6y/nobackup/CMSSW_5_3_2_patch4/src/SHyFT/TemplateMakers/bin/KinFit.h"
+#include "SHyFT/TemplateMakers/bin/AngularVars.h"
+#include "SHyFT/TemplateMakers/bin/KinFit.h"
 
 // ROOT libraries
 #include "TROOT.h"

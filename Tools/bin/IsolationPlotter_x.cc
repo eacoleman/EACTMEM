@@ -1239,7 +1239,7 @@ int main(int argc,char**argv)
          //cout << "Title = " << hRicardoMethod[2]->GetTitle() << endl;
          //cout << "Entries = " << hRicardoMethod[2]->GetEntries() << endl;
          //hRicardoMethod[2]->Scale(2.79399600000000000e+06/18393090.0);
-         hRicardoMethod[2]->Scale((19148*41440.805)/18393090.0);
+         hRicardoMethod[2]->Scale((19148.0*41440.805)/18393090.0);
          hRicardoMethod[3]->Add(hRicardoMethod[2],-1.0);
 
          hRicardoMethod[3]->Draw("colz");
