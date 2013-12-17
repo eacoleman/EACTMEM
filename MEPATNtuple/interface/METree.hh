@@ -5,10 +5,12 @@
 
 #include <TObject.h>
 #include <TClonesArray.h>
+#include <TProfile3D.h>
 
 #include <string>
 #include <map>
 #include <utility>
+#include <vector>
 
 typedef std::map<double, int> indexMap1;
 typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
@@ -23,6 +25,18 @@ public:
   const ProbStat& operator=(const ProbStat&);
   ~ProbStat();
 
+/*
+  void addtMEProfile(const TProfile3D& stat);
+  void addtTFProfile(const TProfile3D& stat);
+  void addtPDFProfile(const TProfile3D& stat);
+  void addtPSProfile(const TProfile3D& stat);
+
+  const TProfile3D* getMEProfile(unsigned index)const;
+  const TProfile3D* getTFProfile(unsigned index)const;
+  const TProfile3D* getPDFProfile(unsigned index)const;
+  const TProfile3D* getPSProfile(unsigned index)const;
+*/
+  
   // The Matrix Element whose results are contained here
   DEFS::EP::Type tmeType;
 
