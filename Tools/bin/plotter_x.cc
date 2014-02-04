@@ -148,7 +148,6 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
                                                                    ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]), 
                                                                    (ntuple->lLV[0].lQ)*weight);
       }
-
       plots[leptonCat]["LeptPt"]->Fill(ntuple->lLV[0].Pt(),weight);
       plots[leptonCat]["LeptEta"]->Fill(ntuple->lLV[0].Eta(),weight);
       plots[leptonCat]["LeptPhi"]->Fill(ntuple->lLV[0].Phi(),weight);
@@ -231,6 +230,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
          //plots[leptonCat]["lpt_lpt_j1pt_j1pt_j2pt_j2pt"]->Fill(coord,1.0,weight);
          plots[leptonCat]["Mjj_Mjj_Mt_MET_DeltaR_DeltaR"]->Fill(coord,1.0,weight);
       }
+
    }
 
    if (metree) {
@@ -440,31 +440,42 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
    else if (controlRegion == DEFS::Diboson){
       // Diboson analysis cuts
       TLorentzVector mt(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(),ntuple->lLV[0].Py()+ntuple->METLV[0].Py(),0,ntuple->lLV[0].Et()+ntuple->METLV[0].Et());
-      double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Et(), 2) - pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
+      double wmt = sqrt(pow(ntuple->lLV[0].Et()+ntuple->METLV[0].Pt(), 2) - 
+                        pow(ntuple->lLV[0].Px()+ntuple->METLV[0].Px(), 2) - 
+                        pow(ntuple->lLV[0].Py()+ntuple->METLV[0].Py(), 2));
 
-      if (ntuple->lLV[0].leptonCat == DEFS::muon)
+      if (ntuple->lLV[0].leptonCat == DEFS::muon) {
          if ((ntuple->lLV[0].Pt()) <= 25.0                                  ||
              (ntuple->METLV[0].Pt()) <= 25.0                                ||
-             (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+             (ntuple->jLV[0].Pt()) <= 40.0                                  ||
              (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+             (ntuple->jLV[2].Pt()) > 30.0                                   ||
              (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
-             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
-             (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
-             (mt.M()) <= 30.0                                               ||
-             wmt <= 50.0                                                     )
+             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 70.0                 ||
+             (TMath::Abs(ntuple->METLV[0].DeltaPhi(ntuple->jLV[0]))) <= 0.4 ||
+             //(mt.M()) <= 30.0                                               ||
+             (ntuple->lLV[0]+ntuple->METLV[0]).Pt() >= 200                  ||
+             ntuple->lLV.size() > 1                                         ||
+             wmt <= 30.0                                                     ) {
             return false;
-  
-      if (ntuple->lLV[0].leptonCat == DEFS::electron) 
-         if ((ntuple->lLV[0].Pt()) <= 35.0                                  ||
-             (ntuple->METLV[0].Pt()) <= 30.0                                ||
-             (ntuple->jLV[0].Pt()) <= 35.0                                  ||
+         }
+      }
+      if (ntuple->lLV[0].leptonCat == DEFS::electron) {
+         if ((ntuple->lLV[0].Pt()) <= 30.0                                  ||
+             (ntuple->METLV[0].Pt()) <= 25.0                                ||
+             (ntuple->jLV[0].Pt()) <= 40.0                                  ||
              (ntuple->jLV[1].Pt()) <= 35.0                                  ||
+             (ntuple->jLV[2].Pt()) > 30.0                                   ||
              (TMath::Abs(ntuple->jLV[0].Eta()-ntuple->jLV[1].Eta())) >= 1.5 || 
-             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 20.0                 ||
-             (ntuple->METLV[0].DeltaPhi(ntuple->jLV[0])) <= 0.4             ||
-             (mt.M()) <= 30.0                                               ||
-             wmt <= 50.0                                                     )
+             ((ntuple->jLV[0]+ntuple->jLV[1]).Pt()) <= 70.0                 ||
+             (TMath::Abs(ntuple->METLV[0].DeltaPhi(ntuple->jLV[0]))) <= 0.4 ||
+             //(mt.M()) <= 30.0                                               ||
+             (ntuple->lLV[0]+ntuple->METLV[0]).Pt() >= 200                  ||
+             ntuple->lLV.size() > 1                                         ||                       
+             wmt <= 30.0                                                     ) {
             return false;
+         }
+      }
    }
    else if (controlRegion == DEFS::all)
       return false;
@@ -1182,9 +1193,9 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    
    a = new FormattedPlot;
    name = "LeptPt";
-   a->templateHisto = new TH1D(name + lepStr, name , 1000,0,500);
+   a->templateHisto = new TH1D(name + lepStr, name , 250,0,500);
    a->axisTitles.push_back("p_{T}^{lepton} [GeV]");
-   a->axisTitles.push_back("Number of Events / 0.5 GeV");
+   a->axisTitles.push_back("Number of Events / 2 GeV");
    a->range = make_pair(20.,150.);
    a->normToData = norm_data;
    a->stacked = true; a->leptonCat = DEFS::electron;
@@ -1232,7 +1243,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
 
    a = new FormattedPlot;
    name = "MET";
-   a->templateHisto = new TH1D(name + lepStr, name,1000,0,500);
+   a->templateHisto = new TH1D(name + lepStr, name,100,0,500);
    a->axisTitles.push_back("Missing E_{T} [GeV]");
    a->axisTitles.push_back("Number of Events / 5 GeV");
    a->range = make_pair(30.,150.);
@@ -1296,7 +1307,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    
    a = new FormattedPlot;
    name = "WmT";
-   a->templateHisto = new TH1D(name + lepStr, name,1000,0,500);
+   a->templateHisto = new TH1D(name + lepStr, name,100,0,500);
    a->axisTitles.push_back("M_{T}^{W} [GeV]");
    a->axisTitles.push_back("Number of Events / 5 GeV");
    a->range = make_pair(0.,150.);

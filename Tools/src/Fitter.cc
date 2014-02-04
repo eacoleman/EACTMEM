@@ -163,7 +163,7 @@ void Fitter::writeHistograms()
                //histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched").c_str()));
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElFULL_electron_clone").c_str()));
             else if (leptonName == "muon")
-               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched").c_str()));
+               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched_clone").c_str()));
             else
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD").c_str()));
          }
@@ -171,7 +171,7 @@ void Fitter::writeHistograms()
            if(leptonName == "electron")
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_electron_clone").c_str()));
             else if (leptonName == "muon")
-               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_muon").c_str()));
+               histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets_muon_clone").c_str()));
             else
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str()));
          }
