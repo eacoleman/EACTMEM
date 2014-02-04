@@ -33,14 +33,20 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
 
   nJets = rhs.nJets;
 
+  //delete [] bProb;
   bProb = new Double_t[nJets]; //[ntag][nJets]
   
-  for (unsigned i = 0; i < nEventProb; ++i)
+  for (unsigned i = 0; i < nEventProb; ++i) {
     eventProb[i] = rhs.eventProb[i];
+    eventMaxProb[i] = rhs.eventMaxProb[i];
+  }
     
   
   for (int i = 0; i < nJets; ++i)
     bProb[i] = rhs.bProb[i];
+
+  for (int i = 0; i< 100; ++i)
+    eventProbMVA[i] = rhs.eventProbMVA[i];
 
   weight = rhs.weight;
   epd1tag = rhs.epd1tag;
@@ -49,6 +55,31 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
   epd2tagSchan = rhs.epd2tagSchan;
   epd1tagTchan = rhs.epd1tagTchan;
   epd2tagTchan = rhs.epd2tagTchan;
+  epd0tagWWandWZ = rhs.epd0tagWWandWZ;
+  epd1tagWWandWZ = rhs.epd1tagWWandWZ;
+  epd2tagWWandWZ = rhs.epd2tagWWandWZ;
+
+  for (unsigned i=0; i<nWHmasses; i++) {
+    epd1tagWH[i] = rhs.epd1tagWH[i];
+    epd2tagWH[i] = rhs.epd2tagWH[i];
+  }
+ 
+  for (unsigned i=0; i<nHWWmasses; i++) {
+    epd1tagHWW[i] = rhs.epd1tagHWW[i];
+    epd2tagHWW[i] = rhs.epd2tagHWW[i];
+  }
+
+  for (unsigned i=0; i<nHiggsMasses; i++) {
+    absorbError[i] = rhs.absorbError[i];
+    epdPretagHiggs[i] = rhs.epdPretagHiggs[i];
+    epd1tagHiggs[i] = rhs.epd1tagHiggs[i];
+    epd2tagHiggs[i] = rhs.epd2tagHiggs[i];
+  }
+
+  MjjMVA = rhs.MjjMVA;
+  size = rhs.size;
+  run = rhs.run;
+  event = rhs.event;
 }
 
 MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
@@ -60,11 +91,16 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
    delete [] bProb;
    bProb = new Double_t[nJets];
 
-   for (unsigned i = 0; i < nEventProb; ++i)
+   for (unsigned i = 0; i < nEventProb; ++i) {
      eventProb[i] = rhs.eventProb[i];
+     eventMaxProb[i] = rhs.eventMaxProb[i];
+   }
 
    for (int i = 0; i < nJets; ++i)
-     bProb[i] = rhs.bProb[i];   
+     bProb[i] = rhs.bProb[i];
+
+   for (int i = 0; i< 100; ++i)
+    eventProbMVA[i] = rhs.eventProbMVA[i];  
 
    weight = rhs.weight;
    epd1tag = rhs.epd1tag;
@@ -73,6 +109,31 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
    epd2tagSchan = rhs.epd2tagSchan;
    epd1tagTchan = rhs.epd1tagTchan;
    epd2tagTchan = rhs.epd2tagTchan;
+   epd0tagWWandWZ = rhs.epd0tagWWandWZ;
+   epd1tagWWandWZ = rhs.epd1tagWWandWZ;
+   epd2tagWWandWZ = rhs.epd2tagWWandWZ;
+
+   for (unsigned i=0; i<nWHmasses; i++) {
+     epd1tagWH[i] = rhs.epd1tagWH[i];
+     epd2tagWH[i] = rhs.epd2tagWH[i];
+   }
+ 
+   for (unsigned i=0; i<nHWWmasses; i++) {
+     epd1tagHWW[i] = rhs.epd1tagHWW[i];
+     epd2tagHWW[i] = rhs.epd2tagHWW[i];
+   }
+
+   for (unsigned i=0; i<nHiggsMasses; i++) {
+     absorbError[i] = rhs.absorbError[i];
+     epdPretagHiggs[i] = rhs.epdPretagHiggs[i];
+     epd1tagHiggs[i] = rhs.epd1tagHiggs[i];
+     epd2tagHiggs[i] = rhs.epd2tagHiggs[i];
+   }
+
+   MjjMVA = rhs.MjjMVA;
+   size = rhs.size;
+   run = rhs.run;
+   event = rhs.event;
 
    return *this;
 }
@@ -83,23 +144,28 @@ MicroNtuple::~MicroNtuple()
   // delete bProb right here, however the destructor of MicroNtuple 
   // seems to be called by ROOT when using TTreeFormula even though
   // the constructor was never called. Another ROOT mistery...
-  //if (bProb)
-  //delete [] bProb;
+  if (bProb)
+    delete [] bProb;
 }
 
 
 
 void MicroNtuple::clear()
 {
-  for (unsigned i = 0; i < nEventProb; ++i)
+  for (unsigned i = 0; i < nEventProb; ++i) {
     eventProb[i] = 0;
+    eventMaxProb[i] = 0;
+  }
   
 
   delete [] bProb;
   bProb = new Double_t[nJets];
   for (int i = 0; i < nJets; ++i)
-    bProb[i] = 0.;   
+    bProb[i] = 0.;
   
+  for (int i = 0; i < 100; i++)
+    eventProbMVA[i] = 0.;
+
   weight  = 0;
   epd1tag = 0;
   epd2tag = 0;
@@ -107,8 +173,33 @@ void MicroNtuple::clear()
   epd2tagSchan = 0;
   epd1tagTchan = 0;
   epd2tagTchan = 0;
+  epdPretagWWandWZ = 0;
+  epd0tagWWandWZ = 0;
+  epd1tagWWandWZ = 0;
+  epd2tagWWandWZ = 0;
+
+  for (unsigned i=0; i<nWHmasses; i++) {
+    epd1tagWH[i] = 0.;
+    epd2tagWH[i] = 0.;
+  }
+ 
+  for (unsigned i=0; i<nHWWmasses; i++) {
+    epd1tagHWW[i] = 0.;
+    epd2tagHWW[i] = 0.;
+  }
+
+  for (unsigned i=0; i<nHiggsMasses; i++) {
+    absorbError[i] = 0.;
+    epdPretagHiggs[i] = 0.;
+    epd1tagHiggs[i] = 0.;
+    epd2tagHiggs[i] = 0.;
+  }
 
   reader = 0;
+  MjjMVA = 0;
+  size = 0;
+  run = 0;
+  event = 0;
   
 }
 
