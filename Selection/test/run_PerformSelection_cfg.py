@@ -39,7 +39,7 @@ inputFiles = cms.untracked.vstring(
 #####################
 # WJets Monte Carlo #
 #####################
-#'/store/user/lnujj/PatTuples_8TeV_53X-v1/jdamgov/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_217_0_c0L.root',
+	'/store/user/lnujj/PatTuples_8TeV_53X-v1/jdamgov/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_217_0_c0L.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_518_1_QXj.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_517_1_N8m.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_510_1_87t.root'
@@ -54,9 +54,9 @@ inputFiles = cms.untracked.vstring(
 #############
 # Muon Data #
 #############
-	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_90_1_elI.root',
-	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_91_1_OmO.root',
-	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_WN4.root'
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_90_1_elI.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_91_1_OmO.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleMu/SQWaT_PAT_53X_2012C-24Aug2012-v1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_WN4.root'
 #################
 # Electron Data #
 #################
@@ -122,9 +122,9 @@ process.PS.noMVAIsoCut       = cms.bool(False)               # if true, turn off
 process.PS.doJER             = cms.bool(True)                # if true, JER corrections will be applied to all of the jets before passing selection
 process.PS.doMETPhi          = cms.bool(True)                # if true, the inherent METx and METy shifts will be corrected for using hard coded functions only needed before CMSSW_6_2_X
 
-process.PS.Data              = cms.bool(True)               # is the dataset from real data or Monte Carlo
-process.PS.MCpTrigger        = cms.bool(False)                # if true, only event that pass the trigger requirements will be saved
-process.PS.saveGenParticles  = cms.bool(False)                # save the generated particle information for hard scatter decays
+process.PS.Data              = cms.bool(False)               # is the dataset from real data or Monte Carlo
+process.PS.MCpTrigger        = cms.bool(True)                # if true, only event that pass the trigger requirements will be saved
+process.PS.saveGenParticles  = cms.bool(True)                # save the generated particle information for hard scatter decays
 process.PS.saveMETPhiPlots   = cms.bool(False)               # save the TH1D and TH2D plots that have to do with MET Phi Corrections.
 process.PS.noMETCut          = cms.bool(False)               # disregard the MET cut when storing the events
 process.PS.invertEID         = cms.bool(False)               # electrons which *fail* at least two of the EID requirements will be kept instead
