@@ -1,3 +1,4 @@
+<Flags CXXFLAGS="-O0 -g -DDEBUG" />
 <use   name="TAMUWW/SpecialTools"/>
 <use   name="TAMUWW/Tools"/>
 <use   name="TAMUWW/MEPATNtuple"/>
@@ -23,4 +24,5 @@
 <bin   name="EventNtupleToUVaNtuple_x"   file="EventNtupleToUVaNtuple_x.cc" />
 <bin   name="makeMicroNtuple_x"          file="makeMicroNtuple_x.cc" />
 <bin   name="SkimTPUDist_x"              file="SkimTPUDist_x.cc" />
+<bin   name="testClass_x"                file="testClass_x.cc" />
 <!--comment-->
