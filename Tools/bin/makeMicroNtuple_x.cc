@@ -15,11 +15,12 @@ using namespace std;
    if (!cl.parse(argc,argv)) return 0;
 
    vector<TString> inputPaths                = cl.getVector<TString> ("inputPaths",   "/uscms_data/d3/ilyao/Winter12to13ME8TeV/MEResults/rootOutput/");
-   TString         outputPath                = cl.getValue<TString>  ("outputPath", "/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples/");
-   int             largeProcessCase          = cl.getValue<int>      ("largeProcessCase",                                                          0);
+   TString         outputPath                = cl.getValue<TString>  ("outputPath",  "/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples/");
+   int             largeProcessCase          = cl.getValue<int>      ("largeProcessCase",                                                           0);
    //TString         smallProcessLabel         = cl.getValue<TString>  ("smallProcessLabel",                                                  "ggH170");
    vector<TString> processes                 = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
-   TString         mergeNewEventNtuple       = cl.getValue<TString>  ("mergeNewEventNtuple",                                                      "");
+   TString         mergeNewEventNtuple       = cl.getValue<TString>  ("mergeNewEventNtuple",                                                       "");
+   bool            saveMissingEvents         = cl.getValue<bool>     ("saveMissingEvents",                                                      false);
 
    if (!cl.check()) return 0;
    cl.print();
@@ -46,6 +47,8 @@ using namespace std;
       mnm = new MicroNtupleMaker(); 
       mnm->setEventNtuplePath(mergeNewEventNtuple);
       mnm->setProcess(processes[i]);
+      mnm->setOutputPath(outputPath);
+      mnm->setMissingEventsFlag(saveMissingEvents);
       mnm->createMicroNtuple(inputPaths[i],outputPath,largeProcessCase,processes[i]);
       delete mnm;
    }      
