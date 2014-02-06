@@ -55,6 +55,9 @@ public:
   // provide a virtual clone method to all the derived classes.
   virtual TableCellInt * clone() const { return new TableCellInt(*this);}
 
+  // return the stored value
+  int getValue();
+
   // the value stored in the cell
   int val;
 

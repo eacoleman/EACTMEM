@@ -729,6 +729,8 @@ TableCell* Table::createNewCell(string cellClass, string cellName){
     return new TableCellText(cellName);
   else if (cellClass.compare("TableCellVal")==0)
     return new TableCellVal(cellName);
+  else if (cellClass.compare("TableCellInt")==0)
+    return new TableCellInt(cellName);
   
   cout<<"ERROR Table::createNewCell does not know about cellClass="<<cellClass<<endl;
   return 0;

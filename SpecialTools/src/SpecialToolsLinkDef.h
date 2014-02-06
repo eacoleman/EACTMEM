@@ -2,6 +2,7 @@
 #include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcessMemory.hh"
 #include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/TableFormat.hh"
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
 #include "TAMUWW/SpecialTools/interface/TableCell.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
@@ -17,6 +18,7 @@
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
+#pragma link C++ class TableFormat+;
 #pragma link C++ class Value+;
 #pragma link C++ class Table+;
 #pragma link C++ class PhysicsProcess+;

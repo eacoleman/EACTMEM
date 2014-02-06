@@ -14,7 +14,8 @@
 #include <iomanip>
 #include <vector>
 #include <sstream>
-#include <cstdlib> // atof
+#include <cstdlib> // atof & atoi
+#include <algorithm>
 
 using std::cout;
 using std::endl;
@@ -24,7 +25,7 @@ using std::ostringstream;
 using std::setprecision;
 
 TableCellInt::TableCellInt(){
-  SetName("CellVal");
+  SetName("CellInt");
   val = 0;
 }
 
@@ -47,6 +48,7 @@ string TableCellInt::print(TableFormat format){
 bool TableCellInt::parseFromFile(string str, TableFormat format){
 
   vector<string> fields ;
+  str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
   fields = AuxFunctions::splitLineIntoWords(str," ");
   if (fields.size() == 1){
     val = std::atof(fields[0].c_str());
@@ -164,6 +166,15 @@ TableCellInt & TableCellInt::operator=(int rhs) const {
    TableCellInt res = *this;
    res = rhs;
    return res;
+}
+
+//----------------------------------------------------------------------------
+int TableCellInt::getValue() {
+  return val;
+
+  //ostringstream oss;
+  //oss<< val;
+  //return std::atoi(oss.str().c_str());
 }
 
 ClassImp(TableCellInt)
