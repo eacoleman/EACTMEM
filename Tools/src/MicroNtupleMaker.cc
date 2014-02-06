@@ -616,6 +616,7 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
 
 }// makeMicroNtuple
 
+/*
 void MicroNtupleMaker::writeMissingEventsFile(map<int,int> &missingME) {
    string filename = string(outputPath+"micro"+currentProcess+"_missingEvents.txt");
    cout << "\t\tWriting missing events file to " << filename << " ... ";
@@ -637,6 +638,55 @@ void MicroNtupleMaker::writeMissingEventsFile(map<int,int> &missingME) {
    else {
       cout << endl << "\t\tERROR::Could not open file " << filename << endl;
    }
+}//writeMissingEventsFile
+*/
+void MicroNtupleMaker::writeMissingEventsFile(map<int,int> &missingME) {
+   string filename = string(outputPath+"micro"+currentProcess+"_missingEvents.txt");
+   cout << "\t\tWriting missing events file to " << filename << " ... ";
+
+   Table* table = new Table("MissingEvents");
+   TableRow* tableRow;
+   TableCellInt* tableCellInt;
+   int value;
+   int counter = 0;
+
+   //for (Int_t index=0; index<missingME.size();index++) {
+   for (map<int,int>::iterator it=missingME.begin(); it!=missingME.end(); ++it) {
+      counter++;
+
+      std::string s;
+      std::stringstream ss;
+      ss << counter;
+      s = ss.str();
+      ss.str("");
+      ss << missingME.size();
+
+      tableRow = new TableRow(s);
+
+      for (Int_t col=0; col<2; col++) {
+         string title;
+         if (col==0)
+            title = string("Missing Index In New EventNtuple (" + ss.str() + " total)");
+         else
+            title = string("Missing Event Numbers (" + ss.str() + " total)");
+
+         tableCellInt = new TableCellInt(title);
+
+         if (col==0)
+            tableCellInt->val = it->first;
+         else
+            tableCellInt->val = it->second;
+
+         tableRow->addCellEntries(tableCellInt);
+      }
+      table->addRow(*tableRow);
+      delete tableRow;
+   }
+
+   table->printToFile(filename);
+
+   cout << "DONE" << endl;
+
 }//writeMissingEventsFile
 
 int MicroNtupleMaker::getIntLength(int i) {
