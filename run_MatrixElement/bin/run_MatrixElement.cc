@@ -50,9 +50,9 @@ using std::string;
 using std::vector;
 
 int main(int argc, char* argv[]){
-  if (argc != 9)
+  if (argc != 11)
    {
-     cerr << "Usage: ./run_MatrixElement <inputfile> <outputfile> <treename> [nEvents] [nSkip] [nPrescale] [useTDirectoryFile] <tdirectoryfile> \n";
+     cerr << "Usage: ./run_MatrixElement <inputfile> <outputfile> <treename> [nEvents] [nSkip] [nPrescale] [useTDirectoryFile] <tdirectoryfile> [useSpecificEvents] <specificEventsFile> \n";
      return 1;
    }
   
@@ -67,6 +67,11 @@ int main(int argc, char* argv[]){
     useTDirectoryFile = true;
   }
   string tdirectoryFilename(argv[8]);
+  bool useSpecificEvents = false;
+  if ( atoi(argv[9])==1 ) {
+    useSpecificEvents = true;
+  }
+  string specificEventsFile(argv[10]);
 
   
   cout << " ++++ Reading from " << inputFilename << " ++++\n"
@@ -329,6 +334,12 @@ int main(int argc, char* argv[]){
     job.addEventProb(**it, 3); // 3 means 3 jets
     
   }//for
+
+  // *****************************
+  // **** Set Specific Events ****
+  // *****************************
+  if (useSpecificEvents)
+    job.setAndLoadSpecificEventsFile(specificEventsFile);
 
   // ***************************
   // **** Command execution ****

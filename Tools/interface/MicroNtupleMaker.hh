@@ -30,6 +30,12 @@
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
+#include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/TableRow.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellText.hh"
+#include "TAMUWW/SpecialTools/interface/Value.hh"
 
 using namespace std;
 

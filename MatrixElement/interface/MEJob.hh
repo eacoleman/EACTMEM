@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <map>
 
 class TBenchmark;
 class TFile;
@@ -33,11 +34,16 @@ public:
 
   static void sm_peakFinder(const int*, const double[], int*, double[]);
 
+  void setAndLoadSpecificEventsFile(std::string specificEventsFile);
+  bool specificEventFound();
 
 private:
   EventFile& m_inputFile;
   TFile* m_outputFile;
   METree* m_output;
+
+  std::string specificEventsFile;
+  std::multimap<int, int> specificEventsMap;
 
   typedef std::vector<EventProb*> EventProbVec;
   typedef std::map<unsigned, EventProbVec> EventProbMap;

@@ -29,11 +29,15 @@
 #include "TAMUWW/MatrixElement/interface/PartonColl.hh"
 #include "TAMUWW/AuxFunctions/interface/AuxFunctions.hh"
 #include "TAMUWW/AuxFunctions/interface/AuxFunctionsRoot.hh"
+#include "TAMUWW/SpecialTools/interface/Table.hh"
+#include "TAMUWW/SpecialTools/interface/TableRow.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
 
 using std::endl;
 using std::cout;
 using std::string;
 using std::vector;
+using std::map;
 
 
 EventProb* MEJob::sm_eventProb(0);
@@ -90,10 +94,16 @@ void MEJob::loopOverEvents()
     
     m_output->clear();
     std::cout << "  Processing event " << counter++ << " with " << partons.getNJets() << " jets." << std::endl;
-    m_doEvent(partons);
+
+    if (specificEventsMap.size()==0 || (specificEventsMap.size()>0 && specificEventFound())) {
+      m_doEvent(partons);
     
-    outputTree->Fill();
-    outputTree->Write("", TObject::kOverwrite);
+      outputTree->Fill();
+      outputTree->Write("", TObject::kOverwrite);
+    }
+    else {
+      std::cout << "\t  Skipping event " << counter-1 << " because it is not in the specified events list." << std::endl;
+    }
   }
 
   delete outputTree;
@@ -443,4 +453,72 @@ void MEJob::sm_peakFinder(const int* nDim, const double bounds[], int* nPoints,
 
 }//sm_peakFinder
 
+//-----------------------------------------------------------------------------
+void MEJob::setAndLoadSpecificEventsFile(string specificEventsFile) {
+
+  Table table("SpecificEvents");
+  std::vector<TableRow> rows;
+  std::vector<TableCell*> rowCells;
+  int index = 0;
+  int event = 0;
+  if (!table.parseFromFile(specificEventsFile,"TableCellInt")) {
+    cout << "ERROR MEJob::setAndLoadSpecificEventsFile() cannot parse the specific events file "
+         << specificEventsFile << endl;
+    assert(table.parseFromFile(specificEventsFile,"TableCellInt"));
+  }
+
+  rows = table.getRows();
+
+  if(rows.size()==0) {
+    cout << "ERROR MEJob::setAndLoadSpecificEventsFile The table has 0 rows" << endl;
+    assert(rows.size()>0);
+  }
+
+  string indexColName = rows[0].getCellEntries()[0]->GetName();
+  string eventColName = rows[0].getCellEntries()[1]->GetName();
+
+  for (int irow=0; irow<table.getNumRows(); irow++) {
+    rowCells = rows[irow].getCellEntries();
+    if (rowCells.size()>2 || rowCells.size()<2) {
+      cout << "ERROR MEJob::setAndLoadSpecificEventsFile Table row has more/less than two columns" << endl;
+      assert(rowCells.size()==2);
+    }
+
+    if (table.getCellRowColumn(rows[irow].GetName(),indexColName))
+      index = ((TableCellInt*)table.getCellRowColumn(rows[irow].GetName(),indexColName))->getValue();
+    if (table.getCellRowColumn(rows[irow].GetName(),eventColName))
+      event = ((TableCellInt*)table.getCellRowColumn(rows[irow].GetName(),eventColName))->getValue();
+
+    if(specificEventsMap.find(event)!=specificEventsMap.end()) {
+      cout << "WARNING MEJob::setAndLoadSpecificEventsFile A duplicate entry was found in the specificEventsMap" << endl
+           << "Tree Index In Map = " << specificEventsMap.find(event)->second << "\tAdditional Tree Index = " << index << "\tEvent = " << event << endl;
+      specificEventsMap.insert(std::pair<int,int>(event,index));
+    }
+    else {
+      specificEventsMap.insert(std::pair<int,int>(event,index));
+    }
+  }
+
+  if( specificEventsMap.size() != (unsigned)table.getNumRows() ) {
+    cout << "ERROR MEJob::setAndLoadSpecificEventsFile The size of the map (" << specificEventsMap.size()
+         << ") does not equal the size of the table (" << table.getNumRows() << ")" << endl;
+    assert(specificEventsMap.size() == (unsigned)table.getNumRows());
+  }
+
+}//setAndLoadSpecificEventsFile
+
+//-----------------------------------------------------------------------------
+bool MEJob::specificEventFound() {
+  //cout << "\t Run = " << m_inputFile.getRunEvent().first << "\tEvent = " << m_inputFile.getRunEvent().second << endl;
+  std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> ret;
+  ret = specificEventsMap.equal_range(m_inputFile.getRunEvent().second);
+  for (std::multimap<int,int>::iterator it=ret.first; it!=ret.second; ++it) {
+    //cout << "\tEvent = " << it->first << "\tIndex = " << it->second << "\tcounter = " << m_inputFile.getCounter()-1 << endl;
+    if(unsigned(it->second)==m_inputFile.getCounter()-1) {
+      return true;
+    }
+  }
+
+  return false;
+}//specificEventFound
 

@@ -32,6 +32,8 @@ class EventFile
 
       virtual std::pair<int, int> getRunEvent() const = 0;
 
+      virtual const unsigned getCounter() const {return m_counter;}
+
       void setForceJets(unsigned value) {m_forcejets = value;}
 
    protected:
@@ -87,6 +89,8 @@ class RootEventFile : public EventFile
       virtual ~RootEventFile();
 
       virtual std::pair<int, int> getRunEvent() const = 0;
+
+      virtual const unsigned getCounter() const {return m_counter;}
 
    protected:
       virtual bool m_fillNextEvent(PartonColl& partons);
