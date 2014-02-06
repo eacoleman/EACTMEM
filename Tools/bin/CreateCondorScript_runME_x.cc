@@ -18,23 +18,25 @@ using namespace std;
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
 
-   TString         inputmode                 = cl.getValue<TString>  ("inputmode");
-   TString         scriptDir                 = cl.getValue<TString>  ("scriptDir");
-   TString         rootInputDir              = cl.getValue<TString>  ("rootInputDir");
-   int             nEventsPerJob             = cl.getValue<int>      ("nEventsPerJob");
-   const TString   globalRunMESuffix         = cl.getValue<TString>  ("globalRunMESuffix",            "");// Use "Wgg" when running over additional MEs, set to "" by default
-   bool            checkCompletedJobsInstead = cl.getValue<bool>     ("checkCompletedJobsInstead", false);
-   TString         completedOutputDir        = cl.getValue<TString>  ("completedOutputDir",         "./");
-   bool            createCompletionScripts   = cl.getValue<bool>     ("createCompletionScripts",   false);
-   bool            verbose                   = cl.getValue<bool>     ("verbose",                   false);
-   int             nMaxJobs                  = cl.getValue<int>      ("nMaxJobs",                     -1);
-   TString         filenameSuffix            = cl.getValue<TString>  ("filenameSuffix",          ".root");
-   bool            pbsScripts                = cl.getValue<bool>     ("pbsScripts",                false);
-   TString         pbsQueue                  = cl.getValue<TString>  ("pbsQueue",               "hepxrt");
-   TString         pbsWalltimeStr            = cl.getValue<TString>  ("pbsWalltimeStr",       "48:00:00");
-   TString         pbsUser                   = cl.getValue<TString>  ("pbsUser",                      "");
-   TString         TDirectoryFilename        = cl.getValue<TString>  ("TDirectoryFilename",         "PS");
-   vector<TString> processes                 = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
+   TString         inputmode                  = cl.getValue<TString>  ("inputmode");
+   TString         scriptDir                  = cl.getValue<TString>  ("scriptDir");
+   TString         rootInputDir               = cl.getValue<TString>  ("rootInputDir");
+   int             nEventsPerJob              = cl.getValue<int>      ("nEventsPerJob");
+   const TString   globalRunMESuffix          = cl.getValue<TString>  ("globalRunMESuffix",            "");// Use "Wgg" when running over additional MEs, set to "" by default
+   bool            checkCompletedJobsInstead  = cl.getValue<bool>     ("checkCompletedJobsInstead", false);
+   TString         completedOutputDir         = cl.getValue<TString>  ("completedOutputDir",         "./");
+   bool            createCompletionScripts    = cl.getValue<bool>     ("createCompletionScripts",   false);
+   bool            verbose                    = cl.getValue<bool>     ("verbose",                   false);
+   int             nMaxJobs                   = cl.getValue<int>      ("nMaxJobs",                     -1);
+   TString         filenameSuffix             = cl.getValue<TString>  ("filenameSuffix",          ".root");
+   bool            pbsScripts                 = cl.getValue<bool>     ("pbsScripts",                false);
+   TString         pbsQueue                   = cl.getValue<TString>  ("pbsQueue",               "hepxrt");
+   TString         pbsWalltimeStr             = cl.getValue<TString>  ("pbsWalltimeStr",       "48:00:00");
+   TString         pbsUser                    = cl.getValue<TString>  ("pbsUser",                      "");
+   TString         TDirectoryFilename         = cl.getValue<TString>  ("TDirectoryFilename",         "PS");
+   bool            useSpecificEvents          = cl.getValue<bool>     ("useSpecificEvents",         false);
+   TString         specificEventsFileLocation = cl.getValue<TString>  ("specificEventsFileLocation",  "1");
+   vector<TString> processes                  = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
 
    if (!cl.check()) return 0;
    cl.print();
@@ -66,7 +68,8 @@ using namespace std;
 
       TFile* infile;
       if(pbsScripts)
-         infile = new TFile(rootInputDir+processes[np]+"/"+rootinputBaseName+filenameSuffix);
+         infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
+         //infile = new TFile(rootInputDir+processes[np]+"/"+rootinputBaseName+filenameSuffix);
       else
          infile = new TFile(rootInputDir+rootinputBaseName+filenameSuffix);
       TTree* InTree;
@@ -107,6 +110,7 @@ using namespace std;
       ccs->setDisjointJobString();
       ccs->setGlobalRunMESuffix(globalRunMESuffix);
       ccs->setCompletedOutputDir(string(completedOutputDir));
+      ccs->setSpecificEventsFile(useSpecificEvents,specificEventsFileLocation);
       if ( !checkCompletedJobsInstead ) {
          if (pbsScripts)
             ccs->writePBSScripts(pbsQueue, pbsWalltimeStr, pbsUser);
@@ -141,6 +145,7 @@ using namespace std;
             ccs_completion->setDisjointJob(true);
             ccs_completion->setDisjointJobString(invalidFiles.first);
             ccs_completion->setGlobalRunMESuffix(globalRunMESuffix);
+            ccs_completion->setSpecificEventsFile(useSpecificEvents,specificEventsFileLocation);
             ccs->setCompletedOutputDir(string(completedOutputDir));
             if (pbsScripts)
                ccs_completion->writePBSScripts(pbsQueue, pbsWalltimeStr, pbsUser);

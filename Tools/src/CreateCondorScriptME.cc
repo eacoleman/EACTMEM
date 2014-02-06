@@ -264,7 +264,8 @@ void CreateCondorScriptME::writeCondorScripts() {
    outlauncher << "Requirements = Memory >= 199 &&OpSys == \"LINUX\"&& (Arch != \"DUMMY\" )&& Disk > 1000000" << endl;
    outlauncher << "Should_Transfer_Files = YES" << endl;
    outlauncher << "WhenToTransferOutput = ON_EXIT" << endl;
-   outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement" << globalRunMESuffix << ", cteq5l.tbl, cteq6l.tbl" << endl;
+   outlauncher << "Transfer_Input_Files = " << rootInputDir << rootInputName << ", run_MatrixElement" << globalRunMESuffix 
+               << ", cteq5l.tbl, cteq6l.tbl, " << specificEventsFileLocation << "/micro" << ScriptNameSuffix << "missingEvents.txt" << endl;
    outlauncher << "Output = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stdout" << endl;
    outlauncher << "Error = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).stderr" << endl;
    outlauncher << "Log = log/CondorME_" << ScriptNameSuffix << "_C$(Cluster)_$(Process).log" << endl;
@@ -315,7 +316,8 @@ void CreateCondorScriptME::writeCondorScripts() {
 
    //  outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$StartJob.root EvtTree " << NEvtsPerJob_C << " $StartEvt 1" << endl;
 
-   outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS" << endl;
+   outscript << "run_MatrixElement " << rootInputName << " " << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS "
+             << useSpecificEvents << " "  << specificEventsFileLocation << "/micro" << ScriptNameSuffix << "missingEvents.txt" << endl;
    outscript << "echo \"Finished\"" << endl;
 
    tempStr="chmod +x " + tempStr;
@@ -330,6 +332,17 @@ void CreateCondorScriptME::writePBSScripts(TString pbsQueue, TString pbsWalltime
    tempStr=ScriptNameSuffix+tempStr;
    tempStr="CondorLauncher_" + tempStr;
    tempStr=ScriptDir + ScriptNameSuffix + "/" + tempStr;
+
+   DIR* dp;
+   errno = 0;
+   dp = opendir((ScriptDir+ScriptNameSuffix+"/").Data());
+   if (dp) {
+      closedir(dp);
+   }
+   else {
+      mkdir((ScriptDir+ScriptNameSuffix+"/").Data(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+   }
+
    outlauncher.open(tempStr,ios::out);
    tempStr=".csh";
    tempStr=ScriptNameSuffix + tempStr;
@@ -349,7 +362,8 @@ void CreateCondorScriptME::writePBSScripts(TString pbsQueue, TString pbsWalltime
       outlauncher << "#PBS -t 0-" << nJobsTot << endl;
    }
 ///home/aperloff/MatrixElement/CMSSW_5_3_2_patch4/src/MECONDORJobs_Alexx/WJets_part2/CondorScript_WJets_part2.csh ${PBS_ARRAYID} 400 > /fdata/hepx/store/user/aperloff/ME532/log/CondorME_WJets_part2_${PBS_JOBID}.stdout
-   outlauncher << endl << tempStr << " ${PBS_ARRAYID} " << nEventsPerJob << " > " << completedOutputDir << "/log/" << ScriptNameSuffix << "/CondorME_" << ScriptNameSuffix << "_${PBS_JOBID}.stdout" << endl; // FIX ME 
+   outlauncher << endl << tempStr << " ${PBS_ARRAYID} " << nEventsPerJob << " > " << completedOutputDir << "/log/" << ScriptNameSuffix << "/CondorME_" 
+               << ScriptNameSuffix << "_${PBS_JOBID}.stdout" << endl; // FIX ME 
    outlauncher << endl << "exit 0" << endl;
 
 
@@ -369,7 +383,10 @@ void CreateCondorScriptME::writePBSScripts(TString pbsQueue, TString pbsWalltime
    outscript << "echo \"TheJob=$TheJob\"" << endl;
    outscript << "@ StartEvt = $TheJob * $NEvtsPerJob" << endl;
    outscript << "echo \"StartEvt=$StartEvt\"" << endl;
-   outscript << "./run_MatrixElement " << completedOutputDir << "/" << ScriptNameSuffix << "/" << rootInputName << " " << completedOutputDir << "/" << ScriptNameSuffix << "/" << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS" << endl;
+   //outscript << "./run_MatrixElement " << completedOutputDir << "/" << ScriptNameSuffix << "/" << rootInputName << " " << completedOutputDir << "/" 
+   outscript << "./run_MatrixElement " << rootInputDir << "/" << rootInputName << " " << completedOutputDir << "/" 
+             << ScriptNameSuffix << "/" << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS " << useSpecificEvents << " "  
+             << specificEventsFileLocation << "/micro" << ScriptNameSuffix << "missingEvents.txt" << endl;
    outscript << "echo \"Finished\"" << endl;
 
    tempStr="chmod +x " + tempStr;

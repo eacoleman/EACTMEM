@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <cerrno>
 #include <exception>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -60,6 +61,7 @@ public:
    void setRootInputName(TString rin) {rootInputName = rin;}
    void setScriptDir(TString sd) {ScriptDir = sd;}
    void setScriptNameSuffix(TString sns = "") {ScriptNameSuffix = sns;}
+   void setSpecificEventsFile(bool use = false, TString sefl = "1") {useSpecificEvents = use; specificEventsFileLocation = sefl;}
    void setTotalEvents(int et = -1) {nEventsTot = -1;}
    void setTotalJobs(int nj = -1) {nJobsTot = nj;}
    void setTreeName(TString tn = "METree") {tree_name = tn;}
@@ -69,9 +71,9 @@ public:
 private:
    vector<TString> files;
    vector<int> all_files, good_files, bad_files, missing_files;
-   bool bad, createDisjointJobScript;
+   bool bad, createDisjointJobScript, useSpecificEvents;
    int nJobsTot, nEventsTot, counter, nEventsPerJob, firstJob;
-   TString ScriptDir, tree_name, ScriptNameSuffix, rootInputDir, rootInputName, OutputName, disjointJobsString, globalRunMESuffix;
+   TString ScriptDir, tree_name, ScriptNameSuffix, rootInputDir, rootInputName, OutputName, disjointJobsString, globalRunMESuffix, specificEventsFileLocation;
    string completedOutputDir;
 };
 
