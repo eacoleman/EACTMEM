@@ -370,11 +370,12 @@ void CreateCondorScriptME::writePBSScripts(TString pbsQueue, TString pbsWalltime
    /// Make the internal script
    outscript << "#! /bin/csh" << endl;
    outscript << "echo \"Starting\" " << endl;
-   outscript << "cd $HOME/MatrixElement/CMSSW_5_3_2_patch4/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
+   outscript << "cd $HOME/MatrixElement/gitty/CMSSW_5_3_2_patch4/src" << endl;//***SET DEPENDENT ON THE CMSSW RELEASE***
    outscript << "setenv SCRAM_ARCH slc5_amd64_gcc462" << endl;
    outscript << "pwd" << endl;
    outscript << "eval `scram runtime -csh` " << endl;
-   outscript << "cd MECONDORJobs_" << pbsUser << endl;// FIX ME !!!
+   //outscript << "cd MECONDORJobs_" << pbsUser << endl;// FIX ME !!!
+   outscript << "cd /fdata/hepx/store/user/aperloff/ME532_Completion/" << endl;
    outscript << "@ JobNumber = $argv[1]" << endl;
    outscript << "echo \"JobNumber=$JobNumber\"" << endl;
    outscript << "@ NEvtsPerJob = $argv[2]" << endl;
@@ -386,7 +387,7 @@ void CreateCondorScriptME::writePBSScripts(TString pbsQueue, TString pbsWalltime
    //outscript << "./run_MatrixElement " << completedOutputDir << "/" << ScriptNameSuffix << "/" << rootInputName << " " << completedOutputDir << "/" 
    outscript << "./run_MatrixElement " << rootInputDir << "/" << rootInputName << " " << completedOutputDir << "/" 
              << ScriptNameSuffix << "/" << OutputName << "$TheJob.root jets2p $NEvtsPerJob $StartEvt 1 1 PS " << useSpecificEvents << " "  
-             << specificEventsFileLocation << "/micro" << ScriptNameSuffix << "missingEvents.txt" << endl;
+             << specificEventsFileLocation << "/micro" << ScriptNameSuffix << "_missingEvents.txt" << endl;
    outscript << "echo \"Finished\"" << endl;
 
    tempStr="chmod +x " + tempStr;
