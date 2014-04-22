@@ -305,7 +305,8 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    procs.push_back(DEFS::PhysicsProcess::TTbar);
    procs.push_back(DEFS::PhysicsProcess::WW);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL); // use to derive QCD scale factors
+   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
+   procs.push_back(DEFS::PhysicsProcess::QCD_MuFULL);
    //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    procs.push_back(DEFS::PhysicsProcess::ZJets);
@@ -313,24 +314,16 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::ggH125);
    procs.push_back(DEFS::PhysicsProcess::qqH125);
    procs.push_back(DEFS::PhysicsProcess::WH125);
-   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
-   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
-   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
-   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
-   //procs.push_back(DEFS::PhysicsProcess::WLight  );
-   //procs.push_back(DEFS::PhysicsProcess::Ztautau);
-   //procs.push_back(DEFS::PhysicsProcess::QCDMu);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
 
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
-      //procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
    
 
@@ -354,32 +347,20 @@ vector < PhysicsProcess * > DefaultValues::getProcessesTest(DEFS::JetBin jetBin,
    //procs.push_back(DEFS::PhysicsProcess::STopTW_T);
    //procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    //procs.push_back(DEFS::PhysicsProcess::TTbar);
-   //procs.push_back(DEFS::PhysicsProcess::TTbarLJ );
-   //procs.push_back(DEFS::PhysicsProcess::TTbarDil); 
-   //procs.push_back(DEFS::PhysicsProcess::Wbb     );
-   //procs.push_back(DEFS::PhysicsProcess::Wcc     );
-   //procs.push_back(DEFS::PhysicsProcess::WLight  );
    procs.push_back(DEFS::PhysicsProcess::WJets); 
-   procs.push_back(DEFS::PhysicsProcess::ZJets);
-   //procs.push_back(DEFS::PhysicsProcess::Ztautau);
-   //procs.push_back(DEFS::PhysicsProcess::QCDMu);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt30to80);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_Pt80to170);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE30to80);
-   //procs.push_back(DEFS::PhysicsProcess::QCDEl_BCtoE80to170);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::ZJets);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD250  );
    procs.push_back(DEFS::PhysicsProcess::WW);
    //procs.push_back(DEFS::PhysicsProcess::WZ);
    //procs.push_back(DEFS::PhysicsProcess::ZZ);
    procs.push_back(DEFS::PhysicsProcess::ggH125);
-   procs.push_back(DEFS::PhysicsProcess::qqH125);
+   //procs.push_back(DEFS::PhysicsProcess::qqH125);
    //procs.push_back(DEFS::PhysicsProcess::WH125);
    
    if (include_data) {
       procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
-      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+      //procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
 
    return getProcesses(procs, jetBin, tagcat, forPlots, DEFS::MicroNtuple);
@@ -478,12 +459,125 @@ double DefaultValues::getScaleFactor(TString channelName)
 }//getScaleFactor
 
 // ----------------------------------------------------------------------------
+pair<double,double> DefaultValues::getMaxEventProbAndError(int probStatIndex) {
+  Table table;
+  vector<double> eventProb;
+  vector<double> error;
+  vector<TableRow> tableRows;
+  int maxIndex=0;
+  std::stringstream ss;
+  ss << probStatIndex;
+  string rowName = ss.str();
+
+  table.parseFromFile(getConfigPath()+"MaxEventProbs.txt","TableCellMixed");
+  tableRows = table.getRows();
+  for(unsigned int irow=0; irow< tableRows.size(); irow++) {
+    if(string(tableRows[irow].GetName()).compare(rowName)==0) {
+      assert(table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"));
+      eventProb.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.value);
+      error.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.error);
+    }
+  }
+
+  if(eventProb.size()==0 || error.size()==0) {
+    cout << "WARNING::getMaxEventProbAndError::No row with name [probStatIndex] " << rowName << " found. " 
+         << "Returning -1 for the maximum tEventProb." << endl 
+         << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+         << "Please check channel names." << endl;
+    return make_pair(-1.0,-1.0);
+  }
+
+  for(unsigned int i=0; i<eventProb.size(); i++) {
+    if(eventProb[maxIndex] < eventProb[i])
+      maxIndex = i;
+  }
+
+  return make_pair(eventProb[maxIndex],error[maxIndex]);
+
+  /*
+  TableCell * cell = table.getCellRowColumn(rowName,"MaxEventProb");
+  if(cell){
+    eventProb = ((TableCellVal*)cell)->val.value;
+    error = ((TableCellVal*)cell)->val.error;
+    if (eventProb==0)
+      cout << "WARNING::getMaxEventProbAndError::The maximum tEventProb for " << rowName << " is 0.0 +/- 0.0" << endl;
+    return make_pair(eventProb,error);
+  } else{
+    cout << "WARNING::getMaxEventProbAndError::rowName " << rowName 
+   << " not recognized. Returning -1 for the maximum tEventProb." << endl 
+   << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+   << "Please check channel names." << endl;
+    return make_pair(-1.0,-1.0);
+  }
+  */
+}//getMaxEventProbAndError
+
+// ----------------------------------------------------------------------------
+pair<double,double> DefaultValues::getMaxEventProbAndError(DEFS::PhysicsProcessType ppType,
+                                                           string meType) {
+
+  Table table;
+  vector<double> eventProb;
+  vector<double> error;
+  vector<TableRow> tableRows;
+  int maxIndex=0;
+
+  table.parseFromFile(getConfigPath()+"MaxEventProbs.txt","TableCellMixed");
+  tableRows = table.getRows();
+  for(unsigned int irow=0; irow< tableRows.size(); irow++) {
+    assert(table.getCellRowColumn(tableRows[irow].GetName(),"MatrixElementType"));
+    if(ppType!=DEFS::PhysicsProcessType::UNKNOWN)
+      assert(table.getCellRowColumn(tableRows[irow].GetName(),"PhysicsProcessType"));
+    if(((TableCellText*)table.getCellRowColumn(tableRows[irow].GetName(),"MatrixElementType"))->text.compare(meType)==0 &&
+       ppType!=DEFS::PhysicsProcessType::UNKNOWN &&
+       ((TableCellText*)table.getCellRowColumn(tableRows[irow].GetName(),"PhysicsProcessType"))->text.compare(DEFS::PhysicsProcess::getTypeString(ppType))==0) {
+      assert(table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"));
+      eventProb.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.value);
+      error.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.error);
+    }
+    else if(((TableCellText*)table.getCellRowColumn(tableRows[irow].GetName(),"MatrixElementType"))->text.compare(meType)==0 &&
+       ppType==DEFS::PhysicsProcessType::UNKNOWN) {
+      assert(table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"));
+      eventProb.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.value);
+      error.push_back(((TableCellVal*)table.getCellRowColumn(tableRows[irow].GetName(),"MaxEventProb"))->val.error);
+    }
+  }
+
+  if(eventProb.size()==0 || error.size()==0) {
+    cout << "WARNING::getMaxEventProbAndError::No ppType and meType matches found. " 
+         << "Returning -1 for the maximum tEventProb." << endl 
+         << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+         << "Please check channel names." << endl;
+    return make_pair(-1.0,-1.0);
+  }
+
+  for(unsigned int i=0; i<eventProb.size(); i++) {
+    if(eventProb[maxIndex] < eventProb[i])
+      maxIndex = i;
+  }
+
+  return make_pair(eventProb[maxIndex],error[maxIndex]);
+
+}//getMaxEventProbAndError
+
+// ----------------------------------------------------------------------------
+pair<double,double> DefaultValues::getMaxEventProbAndError(string ppType, string meType) {
+  return getMaxEventProbAndError(DEFS::PhysicsProcess::getProcessType(ppType),meType);
+}//getMaxEventProbAndError
+
+// ----------------------------------------------------------------------------
+pair<double,double> DefaultValues::getMaxEventProbAndError(string meType) {
+
+  return getMaxEventProbAndError(DEFS::PhysicsProcessType::UNKNOWN,meType);
+}//getMaxEventProbAndError
+
+// ----------------------------------------------------------------------------
 int DefaultValues::vfind(vector<string> a, string b) {
+   vector<TString> a_TString;
    for (unsigned int i=0; i<a.size(); i++) {
-      if (TString(a[i]).CompareTo(TString(b))==0)
-         return i;
+      a_TString.push_back(TString(a[i]));
    }
-   return -1;
+   return vfind(a_TString, TString(b));
 }
 
 // ----------------------------------------------------------------------------

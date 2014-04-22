@@ -19,6 +19,7 @@
 #include <string>
 #include <utility>
 #include <assert.h>
+#include <sstream>
 
 
 //Our libraries
@@ -108,6 +109,19 @@ public:
 
    // Returns the scale factor for the given process
    static double getScaleFactor(TString channelName);
+
+   // Returns the maximum tEventProb for a given ME found in that MEs matching 
+   // MC sample (i.e. the WW ME in the WW MC sample).
+   //This is not a unique identifier. It will mix up STopT and STopS in STopT_T/STopT_Tbar and STopS_T/STopS_Tbar respectively.
+   //Takes the highest value.
+   static pair<double,double> getMaxEventProbAndError(int probStatIndex);
+   //Not unique. Will mix up WLg and WLgSub. Takes the highest value.
+   static pair<double,double> getMaxEventProbAndError(DEFS::PhysicsProcessType ppType, string meType);
+   //Alias for the previous member function so it can be used in CINT
+   static pair<double,double> getMaxEventProbAndError(string ppType, string meType);
+   //Not unique. Will mix up WLg/WLgSub from WJets, STopT from STopT_T and STopT_Tbar, and STopS from STopS_T and STopS_Tbar.
+   //Takes the highest value.
+   static pair<double,double> getMaxEventProbAndError(string meType);
 
    // Returns the index of the location of b within a, or -1 if b is not found in a
    static int vfind(vector<string> a, string b);
