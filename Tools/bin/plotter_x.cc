@@ -67,6 +67,7 @@ namespace UserFunctions
    TH2D* WJetsWeightFunc= 0;
    TF2 * WJetsWeightTF2 = 0;
    bool verbose; // adds or takes away cout statements when running
+   map<int,pair<double, double> > maxEventProbs;
    
    ////////////////////////////////////////////////////////////////////////////////
    //  User Functions
@@ -234,19 +235,35 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
    }
 
    if (metree) {
-      for (unsigned int tep=0; tep<MicroNtuple::nEventProb; tep++) {
+      //double norms[9] = {0.781996e-6,76.4008e-9,0.1939e-3,42.31735e-6,0.12688e-3,5.85109e-6,0.592615,0.66255e-9,0.208542e-9};
+      //TString normNames[9] = {"WW","WZ","WLg","WLgsub","Wgg","WLL","QCD","ggH125","WH125"};
+      for (int tep=0; tep<metree->getNProbStat(); tep++) {
          string name = UserFunctions::concatString("tEventProb",tep);
          //cout << name << " = " << metree->getProbStat(tep)->tEventProb << " (" << (Float_t*)(&metree->getProbStat(tep)->tEventProb)<< ")"<<endl;
-         plots[leptonCat][name]->Fill(TMath::Log10(metree->getProbStat(tep)->tEventProb),weight);
+         //cout << "sfsg1 tep=" << tep << endl;
+         if((int)maxEventProbs.size()!=metree->getNProbStat()) {
+            maxEventProbs[tep] = DefaultValues::getMaxEventProbAndError(tep);
+         }
+
+         if(maxEventProbs[tep].first>0) {
+            plots[leptonCat][name]->Fill(TMath::Log10(metree->getProbStat(tep)->tEventProb)-
+                                         TMath::Log10(maxEventProbs[tep].first),weight);
+         }
+         else {
+            plots[leptonCat][name]->Fill(TMath::Log10(metree->getProbStat(tep)->tEventProb),weight);
+         }
       }
 
-      double tEventProb0 = metree->getProbStat(0)->tEventProb;
-      double tEventProb1 = metree->getProbStat(1)->tEventProb;
-      double tEventProb3 = metree->getProbStat(3)->tEventProb;
-      double signal = (tEventProb0 / 0.8e-06) + (tEventProb1 / 0.1e-06);
-      double back   = tEventProb3 / 0.75e-03;
-      double epd    = signal /(signal+back);
-      plots[leptonCat]["epdPretagWWandWZ_RE"]->Fill(epd,weight);
+      if (metree->getNProbStat()>=3) {
+         double tEventProb0 = metree->getProbStat(0)->tEventProb;
+         double tEventProb1 = metree->getProbStat(1)->tEventProb;
+         double tEventProb3 = metree->getProbStat(3)->tEventProb;
+
+         double signal = (tEventProb0 / 0.8e-06) + (tEventProb1 / 0.1e-06);
+         double back   = tEventProb3 / 0.75e-03;
+         double epd    = signal /(signal+back);
+         plots[leptonCat]["epdPretagWWandWZ_RE"]->Fill(epd,weight);
+      }
    }
 
    if (mnt) {
@@ -258,7 +275,7 @@ void UserFunctions::fillPlots(MapOfPlots &  plots, TString processName, EventNtu
          //cout << "MVADiscriminator_electron = " << mnt->getMVAOutput(MVAMethods).front()["response"] << endl;
          //cout << "MVAProbability_electron = " << mnt->getMVAOutput(MVAMethods).front()["probability"] << endl;
          //cout << "weight = " << weight << endl;
-         mnt->setMjjMVA(ntuple->Mjj);
+         //mnt->setMjjMVA(ntuple->Mjj);
          plots[leptonCat]["MVADiscriminator"]->Fill(mnt->getMVAOutput(MVAMethods).front()["response"],weight);
          plots[leptonCat]["MVAProbability"]->Fill(mnt->getMVAOutput(MVAMethods).front()["probability"],weight);
       }
@@ -286,10 +303,12 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
 
    //MET Cut
    if ( ntuple->METLV[0].Pt() <= 25.0 )
+   //if ( ntuple->METLV[0].Pt() <= 35.0 )
       return false;
 
    // PFISO cut for FULL sample
-   if (proc->name.Contains("QCD") && ntuple->lLV[0].lpfIso < 0.3)
+   //if (proc->name.Contains("QCD") && (ntuple->lLV[0].lpfIso < 0.3 || ntuple->lLV[0].lpfIso > 2.0) )
+   if (proc->name.Contains("QCD") && (ntuple->lLV[0].lpfIso < 0.2 || ntuple->lLV[0].lpfIso > 2.0) )
      return false;
 
    //Implement FNAL cuts
@@ -304,6 +323,7 @@ bool UserFunctions::eventPassCuts(EventNtuple * ntuple, const PhysicsProcess* pr
    }
 
    // regardless of cut region cut on minimum lepton Pt 
+   //if(ntuple->lLV[0].leptonCat == DEFS::electron && ntuple->lLV[0].Pt() < 45)
    if(ntuple->lLV[0].leptonCat == DEFS::electron && ntuple->lLV[0].Pt() < 30)
      return false;
    
@@ -619,7 +639,8 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
       filename += DEFS::getLeptonCatString(UserFunctions::leptonCat)+".root";
       TString hname;
       if (auxName.Contains("QCD")) {
-        hname = "weights/QCDWeight_";
+        //hname = "weights/QCDWeight_";
+         hname = "QCDWeight_";
       } 
       else{
         hname = "MCWeight_";
@@ -1320,7 +1341,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    
    a = new FormattedPlot;
    name = "Jet1Pt";
-   a->templateHisto = new TH1D(name + lepStr, name,200,0,300);
+   a->templateHisto = new TH1D(name + lepStr, name,100,0,300);
    a->axisTitles.push_back("p_{T}^{jet_{1}} [GeV]");
    a->axisTitles.push_back("Number of Events / 5 GeV");
    a->range = make_pair(20.,200.);
@@ -1764,8 +1785,8 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
       a->templateHisto = new TH1D(name + lepStr, name,180,-45,0);
       a->axisTitles.push_back(xaxis);
       a->axisTitles.push_back("Number of Events");
-      if (tep==14)
-         a->range = make_pair(-25,0);
+      if(UserFunctions::maxEventProbs[tep].first>0)
+         a->range = make_pair(-13,0);
       else
          a->range = make_pair(-25,0);
       a->normToData = norm_data;
@@ -1801,7 +1822,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
 
    a = new FormattedPlot;
    name = "epdPretagWWandWZ";
-   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,10.0);
+   a->templateHisto = new TH1D(name + lepStr, name, 400,-10.0,10.0);
    a->axisTitles.push_back("-log10(epdPretagWWandWZ)");
    a->axisTitles.push_back("Number of Events");
    //a->range = make_pair(-7.0,0.0);
@@ -1815,7 +1836,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
 
    a = new FormattedPlot;
    name = "epdPretagHiggs125";
-   a->templateHisto = new TH1D(name + lepStr, name, 40,-10.0,10.0);
+   a->templateHisto = new TH1D(name + lepStr, name, 400,-10.0,10.0);
    a->axisTitles.push_back("-log10(epdPretagHiggs125)");
    a->axisTitles.push_back("Number of Events");
    //a->range = make_pair(-7.0,0.0);
