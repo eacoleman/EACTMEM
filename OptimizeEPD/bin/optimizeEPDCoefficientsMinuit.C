@@ -22,10 +22,11 @@
 
 //Other libraries
 #include "TAMUWW/OptimizeEPD/interface/PhysicsProcessForOpt.hh"
+#include "TAMUWW/OptimizeEPD/interface/EPDOptimizer.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/FigureOfMerit.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
-#include "TAMUWW/OptimizeEPD/interface/EPDOptimizer.hh"
+#include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 
 
 
@@ -85,10 +86,27 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
 }//loadProcessesIntoMemory
 
 
-int main(){
+int main(int argc,char**argv){
+  //
+  // evaluate command-line / configuration file options
+  //
+  CommandLine cl;
+  if (!cl.parse(argc,argv)) return 0;
+  string          ofilename        = cl.getValue<string>       ("ofilename",        "EPDCoefficients.txt");
+  string          lepCat           = cl.getValue<string>       ("lep",              "both");
+  DEFS::LeptonCat leptonCat        = DEFS::getLeptonCat(lepCat);
+  string          jetBinS          = cl.getValue<string>       ("jetBin",           "jets2");
+  DEFS::JetBin    jetBin           = DEFS::getJetBin(jetBinS);
+  string          tagcatS          = cl.getValue<string>       ("tagcat",           "pretag");
+  DEFS::TagCat    tagcat           = DEFS::getTagCat(tagcatS);
+  string          anaTypeS         = cl.getValue<string>       ("anaType",          "HiggsAnalysis");
+  DEFS::Ana::Type anaType          = DEFS::Ana::getAnaType(anaTypeS);
+
+  if (!cl.check()) return 0;
+  cl.print();
 
   // Select the analysis type, only to report to the screen...
-  DEFS::Ana::Type anaType = DEFS::Ana::HiggsAnalysis;
+  //DEFS::Ana::Type anaType = DEFS::Ana::HiggsAnalysis;
 
   cout<<endl;
   cout<<"----------------------------------------------"<<endl;
@@ -97,10 +115,10 @@ int main(){
 
 
   // jetbin we are optimizing over
-  DEFS::JetBin jetBin = DEFS::jets2;
+  //DEFS::JetBin jetBin = DEFS::jets2;
 
   // our category is pretag
-  DEFS::TagCat tagcat = DEFS::TagCat::pretag;
+  //DEFS::TagCat tagcat = DEFS::TagCat::pretag;
 
   // load all the processes into memory
   vector<PhysicsProcessForOpt*>  processes  = loadProcessesIntoMemory(anaType, jetBin, tagcat);
@@ -126,7 +144,7 @@ int main(){
   //     coefficients to the output file
   // - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Create the outfile; no need to close it as it will be destructed automatically.
-  ofstream outFile("EPDCoefficients.txt");
+  ofstream outFile(ofilename);
 
   // Print Instructions
   outFile <<" You can copy and paste from this to MicroNtuple.cc"<<endl;

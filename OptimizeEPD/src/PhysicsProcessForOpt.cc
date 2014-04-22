@@ -108,7 +108,8 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
       // Get the useful information
       int    columns =  m_treeRows[ro].data.size();
 
-      double bProb[2];
+      //double bProb[2];
+      vector<double> bProb(2,0.0);
       bProb[0] = 0.5;
       bProb[1] = 0.5;
 
@@ -123,9 +124,8 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
       ProbsForEPD probs = MicroNtuple::getProbsForEPD(meProbs, coeffs, bProb, tagcat); 
       
       // Return the user epd
-      double epd = userEPDFunc(probs);
+      double epd = userEPDFunc(probs);   
 
-    
       if(TMath::IsNaN(epd) || std::isinf(epd)){
 
          //stores the failed event entry in the map, so it won't print it again

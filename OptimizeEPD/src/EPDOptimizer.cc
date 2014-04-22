@@ -37,6 +37,25 @@ EPDOptimizer::EPDOptimizer(DEFS::Ana::Type ana, DEFS::TagCat tc, std::vector<Phy
   debug = d;
 
   normEPDcoeffs = ProbsForEPD(
+          1./DefaultValues::getMaxEventProbAndError("WH").first,     // wh  125 GeV 
+          1./DefaultValues::getMaxEventProbAndError("HWW").first,    // hww 125 GeV   
+          1./DefaultValues::getMaxEventProbAndError("STopS").first,  // schan  
+          1./DefaultValues::getMaxEventProbAndError("STopT").first,  // tchan
+          0,                                                         // tchan2 
+          0,                                                         // tt     
+          1./DefaultValues::getMaxEventProbAndError("WLg").first,    // wlight  
+          1./DefaultValues::getMaxEventProbAndError("ZLight").first, // zlight 
+          1./DefaultValues::getMaxEventProbAndError("Wbb").first,    // wbb
+          0,                                                         // wc     
+          1./DefaultValues::getMaxEventProbAndError("Wgg").first,    // wgg    
+          1./DefaultValues::getMaxEventProbAndError("WW").first,     // ww     
+          1./DefaultValues::getMaxEventProbAndError("WZ").first,     // wz     
+          0,                                                         // zz     
+          1./DefaultValues::getMaxEventProbAndError("QCD").first     // qcd    
+          );
+
+/*
+  normEPDcoeffs = ProbsForEPD(
 			    1./0.35e-09, // wh    115 GeV 
 			    .1/0.50e-10, // hww    
 			    1./0.22e-07, // schan  
@@ -53,6 +72,7 @@ EPDOptimizer::EPDOptimizer(DEFS::Ana::Type ana, DEFS::TagCat tc, std::vector<Phy
 			    0,           // zz     
 			    1./0.1       // qcd    
 			    );
+  */
 
   // Create the templates based on EPDcoeffs for each template 
   int bins = 40;

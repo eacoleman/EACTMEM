@@ -2,7 +2,9 @@
 <use name="TAMUWW/SpecialTools"/>
 <use name="TAMUWW/MEPATNtuple"/>
 <use name="TAMUWW/OptimizeEPD"/>
-<bin file="optimizeEPDCoefficients.C"/>
+<use name="JetMETAnalysis/JetUtilities"/>
+<bin name="optimizeEPDCoefficients_x"       file="optimizeEPDCoefficients.C"/>
+<bin name="optimizeEPDCoefficientsMinuit_x" file="optimizeEPDCoefficientsMinuit.C"/>
 <export>
    <lib name="1"/>
    <bin name="1"/>

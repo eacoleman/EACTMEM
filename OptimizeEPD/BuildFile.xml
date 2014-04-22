@@ -5,6 +5,7 @@
 <use name="TAMUWW/AuxFunctions"/>
 <use name="TAMUWW/SpecialTools"/>
 <use name="TAMUWW/MEPATNtuple"/>
+<use name="JetMETAnalysis/JetUtilities"/>
 <export>
    <lib name="1"/>
 </export>

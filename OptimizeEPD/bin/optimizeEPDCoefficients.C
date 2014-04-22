@@ -24,6 +24,7 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/FigureOfMerit.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
+#include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 
 
 
@@ -138,20 +139,22 @@ double createHistoAndGetFOM( DEFS::Ana::Type anaType,
     // put the WW or WX processes into the signal histogram
      
     if ((anaType == DEFS::Ana::WWAnalysis && (thisProcName.EqualTo("WW") || thisProcName.EqualTo("WZ"))) || 
-        (anaType == DEFS::Ana::HiggsAnalysis && (thisProcName.Contains("WH") || thisProcName.Contains("ggH") || thisProcName.Contains("qqH")))){
+        (anaType == DEFS::Ana::HiggsAnalysis && (thisProcName.Contains("WH") || thisProcName.Contains("ggH") || thisProcName.Contains("qqH"))) ||
+        (anaType == DEFS::Ana::UNKNOWN && (thisProcName.Contains("WH") || thisProcName.Contains("ggH") || thisProcName.Contains("qqH")))){
 
       // signal contains
       processes[p]->fillNormEPDHisto(signalHisto, tagcat, mhiggs, coeffs);
 				       
       if(first_call)
-	cout<<"\tputting process "<<thisProcName<<" into signal."<<endl;
+        cout<<"\tputting process "<<thisProcName<<" into signal."<<endl;
 	  
-    }else{ 
+    }
+    else{ 
       // every other process is background
       processes[p]->fillNormEPDHisto(allBackHisto, tagcat, mhiggs, coeffs);
 
       if(first_call)
-	cout<<"\tputting process "<<thisProcName<<" into background."<<endl;	
+        cout<<"\tputting process "<<thisProcName<<" into background."<<endl;	
     }
       
   }// for processes
@@ -173,7 +176,7 @@ double createHistoAndGetFOM( DEFS::Ana::Type anaType,
 // most discriminant EPD.
 // -------------------------------------------------------------
 ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForOpt*> processes, 
-			      DEFS::TagCat tagcat, double & bestFigOfMerit){
+			      DEFS::TagCat tagcat, double & bestFigOfMerit, double mhiggs){
 
   // The returning set starts with all ones.
   ProbsForEPD bestEPDcoeffs(1);
@@ -182,6 +185,24 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
   ProbsForEPD EPDcoeffs;
   
   // The set used for the normalization
+  ProbsForEPD normEPDcoeffs(
+          1./DefaultValues::getMaxEventProbAndError("WH").first,     // wh  125 GeV 
+          1./DefaultValues::getMaxEventProbAndError("HWW").first,    // hww 125 GeV   
+          1./DefaultValues::getMaxEventProbAndError("STopS").first,  // schan  
+          1./DefaultValues::getMaxEventProbAndError("STopT").first,  // tchan
+          0,                                                         // tchan2 
+          0,                                                         // tt     
+          1./DefaultValues::getMaxEventProbAndError("WLg").first,    // wlight  
+          1./DefaultValues::getMaxEventProbAndError("ZLight").first, // zlight 
+          1./DefaultValues::getMaxEventProbAndError("Wbb").first,    // wbb
+          0,                                                         // wc     
+          1./DefaultValues::getMaxEventProbAndError("Wgg").first,    // wgg    
+          1./DefaultValues::getMaxEventProbAndError("WW").first,     // ww     
+          1./DefaultValues::getMaxEventProbAndError("WZ").first,     // wz     
+          0,                                                         // zz     
+          1./DefaultValues::getMaxEventProbAndError("QCD").first     // qcd    
+          );
+  /*
   ProbsForEPD normEPDcoeffs(
 			    1./0.35e-09, // wh    115 GeV 
 			    1./0.50e-10, // hww    
@@ -199,8 +220,9 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
 			    0,           // zz     
 			    1./0.1       // qcd    
 			    );
+  */
 
-  double mhiggs = 0;
+  //double mhiggs = 0;
   
   // -------------------------------------------------------------
   // B- Loop over possible coefficient configurations obtaining the 
@@ -208,7 +230,7 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
   // -------------------------------------------------------------
 
   // Create the templates based on EPDcoeffs for each template 
-  int bins = 40;
+  int bins = 40;// 40 is default
   double minXaxis = 0;
   double maxXaxis = 1;
   TH1 * signalHisto  = new TH1D("sH","sH",bins,minXaxis,maxXaxis);
@@ -222,7 +244,7 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, vector<PhysicsProcessForO
   // Define the parameters of the run 
   double maxPower = 1;// 1 is the default
   double factor   = 2;
-  int maxIter     = 2000;// 1000 is default
+  int maxIter     = 4000;// 2000 is default
 
   // Flag to indicate if at least one fom was sucessfuly computed
   bool foundAtLeastOneFigureOfMerit = false; 
@@ -317,8 +339,12 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
   vector<PhysicsProcess*> phy_processes;
   if(anaType == DEFS::Ana::WWAnalysis){
      phy_processes = DefaultValues::getProcessesWW(jetBin, tagcat, false, false, DEFS::MicroNtuple);
-  } else if(anaType == DEFS::Ana::HiggsAnalysis){
+  } 
+  else if(anaType == DEFS::Ana::HiggsAnalysis){
     phy_processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
+  }
+  else if(anaType == DEFS::Ana::UNKNOWN){
+     phy_processes = DefaultValues::getProcessesTest(jetBin, tagcat, false, false);
   }
 
   // Now construct a set of PhysicsProcessForOpt out of them
@@ -329,6 +355,8 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
     if(anaType == DEFS::Ana::WWAnalysis){
       ppo->setEPDFunction(WWEPD);
     } else if(anaType == DEFS::Ana::HiggsAnalysis){
+      ppo->setEPDFunction(HiggsEPD);
+    } else if(anaType == DEFS::Ana::UNKNOWN) {
       ppo->setEPDFunction(HiggsEPD);
     }
     processes.push_back(ppo);
@@ -346,17 +374,17 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
 // D- Find coefficients for given PhysicsProcess and coefficients
 //      - Loop over possible coefficient configurations obtaining the 
 //        most discriminant EPD.
-ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, DEFS::TagCat tagcat, double & bestFigOfMerit){
+ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, DEFS::TagCat tagcat, DEFS::JetBin jetBin, double & bestFigOfMerit, double mhiggs){
 
   // jetbin we are optimizing over
-  DEFS::JetBin jetBin = DEFS::jets2;
+  //DEFS::JetBin jetBin = DEFS::jets2;
 
   // load all the processes into memory
   vector<PhysicsProcessForOpt*>  processes  = loadProcessesIntoMemory(anaType, jetBin, tagcat);
   cout<<"loadProcessIntoMemory is done"<<endl;
 
   // do the actual computation of best EPD coefficients for the given processes
-  ProbsForEPD bestEPDCoeffs = optimizeEPDCoeffs(anaType, processes, tagcat, bestFigOfMerit);
+  ProbsForEPD bestEPDCoeffs = optimizeEPDCoeffs(anaType, processes, tagcat, bestFigOfMerit, mhiggs);
   
   // Free memory
   for (unsigned p=0;p<processes.size();p++)
@@ -377,21 +405,36 @@ ProbsForEPD optimizeEPDCoeffs(DEFS::Ana::Type anaType, DEFS::TagCat tagcat, doub
 // ===================================================================
 // This method just calls the method that calculates the optimized 
 // coefficients and then just print them to the output.
-void optimizeEPDCoefficients(){
+void optimizeEPDCoefficients(CommandLine cl){
+
+  string          ofilename        = cl.getValue<string>       ("ofilename",        "EPDCoefficients.txt");
+  string          lepCat           = cl.getValue<string>       ("lep",              "both");
+  DEFS::LeptonCat leptonCat        = DEFS::getLeptonCat(lepCat);
+  string          jetBinS          = cl.getValue<string>       ("jetBin",           "jets2");
+  DEFS::JetBin    jetBin           = DEFS::getJetBin(jetBinS);
+  string          tagcatS          = cl.getValue<string>       ("tagcat",           "pretag");
+  DEFS::TagCat    tagcat           = DEFS::getTagCat(tagcatS);
+  string          anaTypeS         = cl.getValue<string>       ("anaType",          "HiggsAnalysis");
+  DEFS::Ana::Type anaType          = DEFS::Ana::getAnaType(anaTypeS);
+  double          mhiggs           = cl.getValue<double>       ("mhiggs",           125.0);
+
+  if (!cl.check()) return;
+  cl.print();
 
   // Select the analysis type (i.e. DEFS::Ana::HiggsAnalysis or DEFS::Ana::WWAnalysis), only to report to the screen...
-  DEFS::Ana::Type anaType = DEFS::Ana::WWAnalysis;
+  //DEFS::Ana::Type anaType = DEFS::Ana::WWAnalysis;
 
   cout<<endl;
   cout<<"----------------------------------------------"<<endl;
-  cout<<" OPTIMIZING  coefficients for "<<DEFS::Ana::getTypeString(anaType)<<endl;
+  cout<<" OPTIMIZING coefficients for "<<DEFS::Ana::getTypeString(anaType)<<endl;
   cout<<"----------------------------------------------"<<endl<<endl; 
 
   // The resulting figure of merit of the optimization for PreTag,=1T and >= 2 tags
   double figOfMerit0 = 0;
 
   // Optimize the coefficients for the pretag
-  ProbsForEPD coeffs0 = optimizeEPDCoeffs(anaType, DEFS::pretag, figOfMerit0);
+  //ProbsForEPD coeffs0 = optimizeEPDCoeffs(anaType, DEFS::pretag, figOfMerit0);
+  ProbsForEPD coeffs0 = optimizeEPDCoeffs(anaType, tagcat, jetBin, figOfMerit0, mhiggs);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - -
   // The rest just create and print the optimized 
@@ -403,7 +446,7 @@ void optimizeEPDCoefficients(){
   // Print Instructions
   outFile <<" You can copy and paste from this to MicroNtuple.cc"<<endl;
   outFile << endl << endl << endl;
-  outFile << coeffs0.getStringConstructor()<<" // DEFS::TagCat="<<DEFS::pretag<<" figOfMerit="<<figOfMerit0<<endl;
+  outFile << coeffs0.getStringConstructor()<<" // DEFS::TagCat="<<tagcat<<" figOfMerit="<<figOfMerit0<<endl;
   
   // close the outFile
   outFile.close();
@@ -414,8 +457,13 @@ void optimizeEPDCoefficients(){
 // ===================================================================
 // The MAIN program
 int main(int argc, char* argv[]){
+  //
+  // evaluate command-line / configuration file options
+  //
+  CommandLine cl;
+  if (!cl.parse(argc,argv)) return 0;
 
-  optimizeEPDCoefficients();
+  optimizeEPDCoefficients(cl);
 
 }
 
