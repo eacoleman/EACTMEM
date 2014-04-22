@@ -158,9 +158,10 @@ void Fitter::writeHistograms()
       inputMCList = inputMCStack->GetHists();
 
       for (unsigned int nproc=0; nproc<HistogramsFitter::fProcessNames.size(); nproc++) {
+         /*
          if(HistogramsFitter::fProcessNames[nproc] == "QCD") {
             if(leptonName == "electron")
-               //histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched").c_str()));
+               //histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElEnriched_electron_clone").c_str()));
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_ElFULL_electron_clone").c_str()));
             else if (leptonName == "muon")
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_QCD_MuEnriched_clone").c_str()));
@@ -175,7 +176,9 @@ void Fitter::writeHistograms()
             else
                histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_WJets").c_str()));
          }
-         else histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_" + HistogramsFitter::fProcessNames[nproc]+ "_" + leptonName + "_clone").c_str()));
+         */
+         //else histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_" + HistogramsFitter::fProcessNames[nproc]+ "_" + leptonName + "_clone").c_str()));
+         histsToScale.push_back((TH1D*)inputMCList->FindObject((prefix + "_" + HistogramsFitter::fProcessNames[nproc]+ "_" + leptonName + "_clone").c_str()));
 
          histsToScale[nproc]->Scale(scaleParameters[nproc]);
       }
