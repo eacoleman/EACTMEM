@@ -86,7 +86,7 @@ def run_checks():
 
 	if os.system("voms-proxy-info")!=0 :
 		print "WARNING::You must have a valid proxy for this script to work.\nRunning \"voms-proxy-init -voms cms\"...\n"
-		call(["voms-proxy-init","-voms","cms"])
+		call("voms-proxy-init -voms cms -valid 192:00", shell=True)
 		if os.system("voms-proxy-info")!=0 :
 			print "ERROR::Sorry, but I still could not find your proxy.\nWithout a valid proxy, this program will fail spectacularly.\nThe program will now exit." 
 			sys.exit()
@@ -104,7 +104,7 @@ def init_commands():
             scommand = "srmcp -2 -pushmode=true"
         
     if(START == 'T1_US_FNAL_LPC'):
-		scommand += " \"file:////"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
+	scommand += " \"file:////"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
     else:
         scommand += " \"srm://"+siteDBDict[START][0]+":8443"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/"
 
@@ -143,6 +143,11 @@ def get_list_of_files(SAMPLE, path):
         FILES_UNFILTERED = proc.splitlines()
         FILES_UNFILTERED = [x.strip(' ') for x in FILES_UNFILTERED]
         FILES_UNFILTERED = [x.strip('\n') for x in FILES_UNFILTERED]
+	FILES_UNFILTERED = [x.replace("//", "/") for x in FILES_UNFILTERED]
+	FILES_UNFILTERED.remove('Picked up _JAVA_OPTIONS: -Xmx1024m')
+	FILES_UNFILTERED = [x.split(' ',1)[1] if x.split(' ',1)[0].isdigit() else x for x in FILES_UNFILTERED]
+	FILES_UNFILTERED = [x.replace((siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/").replace("//","/"), "") for x in FILES_UNFILTERED]
+	FILES_UNFILTERED = [x for x in FILES_UNFILTERED if x != '']
     FILES = []
     #if(len(SAMPLE)==1):
     #    SAMPLE = ["*"]
