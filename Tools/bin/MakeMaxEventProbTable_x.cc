@@ -119,16 +119,18 @@ void storeEventProb(int probStatIndex, DEFS::PhysicsProcess::Type ppType, DEFS::
    }
 }
 
-Table* makeTable(eventProbMap& epm,string prefix) {
+Table* makeTable(vector<eventProbMap>& epm) {
 
-   Table* table = new Table(prefix+"EventProbs");
+   Table* table = new Table("EventProbs");
    TableRow* tableRow;
    TableCellVal* tableCellVal;
    TableCellText* tableCellText;
    Value val;
    string text;
 
-   for (eventProbMap::iterator it=epm.begin(); it!=epm.end(); ++it) {
+   eventProbMap::iterator it2=epm[1].begin();
+   eventProbMap::iterator it3=epm[2].begin();
+   for (eventProbMap::iterator it=epm[0].begin(); it!=epm[0].end(); ++it) {
 
       std::string s;
       std::stringstream ss;
@@ -137,7 +139,7 @@ Table* makeTable(eventProbMap& epm,string prefix) {
       ss.str("");
       tableRow = new TableRow(s);
 
-      for (Int_t col=0; col<4; col++) {
+      for (Int_t col=0; col<6; col++) {
          string title;
          if (col==0) {
             title = string("MatrixElementType");
@@ -157,15 +159,29 @@ Table* makeTable(eventProbMap& epm,string prefix) {
             tableCellVal->val = Value(it->first.tmeParam,0.0);
             tableRow->addCellEntries(tableCellVal);
          }
-         else {
-            title = string(prefix+"EventProb");
+         else if (col==3){
+            title = string("MaxEventProb");
             tableCellVal = new TableCellVal(title);
             tableCellVal->val = it->second;
+            tableRow->addCellEntries(tableCellVal);
+         }
+         else if (col==4){
+            title = string("MeanEventProb");
+            tableCellVal = new TableCellVal(title);
+            tableCellVal->val = it2->second;
+            tableRow->addCellEntries(tableCellVal);
+         }
+         else{
+            title = string("MedianEventProb");
+            tableCellVal = new TableCellVal(title);
+            tableCellVal->val = it3->second;
             tableRow->addCellEntries(tableCellVal);
          }
       }
       table->addRow(*tableRow);
       delete tableRow;
+      it2++;
+      it3++;
    }
    return table;
 }
@@ -181,17 +197,15 @@ int main(int argc, char**argv) {
    //
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
-   string          maxofile         = cl.getValue<string>       ("maxofile",         "MaxEventProbs.txt");
-   string          meanofile        = cl.getValue<string>       ("meanofile",        "MeanEventProbs.txt");
-   string          medianofile      = cl.getValue<string>       ("medianofile",      "MedianEventProbs.txt");
-   string          lepCat           = cl.getValue<string>       ("lep",              "both");
-   DEFS::LeptonCat leptonCat        = DEFS::getLeptonCat(lepCat);
-   string          jetBinS          = cl.getValue<string>       ("jetBin",           "jets2");
-   DEFS::JetBin    jetBin           = DEFS::getJetBin(jetBinS);
-   string          tagcatS          = cl.getValue<string>       ("tagcat",           "pretag");
-   DEFS::TagCat    tagcat           = DEFS::getTagCat(tagcatS);
-   bool            debug            = cl.getValue<bool>         ("debug",            false);
-   bool            batch            = cl.getValue<bool>         ("batch",            false);
+   string          ofile     = cl.getValue<string>       ("ofile",         "MaxMeanMedianEventProbs.txt");
+   string          lepCat    = cl.getValue<string>       ("lep",              "both");
+   DEFS::LeptonCat leptonCat = DEFS::getLeptonCat(lepCat);
+   string          jetBinS   = cl.getValue<string>       ("jetBin",           "jets2");
+   DEFS::JetBin    jetBin    = DEFS::getJetBin(jetBinS);
+   string          tagcatS   = cl.getValue<string>       ("tagcat",           "pretag");
+   DEFS::TagCat    tagcat    = DEFS::getTagCat(tagcatS);
+   bool            debug     = cl.getValue<bool>         ("debug",            false);
+   bool            batch     = cl.getValue<bool>         ("batch",            false);
 
    if (!cl.check()) return 0;
    cl.print();
@@ -202,7 +216,7 @@ int main(int argc, char**argv) {
 
    vector<PhysicsProcess*> processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
    if(debug) {
-      processes.erase(processes.begin(),processes.begin()+7);
+      processes.erase(processes.begin(),processes.begin()+11);
    }
 
    METree      * meNtuple    = 0;
@@ -397,20 +411,18 @@ int main(int argc, char**argv) {
    }
 
    //Make a table out of the eventProbMap
-   Table* table = makeTable(maxEventProbs,"Max");
-   Table* tableMeans = makeTable(meanEventProbs,"Mean");
-   Table* tableMedians = makeTable(medianEventProbs,"Median");
+   vector<eventProbMap> epm;
+   epm.push_back(maxEventProbs);
+   epm.push_back(meanEventProbs);
+   epm.push_back(medianEventProbs);
+   Table* table = makeTable(epm);
 
    //Print the map to a file
    if (batch) {
-      table->printToFile("./"+maxofile);
-      tableMeans->printToFile("./"+meanofile);
-      tableMedians->printToFile("./"+medianofile);
+      table->printToFile("./"+ofile);
    }
    else {
-      table->printToFile(DefaultValues::getConfigPath()+maxofile);
-      tableMeans->printToFile(DefaultValues::getConfigPath()+meanofile);
-      tableMedians->printToFile(DefaultValues::getConfigPath()+medianofile);
+      table->printToFile(DefaultValues::getConfigPath()+ofile);
    }
 
    m_benchmark->Stop("event");

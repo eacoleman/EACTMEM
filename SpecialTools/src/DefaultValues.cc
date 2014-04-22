@@ -469,7 +469,7 @@ pair<double,double> DefaultValues::getMaxEventProbAndError(int probStatIndex) {
   ss << probStatIndex;
   string rowName = ss.str();
 
-  table.parseFromFile(getConfigPath()+"MaxEventProbs.txt","TableCellMixed");
+  table.parseFromFile(getConfigPath()+"MaxMeanMedianEventProbs.txt","TableCellMixed");
   tableRows = table.getRows();
   for(unsigned int irow=0; irow< tableRows.size(); irow++) {
     if(string(tableRows[irow].GetName()).compare(rowName)==0) {
@@ -522,7 +522,7 @@ pair<double,double> DefaultValues::getMaxEventProbAndError(DEFS::PhysicsProcessT
   vector<TableRow> tableRows;
   int maxIndex=0;
 
-  table.parseFromFile(getConfigPath()+"MaxEventProbs.txt","TableCellMixed");
+  table.parseFromFile(getConfigPath()+"MaxMeanMedianEventProbs.txt","TableCellMixed");
   tableRows = table.getRows();
   for(unsigned int irow=0; irow< tableRows.size(); irow++) {
     assert(table.getCellRowColumn(tableRows[irow].GetName(),"MatrixElementType"));
