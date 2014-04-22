@@ -17,27 +17,48 @@
 
 //______________________________________________________________________________
 TAMUWWMVA::TAMUWWMVA() {
-   cout << "Making the default TAMUWWMVA object...DONE" << endl;
+   cout << "Making the default TAMUWWMVA object...";
+   TString dName = ".";
+   if(!batch) {
+      //Make and/or set the output directory
+      TDatime* date = new TDatime();
+      //TString dName = Form("/uscms_data/d2/aperloff/Summer12ME8TeV/%i_%i_%i_",date->GetYear(),date->GetMonth(),date->GetDay()) + TString("TMVA_output");
+      dName = Form("./%i_%i_%i_",date->GetYear(),date->GetMonth(),date->GetDay()) + TString("TMVA_output");
+      if(!gSystem->OpenDirectory(dName)) gSystem->mkdir(dName);
+   delete date;
+   }
+   odir = dName+"/";
+   cout << "DONE" << endl;
 }
 
 //______________________________________________________________________________
-//TAMUWWMVA::TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
-//                     TString tn, double lum, vector<TString> p, TString ofb, TString of) {
-TAMUWWMVA::TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> p, TString ofb, TString of) {
+TAMUWWMVA::TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> s, vector<TString> b,
+                     vector<int> ep, DEFS::LeptonCat lc, vector<TString> p, TString ofb, TString of, bool ba) {
    cout << "Making the TAMUWWMVA object...";
+   batch = ba;
    myMethodList     = ml;
-   //ifilePath        = ifp;
-   //ifilesSignal     = ifs;
-   //ifilesBackground = ifb;
-   //treeName         = tn;
-   //luminosity       = lum;
    processes        = proc;
+   signals          = s;
+   backgrounds      = b;
+   leptonCat        = lc;
    plots            = p;
    ofileBase        = ofb;
+   eventProbs       = ep;
    if (of.IsNull())
       ofile = getFilename(ofileBase);
    else
       ofile = of;
+
+   TString dName = ".";
+   if(!batch) {
+      //Make and/or set the output directory
+      TDatime* date = new TDatime();
+      //TString dName = Form("/uscms_data/d2/aperloff/Summer12ME8TeV/%i_%i_%i_",date->GetYear(),date->GetMonth(),date->GetDay()) + TString("TMVA_output");
+      TString dName = Form("./%i_%i_%i_",date->GetYear(),date->GetMonth(),date->GetDay()) + TString("TMVA_output");
+      if(!gSystem->OpenDirectory(dName)) gSystem->mkdir(dName);
+      delete date;
+   }
+   odir = dName+"/";
    cout << "DONE" << endl;
 }
 
@@ -82,14 +103,15 @@ TString TAMUWWMVA::getFilename(TString ofile) {
 
 //______________________________________________________________________________
 int TAMUWWMVA::getTSize() {
-   int size(0);
+   //int size(0);
    //TFile* ftemp = TFile::Open(ifilePath + "micro" + ifilesSignal[0] + "_EPDv01.root");
    //TTree* ttemp = (TTree*)ftemp->Get("METree");
    //m_tSize = ttemp->GetBranch("m_tSize")->GetLeaf("m_tSize")->GetValue(0);
    //ttemp->SetBranchAddress("m_tSize",&m_tSize);
    //ttemp->GetEntry(0);
    //return m_tSize;
-   return 15;
+   return 13;
+   //return MicroNtuple::nEventProb;
 }
 
 //______________________________________________________________________________
@@ -190,7 +212,9 @@ void TAMUWWMVA::TMVAClassification() {
    }
 
    // Create a new root output file.
-   TFile* outputFile = TFile::Open(ofile, "RECREATE");
+   if (ofile.IsNull())
+      ofile = getFilename(ofileBase);
+   TFile* outputFile = TFile::Open(odir+ofile, "RECREATE");
 
    // Create the factory object. Later you can choose the methods
    // whose performance you'd like to investigate. The factory will
@@ -223,54 +247,34 @@ void TAMUWWMVA::TMVAClassification() {
    vector<double> backgroundWeight;
 
    cout << "--- Factory                  : Weight = ( xsec * BR * scale factor * lumi )/(Evts in PATtuple)" << endl;
-
-
+   TString sob;
    for(unsigned int p=0; p<processes.size(); p++) {
-      if (processes[p]->getName().Contains("WH") || processes[p]->getName().Contains("ggH") || processes[p]->getName().Contains("qqH")){
-         factory->AddSignalTree(processes[p]->chain, processes[p]->getScaleFactor(DEFS::electron));
-
-         cout << "                             : Weight for signal (" << processes[p]->getName() << ") is " 
-              << processes[p]->sigma[DEFS::electron] << " * " << processes[p]->branching_ratio[DEFS::electron] << " * "
-              << processes[p]->scaleFactor[DEFS::electron] << " * " << processes[p]->intLum[DEFS::electron] << " // " 
-              << processes[p]->initial_events[DEFS::electron] << " = " << processes[p]->getScaleFactor(DEFS::electron) << endl;
+      if (DefaultValues::vfind(signals,processes[p]->getName())>-1) {
+         factory->AddSignalTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         sob = "signal";
+      }
+      else if (backgrounds.size()>0 && DefaultValues::vfind(backgrounds,processes[p]->getName())>-1) {
+         factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         sob = "background";
+      }
+      else if (backgrounds.size()>0 && DefaultValues::vfind(backgrounds,processes[p]->getName())<0) {
+         continue;
       }
       else {
-         factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(DEFS::electron));
-
-         cout << "                             : Weight for background (" << processes[p]->getName() << ") is " 
-              << processes[p]->sigma[DEFS::electron] << " * " << processes[p]->branching_ratio[DEFS::electron] << " * "
-              << processes[p]->scaleFactor[DEFS::electron] << " * " << processes[p]->intLum[DEFS::electron] << " // " 
-              << processes[p]->initial_events[DEFS::electron] << " = " << processes[p]->getScaleFactor(DEFS::electron) << endl;
+         factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         sob = "background";
       }
+      cout << "                             : Weight for " << sob << " (" << processes[p]->getName() << ") is " 
+           << processes[p]->sigma[leptonCat] << " * " << processes[p]->branching_ratio[leptonCat] << " * "
+           << processes[p]->scaleFactor[leptonCat] << " * " << processes[p]->intLum[leptonCat] << " // " 
+           << processes[p]->initial_events[leptonCat] << " = " << processes[p]->getScaleFactor(leptonCat) << endl;
    }
-
 
 /*
-   for (unsigned int i=0; i<ifilesSignal.size(); i++) {
-      signalWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first*DefaultValues::getBranchingRatio(ifilesSignal[i])*luminosity/DefaultValues::getNumMCEvts(ifilesSignal[i]));
-      inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesSignal[i] + "_EPDv01.root"));
-      signal.push_back((TTree*)inputs.back()->Get("mnt"));
-      factory->AddSignalTree(signal.back(), signalWeight.back());
-      cout << "                             : Weight for signal (" << ifilesSignal[i] << ") is " 
-           << DefaultValues::getCrossSectionAndError(ifilesSignal[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesSignal[i]) << " * " << luminosity << " // " 
-           << DefaultValues::getNumMCEvts(ifilesSignal[i]) << " = " << signalWeight.back() << endl;
-   }
-
-   for (unsigned int i=0; i<ifilesBackground.size(); i++) {
-      backgroundWeight.push_back(DefaultValues::getCrossSectionAndError(ifilesBackground[i]).first*DefaultValues::getBranchingRatio(ifilesBackground[i])*luminosity/DefaultValues::getNumMCEvts(ifilesBackground[i]));
-      inputs.push_back(TFile::Open(ifilePath + "micro" + ifilesBackground[i] + "_EPDv01.root"));
-      background.push_back((TTree*)inputs.back()->Get("mnt"));
-      factory->AddBackgroundTree(background.back(), backgroundWeight.back());
-      cout << "                             : Weight for background (" << ifilesBackground[i] << ") is " 
-           << DefaultValues::getCrossSectionAndError(ifilesBackground[i]).first << " * " << DefaultValues::getBranchingRatio(ifilesBackground[i]) << " * " << luminosity 
-           << " // " << DefaultValues::getNumMCEvts(ifilesBackground[i]) << " = " << backgroundWeight.back() << endl;
-   }
-*/
-
-
    for (unsigned int i=0; i<inputs.size(); i++) {
       cout << "--- TMVAClassification : Using input file: " << inputs[i]->GetName() << "(METree)" << endl;
    }
+*/
 
    // ====== register trees ====================================================
    //
@@ -329,22 +333,47 @@ void TAMUWWMVA::TMVAClassification() {
    cout << "--- Factory                  : Number of variables: " << size << endl;
    /*************************************************************/
    char name[1024];
-   for (int i=0; i<size; i++) {
-      if (i==10 || i==1 || i==13 || i==12 | i==9 | i==14)
-         continue;
-      sprintf(name,"%d",i);
-      TString var = TString("eventProb") + name + " := eventProb[" + name + "]";
+   TString var;
+   //Add non-higgs MEs
+   if(eventProbs.size()>0) {
+      for (unsigned int i=0; i<eventProbs.size(); i++) {
+         //if (i==10 || i==1 || i==13 || i==12 | i==9 | i==14)
+         //   continue;
+         var = Form("eventProb%i := eventProb[%i]",eventProbs[i],eventProbs[i]);
+         cout << "--- Factory                  : Adding variable: " << var << endl;
+         factory->AddVariable(var);
+      }
+   }
+   else {
+      for (int i=0; i<size; i++) {
+         //if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14)
+         //   continue;
+         sprintf(name,"%d",i);
+         var = TString("eventProb") + name + " := eventProb[" + name + "]";
+         cout << "--- Factory                  : Adding variable: " << var << endl;
+         factory->AddVariable(var);
+      }
+      //Add ggH125 ME
+      sprintf(name,"%d",19);
+      var = TString("eventProb") + name + " := eventProb[" + name + "]";
       cout << "--- Factory                  : Adding variable: " << var << endl;
       factory->AddVariable(var);
+      //Add WH125 ME
+      sprintf(name,"%d",54);
+      var = TString("eventProb") + name + " := eventProb[" + name + "]";
+      cout << "--- Factory                  : Adding variable: " << var << endl;
+      factory->AddVariable(var);
+      //Add Mjj
+      //var = TString("Mjj := Mjj");
+      //cout << "--- Factory                  : Adding variable: " << var << endl;
+      //factory->AddVariable(var);
    }
-   TString var = TString("Mjj := Mjj");
-   cout << "--- Factory                  : Adding variable: " << var << endl;
-   factory->AddVariable(var);
   
    // You can add so-called "Spectator variables", which are not used in the MVA training, 
    // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
    // input variables, the response values of all trained MVAs, and the spectator variables
-   factory->AddSpectator("run := run", "I");
+   factory->AddSpectator("run := run",     "I");
+   factory->AddSpectator("lumi := lumi",   "I");
    factory->AddSpectator("event := event", "I");
 
    // Apply additional cuts on the signal and background samples (can be different)
@@ -354,31 +383,32 @@ void TAMUWWMVA::TMVAClassification() {
    //Acceptance/Base cuts
    //leptonCat==1==muon
    //leptonCat==2==electron
-   TCut leptonCat("leptonCat==1");
-   TCut lpt("((leptonCat==1) && (lLV[0].Pt()>25.0)) || ((leptonCat==2) && (lLV[0].Pt()>35.0))");
-   TCut METEt("((leptonCat==1) && (METLV[0].Et()>25.0)) || ((leptonCat==2) && (METLV[0].Et()>30.0))");
-   TCut jPt1("jLV[0].Pt()>35.0");
-   TCut jPt2("jLV[1].Pt()>35.0");
-   TCut DEtajj("TMath::Abs(jLV[0].Eta()-jLV[1].Eta()) < 1.5");
-   TCut jjPt("sqrt(pow(jLV[0].Px()+jLV[1].Px(),2)+pow(jLV[0].Py()+jLV[1].Py(),2)) > 20.0");
-   TCut DPhiMETj1("TMath::Abs(TMath::Abs(TMath::Abs(METLV[0].Phi()-jLV[0].Phi())-TMath::Pi())-TMath::Pi()) > 0.4");
-   TCut wmt("sqrt(pow(lLV[0].Et()+METLV[0].Et(), 2) - pow(lLV[0].Px()+METLV[0].Px(), 2) - pow(lLV[0].Py()+METLV[0].Py(), 2)) > 50.0");
-   TCut branchStatus1("Entry$>-2");
-   TCut null("");
 
-   TCut test("Entry$>-2 && jLV[1].Pt()>30.0");
+   int leptonCatNumber = leptonCat;
+   TString leptonCatString = Form("leptonCat==%i",leptonCatNumber);
+   TCut leptonCatCut(leptonCatString);
+   TCut lpt("((leptonCat==1) && (lLV[0].Pt()>25.0)) || ((leptonCat==2) && (lLV[0].Pt()>30.0))");
+   TCut METPt("METLV[0].Pt()>25.0");
+   TCut jPt1("jLV[0].Pt()>30.0");
+   TCut jPt2("jLV[1].Pt()>25.0");
+   TCut null("");
+   TCut branchStatus1("Entry$>-2");
+
+   //TCut DEtajj("TMath::Abs(jLV[0].Eta()-jLV[1].Eta()) < 1.5");
+   //TCut jjPt("sqrt(pow(jLV[0].Px()+jLV[1].Px(),2)+pow(jLV[0].Py()+jLV[1].Py(),2)) > 20.0");
+   //TCut DPhiMETj1("TMath::Abs(TMath::Abs(TMath::Abs(METLV[0].Phi()-jLV[0].Phi())-TMath::Pi())-TMath::Pi()) > 0.4");
+   //TCut wmt("sqrt(pow(lLV[0].Et()+METLV[0].Pt(), 2) - pow(lLV[0].Px()+METLV[0].Px(), 2) - pow(lLV[0].Py()+METLV[0].Py(), 2)) > 50.0");
+   //TCut test("Entry$>-2 && jLV[1].Pt()>30.0");
    //TCut test("Entry$>-2");
 
    //TCut mycuts (null);
-   TCut mycuts (branchStatus1 && leptonCat && lpt && METEt && jPt1 && jPt2 && DEtajj && jjPt && DPhiMETj1 && wmt);
+   //TCut mycuts (branchStatus1 && leptonCatCut && lpt && METEt && jPt1 && jPt2 && DEtajj && jjPt && DPhiMETj1 && wmt);
    //TCut mycuts (test);
-   //TCut mycuts (leptonCat);
+   TCut mycuts (branchStatus1 && leptonCatCut && lpt && METPt && jPt1 && jPt2);
 
    // tell the factory to use all remaining events in the trees after training for testing:
-   //factory->PrepareTrainingAndTestTree( mycuts, mycuts,
-   //                                     "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" );
-   factory->PrepareTrainingAndTestTree( mycuts, mycuts,
-                                        "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:V=true:VerboseLevel=Debug" );
+   factory->PrepareTrainingAndTestTree(mycuts, mycuts,"nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:"
+                                       "V=true:VerboseLevel=Debug" ); //set this line to "!V" for less verbosity
 
    // If no numbers of events are given, half of the events in the tree are used for training, and 
    // the other half for testing:
@@ -591,6 +621,8 @@ void TAMUWWMVA::TMVAClassification() {
    
    // Save the output
    outputFile->Close();
+   //gROOT->ProcessLine(".mv " + ofile + " " + odir);
+   gROOT->ProcessLine(".mv weights/* " + odir);
 
    std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
    std::cout << "==> TMVAClassification is done!" << std::endl
@@ -676,10 +708,6 @@ Int_t TAMUWWMVA::GetNumberOfInputVariables( TDirectory *dir ) {
 
 //______________________________________________________________________________
 void TAMUWWMVA::Plot() {
-   TDatime* date = new TDatime();
-   TString dName = Form("/uscms_data/d2/aperloff/%i_%i_%i_",date->GetYear(),date->GetMonth(),date->GetDay()) + TString("TMVA_plots");
-   if(!gSystem->OpenDirectory(dName)) gSystem->mkdir(dName);
-   delete date;
 
    if (ofile.IsNull()) {
       cout << "TAMUWWMVA::WARNING The output filename (ofile) is NULL." << endl
@@ -688,7 +716,8 @@ void TAMUWWMVA::Plot() {
    }
 
    // check if file exist
-   TFile* file = TFile::Open( ofile );
+   TFile* file = TFile::Open( odir+ofile );
+   //TFile* file = TFile::Open( ofile );
    if (!file) {
       cout << "==> Abort TMVAPlot, please verify filename" << endl;
       return;
@@ -721,7 +750,7 @@ void TAMUWWMVA::Plot() {
       title = Form( "Input variables '%s'-transformed (training sample)", 
                             tmp.ReplaceAll("InputVariables_","").Data() );
       if (tmp.Contains( "Id" )) title = "Input variables (training sample)";
-      command = Form(".x ../macros/variables.C(\"%s\",\"%s\",\"%s\")", ofile.Data(), str->GetString().Data(), title.Data());
+      command = Form(".x $CMSSW_BASE/src/TAMUWW/MVA/macros/variables.C(\"%s\",\"%s\",\"%s\")", (odir+ofile).Data(), str->GetString().Data(), title.Data());
       lines_to_process.push_back(make_pair(title,command));
       ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, str->GetString());
    }
@@ -734,7 +763,7 @@ void TAMUWWMVA::Plot() {
       title = Form( "Input variable correlations '%s'-transformed (scatter profiles)", 
                             tmp.ReplaceAll("InputVariables_","").Data() );
       if (tmp.Contains( "Id" )) title = "Input variable correlations (scatter profiles)";
-      command = Form( ".x ../macros/CorrGui.C(\"%s\",\"%s\",\"%s\")", ofile.Data(), str->GetString().Data(), title.Data());
+      command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/CorrGui.C(\"%s\",\"%s\",\"%s\")", (odir+ofile).Data(), str->GetString().Data(), title.Data());
 
       // destroy all open cavases
       DefaultValues::DestroyCanvases(); 
@@ -743,7 +772,8 @@ void TAMUWWMVA::Plot() {
       extension.ReplaceAll( "InputVariables", ""  );
 
       // checks if file with name "fin" is already open, and if not opens one
-      TFile* file = OpenFile(ofile);
+      TFile* file = OpenFile(odir+ofile);
+      //TFile* file = OpenFile(ofile);
       
       TDirectory* dir = (TDirectory*)gDirectory->Get( str->GetString() );
       if (!dir) {
@@ -786,7 +816,7 @@ void TAMUWWMVA::Plot() {
                              Form( "      Target: %s      ", Var[ic].ReplaceAll("_target","").Data()) : 
                              Form( "      Variable: %s      ", Var[ic].Data()));
          subCommand = Form( ".x %s/correlationscatters.C(\"%s\",\"%s\",\"%s\",\"%s\",%i)", 
-                            "../macros", ofile.Data(), Var[ic].Data(), str->GetString().Data(), subTitle.Data(), (Int_t)kFALSE );
+                            "$CMSSW_BASE/src/TAMUWW/MVA/macros", (odir+ofile).Data(), Var[ic].Data(), str->GetString().Data(), subTitle.Data(), (Int_t)kFALSE );
          
          lines_to_process.push_back(make_pair(subTitle,subCommand));
          ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, subTitle, str->GetString());    
@@ -798,83 +828,105 @@ void TAMUWWMVA::Plot() {
 
    // coefficients
    title = Form( "(%i) Input Variable Linear Correlation Coefficients", ++ic );
-   command = Form( ".x ../macros/correlations.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/correlations.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title);
 
    title = Form( "(%ia) Classifier Output Distributions (test sample)", ++ic );
-   command = Form( ".x ../macros/mvas.C(\"%s\",0)", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvas.C(\"%s\",0)", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    title = Form( "   (%ib) Classifier Output Distributions (test and training samples superimposed)   ", ic );
-   command = Form( ".x ../macros/mvas.C(\"%s\",3)", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvas.C(\"%s\",3)", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    title = Form( "(%ic) Classifier Probability Distributions (test sample)", ic );
-   command = Form( ".x ../macros/mvas.C(\"%s\",1)", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvas.C(\"%s\",1)", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    title = Form( "(%id) Classifier Rarity Distributions (test sample)", ic );
-   command = Form( ".x ../macros/mvas.C(\"%s\",2)", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvas.C(\"%s\",2)", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
+   
 /*
    // cannot run a gui while running an executable or in batch mode (causes a segmentation violation)
    title = Form( "(%ia) Classifier Cut Efficiencies", ++ic );
-   command = Form( ".x ../macros/mvaeffs.C+(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvaeffs.C+(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 */
+   ++ic;
+   vector<Float_t> fNSignal,fNBackground;
+   fNSignal.push_back(1000);
+   fNSignal.push_back(1898);
+   //fNSignal.push_back(3796);
+   fNBackground.push_back(1000);
+   fNBackground.push_back(112883);
+   //fNBackground.push_back(225766);
+   if(fNSignal.size()!=fNBackground.size()) {
+      cout << "--- TAMUWWMVA::Plot ERROR vectors fNSignal and fNBackground must have the same size." << endl;
+      return;
+   }
+   for (unsigned int isig=0; isig<fNSignal.size(); isig++) {
+      title = Form( "(%ia) Classifier Cut Efficiencies", ic );
+      command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvaeffs_noGUI.C+(%f,%f,\"%s\")", fNSignal[isig], fNBackground[isig], (odir+ofile).Data() );
+      lines_to_process.push_back(make_pair(title,command));
+
+      DefaultValues::DestroyCanvases();
+   }
+   ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
+
    title = Form( "(%ib) Classifier Background Rejection vs Signal Efficiency (ROC curve)", ic );
-   command = Form( ".x ../macros/efficiencies.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/efficiencies.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    title = Form( "(%i) PDFs of Classifiers (requires \"CreateMVAPdfs\" option set)", ++ic );
-   command = Form( ".x ../macros/probas.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/probas.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
    title = Form( "(%i) Likelihood Reference Distributiuons", ++ic);
-   command = Form( ".x ../macros/likelihoodrefs.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/likelihoodrefs.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "Likelihood");
 
    title = Form( "(%ia) Network Architecture (MLP)", ++ic );
-   command = Form( ".x ../macros/network.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/network.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "MLP");
 
    title = Form( "(%ib) Network Convergence Test (MLP)", ic );
-   command = Form( ".x ../macros/annconvergencetest.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/annconvergencetest.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "MLP");
 
    title = Form( "(%i) Decision Trees (BDT)", ++ic );
-   command = Form( ".x ../macros/BDT.C+(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/BDT.C+(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "BDT");
 
    title = Form( "(%i) Decision Tree Control Plots (BDT)", ++ic );
-   command = Form( ".x ../macros/BDTControlPlots.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/BDTControlPlots.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "BDT");
 
    title = Form( "(%i) Plot Foams (PDEFoam)", ++ic );
-   command = Form( ".x ../macros/PlotFoams.C", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/PlotFoams.C", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "PDEFoam");
 
    title = Form( "(%i) General Boost Control Plots", ++ic );
-   command = Form( ".x ../macros/BoostControlPlots.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/BoostControlPlots.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "Boost");
 
    title = Form( "(%i) Parallel Coordinates (requires ROOT-version >= 5.17)", ++ic );
-   command = Form( ".x ../macros/paracoor.C(\"%s\")", ofile.Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/paracoor.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
@@ -882,7 +934,7 @@ void TAMUWWMVA::Plot() {
       if (DefaultValues::vfind(TMVAGui_inactiveButtons,lines_to_process[i].first)==-1) {
          cout << "Processing line: " << lines_to_process[i].second << " ... " << endl;
          gROOT->ProcessLine(lines_to_process[i].second);
-         gROOT->ProcessLine(".mv plots/* " + dName);
+         gROOT->ProcessLine(".mv plots/* " + odir);
       }
       else {
          cout << "Inactive Command: " << lines_to_process[i].second << endl;

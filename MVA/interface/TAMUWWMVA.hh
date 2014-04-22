@@ -18,6 +18,9 @@
 //
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
+#include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
+#include "TAMUWW/MEPATNtuple/interface/METree.hh"
+#include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
 
 //
 // ROOT includes
@@ -75,9 +78,8 @@ public:
    // Construction/Destruction
    //
    TAMUWWMVA();
-   //TAMUWWMVA(TString ml, TString ifp, vector<TString> ifs, vector<TString> ifb,
-   //          TString tn, double lum, vector<TString> p, TString ofb, TString of);
-   TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> p, TString ofb, TString of);
+   TAMUWWMVA(TString ml, vector<PhysicsProcess*> proc, vector<TString> s, vector<TString> b,
+             vector<int> ep, DEFS::LeptonCat lc, vector<TString> p, TString ofb, TString of, bool ba);
    virtual ~TAMUWWMVA();
 
    //
@@ -110,14 +112,27 @@ public:
    /// method to make and save plots relating to the MVA
    void Plot();
 
+   void IsBatch(bool b) {batch = b;}
+   void setMethodList(TString ml) {myMethodList = ml;}
+   void setProcesses(vector<PhysicsProcess*> proc) {processes = proc;}
+   void setSignals(vector<TString> s) {signals = s;}
+   void setBackgrounds(vector<TString> b) {backgrounds = b;}
+   void setLeptonCat(DEFS::LeptonCat lc) {leptonCat = lc;}
+   void setPlots(vector<TString> p) {plots = p;}
+   void setOfileBase(TString ofb) {ofileBase = ofb;}
+   void setOfile(TString of) {ofile = of;}
+   void setEventProbsToRun(vector<int> ep){eventProbs = ep;}
+
 private:
    //
    // Member Data
    //
-   TString myMethodList, ofileBase, ofile;/*, ifilePath, treeName*/
+   bool batch;
+   TString myMethodList, ofileBase, ofile, odir;
    vector<PhysicsProcess*> processes;
-   vector<TString> plots;/*ifilesSignal, ifilesBackground,*/
-   //double luminosity;
+   vector<TString> signals, backgrounds, plots;
+   vector<int> eventProbs;
+   DEFS::LeptonCat leptonCat;
 
    ClassDef(TAMUWWMVA,1)
 };
