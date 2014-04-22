@@ -127,6 +127,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          }
 
          if(ntuple->lLV[0].leptonCat==DEFS::muon) {
+            (*doubleBranches["pfIso"]) = ntuple->lLV[0].lpfIso;
             (*doubleBranches["muPt"]) = ntuple->lLV[0].Pt();         
             (*doubleBranches["muEta"])   = ntuple->lLV[0].Eta();
             (*doubleBranches["muCharge"])   = ntuple->lLV[0].lQ;
@@ -241,6 +242,19 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["dPhiMetJet"]) = dPhiMetJet;
             (*doubleBranches["Ptlnujj"]) = MWWjjTemp.Pt();
             (*doubleBranches["JacobePeak"]) = ntuple->jLV[1].Pt() / ntuple->Mjj; 
+
+            double minDeta = 9999;
+            for (int iJet = 0; iJet < (int)ntuple->jLV.size()-1; ++iJet) {
+               for (int jJet = iJet+1; jJet < (int)ntuple->jLV.size(); ++jJet) {
+                  double deltaEta = fabs( ntuple->jLV[iJet].Eta() - ntuple->jLV[jJet].Eta() );
+                  if ( deltaEta < minDeta ) {
+                     minDeta = deltaEta ;
+                     TLorentzVector m2jj_an = ntuple->jLV[iJet] + ntuple->jLV[jJet];
+                     double dRljj = ntuple->lLV[0].DeltaR(m2jj_an);
+                     (*doubleBranches["dRlepjj"]) = dRljj;
+                  }
+               }
+            }
          }
 
          (*doubleBranches["nPV"]) = ntuple->vLV[0].npv;
@@ -296,8 +310,6 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          // (*doubleBranches["Ptlnujj_an"]) = Ptlnujj;
          // (*doubleBranches["JacobePeak_an"]) = Jacobe
 
-         //FIX!!! FIX!!! FIX!!!
-         // (*doubleBranches["dRlepjj"]) = dRljj;
          if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("Full")) {
             PUreweight* puweight;
             string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
