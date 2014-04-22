@@ -10,18 +10,30 @@ namespace DEFS {
 
     //---------------------------------------------------------------------------
     // A routine that returns the type given a string 
-    string getTypeString(Type type ){
+    string getTypeString(Type type){
       
       //the returning string
       if (type == SingleTopAnalysis)  return "Single Top Analysis";
       else if (type == HiggsAnalysis) return "Higgs Analysis";
       else if (type == WWAnalysis) 	  return "WW Analysis";
-      
+      else if (type == UNKNOWN)       return "UNKNOWN Analysis";
+
       cout<<"ERROR DEFS::getProcessTypeString AnalysisType "<<type<<" is unknown"<<endl;   
       
       return "";
       
     }//getAnalysisTypeString
+
+    Type getAnaType(std::string str) {
+       if(str == "SingleTopAnalysis")  return DEFS::Ana::SingleTopAnalysis;
+       else if(str == "HiggsAnalysis") return DEFS::Ana::HiggsAnalysis;
+       else if(str == "WWAnalysis")    return DEFS::Ana::WWAnalysis;
+       else if(str == "UNKNOWN")       return DEFS::Ana::UNKNOWN;
+
+       cout<<" ERROR  DEFS::getAnaType str ="<<str<<" not found"<<endl;
+
+       return  DEFS::Ana::UNKNOWN;
+    }//getAnaType
     
   }// namespace
 
@@ -127,8 +139,9 @@ namespace DEFS {
       else if(str == "Wbb")	               return  DEFS::PhysicsProcess::WLb;
       else if(str == "WLb")	               return  DEFS::PhysicsProcess::Wbb;
       else if(str == "QCD_ElEnriched")	          return  DEFS::PhysicsProcess::QCD_ElEnriched;
-      else if(str == "QCD_ElFULL")	          return  DEFS::PhysicsProcess::QCD_ElFULL;
+      else if(str == "QCD_ElFULL")            return  DEFS::PhysicsProcess::QCD_ElFULL;
       else if(str == "QCD_MuEnriched")	          return  DEFS::PhysicsProcess::QCD_MuEnriched;
+      else if(str == "QCD_MuFULL")            return  DEFS::PhysicsProcess::QCD_MuFULL;
       else if(str == "QCD_Pt20to30_EMEnriched")   return  DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched;
       else if(str == "QCD_Pt30to80_EMEnriched")   return  DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched;
       else if(str == "QCD_Pt80to170_EMEnriched")  return  DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched;
@@ -146,10 +159,11 @@ namespace DEFS {
       else if(str == "Ztautau")	           return  DEFS::PhysicsProcess::Ztautau;
       else if(str == "SingleEl_Data")	   return  DEFS::PhysicsProcess::SingleEl_Data;
       else if(str == "SingleMu_Data")	   return  DEFS::PhysicsProcess::SingleMu_Data;
+      else if(str == "UNKNOWN")              return  DEFS::PhysicsProcess::UNKNOWN;
  
       cout<<" ERROR  DEFS::getProcessType str ="<<str<<" not found"<<endl;
   
-      return  DEFS::PhysicsProcess::WH100;
+      return  DEFS::PhysicsProcess::UNKNOWN;
 
     }//getProcessType
 
@@ -157,7 +171,7 @@ namespace DEFS {
     string getTypeString(Type type){
 
       //the returning string
-      if (type == WH100)	    return string("WH100");
+      if (type == WH100)	return string("WH100");
       else if (type == WH105)	return string("WH105");
       else if (type == WH110)	return string("WH110");
       else if (type == WH115)	return string("WH115");
@@ -184,7 +198,7 @@ namespace DEFS {
       else if (type == WH700)	return string("WH700");
       else if (type == WH800)	return string("WH800");
       else if (type == WH900)	return string("WH900");
-      else if (type == WH1000)	return string("WH1000");
+      else if (type == WH1000)return string("WH1000");
 
       else if (type == ggH110)	 return string("ggH110");
       else if (type == ggH115)	 return string("ggH115");
@@ -253,8 +267,9 @@ namespace DEFS {
       else if (type == WLL)	               return string("WLL");
       else if (type == Wbb)	               return string("Wbb");
       else if (type == QCD_ElEnriched)	           return string("QCD_ElEnriched");
-      else if (type == QCD_ElFULL)	           return string("QCD_ElFULL");
+      else if (type == QCD_ElFULL)             return string("QCD_ElFULL");
       else if (type == QCD_MuEnriched)	           return string("QCD_MuEnriched");
+      else if (type == QCD_MuFULL)             return string("QCD_MuFULL");
       else if (type == QCD_Pt20to30_EMEnriched )   return string ("QCD_Pt20to30_EMEnriched");
       else if (type == QCD_Pt30to80_EMEnriched )   return string ("QCD_Pt30to80_EMEnriched");
       else if (type == QCD_Pt80to170_EMEnriched )  return string ("QCD_Pt80to170_EMEnriched");
@@ -271,6 +286,8 @@ namespace DEFS {
       else if (type == Ztautau)	           return string("Ztautau");
       else if (type == SingleEl_Data)      return string("SingleEl_Data");
       else if (type == SingleMu_Data)	   return string("SingleMu_Data");
+      else if (type == UNKNOWN)              return string("UNKNOWN");
+
       else cout<<" ERROR  DEFS::getProcessTypeString type ="<<type<<" not found"<<endl;
 
       return "ERROR in DEFS::getProcessTypeString ";
@@ -322,7 +339,7 @@ namespace DEFS {
           return string("W+Jets");
        else if (type == SingleEl_Data || type == SingleMu_Data)
           return string("DATA");
-       else if (type == QCD_ElEnriched || type == QCD_MuEnriched || type == QCD_ElFULL ||
+       else if (type == QCD_ElEnriched || type == QCD_MuEnriched || type == QCD_ElFULL || type == QCD_MuFULL ||
 		type == QCD_Pt20to30_EMEnriched   || type == QCD_Pt30to80_EMEnriched   ||
 		type == QCD_Pt80to170_EMEnriched  || type == QCD_Pt170to250_EMEnriched ||
 		type == QCD_Pt250to350_EMEnriched || type == QCD_Pt350_EMEnriched )
@@ -343,6 +360,7 @@ namespace DEFS {
        else if (type == QCD_ElEnriched)             return kRed-6;//kYellow+1;
        else if (type == QCD_ElFULL)                 return kRed-6;//kYellow+1;
        else if (type == QCD_MuEnriched)             return kRed-6;//kYellow+1;
+       else if (type == QCD_MuFULL)                 return kRed-6;//kYellow+1;
        else if (type == QCD_Pt20to30_EMEnriched )   return kRed-6;//kYellow+1;
        else if (type == QCD_Pt30to80_EMEnriched )   return kRed-6;//kYellow+1;
        else if (type == QCD_Pt80to170_EMEnriched )  return kRed-6;//kYellow+1;

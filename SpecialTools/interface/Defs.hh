@@ -23,11 +23,15 @@ namespace DEFS{
     enum Type{
       SingleTopAnalysis,
       HiggsAnalysis,
-      WWAnalysis
+      WWAnalysis,
+      UNKNOWN
     };
   
     // A routine that returns the string given the type 
-    std::string getTypeString(Type );
+    std::string getTypeString(Type);
+ 
+     // A routine that returns the type given a string
+    Type getAnaType(std::string str);
 
   }// Ana namespace
   
@@ -47,10 +51,11 @@ namespace DEFS{
                STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
                Wcc , WJets , WJets_part2 , WLg , Wgg , WLL , WLb , Wbb ,
                WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
-               QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched ,
-	       QCD_Pt20to30_EMEnriched, QCD_Pt30to80_EMEnriched, QCD_Pt80to170_EMEnriched, 
-	       QCD_Pt170to250_EMEnriched, QCD_Pt250to350_EMEnriched, QCD_Pt350_EMEnriched,
-               SingleEl_Data , SingleMu_Data};
+               QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched , QCD_MuFULL ,
+	             QCD_Pt20to30_EMEnriched, QCD_Pt30to80_EMEnriched, QCD_Pt80to170_EMEnriched, 
+	             QCD_Pt170to250_EMEnriched, QCD_Pt250to350_EMEnriched, QCD_Pt350_EMEnriched,
+               SingleEl_Data , SingleMu_Data, 
+               UNKNOWN};
 
     // A routine that returns the type given a string 
     Type getProcessType(std::string str);///
