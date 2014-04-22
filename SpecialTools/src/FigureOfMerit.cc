@@ -4,6 +4,7 @@
 
 // C++ libraries
 #include <iostream>
+#include <vector>
 #include <cmath>
 
 // ROOT libraries
@@ -14,6 +15,8 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
+using std::pair;
 
 //Declare the static members
 TH1* FigureOfMerit::signal;
@@ -45,12 +48,34 @@ bool FigureOfMerit::checkBackgroundHistogram(TH1* back, double relativeBinErrorL
   }
 
   // Loop over all bins
+  vector<pair<int,int> > unfilled_bin_pairs;
+  int unfilled_start = 0;
+  int unfilled_end = 0;
+  int last_unfilled_bin = 0;
   for (int ibin = 1; ibin <= back->GetNbinsX(); ++ibin){
 
     // If there is no background in this bin...
     if (back->GetBinContent(ibin) == 0){
 
-      std::cerr << "ERROR FigureOfMerit::checkBackgroundHistogram bin "<<ibin<<" is not filled."<<endl;
+      if(unfilled_start == 0) {
+        last_unfilled_bin = ibin;
+        unfilled_start = ibin;
+      }
+      if (ibin-last_unfilled_bin > 1 || ibin == back->GetNbinsX()) {
+        if(ibin == back->GetNbinsX())
+          unfilled_end = ibin;
+        else
+          unfilled_end = last_unfilled_bin;
+        last_unfilled_bin = ibin;
+        unfilled_bin_pairs.push_back(std::make_pair(unfilled_start,unfilled_end));
+        unfilled_start = ibin;
+      }
+      else if(ibin-last_unfilled_bin == 1) {
+        last_unfilled_bin = ibin;
+      }
+      else
+        continue;
+      //std::cerr << "ERROR FigureOfMerit::checkBackgroundHistogram bin "<<ibin<<" is not filled."<<endl;
       //return false;
 
     } 
@@ -63,6 +88,10 @@ bool FigureOfMerit::checkBackgroundHistogram(TH1* back, double relativeBinErrorL
     }
     
   }//for
+  for (unsigned int i=0; i<unfilled_bin_pairs.size(); i++) {
+    std::cerr << "ERROR FigureOfMerit::checkBackgroundHistogram bins [" << unfilled_bin_pairs[i].first
+              << "-" << unfilled_bin_pairs[i].second << "] are not filled." << endl;
+  }
 
  return true;
 
@@ -111,7 +140,8 @@ double FigureOfMerit::usingShapeFromTemplates(TH1* _signal, TH1* _background, do
     
     // Set starting values and step sizes for parameters
     //            (par# , name  start val , step  , min val,  max val, ierflg);
-    minuit->mnparm(    0, "a1",   0.50    , 0.1   ,  0     ,   200  , 
+    //minuit->mnparm(    0, "a1",   0.50    , 0.1   ,  0     ,   200  , 
+    minuit->mnparm(    0, "a1",   0.50    , 0.1   ,  0     ,   2000  , 
 ierflg);
     
     // Do the minimization
