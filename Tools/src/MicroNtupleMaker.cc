@@ -374,12 +374,14 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
    chain.SetBranchStatus("m_event",1);
    chain.LoadTree(0);
    Int_t treeEntries = chain.GetTree()->GetEntries();
+   Long64_t* offsets = chain.GetTreeOffset();
    TTree* tmpTree;
    index = new TTreeIndex();
    if(mergeNewEventNtuple.CompareTo("")!=0) {
       for(Int_t t=0; t<chain.GetNtrees(); t++) {
       //for(Int_t t=0; t<2; t++) {
-         chain.LoadTree((t*treeEntries)+1);
+         //chain.LoadTree((t*treeEntries)+1);
+         chain.LoadTree(offsets[t]+1);
          cout << "MicroNtupleMaker::makeMicroNtuple Building index for tree " << chain.GetTreeNumber() << " ... ";
          tmpTree = chain.GetTree();
          //tmpTree->SetBranchStatus("*",0);
