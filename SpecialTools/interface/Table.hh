@@ -21,6 +21,7 @@
 //ROOT libraries
 #include "TNamed.h"
 #include "TCollection.h"
+#include "TString.h"
 
 //----------------------------------------------------------------------------
 // a Table is just a collection of rows

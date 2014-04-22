@@ -695,7 +695,24 @@ bool Table::parseLine(string currentLine, int lineCounter,
       for (unsigned int cc = 1; cc < fields.size() ; cc++){
 	
 	// for each field create a cell with name colNames[cc]
-	TableCell * cell = createNewCell(cellClass, colNames[cc]);
+	//TableCell * cell = createNewCell(cellClass, colNames[cc]);
+    TableCell * cell;
+    if(cellClass.compare("TableCellMixed")!=0) {
+       cell = createNewCell(cellClass, colNames[cc]);
+    }
+    else {
+       if(TString(fields[cc]).Contains("+/-")) {
+          cell = createNewCell("TableCellVal", colNames[cc]);
+       }
+       else if(TString(fields[cc]).IsDigit()) {
+          cell = createNewCell("TableCellInt", colNames[cc]);
+       }
+       else {
+          cell = createNewCell("TableCellText", colNames[cc]);
+       }
+    }
+
+
 
 	// set the information from the file
 	if (!cell->parseFromFile(fields[cc],format)){
