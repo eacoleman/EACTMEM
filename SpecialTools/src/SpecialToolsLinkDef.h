@@ -10,6 +10,7 @@
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
+#include "TAMUWW/SpecialTools/interface/ProgressBar.hh"
 
 #ifdef __CINT__
 
@@ -18,6 +19,7 @@
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
+#pragma link C++ class ProgressBar+;
 #pragma link C++ class TableFormat+;
 #pragma link C++ class Value+;
 #pragma link C++ class Table+;
