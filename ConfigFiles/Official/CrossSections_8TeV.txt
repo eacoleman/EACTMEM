@@ -30,6 +30,7 @@ ZpJ     			|  3503.71      +/-     0.00
 QCD       			|  103334.00    +/-     0.00 
 QCD_Pt20_MuEnriched       	|  103334.00    +/-     0.00
 QCD_MuEnriched            	|  103334.00    +/-     0.00
+QCD_MuFULL                	|  1.000        +/-     0.00
 QCD_ElEnriched            	|  1.000        +/-     0.00
 QCD_ElFULL                	|  1.000        +/-     0.00
 QCD_Pt20to30_EMEnriched   	|  2.886e+08    +/-     0.00
