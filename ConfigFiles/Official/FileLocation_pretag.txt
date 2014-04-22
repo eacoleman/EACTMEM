@@ -42,7 +42,7 @@ QCD_MuEnriched            |                                     					|
 #QCD_ElEnriched           |  QCD_Electron.root                  					|   microQCD_Electron_Dp6p7_BaseCuts.root
 QCD_ElEnriched            |  QCD_Electron_Dp6p7.root                  				|   microQCD_Electron_Dp6p7_BaseCuts.root
 QCD_ElFULL                |  SingleEl_Full.root                 					|   microSingleEl_Full_Subset_BaseCuts.root
-QCD_MuFULL                |  SingleMu_Full.root                 					|   microSingleMu_Full_Subset_BaseCuts.root
+QCD_MuFULL                |  SingleMu_Full.root                 					|   microSingleMu_Full_BaseCuts.root
 QCD_Pt20to30_EMEnriched   |  QCD_EM_20to30.root                 					|   QCD_EM_20to30.root               
 QCD_Pt30to80_EMEnriched   |  QCD_EM_30to80.root                 					|   QCD_EM_30to80.root               
 QCD_Pt80to170_EMEnriched  |  QCD_EM_80to170.root                					|   QCD_EM_80to170.root               
