@@ -42,7 +42,8 @@ public:
   Double_t eventProb[nEventProb];
   Double_t eventMaxProb[nEventProb];
 
-  Double_t* bProb; //[nJets]
+  //Double_t* bProb; //[nJets]
+  std::vector<Double_t> bProb;
   Double_t weight;
 
   Double_t epd1tag;
@@ -94,7 +95,7 @@ public:
   // Get the probabilities for each process
   static ProbsForEPD getProbsForEPD(const ProbsForEPD & meProbs, 
 				    const ProbsForEPD & coeffs,
-				    const double bProb[],  
+				    const std::vector<double> bProb,  
 				    DEFS::TagCat tagcat);
   
   
@@ -108,35 +109,35 @@ public:
   Double_t calcWHEPD(DEFS::TagCat tagcat, double mass) const;
   static Double_t calcWHEPD(DEFS::TagCat tagcat,  double mass,
 			    const ProbsForEPD & meProbs, 
-			    const double bProb[], Int_t arraySize);
+			    const std::vector<double> bProb, Int_t arraySize);
 
   // Methods for the H->WW 
   static const ProbsForEPD getHWWEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets); //  H->WW coefficients 
   Double_t calcHWWEPD(DEFS::TagCat tagcat, double mass) const;
   static Double_t calcHWWEPD(DEFS::TagCat tagcat,  double mass,
 			     const ProbsForEPD & meProbs, 
-			     const double bProb[], Int_t arraySize);
+			     const std::vector<double> bProb, Int_t arraySize);
 
   // Methods for the ggH+qqH+WH
   static const ProbsForEPD getHiggsEPDCoefficients(double mhiggs, DEFS::TagCat tagcat, int nJets); //  ggH+qqH+WH coefficients 
   Double_t calcHiggsEPD(DEFS::TagCat tagcat, double mass) const;
   static Double_t calcHiggsEPD(DEFS::TagCat tagcat,  double mass,
                                const ProbsForEPD & meProbs, 
-                               const double bProb[], Int_t arraySize);
+                               const std::vector<double> bProb, Int_t arraySize);
 
   // Methods for the Diboson
   static const ProbsForEPD getWZEPDCoefficients(DEFS::TagCat tagcat, int nJets); // Diboson coefficients
   Double_t calcWZEPD(DEFS::TagCat tagcat) const;
   static Double_t calcWZEPD(DEFS::TagCat tagcat, 
 			    const ProbsForEPD & meProbs, 
-			    const double bProb[], Int_t arraySize);
+			    const std::vector<double> bProb, Int_t arraySize);
 
   // Methods for the SingleTop
   static const ProbsForEPD getSingleTopEPDCoefficients (DEFS::TagCat tagcat, EPDType type);
   Double_t calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type = kCombined) const;
   static Double_t calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type,
 				   const ProbsForEPD & meProbs,
-				   const double bProb[], Int_t arraySize);
+				   const std::vector<double> bProb, Int_t arraySize);
 
 
   // ===================================
@@ -183,7 +184,7 @@ public:
                    std::vector<Double_t> &cutsMax, Double_t effS = 0.7);
    void setMjjMVA(double mjj);
 
-  ClassDef(MicroNtuple, 13)
+  ClassDef(MicroNtuple, 14)
 
 };
 

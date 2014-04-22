@@ -2,6 +2,7 @@
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
+#include "TAMUWW/MEPATNtuple/interface/MinimalNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/PhysicsObject.hh"
 #include "TAMUWW/MEPATNtuple/interface/Vertex.hh"
 #include "TAMUWW/MEPATNtuple/interface/Jet.hh"
@@ -23,6 +24,7 @@
 #pragma link C++ class ProbsForEPD+;
 #pragma link C++ class MicroNtuple+;
 #pragma link C++ class EventNtuple+;
+#pragma link C++ class MinimalNtuple+;
 #pragma link C++ class GenParticle+;
 #pragma link C++ class PhysicsObject+;
 #pragma link C++ class Vertex+;

@@ -23,7 +23,8 @@ MicroNtuple::MicroNtuple()
 
 MicroNtuple::MicroNtuple(int ijets) : nJets(ijets)
 {
-   bProb = new Double_t[ijets];
+   //bProb = new Double_t[ijets];
+   bProb = vector<Double_t>(ijets,0.0);
    clear();
 }
 
@@ -34,8 +35,9 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
   nJets = rhs.nJets;
 
   //delete [] bProb;
-  bProb = new Double_t[nJets]; //[ntag][nJets]
-  
+  //bProb = new Double_t[nJets]; //[ntag][nJets]
+  bProb = vector<Double_t>(nJets,0.0);
+
   for (unsigned i = 0; i < nEventProb; ++i) {
     eventProb[i] = rhs.eventProb[i];
     eventMaxProb[i] = rhs.eventMaxProb[i];
@@ -88,8 +90,10 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 
    nJets = rhs.nJets;
 
-   delete [] bProb;
-   bProb = new Double_t[nJets];
+   //delete [] bProb;
+   bProb.clear();
+   //bProb = new Double_t[nJets];
+   bProb = vector<Double_t>(nJets,0.0);
 
    for (unsigned i = 0; i < nEventProb; ++i) {
      eventProb[i] = rhs.eventProb[i];
@@ -144,8 +148,8 @@ MicroNtuple::~MicroNtuple()
   // delete bProb right here, however the destructor of MicroNtuple 
   // seems to be called by ROOT when using TTreeFormula even though
   // the constructor was never called. Another ROOT mistery...
-  if (bProb)
-    delete [] bProb;
+  //if (bProb)
+    //delete [] bProb;
 }
 
 
@@ -158,10 +162,12 @@ void MicroNtuple::clear()
   }
   
 
-  delete [] bProb;
-  bProb = new Double_t[nJets];
-  for (int i = 0; i < nJets; ++i)
-    bProb[i] = 0.;
+  //delete [] bProb;
+  bProb.clear();
+  //bProb = new Double_t[nJets];
+  bProb = vector<Double_t>(nJets,0.0);
+  //for (int i = 0; i < nJets; ++i)
+    //bProb[i] = 0.;
   
   for (int i = 0; i < 100; i++)
     eventProbMVA[i] = 0.;
@@ -319,7 +325,7 @@ ProbsForEPD MicroNtuple::getEventProbs(double mhiggs) const {
 // This is the core of the code where all the parameters are mixed to obtain the EPD
 ProbsForEPD MicroNtuple::getProbsForEPD(const ProbsForEPD & meProbs, 
 					const ProbsForEPD & coeffs,
-					const double bProb[], DEFS::TagCat tagcat){
+					const vector<double> bProb, DEFS::TagCat tagcat){
 
 
   // The returning probabilities
@@ -384,7 +390,7 @@ Double_t MicroNtuple::calcWHEPD(DEFS::TagCat tagcat, double mhiggs) const
 //------------------------------------------------------------------------------
 Double_t MicroNtuple::calcWHEPD(DEFS::TagCat tagcat, double mass,
 				const ProbsForEPD & meProbs,
-				const double bProb[], Int_t nJets){
+				const vector<double> bProb, Int_t nJets){
 
   // Get the Higgs Coefficients
   ProbsForEPD coeffs = getWHEPDCoefficients(mass, tagcat, nJets);  
@@ -469,7 +475,7 @@ Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mhiggs) const
 //------------------------------------------------------------------------------
 Double_t MicroNtuple::calcHWWEPD(DEFS::TagCat tagcat, double mass,
 				const ProbsForEPD & meProbs,
-				const double bProb[], Int_t nJets){
+				const vector<double> bProb, Int_t nJets){
 
    
    // Translate mass to WH index
@@ -563,7 +569,7 @@ Double_t MicroNtuple::calcHiggsEPD(DEFS::TagCat tagcat, double mhiggs) const
 //------------------------------------------------------------------------------
 Double_t MicroNtuple::calcHiggsEPD(DEFS::TagCat tagcat, double mass,
 				const ProbsForEPD & meProbs,
-				const double bProb[], Int_t nJets){
+				const vector<double> bProb, Int_t nJets){
 
   // Get the Higgs Coefficients
   ProbsForEPD coeffs = getHiggsEPDCoefficients(mass, tagcat, nJets);  
@@ -606,12 +612,18 @@ const ProbsForEPD MicroNtuple::getHiggsEPDCoefficients(double mhiggs, DEFS::TagC
   ProbsForEPD coeffs;
 
   if (tagcat == DEFS::pretag){
-  
-    if      (mhiggs <= 115) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
-    else if (mhiggs <= 120) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
-    else if (mhiggs <= 125) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
-    else if (mhiggs <= 130) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
-    else                    coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
+
+    if      (mhiggs <= 115) coeffs = ProbsForEPD(1.75919e+09,2.95395e+09,3.28345e+07,121402,0,0,5158.93,147810,1.89051e+07,0,7882.16,1.33396e+06,6.3964e+06,0,0.408211);
+    else if (mhiggs <= 120) coeffs = ProbsForEPD(1.75919e+09,2.95395e+09,3.28345e+07,121402,0,0,5158.93,147810,1.89051e+07,0,7882.16,1.33396e+06,6.3964e+06,0,0.408211);
+    else if (mhiggs <= 125) coeffs = ProbsForEPD(1.75919e+09,2.95395e+09,3.28345e+07,121402,0,0,5158.93,147810,1.89051e+07,0,7882.16,1.33396e+06,6.3964e+06,0,0.408211);
+    else if (mhiggs <= 130) coeffs = ProbsForEPD(1.75919e+09,2.95395e+09,3.28345e+07,121402,0,0,5158.93,147810,1.89051e+07,0,7882.16,1.33396e+06,6.3964e+06,0,0.408211);
+    else                    coeffs = ProbsForEPD(1.75919e+09,2.95395e+09,3.28345e+07,121402,0,0,5158.93,147810,1.89051e+07,0,7882.16,1.33396e+06,6.3964e+06,0,0.408211);
+
+    //if      (mhiggs <= 115) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
+    //else if (mhiggs <= 120) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
+    //else if (mhiggs <= 125) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
+    //else if (mhiggs <= 130) coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
+    //else                    coeffs = ProbsForEPD(1.71676e+07,1.26194e+10,4.43136e+07,5.92018e+06,0,333.333,4000,458825,1.66778e+06,0,8000,1.25323e+07,3.70829e+07,0,1.41181);
     
   }else if (tagcat == DEFS::eq0tag){
 
@@ -661,7 +673,7 @@ Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat) const
 //------------------------------------------------------------------------------
 // Without Higgs
 Double_t MicroNtuple::calcWZEPD(DEFS::TagCat tagcat, const ProbsForEPD & meProbs,
-				const double bProb[], Int_t nJets){
+				const vector<double> bProb, Int_t nJets){
 
   
   // Get the WZ Coefficients.
@@ -696,7 +708,8 @@ const ProbsForEPD MicroNtuple::getWZEPDCoefficients(DEFS::TagCat tagcat, int nJe
   ProbsForEPD coeffs;
 
   if(tagcat == DEFS::pretag)
-     return ProbsForEPD(2.85714e+09,2e+10,5.37021e+07,1.3351e+07,0,333.333,4000,357143,1.6571e+07,0,8000,2.86161e+06,5.03532e+06,0,0.259127); // DEFS::TagCat=0 figOfMerit=11.0944
+     return ProbsForEPD(4.79519e+09,1.50931e+09,1.13096e+08,2.00503e+07,0,0,5158.93,147810,81575.4,0,7882.16,3.73303e+07,1.68125e+08,0,0.00163767); // DEFS::TagCat=0 figOfMerit=2.05129
+     //return ProbsForEPD(2.85714e+09,2e+10,5.37021e+07,1.3351e+07,0,333.333,4000,357143,1.6571e+07,0,8000,2.86161e+06,5.03532e+06,0,0.259127); // DEFS::TagCat=0 figOfMerit=11.0944
   else if (tagcat == DEFS::eq0tag)
     return ProbsForEPD(2.5, 0, 0, .5, .01, .165, 0, 0, 0, 0,0,0,0,0,0);
   else if (tagcat == DEFS::eq1tag)
@@ -750,7 +763,7 @@ const ProbsForEPD MicroNtuple::getSingleTopEPDCoefficients (DEFS::TagCat tagcat,
 //EPD for SingleTop.
 Double_t MicroNtuple::calcSingleTopEPD(DEFS::TagCat tagcat, EPDType type,
 				       const ProbsForEPD & meProbs,
-				       const double bProb[], Int_t nJets){
+				       const vector<double> bProb, Int_t nJets){
  
   if (nJets == 2){
 
@@ -804,21 +817,29 @@ void MicroNtuple::setMVAReader(vector<TString> MVAMethods, TString dir) {
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
 
    char name[1024];
+   TString var;
+   //Add non-higgs MEs
    for (unsigned int i=0; i<size; i++) {
-      //eventProbMVA.push_back(.0001);
-      if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14 || i>14)
-         continue;
-      sprintf(name,"%d",i);
-      TString var = TString("eventProb") + name + " := eventProb[" + name + "]";
+      //if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14 || I>14)
+      //   continue;
+      var = Form("eventProb%i := eventProb[%i]",i,i);
       //cout << "eventProb" << name << " = " << eventProb[i] << " (" << (Float_t*)(&eventProb[i]) << ")" << endl;
       //reader->AddVariable(var, (Float_t*)(&eventProb[i]));
       reader->AddVariable(var, &(eventProbMVA[i]));
-   }
-   TString var = TString("Mjj := Mjj");
-   reader->AddVariable(var, &MjjMVA);
+    }
+   //Add ggH125 ME
+   var = Form("eventProb%i := eventProb[%i]",19,19);
+   reader->AddVariable(var, &(eventProbMVA[19]));
+   //Add WH125 ME
+   var = Form("eventProb%i := eventProb[%i]",54,54);
+   reader->AddVariable(var, &(eventProbMVA[54]));
+   //Add Mjj
+   //TString var = TString("Mjj := Mjj");
+   //reader->AddVariable(var, &MjjMVA);
 
    // Spectator variables declared in the training have to be added to the reader, too
    reader->AddSpectator("run := run", &run);
+   //lumi->AddSpectator("lumi := lumi", &lumi);
    reader->AddSpectator("event := event", &event);
 
    // --- Book the MVA methods
@@ -841,7 +862,7 @@ vector<map<TString,Double_t> > MicroNtuple::getMVAOutput(vector<TString> MVAMeth
    char name[1024];
    for (unsigned int i=0; i<size; i++) {
       eventProbMVA[i] = eventProb[i];
-      sprintf(name,"%d",i);
+      //sprintf(name,"%d",i);
       //cout << "tEventProbMVA" << name << " = " << eventProbMVA[i] << " (" << (&eventProbMVA[i]) << ")" << endl;
    }
    //cout << "Response = " << reader->EvaluateMVA("BDT method") << endl;
