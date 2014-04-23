@@ -84,13 +84,13 @@ def get_file_number(filename):
     elif (pieces[0] == "CMSSW"):
         return int(pieces[1])
     else:
-        return int(filename.split('_')[1])
+        return int(filename.split('_')[len(filename.split('_'))-3])
 
 def get_file_submission(filename):
     T = maketrans(punctuation, ' '*len(punctuation))
     pieces = translate(filename, T).split()
     if (pieces[-1:]=='.root'):
-        return int(filename.split('_')[2])
+        return int(filename.split('_')[len(filename.split('_'))-2])
     else:
         return -9999
 
