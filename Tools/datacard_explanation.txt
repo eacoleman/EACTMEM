@@ -22,6 +22,18 @@ to change the number of systematics add "-S <numberofsystematic>"
 to find significance add "--significance"
 > combine blah --significance 
 
+to change the higgs mass stored in the tree (default=120)
+> combine blah -h <mass>
+
+Save a plot of the negative log of the profiled likelihood into the specified file
+> combine blah --plot <arg>
+
+Report p-value instead of significance (when running with --significance)
+> combine blah --pvalue
+
+To force expected limits
+> combine blah -t -1
+
 to get some help do
 > combine --help
 
