@@ -92,7 +92,9 @@ public:
                                                              DEFS::TagCat,
                                                              bool include_data,
                                                              bool for_plots,
-                                                             DEFS::NtupleType ntuple_type);
+                                                             DEFS::NtupleType ntuple_type,
+                                                             DEFS::LeptonCat lepton = DEFS::both);
+
    static std::vector < PhysicsProcess * > getProcessesTest(DEFS::JetBin jetBin,
                                                             DEFS::TagCat tagcat, 
                                                             bool include_data,
@@ -109,6 +111,7 @@ public:
 
    // Returns the scale factor for the given process
    static double getScaleFactor(TString channelName);
+   static double getScaleFactor(TString channelName, DEFS::LeptonCat leptonCat);
 
    // Returns the maximum tEventProb for a given ME found in that MEs matching 
    // MC sample (i.e. the WW ME in the WW MC sample).

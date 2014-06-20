@@ -140,7 +140,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    xsec[DEFS::muon]     = getCrossSectionAndError(prName).first;
    map<DEFS::LeptonCat,double> lumi;
    if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data ||
-       process==DEFS::PhysicsProcess::QCD_ElFULL){
+       process==DEFS::PhysicsProcess::QCD_ElFULL || process==DEFS::PhysicsProcess::QCD_MuFULL){
       lumi[DEFS::electron] = 1.0;
       lumi[DEFS::muon]     = 1.0;
    }
@@ -155,8 +155,8 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    numMCEvts[DEFS::electron] = (unsigned int)getNumMCEvts(prName);
    numMCEvts[DEFS::muon]     = (unsigned int)getNumMCEvts(prName);
    map<DEFS::LeptonCat,double> sf;
-   sf[DEFS::electron] = getScaleFactor(prName);
-   sf[DEFS::muon]     = getScaleFactor(prName);
+   sf[DEFS::electron] = getScaleFactor(prName,DEFS::electron);
+   sf[DEFS::muon]     = getScaleFactor(prName,DEFS::muon);
 
    // Create the PhysicsProcess
    PhysicsProcess *  proc;
@@ -292,7 +292,8 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
                                                              DEFS::TagCat tagcat, 
                                                              bool include_data,
                                                              bool forPlots,
-                                                             DEFS::NtupleType ntupleType){
+                                                             DEFS::NtupleType ntupleType,
+                                                             DEFS::LeptonCat lepton){
 
    vector<DEFS::PhysicsProcess::Type> procs;
    //procs.push_back(DEFS::PhysicsProcess::ZZ);
@@ -305,10 +306,14 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    procs.push_back(DEFS::PhysicsProcess::TTbar);
    procs.push_back(DEFS::PhysicsProcess::WW);
-   procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
-   procs.push_back(DEFS::PhysicsProcess::QCD_MuFULL);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
+   if(lepton==DEFS::electron || lepton==DEFS::both) {
+    procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
+    //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
+   }
+   if(lepton==DEFS::muon || lepton==DEFS::both) {
+    procs.push_back(DEFS::PhysicsProcess::QCD_MuFULL);
+    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
+   }
    procs.push_back(DEFS::PhysicsProcess::ZJets);
    procs.push_back(DEFS::PhysicsProcess::WJets);
    procs.push_back(DEFS::PhysicsProcess::ggH125);
@@ -322,8 +327,10 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
 
    if (include_data) {
-      procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
-      procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
+      if(lepton==DEFS::electron || lepton==DEFS::both)
+        procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
+      if(lepton==DEFS::muon || lepton==DEFS::both)
+        procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
    
 
@@ -455,6 +462,57 @@ double DefaultValues::getScaleFactor(TString channelName)
 	 << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
 	 << "Please check channel names." << endl;
     return -1.;
+  }
+}//getScaleFactor
+
+// ----------------------------------------------------------------------------
+double DefaultValues::getScaleFactor(TString channelName, DEFS::LeptonCat leptonCat) {
+  Table table;
+  vector<double> sf;
+  vector<TableRow> tableRows;
+
+  table.parseFromFile(getConfigPath()+string("ScaleFactors_8TeV.txt"),"TableCellMixed");
+  tableRows = table.getRows();
+
+  for(unsigned int irow=0; irow< tableRows.size(); irow++) {
+    if(DEFS::PhysicsProcess::getProcessType(string(channelName))!=DEFS::PhysicsProcessType::UNKNOWN)
+      assert(tableRows[irow]["ScaleFactor"]);
+    if(leptonCat!=DEFS::LeptonCat::none)
+      assert(tableRows[irow]["LeptonCat"]);
+
+    if(TString(tableRows[irow].GetName()).CompareTo(channelName)==0 &&
+       leptonCat!=DEFS::LeptonCat::none &&
+       (DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text) == leptonCat || 
+       DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text) == DEFS::getLeptonCat("both"))) {
+      sf.push_back(((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value);
+    }
+    else if(TString(tableRows[irow].GetName()).CompareTo(channelName)==0 &&
+       leptonCat==DEFS::LeptonCat::none) {
+      sf.push_back(((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value);
+    }
+  }
+
+  if(sf.size()==0) {
+    cout << "WARNING::getScaleFactor::channelName " << channelName << " and LeptonCat " << DEFS::getLeptonCatString(leptonCat)
+         << " not recognized. Returning -1 for the scale factor." << endl 
+         << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+         << "Please check channel names." << endl;
+    return -1.;
+  }
+  else if(sf.size()==1 && sf[0]==0.0) {
+    cout << "WARNING::getScaleFactor::The scale factor for " << channelName << " is 0.0 +/- 0.0" << endl
+         << "This means the process will be killed" << endl;
+    return sf[0];
+  }
+  else if(sf.size()>1) {
+    cout << "WARNING::getScaleFactor::channelName " << channelName << " and LeptonCat " << DEFS::getLeptonCatString(leptonCat)
+         << " returned more than one (" << sf.size() << ") scale factor that matched all of the criteria. Returning -1 for the scale factor." << endl 
+         << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+         << "Please check channel names." << endl;
+    return -1.;
+  }
+  else {
+    return sf[0];
   }
 }//getScaleFactor
 
