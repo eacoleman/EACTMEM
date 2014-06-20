@@ -91,12 +91,20 @@ void Fitter::readHistograms()
          HistogramsFitter::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
    }
 
-   cout << "\tFitter::readHistograms Getting histogram named " << TString(objectName + "_SingleEl_Data_" + leptonName) << endl;
-   if(gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName)))
+   cout << "\tFitter::readHistograms Getting histograms named " << TString(objectName + "_SingleEl_Data_" + leptonName) 
+        << " and " << TString(objectName + "_SingleMu_Data_" + leptonName)  << endl;
+   if(gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName)) && gDirectory->Get(TString(objectName + "_SingleMu_Data_" + leptonName))) {
       HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName))->Clone());
+      HistogramsFitter::dataHistogram->Add((TH1D*) (gDirectory->Get(TString(objectName + "_SingleMu_Data_" + leptonName))->Clone()));
+   }
+   else if(gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName)) && !gDirectory->Get(TString(objectName + "_SingleMu_Data_" + leptonName)))
+      HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName))->Clone());
+   else if(!gDirectory->Get(TString(objectName + "_SingleEl_Data_" + leptonName)) && gDirectory->Get(TString(objectName + "_SingleMu_Data_" + leptonName)))
+      HistogramsFitter::dataHistogram = (TH1D*) (gDirectory->Get(TString(objectName + "_SingleMu_Data_" + leptonName))->Clone());
    else
-      cout << "\t\tFitter::readHistograms Cannot find histogram " << TString(objectName + "_SingleEl_Data_" + leptonName) << endl
-           << "\t\t\tSkipping this histogram." << endl;
+      cout << "\t\tFitter::readHistograms Cannot find histograms " << TString(objectName + "_SingleEl_Data_" + leptonName) 
+           << " and " << TString(objectName + "_SingleMu_Data_" + leptonName) << endl
+           << "\t\t\tSkipping these histograms." << endl;
 
    if (debug)
       HistogramsFitter::dataHistogram->Rebin(rebinSizeDEBUG);
@@ -331,6 +339,7 @@ void Fitter::initializeHistNames()
    histNames.push_back("TTbar");
    //histNames.push_back("QCD_ElEnriched");
    histNames.push_back("QCD_ElFULL");
+   //histNames.push_back("QCD_MuFULL");
    histNames.push_back("ggH125");
    histNames.push_back("qqH125");
    histNames.push_back("WH125");
