@@ -28,4 +28,5 @@
 <bin   name="testClass_x"                file="testClass_x.cc" />
 <bin   name="MakeMaxEventProbTable_x"    file="MakeMaxEventProbTable_x.cc" />
 <bin   name="MakeMinimalNtuple_x"        file="MakeMinimalNtuple_x.cc" />
+<bin   name="ProduceLimitsDatacard_x"    file="ProduceLimitsDatacard_x.cc" />
 <!--comment-->
