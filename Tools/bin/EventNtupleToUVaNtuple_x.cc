@@ -3,6 +3,7 @@
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
+#include "TAMUWW/Tools/interface/CSVreweight.hh"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 #include "SHyFT/TemplateMakers/bin/AngularVars.h"
 #include "SHyFT/TemplateMakers/bin/KinFit.h"
@@ -63,8 +64,10 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
    vector<TString> ofiles      = cl.getVector<TString> ("ofiles",                               "WW_UVa:::WZ_UVa");
    TString         ofileFormat = cl.getValue<TString>  ("ofileFormat",                                    ".root");
    TString         otreeName   = cl.getValue<TString>  ("otreeName",                                    "anaTree");
+   bool            isMC        = cl.getValue<bool>     ("isMC",                                             false);
    string          lepCat      = cl.getValue<string>   ("leptonCat",                                       "both");
    DEFS::LeptonCat leptonCat   = DEFS::getLeptonCat    (lepCat);
+   bool            debug       = cl.getValue<bool>     ("debug",                                            false);
 
    if (!cl.check()) return 0;
    cl.print();
@@ -87,6 +90,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
    }
 
    EventNtuple *ntuple = new EventNtuple();
+   CSVreweight* csvweight = new CSVreweight();
 
    for(unsigned int f=0; f<ifiles.size(); f++) {
 
@@ -97,6 +101,8 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
       TChain *itree = (TChain*)gDirectory->Get(itreeName);
       itree->SetBranchAddress(intupleName, &ntuple);
       int nEventNtuple = static_cast<int>(itree->GetEntries());
+      if(debug)
+        nEventNtuple = 100;
 
       TFile* ofile = new TFile(ofilePath+ofiles[f]+ofileFormat,"RECREATE");
       ofile->cd();
@@ -183,7 +189,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
                 (*doubleBranches["deta_EB"]) = ntuple->lLV[0].eDeltaEta;
              }
          }
-         if(i>=70000 && i<80000) cout << "sfsg1" << endl;
+         //if(i>=70000 && i<80000) cout << "sfsg1" << endl;
          int nLowJets = 0;
          double sumJetEt = 0.0;
          double minDPhiMetJet = 9e20;
@@ -264,7 +270,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
 
          (*doubleBranches["nJets"])   = min((int)ntuple->jLV.size(),10);
          (*doubleBranches["nLowJets"]) = nLowJets;
-         (*doubleBranches["met"])     = ntuple->METLV[0].Et() ;
+         (*doubleBranches["met"])     = ntuple->METLV[0].Pt();
          (*doubleBranches["metPhi"])     = ntuple->METLV[0].Phi();
          TLorentzVector metLV = ntuple->METLV[0];
          metLV.SetPz(0.); //Just to be safe--MET should never have Z component.  That's why it's called ME*T*!
@@ -340,6 +346,10 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          (*doubleBranches["nBTagsSSV"]) = nbtagsSSV;
          (*doubleBranches["nBTagsTC"]) = nbtagsTC;
          (*doubleBranches["nBTagsCSV"]) = nbtagsCSV;
+         if(isMC)
+          (*doubleBranches["csvWeight"]) = csvweight->getWeight(ntuple);
+         else
+          (*doubleBranches["csvWeight"]) = 1.0;
 
          if(ntuple->jLV.size() >= 2) {
 
@@ -511,6 +521,7 @@ void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString
    doubleBranches["nBTagsSSV"] = new double(0.0);
    doubleBranches["nBTagsTC"] = new double(0.0);
    doubleBranches["nBTagsCSV"] = new double(0.0);
+   doubleBranches["csvWeight"] = new double(0.0);
 
    doubleBranches["jet1discrCSV"] = new double(0.0);
    doubleBranches["jet2discrCSV"] = new double(0.0);
