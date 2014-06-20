@@ -130,9 +130,13 @@ namespace DEFS {
       else if(str == "STopT_T")	           return  DEFS::PhysicsProcess::STopT_T;
       else if(str == "STopT_Tbar")	       return  DEFS::PhysicsProcess::STopT_Tbar;
       else if(str == "STopTW_T")	       return  DEFS::PhysicsProcess::STopTW_T;
-      else if(str == "STopTW_bar")	       return  DEFS::PhysicsProcess::STopTW_Tbar;
+      else if(str == "STopTW_Tbar")	       return  DEFS::PhysicsProcess::STopTW_Tbar;
       else if(str == "Wcc")	               return  DEFS::PhysicsProcess::Wcc;
-      else if(str == "WJets")	           return  DEFS::PhysicsProcess::WJets;
+      else if(str == "WJets")            return  DEFS::PhysicsProcess::WJets;
+      else if(str == "W1Jets")            return  DEFS::PhysicsProcess::W1Jets;
+      else if(str == "W2Jets")            return  DEFS::PhysicsProcess::W2Jets;
+      else if(str == "W3Jets")            return  DEFS::PhysicsProcess::W3Jets;
+      else if(str == "W4Jets")            return  DEFS::PhysicsProcess::W4Jets;
       else if(str == "WLg")	               return  DEFS::PhysicsProcess::WLg;
       else if(str == "Wgg")	               return  DEFS::PhysicsProcess::Wgg;
       else if(str == "WLL")	               return  DEFS::PhysicsProcess::WLL;
@@ -262,6 +266,10 @@ namespace DEFS {
       else if (type == STopTW_Tbar)	       return string("STopTW_Tbar");
       else if (type == Wcc) 	               return string("Wcc");
       else if (type == WJets)	               return string("WJets");
+      else if (type == W1Jets)               return string("W1Jets");
+      else if (type == W2Jets)               return string("W2Jets");
+      else if (type == W3Jets)               return string("W3Jets");
+      else if (type == W4Jets)               return string("W4Jets");
       else if (type == WLg)	               return string("WLg");
       else if (type == Wgg)	               return string("Wgg");
       else if (type == WLL)	               return string("WLL");
@@ -335,7 +343,7 @@ namespace DEFS {
           return string("Single Top");
        else if (type == ggH125 || type == qqH125 || type == WH125)
           return string("ggH+WH+qqH(125)");
-       else if (type == WJets)
+       else if (type == WJets || type == W1Jets || type == W2Jets || type == W3Jets || type == W4Jets)
           return string("W+Jets");
        else if (type == SingleEl_Data || type == SingleMu_Data)
           return string("DATA");
@@ -356,6 +364,10 @@ namespace DEFS {
        else if (type == WZ)                         return kCyan+1;//kBlue;
        else if (type == ZZ)                         return kYellow;//kBlue-1;
        else if (type == WJets)                      return kGreen-3;//kTeal+2;
+       else if (type == W1Jets)                     return kGreen-3;//kTeal+2;
+       else if (type == W2Jets)                     return kGreen-3;//kTeal+2;
+       else if (type == W3Jets)                     return kGreen-3;//kTeal+2;
+       else if (type == W4Jets)                     return kGreen-3;//kTeal+2;
        else if (type == ZJets)                      return kBlue-3;//kPink-8;
        else if (type == QCD_ElEnriched)             return kRed-6;//kYellow+1;
        else if (type == QCD_ElFULL)                 return kRed-6;//kYellow+1;
@@ -503,6 +515,13 @@ namespace DEFS {
     else if (type == c4)       return "c4:NotLooseMu";
     else if (type == c5)       return "c5:NotLooseEl";
     else if (type == c6)       return "c6:METE";
+    else if (type == ac1)      return "ac1:LepFlavor";
+    else if (type == ac2)      return "ac2:LepPt";
+    else if (type == ac3)      return "ac3:MET";
+    else if (type == ac4)      return "ac4:JetPt1";
+    else if (type == ac5)      return "ac5:JetPt2";
+    else if (type == ac6)      return "ac6:QCDPFIso";
+/*
     else if (type == FNAL1)    return "FNAL:MET";
     else if (type == FNAL2)    return "FNAL:Mt";
     else if (type == FNAL3)    return "FNAL:LepPt";
@@ -513,6 +532,7 @@ namespace DEFS {
     else if (type == FNAL8)    return "FNAL:JetEta2";
     else if (type == FNAL9)    return "FNAL:drJetLep";
     else if (type == FNAL10)   return "FNAL:Mjj";
+*/
     else if (type == BTag0)    return "BTag0";
     else if (type == BTag1)    return "BTag1";
     else if (type == BTag2)    return "BTag2";
@@ -533,6 +553,13 @@ namespace DEFS {
     else if (str == "c4:NotLooseMu")   return c4;
     else if (str == "c5:NotLooseEl")   return c5;
     else if (str == "c6:METE")         return c6;
+    else if (str == "ac1:LepFlavor")   return ac1;
+    else if (str == "ac2:LepPt")       return ac2;
+    else if (str == "ac3:MET")         return ac3;
+    else if (str == "ac4:JetPt1")      return ac4;
+    else if (str == "ac5:JetPt2")      return ac5;
+    else if (str == "ac6:QCDPFIso")    return ac6;
+/*    
     else if (str == "FNAL:MET")        return FNAL1;
     else if (str == "FNAL:Mt")         return FNAL2;
     else if (str == "FNAL:LepPt")      return FNAL3;
@@ -543,6 +570,7 @@ namespace DEFS {
     else if (str == "FNAL:JetEta2")    return FNAL8;
     else if (str == "FNAL:drJetLep")   return FNAL9;
     else if (str == "FNAL:Mjj")        return FNAL10;
+*/
     else if (str == "BTag0")           return BTag0;
     else if (str == "BTag1")           return BTag1;
     else if (str == "BTag2")           return BTag2;

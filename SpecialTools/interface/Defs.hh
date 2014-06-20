@@ -49,7 +49,7 @@ namespace DEFS{
                qqH160 , qqH170 , qqH180 , qqH190 , qqH200 , qqH250 , qqH300 , qqH350 , qqH400 , qqH450 , qqH500 ,
                qqH550 , qqH600 , qqH700 , qqH800 , qqH900 , qqH1000 , 
                STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
-               Wcc , WJets , WJets_part2 , WLg , Wgg , WLL , WLb , Wbb ,
+               Wcc , WJets , WJets_part2 , W1Jets, W2Jets, W3Jets, W4Jets, WLg , Wgg , WLL , WLb , Wbb ,
                WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
                QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched , QCD_MuFULL ,
 	             QCD_Pt20to30_EMEnriched, QCD_Pt30to80_EMEnriched, QCD_Pt80to170_EMEnriched, 
@@ -158,8 +158,10 @@ namespace DEFS{
   //            ALL ABOUT THE CUT LEVELS
   // ---------------------------------------------------------------
 
-   enum CutLevel {NPATtupleEvts, c0, c1, c2, c3, c4, c5, c6, FNAL1, FNAL2, FNAL3, FNAL4, FNAL5, FNAL6, FNAL7, FNAL8, FNAL9, FNAL10, BTag0, BTag1, BTag2, BTag3p};
-   static const unsigned int nCutLevel = 22;
+   //enum CutLevel {NPATtupleEvts, c0, c1, c2, c3, c4, c5, c6, FNAL1, FNAL2, FNAL3, FNAL4, FNAL5, FNAL6, FNAL7, FNAL8, FNAL9, FNAL10, BTag0, BTag1, BTag2, BTag3p};
+   //static const unsigned int nCutLevel = 22;
+   enum CutLevel {NPATtupleEvts, c0, c1, c2, c3, c4, c5, c6, ac1, ac2, ac3, ac4, ac5, ac6, BTag0, BTag1, BTag2, BTag3p};
+   static const unsigned int nCutLevel = 18;
    static const unsigned int nFinalCutLevel = 7;
 
   // A routine that returns a string given the type
