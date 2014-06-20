@@ -47,6 +47,7 @@ parser.add_argument("-s", "--sample", help="Shared portion of the name of the fi
                     default=["*"])
 parser.add_argument("-srt","--sendreceive_timeout", help="Sets the send/recieve timeout for the lcg command",
 					default="20")
+parser.add_argument("-str","--streams", help="The number of transfer streams", default="15")
 parser.add_argument("-u", "--user", help="username of the person transfering the files",
                     default=os.environ['USER'])
 group.add_argument("-v", "--verbose", help="Increase output verbosity of lcg-cp (-v) or srm (-debug) commands",
@@ -73,6 +74,7 @@ VERBOSE = args.verbose
 RECURSIVE = args.recursive
 IGNORE = tuple(args.ignore)
 DEPTH = 1
+STREAMS = args.streams
 scommand = ""
 ecommand = ""
 
@@ -94,9 +96,9 @@ def run_checks():
 def init_commands():
     if(LCG):
         if(VERBOSE):
-            scommand = "lcg-cp -v -b -n 15 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
+            scommand = "lcg-cp -v -b -n "+STREAMS+" --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
         else:
-            scommand = "lcg-cp -b -n 15 --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
+            scommand = "lcg-cp -b -n "+STREAMS+" --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
     else:
         if(VERBOSE):
             scommand = "srmcp -2 -pushmode=true -debug=true"
