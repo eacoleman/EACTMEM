@@ -96,7 +96,7 @@ void Plot::scaleToData(vector<PhysicsProcess*> procs, DEFS::LeptonCat lepCat)
       
       // This works for MC and data as well.
       histos[p]->Scale(procs[p]->getScaleFactor(lepCat));
-
+      //cout << " histo="<<histos[p]->GetTitle()<<"\tscaleFactor="<<procs[p]->getScaleFactor(lepCat) << "\tleptonCat=" << DEFS::getLeptonCatString(lepCat) << endl;
       //cout<<" histo="<<histos[p]->GetTitle()<<", has Integral()="<<histos[p]->Integral()<<endl;
 
       TString hName = histos[p]->GetTitle();
