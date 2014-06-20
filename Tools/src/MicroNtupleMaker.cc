@@ -467,7 +467,10 @@ void MicroNtupleMaker::makeMicroNtuple(TChain& chain, TString output, unsigned n
    //MicroNtuple::indexMap1 indexMapWH = indexMap[DEFS::EP::WH];
    //MicroNtuple::indexMap1 indexMapHWW = indexMap[DEFS::EP::HWW];
    outputTree->Branch("METree", "METree", &meNtuple);
-   outputTree->Branch("EvtTree", "EventNtuple", &mergeEventNtuple);
+   if(mergeNewEventNtuple.CompareTo("")!=0)
+      outputTree->Branch("EvtTree", "EventNtuple", &mergeEventNtuple);
+   else
+      outputTree->Branch("EvtTree", "EventNtuple", &eventNtuple);
    outputTree->Branch("mnt", "MicroNtuple", &microNtuple);
    cout << "DONE" << endl;
 
