@@ -275,7 +275,8 @@ int main(int argc, char**argv) {
       unsigned int nentries = c->GetEntries();
       if(debug) nentries = 100;
       for (unsigned int ientry = 0 ; ientry < nentries ; ientry++) {
-         ProgressBar::loadbar2(ientry+1,nentries);
+         if(!debug)
+            ProgressBar::loadbar2(ientry+1,nentries);
          c->GetEntry(ientry);
 
          for (int i = 0; i < meNtuple->getNProbStat(); ++i){
@@ -386,6 +387,12 @@ int main(int argc, char**argv) {
                checkAndSetEventProb(i,DEFS::PhysicsProcess::QCD_ElFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, maxEventProbs);
                addEventProb(i,DEFS::PhysicsProcess::QCD_ElFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, meanEventProbs, nentries);
                storeEventProb(i,DEFS::PhysicsProcess::QCD_ElFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, medianEventProbsStore, nentries);
+            }
+            else if(DEFS::PhysicsProcess::getProcessType(string(processName))==DEFS::PhysicsProcess::QCD_MuFULL &&
+                    meNtuple->getProbStat(i)->tmeType == DEFS::EP::QCD) {
+               checkAndSetEventProb(i,DEFS::PhysicsProcess::QCD_MuFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, maxEventProbs);
+               addEventProb(i,DEFS::PhysicsProcess::QCD_MuFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, meanEventProbs, nentries);
+               storeEventProb(i,DEFS::PhysicsProcess::QCD_MuFULL, DEFS::EP::QCD, meNtuple->getProbStat(i)->tmeParam, meNtuple->getProbStat(i)->tEventProb, meNtuple->getProbStat(i)->tEventErr, medianEventProbsStore, nentries);
             }
             else if(DEFS::PhysicsProcess::getProcessType(string(processName))==DEFS::PhysicsProcess::QCD_MuEnriched &&
                     meNtuple->getProbStat(i)->tmeType == DEFS::EP::QCD) {

@@ -8,7 +8,7 @@ void simpleEPDPlot() {
    TFile* fWH125 = new TFile("/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples_optimized/microWH125_BaseCuts.root","READ");
    METree->SetLineColor(kRed);
    drawCustomEPD(l,"WH125","same");
-   TFile* fggH125 = new TFile("/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples_optimized/microggH125_BaseCuts.root","READ");
+   TFile* fggH125 = new TFile("/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples_optimized/microggH125_BIG_BaseCuts.root","READ");
    METree->SetLineColor(kGreen);
    drawCustomEPD(l,"ggH125","same");
 
@@ -18,58 +18,46 @@ void simpleEPDPlot() {
    c->SaveAs("simpleEPDPlot.eps");
 }
 /*
- MeanEventProbs | MatrixElementType | PhysicsProcessType |    tmeParam |                 MeanEventProb 
-              0 |                WW |                 WW |     0 +/- 0 | 4.478285e-09 +/- 9.720642e-06 
-              1 |                WZ |                 WZ |     0 +/- 0 | 2.967587e-10 +/- 8.629397e-06 
-              2 |              WZbb |                 WZ |     0 +/- 0 | 3.394647e-10 +/- 1.247041e-05 
-              3 |               WLg |              WJets |     0 +/- 0 | 1.124578e-06 +/- 9.116343e-06 
-              4 |               WLg |              WJets |     0 +/- 0 | 3.522228e-07 +/- 8.794365e-06 
-              5 |               Wgg |              WJets |     0 +/- 0 | 5.372542e-07 +/- 7.983288e-06 
-              6 |               WLL |              WJets |     0 +/- 0 | 4.278642e-08 +/- 7.532599e-06 
-              7 |               WLb |              WJets | 172.5 +/- 0 | 4.570092e-09 +/- 1.006993e-05 
-              8 |               Wbb |              WJets |     0 +/- 0 | 3.412428e-09 +/- 7.677563e-06 
-              9 |            ZLight |              ZJets |     0 +/- 0 | 7.571615e-08 +/- 5.002138e-05 
-             10 |             STopT |            STopT_T | 172.5 +/- 0 | 5.561144e-09 +/- 2.112516e-05 
-             10 |             STopT |         STopT_Tbar | 172.5 +/- 0 | 2.947556e-09 +/- 2.887322e-05 
-             11 |             STopS |            STopS_T | 172.5 +/- 0 | 3.346865e-10 +/- 7.010831e-05 
-             11 |             STopS |         STopS_Tbar | 172.5 +/- 0 | 1.753939e-10 +/- 9.402285e-05 
-             12 |               QCD |         QCD_ElFULL |     0 +/- 0 |  0.001470852 +/- 8.683943e-06 
-             19 |               HWW |             ggH125 |   125 +/- 0 | 5.296594e-12 +/- 9.963569e-05 
-             54 |                WH |              WH125 |   125 +/- 0 | 3.676811e-13 +/- 2.859221e-05
+ EventProbs | MatrixElementType | PhysicsProcessType |    tmeParam |                  MaxEventProb |                 MeanEventProb |    MedianEventProb
+          0 |                WW |                 WW |     0 +/- 0 |  7.819953e-07 +/- 0.006416942 | 4.478285e-09 +/- 9.720642e-06 | 2.391546e-10 +/- 0
+          1 |                WZ |                 WZ |     0 +/- 0 |  7.640095e-08 +/- 0.006219349 | 2.967587e-10 +/- 8.629397e-06 | 4.906673e-12 +/- 0
+          2 |              WZbb |                 WZ |     0 +/- 0 |  7.743198e-08 +/- 0.009021043 | 3.394647e-10 +/- 1.247041e-05 | 6.567607e-12 +/- 0
+          3 |               WLg |              WJets |     0 +/- 0 | 0.0001938386 +/- 0.0005559995 | 1.124578e-06 +/- 9.116343e-06 | 1.300328e-07 +/- 0
+          4 |               WLg |              WJets |     0 +/- 0 |  4.231735e-05 +/- 0.001675434 | 3.522228e-07 +/- 8.794365e-06 | 4.422508e-08 +/- 0
+          5 |               Wgg |              WJets |     0 +/- 0 |  0.0001268688 +/- 0.001890234 | 5.372542e-07 +/- 7.983288e-06 | 3.309296e-08 +/- 0
+          6 |               WLL |              WJets |     0 +/- 0 | 5.851085e-06 +/- 0.0005302307 | 4.278642e-08 +/- 7.532599e-06 | 6.100224e-09 +/- 0
+          7 |               WLb |              WJets | 172.5 +/- 0 |  9.279982e-07 +/- 0.009765282 | 4.570092e-09 +/- 1.006993e-05 | 4.925576e-10 +/- 0
+          8 |               Wbb |              WJets |     0 +/- 0 |  3.737306e-07 +/- 0.005721496 | 3.412428e-09 +/- 7.677563e-06 | 3.196485e-10 +/- 0
+          9 |            ZLight |              ZJets |     0 +/- 0 |   6.765438e-06 +/- 0.01249524 | 7.571615e-08 +/- 5.002138e-05 | 2.014442e-08 +/- 0
+         10 |             STopT |            STopT_T | 172.5 +/- 0 |  1.080755e-06 +/- 0.007142552 | 5.561144e-09 +/- 2.112516e-05 | 4.289709e-10 +/- 0
+         10 |             STopT |         STopT_Tbar | 172.5 +/- 0 |  3.863697e-07 +/- 0.009917325 | 2.947556e-09 +/- 2.887322e-05 | 2.239826e-10 +/- 0
+         11 |             STopS |            STopS_T | 172.5 +/- 0 |    1.5464e-08 +/- 0.009877172 | 3.346865e-10 +/- 7.010831e-05 | 4.970496e-11 +/- 0
+         11 |             STopS |         STopS_Tbar | 172.5 +/- 0 |  1.340438e-08 +/- 0.008848001 | 1.753939e-10 +/- 9.402285e-05 | 3.076242e-11 +/- 0
+         12 |               QCD |         QCD_ElFULL |     0 +/- 0 |     0.3190735 +/- 0.006974173 |  0.001470852 +/- 8.683943e-06 |  1.04846e-05 +/- 0
+         12 |               QCD |         QCD_MuFULL |     0 +/- 0 |      1.054128 +/- 0.007607975 |  0.003589481 +/- 2.084871e-05 | 1.244808e-05 +/- 0
+         19 |               HWW |             ggH125 |   125 +/- 0 |   6.625523e-10 +/- 0.00913204 | 5.296594e-12 +/- 9.963569e-05 | 3.016789e-13 +/- 0
+         54 |                WH |              WH125 |   125 +/- 0 |  2.085422e-10 +/- 0.006971693 | 3.676811e-13 +/- 2.859221e-05 | 1.481892e-15 +/- 0
 
- MedianEventProbs | MatrixElementType | PhysicsProcessType |    tmeParam |    MedianEventProb
-                0 |                WW |                 WW |     0 +/- 0 | 2.391546e-10 +/- 0
-                1 |                WZ |                 WZ |     0 +/- 0 | 4.906673e-12 +/- 0
-                2 |              WZbb |                 WZ |     0 +/- 0 | 6.567607e-12 +/- 0
-                3 |               WLg |              WJets |     0 +/- 0 | 1.300328e-07 +/- 0
-                4 |               WLg |              WJets |     0 +/- 0 | 4.422508e-08 +/- 0
-                5 |               Wgg |              WJets |     0 +/- 0 | 3.309222e-08 +/- 0
-                6 |               WLL |              WJets |     0 +/- 0 | 6.101245e-09 +/- 0
-                7 |               WLb |              WJets | 172.5 +/- 0 | 4.925576e-10 +/- 0
-                8 |               Wbb |              WJets |     0 +/- 0 | 3.195975e-10 +/- 0
-                9 |            ZLight |              ZJets |     0 +/- 0 | 2.014442e-08 +/- 0
-               10 |             STopT |            STopT_T | 172.5 +/- 0 | 4.289709e-10 +/- 0
-               10 |             STopT |         STopT_Tbar | 172.5 +/- 0 | 2.239826e-10 +/- 0
-               11 |             STopS |            STopS_T | 172.5 +/- 0 | 4.976798e-11 +/- 0
-               11 |             STopS |         STopS_Tbar | 172.5 +/- 0 | 3.076242e-11 +/- 0
-               12 |               QCD |         QCD_ElFULL |     0 +/- 0 |  1.04846e-05 +/- 0
-               19 |               HWW |             ggH125 |   125 +/- 0 | 3.001251e-13 +/- 0
-               54 |                WH |              WH125 |   125 +/- 0 | 1.481892e-15 +/- 0              
 */
 void drawCustomEPD(TLegend* l, TString title, TString option) {
    TH1F *htemp;
    //Normalized to the mean
    //Zeros for tchan2, Wc, TTbar
    //TString epdString = "((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13)) / ((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13) + (eventProb[11]/3.346865e-10) + (eventProb[10]/5.561144e-09) + 0 + (eventProb[8]/3.412428e-09) + 0 + (eventProb[12]/0.001470852) + 0 + (eventProb[0]/4.478285e-09) + (eventProb[1]/2.967587e-10))";
-   //Same MEs as Saideth and Andrea. HWW125, WH125, WLg, WLg sub, Wgg, WLL
-   TString epdString = "((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13)) / ((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13) + (eventProb[3]/1.124578e-06) + (eventProb[4]/3.522228e-07) + (eventProb[5]/5.372542e-07) + (eventProb[6]/4.278642e-08))";
    //double meNormMean[6] = {1.029e-6, 3.235e-7, 5.084e-7, 3.929e-8,5.043e-12,3.64e-13};
    //TString epdString = "((eventProb[19]/5.043e-12) + (eventProb[54]/3.64e-13)) / ((eventProb[19]/5.043e-12) + (eventProb[54]/3.64e-13) + (eventProb[3]/1.029e-6) + (eventProb[4]/3.235e-7) + (eventProb[5]/5.084e-7) + (eventProb[6]/3.929e-8))";
-
    //Normalized to the median
    //TString epdString = "((eventProb[19]/3.001251e-13) + (eventProb[54]/1.481892e-15)) / ((eventProb[19]/3.001251e-13) + (eventProb[54]/1.481892e-15) + (eventProb[3]/1.300328e-07) + (eventProb[4]/4.422508e-08) + (eventProb[5]/3.309222e-08) + (eventProb[6]/6.101245e-09))";
+   //Same MEs as Saideth and Andrea. HWW125, WH125, WLg, WLg sub, Wgg, WLL
+   ////TString epdString = "((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13)) / ((eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13) + (eventProb[3]/1.124578e-06) + (eventProb[4]/3.522228e-07) + (eventProb[5]/5.372542e-07) + (eventProb[6]/4.278642e-08))";
+   
+   //Ricardos EPD test as of 05/29/2014
+   //(num=WH, ggH, QCD, WLL, Wgg, WLg_sub, WLg den=same+WW+WZ) (normalize epd by mean) (do on WJets sample an on Higgs sample)
+   TString num = "(eventProb[19]/5.296594e-12) + (eventProb[54]/3.676811e-13) + (eventProb[12]/0.001470852) + (eventProb[6]/4.278642e-08) + (eventProb[5]/5.372542e-07) + (eventProb[3]/1.124578e-06) + (eventProb[4]/3.522228e-07)";
+   TString den = num + " + (eventProb[0]/4.478285e-09) + (eventProb[1]/2.967587e-10)";
+   TString epdString = Form("(%s)/(%s)",num.Data(),den.Data());
 
-   METree->Draw(epdString+">>"+title,"Entry$<10000",option);
+   METree->Draw(epdString+">>"+title,"Entry$<40000",option);
    htemp = (TH1F*)gPad->GetPrimitive(title);
    //htemp->GetYaxis()->SetRangeUser(0,0.2);
    htemp->GetXaxis()->SetTitleSize(0.04);
@@ -281,7 +269,8 @@ TString ep[9] = {"WW","WZ","WLg","WLg sub","Wgg","WLL","QCD","ggH125","WH125"};
 TString eps[9] = {"0","1","3","4","5","6","12","19","54"}
 
 void eventProbPlot_2() {
-   TCanvas* c = new TCanvas("c","c",1200,1200);
+   TFile* ofile = new TFile("eventProbs_2.root","RECREATE");
+   TCanvas* c = new TCanvas("c","c",1200,950);
    c->Divide(3,3);
 
    TFile* fQCD         = new TFile("/uscms_data/d2/aperloff/Summer12ME8TeV/MEResults/microNtuples_optimized/microQCD_Electron_Dp6p7_BaseCuts.root","READ");
@@ -322,7 +311,12 @@ void eventProbPlot_2() {
    }
 
    c->SaveAs("eventProbs_2.eps");
+   c->SaveAs("eventProbs_2.pdf");
    c->SaveAs("eventProbs_2.png");
+
+   ofile->cd();
+   c->Write();
+   ofile->Close();
 }
 
 void doThis_2(int iep, TString title, TFile* fArray[14]){
@@ -336,6 +330,9 @@ void doThis_2(int iep, TString title, TFile* fArray[14]){
 
    TH1F *htemp;
    TLegend* l = new TLegend(0.2,0.4,0.45,0.85);
+   double min = -30.0;
+   double max = 0.0;
+   bool minSet = false;
    for(unsigned int isample=0; isample<14; isample++) {
       fArray[isample]->cd();
       METree->SetLineColor(colors[isample]);
@@ -349,6 +346,20 @@ void doThis_2(int iep, TString title, TFile* fArray[14]){
       htemp->SetTitle(title);
       htemp->GetYaxis()->SetRangeUser(0,0.14);
       htemp->GetXaxis()->SetTitle("log_{10}(eventProb["+ep[iep]+"])");
+      if(isample == 0) {
+         for(int i=1; i<=htemp->GetNbinsX(); i++) {
+            if(htemp->GetBinContent(i)!=0) {
+               if(htemp->GetBinContent(i+1)==0) {
+                  max = ceil(htemp->GetBinCenter(i))+1.0;
+               }
+               if(minSet == false) {
+                  min = floor(htemp->GetBinCenter(i))-1.0;
+                  minSet = true;
+               }
+            }
+         }
+      }
+      htemp->GetXaxis()->SetRangeUser(min,max);
       l->AddEntry(htemp,samples[isample],"l");
    }
    l->Draw("same");

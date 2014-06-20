@@ -73,6 +73,7 @@ int main(int argc,char**argv)
    TString         stackDrawOption = cl.getValue<TString>  ("stackDrawOption",  "nostack");
    bool            addData         = cl.getValue<bool>     ("addData",               true);
    bool            coshEta         = cl.getValue<bool>     ("coshEta",              false);
+   bool            normToOne       = cl.getValue<bool>     ("normToOne",            false);
 
    if (!cl.check()) 
       return 0;
@@ -218,8 +219,15 @@ int main(int argc,char**argv)
          return 0;
       }
 
-      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0) {
+      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0 || plots.CompareTo("COMPONENTS_PFISOMVA_ONLY")==0) {
 
+         t->SetBranchStatus("METLV*",0);
+         t->SetBranchStatus("vLV*",0);
+         t->SetBranchStatus("jLV*",0);
+         t->SetBranchStatus("genParticleCollection*",0);
+         t->SetBranchStatus("triggerMap*",0);
+
+         if(plots.CompareTo("COMPONENTS_PFISOMVA_ONLY")!=0) {
          /*******************************************************************************************/
          //PF Isolation
          /*******************************************************************************************/
@@ -340,11 +348,12 @@ int main(int argc,char**argv)
             pmvaNonTrigV0.back()->GetYaxis()->SetRangeUser(1.0e-2,1);
          }
          cout << "DONE" << endl;
+         }
 
          /*******************************************************************************************/
          //PF Isolation Vs. MVA
          /*******************************************************************************************/
-         cout << "\tDoing MVANonTrigV0 Isolation ... " << std::flush;
+         cout << "\tDoing PF Isolation Vs. MVATrigV0 ... " << std::flush;
          cname.push_back(Form("cpfIsoMVATrigV0_%s",ifilePostFixes[f].Data()));
          cpfIsoMVATrigV0.push_back(new TCanvas(cname.back(),Form("pfIsoVsMVATrigV0_%s",ifilePostFixes[f].Data()),800,800));
          hname.push_back(Form("hpfIsoMVATrigV0_%s",ifilePostFixes[f].Data()));
@@ -353,14 +362,20 @@ int main(int argc,char**argv)
          hpfIsoMVATrigV0.back()->GetYaxis()->SetTitle("PF Isolation");
          pname.push_back(Form("ppfIsoMVATrigV0_%s",ifilePostFixes[f].Data()));
          ppfIsoMVATrigV0.push_back(new TProfile(pname.back(),pname.back(),nbinsx,&binsMVA.at(0)));
-         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0) {
-            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+hname.back(),"lLV[0].lpfIso>0.2","colz");
-            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+pname.back(),"lLV[0].lpfIso>0.2","sames");
-            hpfIsoMVATrigV0.back()->GetYaxis()->SetRangeUser(0.3,2);
+         if(ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0 || ifilePostFixes[f].CompareTo("SingleEl_Full_Subset")==0) {
+            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+hname.back(),"lLV[0].lpfIso>0.3&&lLV[0].emvaTrig!=0","colz");
+            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+pname.back(),"lLV[0].lpfIso>0.3&&lLV[0].emvaTrig!=0","sames");
+            //hpfIsoMVATrigV0.back()->GetYaxis()->SetRangeUser(0.3,2);
+            gPad->SetRightMargin(0.115); 
+            if(normToOne)
+               hpfIsoMVATrigV0.back()->Scale(1.0/hpfIsoMVATrigV0.back()->Integral());
          }
          else {
-            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+hname.back(),"","colz");
-            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+pname.back(),"","sames");
+            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+hname.back(),"lLV[0].emvaTrig!=0","colz");
+            t->Draw("lLV[0].lpfIso:lLV[0].emvaTrig>>"+pname.back(),"lLV[0].emvaTrig!=0","sames");
+            gPad->SetRightMargin(0.115); 
+            if(normToOne)
+               hpfIsoMVATrigV0.back()->Scale(1.0/hpfIsoMVATrigV0.back()->Integral());
          }
          gPad->SetLogx();
          if(ifilePostFixes[f].CompareTo("DATA")==0 || ifilePostFixes[f].CompareTo("Data")==0 || ifilePostFixes[f].CompareTo("data")==0) {
@@ -372,6 +387,7 @@ int main(int argc,char**argv)
             ppfIsoMVATrigV0.back()->GetXaxis()->SetRangeUser(1.0e-1,1);
          }
          cout << "DONE" << endl;
+         t->SetBranchStatus("*",1);
       }
 
       if((plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION_FAST")==0 || plots.CompareTo("CORRECTION")==0) && (ifilePostFixes[f].CompareTo("QCD")==0 || ifilePostFixes[f].CompareTo("qcd")==0)) {
@@ -1309,14 +1325,14 @@ int main(int argc,char**argv)
 
       cout << "\tSaving files ... " << std::flush;
       for(unsigned int ff=0; ff<formats.size(); ff++) {
-         if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0) {
-            cpfIso.back()->SaveAs(ofilepath+cpfIso.back()->GetTitle()+formats[ff]);
-            cchargedHadronIso.back()->SaveAs(ofilepath+cchargedHadronIso.back()->GetTitle()+formats[ff]);
-            cneutralHadronIso.back()->SaveAs(ofilepath+cneutralHadronIso.back()->GetTitle()+formats[ff]);
-            cphotonIso.back()->SaveAs(ofilepath+cphotonIso.back()->GetTitle()+formats[ff]);
-            cmvaTrigV0.back()->SaveAs(ofilepath+cmvaTrigV0.back()->GetTitle()+formats[ff]);
-            cmvaNonTrigV0.back()->SaveAs(ofilepath+cmvaNonTrigV0.back()->GetTitle()+formats[ff]);
-            cpfIsoMVATrigV0.back()->SaveAs(ofilepath+cpfIsoMVATrigV0.back()->GetTitle()+formats[ff]);
+         if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0 || plots.CompareTo("COMPONENTS_PFISOMVA_ONLY")==0) {
+            if(cpfIso.size()>0) cpfIso.back()->SaveAs(ofilepath+cpfIso.back()->GetTitle()+formats[ff]);
+            if(cchargedHadronIso.size()>0) cchargedHadronIso.back()->SaveAs(ofilepath+cchargedHadronIso.back()->GetTitle()+formats[ff]);
+            if(cneutralHadronIso.size()>0) cneutralHadronIso.back()->SaveAs(ofilepath+cneutralHadronIso.back()->GetTitle()+formats[ff]);
+            if(cphotonIso.size()>0) cphotonIso.back()->SaveAs(ofilepath+cphotonIso.back()->GetTitle()+formats[ff]);
+            if(cmvaTrigV0.size()>0) cmvaTrigV0.back()->SaveAs(ofilepath+cmvaTrigV0.back()->GetTitle()+formats[ff]);
+            if(cmvaNonTrigV0.size()>0) cmvaNonTrigV0.back()->SaveAs(ofilepath+cmvaNonTrigV0.back()->GetTitle()+formats[ff]);
+            if(cpfIsoMVATrigV0.size()>0) cpfIsoMVATrigV0.back()->SaveAs(ofilepath+cpfIsoMVATrigV0.back()->GetTitle()+formats[ff]);
          }
          if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0 || plots.CompareTo("CORRECTION_FAST")==0) {
             cptDistributions.back()->SaveAs(ofilepath+cptDistributions.back()->GetTitle()+formats[ff]);
@@ -1335,14 +1351,14 @@ int main(int argc,char**argv)
 
       cout << "\tWriting canvases to " << ofilepath+ofilename << " ... ";
       ofile->cd();
-      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0) {
-         cpfIso.back()->Write();
-         cchargedHadronIso.back()->Write();
-         cneutralHadronIso.back()->Write();
-         cphotonIso.back()->Write();
-         cmvaTrigV0.back()->Write();
-         cmvaNonTrigV0.back()->Write();
-         cpfIsoMVATrigV0.back()->Write();
+      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0 || plots.CompareTo("COMPONENTS_PFISOMVA_ONLY")==0) {
+         if(cpfIso.size()>0) cpfIso.back()->Write();
+         if(cchargedHadronIso.size()>0) cchargedHadronIso.back()->Write();
+         if(cneutralHadronIso.size()>0) cneutralHadronIso.back()->Write();
+         if(cphotonIso.size()>0) cphotonIso.back()->Write();
+         if(cmvaTrigV0.size()>0) cmvaTrigV0.back()->Write();
+         if(cmvaNonTrigV0.size()>0) cmvaNonTrigV0.back()->Write();
+         if(cpfIsoMVATrigV0.size()>0) cpfIsoMVATrigV0.back()->Write();
       }
       if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0 || plots.CompareTo("CORRECTION_FAST")==0) {
          cptDistributions.back()->Write();
@@ -1359,7 +1375,8 @@ int main(int argc,char**argv)
       cout << "DONE" << endl;
 
       cout << "\tWriting weights to " << ofilepath+ofilename << ":/weights/" << " ... ";
-      ofile->mkdir("weights");
+      if (!ofile->GetDirectory("weights"))
+         ofile->mkdir("weights");
       ofile->cd("weights");
       if(plots.CompareTo("ALL")==0 || plots.CompareTo("CORRECTION")==0 || plots.CompareTo("CORRECTION_FAST")==0 || plots.CompareTo("RATIO")==0) {
          for(unsigned int hh=0; hh<hWeights.size(); hh++) {
@@ -1369,10 +1386,11 @@ int main(int argc,char**argv)
       cout << "DONE" << endl;
 
       ofile->cd();
-      ofile->mkdir("histograms");
+      if (!ofile->GetDirectory("histograms"))
+         ofile->mkdir("histograms");
       ofile->cd("histograms");
       cout << "\tWriting histograms to " << ofilepath+ofilename << ":/histograms/" << " ... ";
-      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0) {
+      if(plots.CompareTo("ALL")==0 || plots.CompareTo("COMPONENTS")==0 || plots.CompareTo("COMPONENTS_PFISOMVA_ONLY")==0) {
          for(unsigned int hh=0; hh<hpfIso.size(); hh++) {
            hpfIso[hh]->Write();
          }
