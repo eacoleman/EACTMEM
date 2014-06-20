@@ -479,18 +479,39 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                            // Record the Btag info
                            //
                            if (nBtagSSV==0)
-                              incrementCounter(18,Nj,tableEl,tableLp);
+                              incrementCounter(14,Nj,tableEl,tableLp);
                            else {
                               if (nBtagSSV==1)
-                                 incrementCounter(19,Nj,tableEl,tableLp);
+                                 incrementCounter(15,Nj,tableEl,tableLp);
                               else {
                                  if (nBtagSSV==2)
-                                    incrementCounter(20,Nj,tableEl,tableLp);
+                                    incrementCounter(16,Nj,tableEl,tableLp);
                                  else
-                                    incrementCounter(21,Nj,tableEl,tableLp);
+                                    incrementCounter(17,Nj,tableEl,tableLp);
                               }
                            }//BTags
 
+                           /////////////Analysis Level Cuts
+                           if (lp4[0].leptonCat==DEFS::electron) {
+                              incrementCounter(8,Nj,tableEl,tableLp);
+                              if (lp4[0].Pt()>30) {
+                                 incrementCounter(9,Nj,tableEl,tableLp);
+                                 if (METp4[0].Pt()>25) {
+                                    incrementCounter(10,Nj,tableEl,tableLp);
+                                    if (jp4.size()>0 && jp4[0].Pt()>30) {
+                                       incrementCounter(11,Nj,tableEl,tableLp);
+                                       if (jp4.size()>1 && jp4[1].Pt()>25) {
+                                          incrementCounter(12,Nj,tableEl,tableLp);
+                                          if (lp4[0].lpfIso>0.3 && lp4[0].lpfIso<0.7) {
+                                             incrementCounter(13,Nj,tableEl,tableLp);
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+
+                           /*
                            /////////////FNAL CUTs
                            if (METp4[0].Et() > 30) {
                               incrementCounter(8,Nj,tableEl,tableLp);
@@ -545,8 +566,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                  }
                               }
                            }//First FNAL Cut
-
-
+                           */
                         }
                      }
                   }
@@ -617,18 +637,39 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                            // Record the Btag info
                            //
                            if (nBtagSSV==0 )
-                              incrementCounter(18,Nj,tableMu,tableLp);
+                              incrementCounter(14,Nj,tableMu,tableLp);
                            else {
                               if (nBtagSSV==1) 
-                                 incrementCounter(19,Nj,tableMu,tableLp);
+                                 incrementCounter(15,Nj,tableMu,tableLp);
                               else {
                                  if (nBtagSSV==2)
-                                    incrementCounter(20,Nj,tableMu,tableLp);
+                                    incrementCounter(16,Nj,tableMu,tableLp);
                                  else
-                                    incrementCounter(21,Nj,tableMu,tableLp);
+                                    incrementCounter(17,Nj,tableMu,tableLp);
                               }
                            }//BTags
                            
+                           /////////////Analysis Level Cuts
+                           if (lp4[0].leptonCat==DEFS::muon) {
+                              incrementCounter(8,Nj,tableMu,tableLp);
+                              if (lp4[0].Pt()>25) {
+                                 incrementCounter(9,Nj,tableMu,tableLp);
+                                 if (METp4[0].Pt()>25) {
+                                    incrementCounter(10,Nj,tableMu,tableLp);
+                                    if (jp4.size()>0 && jp4[0].Pt()>30) {
+                                       incrementCounter(11,Nj,tableMu,tableLp);
+                                       if (jp4.size()>1 && jp4[1].Pt()>25) {
+                                          incrementCounter(12,Nj,tableMu,tableLp);
+                                          if (lp4[0].lpfIso>0.3 && lp4[0].lpfIso<2.0) {
+                                             incrementCounter(13,Nj,tableMu,tableLp);
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+
+                           /*
                            /////////////FNAL CUTs
                            if (METp4[0].Et() > 25) {
                               incrementCounter(8,Nj,tableMu,tableLp);
@@ -683,7 +724,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
                                  }
                               }
                            }//First FNAL Cut
-
+                           */
                         }
                      }
                   }

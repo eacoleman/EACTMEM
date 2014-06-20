@@ -39,14 +39,50 @@ inputFiles = cms.untracked.vstring(
 #####################
 # WJets Monte Carlo #
 #####################
-	'/store/user/lnujj/PatTuples_8TeV_53X-v1/jdamgov/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_217_0_c0L.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X-v1/jdamgov/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_217_0_c0L.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_518_1_QXj.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_517_1_N8m.root',
 #    '/store/user/lnujj/PatTuples_8TeV_v2/ajkumar/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/SQWaT_PAT_52X_Summer12_v2//290326670ba15ca0752d90668da7d2ec/pat_52x_test_510_1_87t.root'
 ######################
 # ggH125 Monte Carlo #
 ######################
-#    '/store/user/aperloff/LQ-ggh125_SIM/SQWaT_PAT_52X_Summer12_v1/290326670ba15ca0752d90668da7d2ec/pat_52x_test_1_1_5x8.root'
+	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_10_1_3lN.root',
+	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_11_1_luM.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_12_1_N49.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_13_1_uI3.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_14_1_7qv.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_15_1_Gay.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_16_1_uPL.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_17_1_cT6.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_18_1_Y7m.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_19_1_HpJ.root',
+#	   '/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_1_1_wvm.root',
+#	   '/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_20_1_7FF.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_21_1_2uu.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_22_1_74F.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_23_1_0lW.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_24_1_DCU.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_25_1_gcN.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_26_1_6iZ.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_27_1_Wdb.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_28_1_obe.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_29_1_mt9.root',
+#	   '/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_2_1_K4H.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_30_1_l1g.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_31_1_1NF.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_32_1_1p9.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_33_1_V62.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_34_1_L1Z.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_35_1_16h.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_36_1_OrL.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_37_1_RnK.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_3_1_Yh1.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_4_1_ZP4.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_5_1_EU6.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_6_1_KPS.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_7_1_RDd.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_8_1_rMd.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_9_1_KPu.root'
 #####################
 # WH120 Monte Carlo #
 #####################
