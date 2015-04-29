@@ -3,6 +3,7 @@
 
 #include "TObject.h"
 #include "TArrayD.h"
+#include "TMath.h"
 #if not defined(__CINT__) || defined(__MAKECINT__)
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
@@ -17,6 +18,7 @@
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
 #include "TAMUWW/MEPATNtuple/interface/ProbsForEPD.hh"
 #include "TAMUWW/MatrixElement/interface/EventProbDefs.hh"
+#include "TAMUWW/SpecialTools/interface/MVAVar.hh"
 
 typedef std::map<double, int> indexMap1;
 typedef std::map<DEFS::EP::Type , indexMap1> indexMap2;
@@ -152,18 +154,32 @@ public:
   // ===================================
   //  TMVA Methods 
   // ===================================
-   UInt_t size;
+   Int_t size;
    Int_t run;
+   Int_t lumi;
    Int_t event;
+   Float_t dPhiJetJet;
+   Float_t dPhiMETJet;
+   Float_t minDPhiMETJet;
+   Float_t minDPhiLepJet;
+   Float_t Cos_dPhiWW;
+   Float_t Cos_dPhiWH;
+   Float_t CosTheta_l;
+   Float_t CosTheta_j;
+   Float_t CosTheta_WH;
+   Float_t JacksonAngle;
+   Float_t JacobePeak;
+   Float_t dRlepjj;
+   Float_t sumJetEt;
+   Float_t KinBDT;
+   Float_t MEBDT;
    TMVA::Reader *reader; //!
-   //std::vector<Float_t> tEventProbMVA;
-   Float_t eventProbMVA[100];
-   Float_t MjjMVA;
 
    // This method sets up the MVA reader.
    // The weights read in by this method must be previously trained.
    // dir is the directory to the weightfiles.
-   void setMVAReader(std::vector<TString> MVAMethods, TString dir);
+   void setMVAReader(std::vector<TString> MVAMethods, TString dir,
+                     std::map<TString,MVAVar>& MVAVars, bool debug = false);
 
    // This method returns the response, error, probability, and rarity of 
    // the MVA classifier specified by the user.
@@ -182,9 +198,8 @@ public:
    void getMVACuts(std::vector<TString> &inputVars, std::vector<TString> &inputLabels, 
                    std::vector<TString> &inputTitles, std::vector<Double_t> &cutsMin, 
                    std::vector<Double_t> &cutsMax, Double_t effS = 0.7);
-   void setMjjMVA(double mjj);
 
-  ClassDef(MicroNtuple, 14)
+  ClassDef(MicroNtuple, 18)
 
 };
 

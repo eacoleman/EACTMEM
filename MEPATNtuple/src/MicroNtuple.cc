@@ -47,9 +47,6 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
   for (int i = 0; i < nJets; ++i)
     bProb[i] = rhs.bProb[i];
 
-  for (int i = 0; i< 100; ++i)
-    eventProbMVA[i] = rhs.eventProbMVA[i];
-
   weight = rhs.weight;
   epd1tag = rhs.epd1tag;
   epd2tag = rhs.epd2tag;
@@ -78,7 +75,7 @@ MicroNtuple::MicroNtuple(const MicroNtuple& rhs)
     epd2tagHiggs[i] = rhs.epd2tagHiggs[i];
   }
 
-  MjjMVA = rhs.MjjMVA;
+//  MjjMVA = rhs.MjjMVA;
   size = rhs.size;
   run = rhs.run;
   event = rhs.event;
@@ -102,9 +99,6 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
 
    for (int i = 0; i < nJets; ++i)
      bProb[i] = rhs.bProb[i];
-
-   for (int i = 0; i< 100; ++i)
-    eventProbMVA[i] = rhs.eventProbMVA[i];  
 
    weight = rhs.weight;
    epd1tag = rhs.epd1tag;
@@ -134,7 +128,7 @@ MicroNtuple& MicroNtuple::operator=(const MicroNtuple& rhs)
      epd2tagHiggs[i] = rhs.epd2tagHiggs[i];
    }
 
-   MjjMVA = rhs.MjjMVA;
+//   MjjMVA = rhs.MjjMVA;
    size = rhs.size;
    run = rhs.run;
    event = rhs.event;
@@ -169,9 +163,6 @@ void MicroNtuple::clear()
   //for (int i = 0; i < nJets; ++i)
     //bProb[i] = 0.;
   
-  for (int i = 0; i < 100; i++)
-    eventProbMVA[i] = 0.;
-
   weight  = 0;
   epd1tag = 0;
   epd2tag = 0;
@@ -202,7 +193,7 @@ void MicroNtuple::clear()
   }
 
   reader = 0;
-  MjjMVA = 0;
+//  MjjMVA = 0;
   size = 0;
   run = 0;
   event = 0;
@@ -806,7 +797,8 @@ Double_t MicroNtuple::triggerTO(double detector, double etalep, double metraw,
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-void MicroNtuple::setMVAReader(vector<TString> MVAMethods, TString dir) {
+void MicroNtuple::setMVAReader(vector<TString> MVAMethods, TString dir,
+                               map<TString,MVAVar>& MVAVars, bool debug) {
    // This loads the library
    TMVA::Tools::Instance();
 
@@ -815,41 +807,50 @@ void MicroNtuple::setMVAReader(vector<TString> MVAMethods, TString dir) {
 
    // Create a set of variables and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-
-   char name[1024];
+   
    TString var;
    //Add non-higgs MEs
-   for (unsigned int i=0; i<size; i++) {
-      //if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14 || I>14)
-      //   continue;
-      var = Form("eventProb%i := eventProb[%i]",i,i);
-      //cout << "eventProb" << name << " = " << eventProb[i] << " (" << (Float_t*)(&eventProb[i]) << ")" << endl;
-      //reader->AddVariable(var, (Float_t*)(&eventProb[i]));
-      reader->AddVariable(var, &(eventProbMVA[i]));
-    }
-   //Add ggH125 ME
-   var = Form("eventProb%i := eventProb[%i]",19,19);
-   reader->AddVariable(var, &(eventProbMVA[19]));
-   //Add WH125 ME
-   var = Form("eventProb%i := eventProb[%i]",54,54);
-   reader->AddVariable(var, &(eventProbMVA[54]));
-   //Add Mjj
-   //TString var = TString("Mjj := Mjj");
-   //reader->AddVariable(var, &MjjMVA);
+   size = 0;
+   map<TString,MVAVar>::iterator firstUsed;
+   map<TString,MVAVar>::iterator firstUsedSpectator;
+   for(firstUsed = MVAVars.begin(); firstUsed!=MVAVars.end(); ++firstUsed) {
+      if(firstUsed->second.use && !firstUsed->second.isSpectator) break;
+   }
+   for(firstUsedSpectator = MVAVars.begin(); firstUsedSpectator!=MVAVars.end(); ++firstUsedSpectator) {
+      if(firstUsedSpectator->second.use && firstUsedSpectator->second.isSpectator) break;
+   }
 
-   // Spectator variables declared in the training have to be added to the reader, too
-   reader->AddSpectator("run := run", &run);
-   //lumi->AddSpectator("lumi := lumi", &lumi);
-   reader->AddSpectator("event := event", &event);
+   while(size!=firstUsed->second.maxIndex) {
+      for(map<TString,MVAVar>::iterator it=MVAVars.begin(); it!=MVAVars.end(); ++it) {
+         if(it->second.use && !it->second.isSpectator && it->second.index == size) {
+            if(debug) cout << "Using variable " << it->second.name << " in the TMVA::Reader" << endl; 
+            reader->AddVariable(it->second.definition,&it->second.value);
+            size++;
+         }
+      }
+   }
+   size = 0;
+   while(size!=firstUsedSpectator->second.maxIndex) {
+      for(map<TString,MVAVar>::iterator it=MVAVars.begin(); it!=MVAVars.end(); ++it) {
+         if(it->second.use && it->second.isSpectator && it->second.index == size) {
+            if(debug) cout << "Using spectator " << it->second.name << " in the TMVA::Reader" << endl;
+            reader->AddSpectator(it->second.name,&it->second.value);
+            size++;
+         }
+      }
+   }
 
    // --- Book the MVA methods
-   //TString dir    = "weights/";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
    for (unsigned int i=0; i<MVAMethods.size(); i++) {
-      TString methodName = MVAMethods[i] + TString(" method");   
-      TString weightfile = dir + prefix + TString("_") + MVAMethods[i] + TString(".weights.xml");
+      TString methodName = MVAMethods[i] + TString(" method");
+      TString weightfile;
+      if(dir.Contains(".xml"))
+        weightfile = dir;
+      else
+        weightfile = dir + prefix + TString("_") + MVAMethods[i] + TString(".weights.xml");
       reader->BookMVA( methodName, weightfile );
    }
 }
@@ -859,14 +860,6 @@ vector<map<TString,Double_t> > MicroNtuple::getMVAOutput(vector<TString> MVAMeth
    // This loads the library
    TMVA::Tools::Instance();
    
-   char name[1024];
-   for (unsigned int i=0; i<size; i++) {
-      eventProbMVA[i] = eventProb[i];
-      //sprintf(name,"%d",i);
-      //cout << "tEventProbMVA" << name << " = " << eventProbMVA[i] << " (" << (&eventProbMVA[i]) << ")" << endl;
-   }
-   //cout << "Response = " << reader->EvaluateMVA("BDT method") << endl;
-
    // Retrieve MVA output, error, probability, and rarity.
    vector<map<TString,Double_t> > outputs;
 
@@ -926,11 +919,6 @@ void MicroNtuple::getMVACuts(std::vector<TString> &inputVars, std::vector<TStrin
          inputTitles.push_back(mcuts->GetInputTitle(ivar));
       }
    }
-}
-
-//------------------------------------------------------------------------------
-void MicroNtuple::setMjjMVA(double mjj) {
-   MjjMVA=mjj;
 }
 
 ClassImp(MicroNtuple)
