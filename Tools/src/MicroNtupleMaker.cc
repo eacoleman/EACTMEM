@@ -376,7 +376,7 @@ void MicroNtupleMaker::makeMicroNtuple(vector<TString> locations, TString output
    chain.SetBranchStatus("*",0);
    chain.SetBranchStatus("event*",1);
    chain.LoadTree(0);
-   Int_t treeEntries = chain.GetTree()->GetEntries();
+   Int_t treeEntries = chain.GetTree()->GetEntries(); treeEntries=treeEntries;
    Long64_t* offsets = chain.GetTreeOffset();
    TTree* tmpTree;
    index = new TTreeIndex();
@@ -807,7 +807,7 @@ void MicroNtupleMaker::writeMissingEventsFile(map<int,int> &missingME) {
    Table* table = new Table("MissingEvents");
    TableRow* tableRow;
    TableCellInt* tableCellInt;
-   int value;
+   //int value;
    int counter = 0;
 
    //for (Int_t index=0; index<missingME.size();index++) {

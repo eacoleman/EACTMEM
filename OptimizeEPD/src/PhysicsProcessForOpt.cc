@@ -84,7 +84,7 @@ void PhysicsProcessForOpt::fillNormEPDHisto(TH1* histo,
                                             double mhiggs, 
                                             const ProbsForEPD & coeffs){
 
-   int tag = 0;
+   int tag = 0; tag=tag;
    if ((tagcat ==  DEFS::pretag) || (tagcat ==  DEFS::eq0tag ))
       tag=0; 
    else if (tagcat ==  DEFS::eq1tag)
