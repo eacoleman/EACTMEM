@@ -123,8 +123,8 @@ vector<TH1D*> skimHistograms(vector<PhysicsProcess*> procs, Table& fileTable, st
    }
       */
       TH1D* temp;
-      if(procs[p]->name.Contains("QCD") && procs[p]->name.Contains("Enriched")) {
-         temp = new TH1D("TPUDist_QCD_ElEnriched","TPUDist_QCD_ElEnriched (jet1+jets2p)",600,0,60);
+      if(procs[p]->name.Contains("QCD")) { //&& procs[p]->name.Contains("Enriched")) {
+         temp = new TH1D(Form("TPUDist_%s",procs[p]->name.Data()),Form("TPUDist_%s (jet1+jets2p)",procs[p]->name.Data()),600,0,60);
          if (!file->cd("PS"))
          {
             cout << "ERROR SkimTPUDist_x::skimHistograms() could not CD into directory PS in file " << cellFile->text << endl;
@@ -214,13 +214,20 @@ TPUDist_QCD_ElEnriched->Write()
 */
 //QCD_ElFULL
 /*
-TFile* fQCD = new TFile("/uscms/home/aperloff/nobackup/Summer12ME8TeV/MEInput/SingleEl_Full.root","READ")
+TFile* fQCD = new TFile("/eos/uscms/store/user/aperloff/MatrixElement/Summer12ME8TeV/MEInput/SingleEl_Full.root","READ")
 TFile* fTPU = new TFile("TPUDistributions.root","UPDATE")
 fQCD->cd("PS")
-TH1D* TPUDist_QCD_ElFULL = new TH1D("TPUDist_QCD_ElFULL","TPUDist_QCD_ElFULL",600,0,60)
-jets2p->Draw("vLV[0].npv>>TPUDist_QCD_ElFULL")
+TH1D* temp = new TH1D("TPUDist_QCD_ElFULL","TPUDist_QCD_ElFULL (jet1+jets2p)",600,0,60)
+TH1D* j1 = new TH1D("j1","pileup_QCD_ElFULL jet1",600,0,60)
+TH1D* j2p = new TH1D("j2p","pileup_QCD_ElFULL jets2p",600,0,60)
+TTree* j1t = (TTree*)gDirectory->Get("jet1")
+TTree* j2pt = (TTree*)gDirectory->Get("jets2p")
+j1t->Draw("vLV[0].npv>>j1")
+j2pt->Draw("vLV[0].npv>>j2p")
+temp->Add(j1)
+temp->Add(j2p)
 fTPU->cd()
-TPUDist_QCD_ElFULL->Write()
+fTPU->Write()
 .q
 */
 //Save jet1 + jet2p
@@ -241,3 +248,41 @@ _file0->cd()
 temp->Write()
 _file0->Write()
  */
+//Split the WH ZH and TTH contributions (i.e. copy same distribution 3 times
+/*
+TFile* fTPU = new TFile("TPUDistributions.root","UPDATE")
+TH1D* orig = (TH1D*) fTPU->Get("TPUDist_WH_ZH_TTH_HToWW_M125")
+TH1D* TPUDist_WH_HToWW_M125 = (TH1D*)orig->Clone("TPUDist_WH_HToWW_M125")
+TH1D* TPUDist_ZH_HToWW_M125 = (TH1D*)orig->Clone("TPUDist_ZH_HToWW_M125")
+TH1D* TPUDist_TTH_HToWW_M125 = (TH1D*)orig->Clone("TPUDist_TTH_HToWW_M125")
+TPUDist_WH_HToWW_M125->Write()
+TPUDist_ZH_HToWW_M125->Write()
+TPUDist_TTH_HToWW_M125->Write()
+TH1D* orig2 = (TH1D*) fTPU->Get("TPUDist_WH_ZH_TTH_HToZZ_M125")
+TH1D* TPUDist_WH_HToZZ_M125 = (TH1D*)orig2->Clone("TPUDist_WH_HToZZ_M125")
+TH1D* TPUDist_ZH_HToZZ_M125 = (TH1D*)orig2->Clone("TPUDist_ZH_HToZZ_M125")
+TH1D* TPUDist_TTH_HToZZ_M125 = (TH1D*)orig2->Clone("TPUDist_TTH_HToZZ_M125")
+TPUDist_WH_HToZZ_M125->Write()
+TPUDist_ZH_HToZZ_M125->Write()
+TPUDist_TTH_HToZZ_M125->Write()
+fTPU->Close()
+*/
+//Add TPUDist to the split WH ZH and TTH files
+/*
+TFile* fMerged = new TFile("/eos/uscms/store/user/aperloff/MatrixElement/Summer12ME8TeV/MEInput/WH_ZH_TTH_HToZZ_M125.root","READ")
+TFile* fWH = new TFile("/eos/uscms/store/user/aperloff/MatrixElement/Summer12ME8TeV/MEInput/WH_HToZZ_M125.root","UPDATE")
+TFile* fZH = new TFile("/eos/uscms/store/user/aperloff/MatrixElement/Summer12ME8TeV/MEInput/ZH_HToZZ_M125.root","UPDATE")
+TFile* fTTH = new TFile("/eos/uscms/store/user/aperloff/MatrixElement/Summer12ME8TeV/MEInput/TTH_HToZZ_M125.root","UPDATE")
+fMerged->cd("PS")
+TH1D* orig = (TH1D*) gDirectory->Get("TPUDist")
+fWH->cd("PS")
+orig->Write()
+fZH->cd("PS")
+orig->Write()
+fTTH->cd("PS")
+orig->Write()
+fWH->Close()
+fZH->Close()
+fTTH->Close()
+fMerged->Close()
+*/
