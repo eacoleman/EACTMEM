@@ -21,6 +21,8 @@ using namespace std;
    vector<TString> processes                 = cl.getVector<TString> ("processes", "ggH125:::qqH125:::WH125:::WW:::WZ:::ZZ:::ZJets:::TTbar:::STopS_T:::STopS_Tbar:::STopT_T:::STopT_Tbar:::STopTW_T:::STopTW_Tbar:::WJets");
    TString         mergeNewEventNtuple       = cl.getValue<TString>  ("mergeNewEventNtuple",                                                       "");
    bool            saveMissingEvents         = cl.getValue<bool>     ("saveMissingEvents",                                                      false);
+   bool            fillBDT                   = cl.getValue<bool>     ("fillBDT",                                                                false);
+   bool            debug                     = cl.getValue<bool>     ("debug",                                                                  false);
 
    if (!cl.check()) return 0;
    cl.print();
@@ -28,6 +30,9 @@ using namespace std;
    TBenchmark* m_benchmark = new TBenchmark();
    m_benchmark->Reset();
    m_benchmark->Start("event");
+
+   // This loads the TMVA library
+   TMVA::Tools::Instance();
 
    if(inputPaths.size()>1 && inputPaths.size()!=processes.size()) {
       cout << "ERROR::makeMicroNtuple_x The size of the inputPaths vector and the processes vector are not the same" << endl
@@ -49,6 +54,8 @@ using namespace std;
       mnm->setProcess(processes[i]);
       mnm->setOutputPath(outputPath);
       mnm->setMissingEventsFlag(saveMissingEvents);
+      mnm->setFillBDT(fillBDT);
+      mnm->setDebug(debug);
       mnm->createMicroNtuple(inputPaths[i],outputPath,largeProcessCase,processes[i]);
       delete mnm;
    }      
