@@ -69,8 +69,9 @@ int main(int argc, char**argv) {
    bool            train            = cl.getValue<bool>         ("train",            true);
    bool            plot             = cl.getValue<bool>         ("plot",             true);
    bool            batch            = cl.getValue<bool>         ("batch",            false);
-   TString         myMethodList     = cl.getValue<TString>      ("myMethodList",     "MLP:::BDT:::KNN");
+   TString         myMethodList     = cl.getValue<TString>      ("myMethodList",     "BDT");
    vector<TString> plots            = cl.getVector<TString>     ("plots",            "");
+   bool            correlationScat  = cl.getValue<bool>         ("correlationScat",  false);
    TString         ofileBase        = cl.getValue<TString>      ("ofileBase",        "TMVA");
    TString         ofile            = cl.getValue<TString>      ("ofile",            "");
    if(!ofile.IsNull())
@@ -83,7 +84,10 @@ int main(int argc, char**argv) {
    DEFS::TagCat    tagcat           = DEFS::getTagCat(tagcatS);
    vector<TString> signals          = cl.getVector<TString>     ("signals",          "ggH125:::qqH125:::WH125");
    vector<TString> backgrounds      = cl.getVector<TString>     ("backgrounds",      "WJets");
+   bool            logEventProbs    = cl.getValue<bool>         ("logEventProbs",    true);
+   bool            maxEventProbs    = cl.getValue<bool>         ("maxEventProbs",    false);
    vector<int>     eventProbs       = cl.getVector<int>         ("eventProbs",       "");
+   vector<TString> kinVar           = cl.getVector<TString>     ("kinVar",           "");
    
    if (!cl.check()) return 0;
    cl.print();
@@ -92,7 +96,8 @@ int main(int argc, char**argv) {
    m_benchmark->Reset();
    m_benchmark->Start("event");
 
-   vector<PhysicsProcess*> processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
+   //vector<PhysicsProcess*> processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
+   vector<PhysicsProcess*> processes = DefaultValues::getProcessesHiggs(DEFS::jets2, tagcat, false, false, DEFS::MicroNtuple);
 
    TAMUWWMVA* mva = new TAMUWWMVA();
    mva->IsBatch(batch);
@@ -101,12 +106,18 @@ int main(int argc, char**argv) {
    mva->setSignals(signals);
    mva->setBackgrounds(backgrounds);
    mva->setLeptonCat(leptonCat);
+   mva->setTagCat(tagcat);
+   mva->setJetBin(jetBin);
    mva->setPlots(plots);
+   mva->setCorrelationScatterPlots(correlationScat);
    mva->setOfileBase(ofileBase);
    mva->setOfile(ofile);
-   if(eventProbs.size()>0) {
+   mva->setLogEventProbs(logEventProbs);
+   mva->setMaxEventProbs(maxEventProbs);
+   if(eventProbs.size()>0)
       mva->setEventProbsToRun(eventProbs);
-   }
+   if(kinVar.size()>0)
+      mva->setKinVarToRun(kinVar);
 
    if (train)
       mva->TMVAClassification();

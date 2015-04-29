@@ -102,19 +102,6 @@ TString TAMUWWMVA::getFilename(TString ofile) {
 }
 
 //______________________________________________________________________________
-int TAMUWWMVA::getTSize() {
-   //int size(0);
-   //TFile* ftemp = TFile::Open(ifilePath + "micro" + ifilesSignal[0] + "_EPDv01.root");
-   //TTree* ttemp = (TTree*)ftemp->Get("METree");
-   //m_tSize = ttemp->GetBranch("m_tSize")->GetLeaf("m_tSize")->GetValue(0);
-   //ttemp->SetBranchAddress("m_tSize",&m_tSize);
-   //ttemp->GetEntry(0);
-   //return m_tSize;
-   return 13;
-   //return MicroNtuple::nEventProb;
-}
-
-//______________________________________________________________________________
 void TAMUWWMVA::TMVAClassification() {
    // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
    // if you use your private .rootrc, or run from a different directory, please copy the 
@@ -242,19 +229,51 @@ void TAMUWWMVA::TMVAClassification() {
    vector<TTree*> background;
    // global event weights per tree (see below for setting event-wise weights)
    //Double_t signalWeight     = 1.0;
-   //Double_t backgroundWeight = 1.0;
-   vector<double> signalWeight;
-   vector<double> backgroundWeight;
+   Double_t signalWeight1    = 1.0;
+   Double_t signalWeight2    = 0.195;
+   Double_t signalWeight3    = 0.453;
+   Double_t backgroundWeight = 1.0;
 
    cout << "--- Factory                  : Weight = ( xsec * BR * scale factor * lumi )/(Evts in PATtuple)" << endl;
    TString sob;
    for(unsigned int p=0; p<processes.size(); p++) {
+      //cout << "name = " << processes[p]->getName() << endl 
+      //     << "\tscaleFactor[none] = " << processes[p]->scaleFactor[DEFS::none] << endl
+      //     << "\tscaleFactor[muon] = " << processes[p]->scaleFactor[DEFS::muon] << endl
+      //     << "\tscaleFactor[electron] = " << processes[p]->scaleFactor[DEFS::electron] << endl
+      //     << "\tscaleFactor[both] = " << processes[p]->scaleFactor[DEFS::both] << endl;
       if (DefaultValues::vfind(signals,processes[p]->getName())>-1) {
-         factory->AddSignalTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         //factory->AddSignalTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         if(processes[p]->getName()=="ggH125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight1);
+            cout << "Weight = " << signalWeight1 << endl;
+         }
+         else if(processes[p]->getName()=="qqH125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight2);
+            cout << "Weight = " << signalWeight2 << endl;
+         }
+         else if(processes[p]->getName()=="WH_ZH_TTH_HToWW_M125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight3);
+            cout << "Weight = " << signalWeight3 << endl;
+         }
+         else if(processes[p]->getName()=="WH_HToWW_M125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight3);
+            cout << "Weight = " << signalWeight3 << endl;
+         }
+         else if(processes[p]->getName()=="ZH_HToWW_M125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight3);
+            cout << "Weight = " << signalWeight3 << endl;
+         }
+         else if(processes[p]->getName()=="TTH_HToWW_M125") {
+            factory->AddSignalTree(processes[p]->chain,signalWeight3);
+            cout << "Weight = " << signalWeight3 << endl;
+         }
          sob = "signal";
       }
       else if (backgrounds.size()>0 && DefaultValues::vfind(backgrounds,processes[p]->getName())>-1) {
-         factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         //factory->AddBackgroundTree(processes[p]->chain, processes[p]->getScaleFactor(leptonCat));
+         factory->AddBackgroundTree(processes[p]->chain, backgroundWeight);
+         cout << "Weight = " << backgroundWeight << endl;
          sob = "background";
       }
       else if (backgrounds.size()>0 && DefaultValues::vfind(backgrounds,processes[p]->getName())<0) {
@@ -269,12 +288,6 @@ void TAMUWWMVA::TMVAClassification() {
            << processes[p]->scaleFactor[leptonCat] << " * " << processes[p]->intLum[leptonCat] << " // " 
            << processes[p]->initial_events[leptonCat] << " = " << processes[p]->getScaleFactor(leptonCat) << endl;
    }
-
-/*
-   for (unsigned int i=0; i<inputs.size(); i++) {
-      cout << "--- TMVAClassification : Using input file: " << inputs[i]->GetName() << "(METree)" << endl;
-   }
-*/
 
    // ====== register trees ====================================================
    //
@@ -329,46 +342,50 @@ void TAMUWWMVA::TMVAClassification() {
 
    // Define the input variables that shall be used for the MVA training
    /*************************************************************/
-   int size = getTSize(); //////////FIX THIS!!! FIX THIS!!! FIX THIS!!!
-   cout << "--- Factory                  : Number of variables: " << size << endl;
-   /*************************************************************/
-   char name[1024];
-   TString var;
-   //Add non-higgs MEs
-   if(eventProbs.size()>0) {
+   MVAVar::setVarMap(varMap);
+   cout << "--- Factory                  : Number of variables available in the varMap: " << varMap.size() << endl;
+   int size = MVAVar::getTSize(); //////////FIX THIS!!! FIX THIS!!! FIX THIS!!!
+
+   TString logString = "";
+   if(logEventProbs) logString = "log";
+   TString maxString = "";
+   if(maxEventProbs) maxString = "Max";
+
+   //check that a null string was not put into the vector of ints
+   if(eventProbs.size()==1 && (eventProbs[0]>61 || eventProbs[0]<-1))
+      eventProbs.pop_back();
+   // if the first entry of eventProbs is -1 then do not use any eventProbs in the training
+   if(eventProbs.size()>0 && eventProbs[0]>-1) {
       for (unsigned int i=0; i<eventProbs.size(); i++) {
-         //if (i==10 || i==1 || i==13 || i==12 | i==9 | i==14)
-         //   continue;
-         var = Form("eventProb%i := eventProb[%i]",eventProbs[i],eventProbs[i]);
-         cout << "--- Factory                  : Adding variable: " << var << endl;
-         factory->AddVariable(var);
+         vars.push_back(Form("%sEvent%sProb%i",logString.Data(),maxString.Data(),eventProbs[i]));
       }
    }
-   else {
+   else if (eventProbs.size()==0){
       for (int i=0; i<size; i++) {
-         //if (i==10 || i==1 || i==13 || i==12 || i==9 || i==14)
-         //   continue;
-         sprintf(name,"%d",i);
-         var = TString("eventProb") + name + " := eventProb[" + name + "]";
-         cout << "--- Factory                  : Adding variable: " << var << endl;
-         factory->AddVariable(var);
+         vars.push_back(Form("%sEvent%sProb%i",logString.Data(),maxString.Data(),i));
       }
       //Add ggH125 ME
-      sprintf(name,"%d",19);
-      var = TString("eventProb") + name + " := eventProb[" + name + "]";
-      cout << "--- Factory                  : Adding variable: " << var << endl;
-      factory->AddVariable(var);
+      vars.push_back(Form("%sEvent%sProb%i",logString.Data(),maxString.Data(),19));
       //Add WH125 ME
-      sprintf(name,"%d",54);
-      var = TString("eventProb") + name + " := eventProb[" + name + "]";
-      cout << "--- Factory                  : Adding variable: " << var << endl;
-      factory->AddVariable(var);
-      //Add Mjj
-      //var = TString("Mjj := Mjj");
-      //cout << "--- Factory                  : Adding variable: " << var << endl;
-      //factory->AddVariable(var);
+      vars.push_back(Form("%sEvent%sProb%i",logString.Data(),maxString.Data(),54));
    }
-  
+   for (unsigned int ivar=0; ivar<kinVar.size(); ivar++) {
+      if(kinVar.size()==1 && kinVar[ivar].IsNull()) continue;
+      if(varMap.find(kinVar[ivar])==varMap.end()) {
+         cout << "ERROR::TAMUWWMVA Cannot find the variable " << kinVar[ivar] << " in the varMap." << endl;
+         assert(varMap.find(kinVar[ivar])!=varMap.end());
+      }
+      vars.push_back(kinVar[ivar]);
+   }
+ 
+   for(unsigned int ivar=0; ivar<vars.size(); ivar++) {
+      cout << "--- Factory                  : Adding variable: " << vars[ivar] << endl;
+      factory->AddVariable(varMap[vars[ivar]].definition.Data(),varMap[vars[ivar]].name.Data(),
+                           varMap[vars[ivar]].unit.Data(),varMap[vars[ivar]].type);
+   }
+   cout << "--- Factory                  : Number of variables: " << vars.size() << endl;
+   /*************************************************************/
+
    // You can add so-called "Spectator variables", which are not used in the MVA training, 
    // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
    // input variables, the response values of all trained MVAs, and the spectator variables
@@ -388,9 +405,23 @@ void TAMUWWMVA::TMVAClassification() {
    TString leptonCatString = Form("leptonCat==%i",leptonCatNumber);
    TCut leptonCatCut(leptonCatString);
    TCut lpt("((leptonCat==1) && (lLV[0].Pt()>25.0)) || ((leptonCat==2) && (lLV[0].Pt()>30.0))");
+   TCut leta("((leptonCat==1) && (TMath::Abs(lLV[0].Eta())<2.1)) || ((leptonCat==2) && (TMath::Abs(lLV[0].Eta())<2.5))");
    TCut METPt("METLV[0].Pt()>25.0");
    TCut jPt1("jLV[0].Pt()>30.0");
    TCut jPt2("jLV[1].Pt()>25.0");
+   TCut jEta1("TMath::Abs(jLV[0].Eta())<2.4");
+   TCut jEta2("TMath::Abs(jLV[1].Eta())<2.4");
+   TCut eq0tag("Sum$(jLV.jBtagCSV==1)==0");
+   TCut eq1tag("Sum$(jLV.jBtagCSV==1)==1");
+   TCut eq2tag("Sum$(jLV.jBtagCSV==1)==2");
+   TCut ge0tag("Sum$(jLV.jBtagCSV==1)>=0");
+   TCut ge1tag("Sum$(jLV.jBtagCSV==1)>=1");
+   TCut ge2tag("Sum$(jLV.jBtagCSV==1)>=2");
+   TCut jets2Bin("@jLV.size()==2");
+   TCut jets3Bin("@jLV.size()==3");
+   TCut jets4pBin("@jLV.size()>=4");
+   TCut validity("TMath::Log(eventProb)>-1000");
+   TCut noNaN("TMath::IsNaN(CosTheta_l)==0 && CosTheta_l!=-999.0");
    TCut null("");
    TCut branchStatus1("Entry$>-2");
 
@@ -404,7 +435,31 @@ void TAMUWWMVA::TMVAClassification() {
    //TCut mycuts (null);
    //TCut mycuts (branchStatus1 && leptonCatCut && lpt && METEt && jPt1 && jPt2 && DEtajj && jjPt && DPhiMETj1 && wmt);
    //TCut mycuts (test);
-   TCut mycuts (branchStatus1 && leptonCatCut && lpt && METPt && jPt1 && jPt2);
+   TCut mycuts = TCut(branchStatus1 && validity && noNaN && lpt && leta && METPt && jPt1 && jPt2 && jEta1 && jEta2);
+   if(leptonCat != DEFS::both) {
+      mycuts+=leptonCatCut;
+      //mycuts = TCut(branchStatus1 && validity && leptonCatCut && lpt && METPt && jPt1 && jPt2);
+   }
+   if(jetBin == DEFS::jets2)
+      mycuts+=jets2Bin;
+   else if(jetBin == DEFS::jets3)
+      mycuts+=jets3Bin;
+   else if(jetBin == DEFS::jets4)
+      mycuts+=jets4pBin;
+   if(tagCat != DEFS::pretag && tagCat == DEFS::eq0tag)
+      mycuts+=eq0tag;
+   else if(tagCat != DEFS::pretag && tagCat == DEFS::eq1tag)
+      mycuts+=eq1tag;
+   else if(tagCat != DEFS::pretag && tagCat == DEFS::eq2tag)
+      mycuts+=eq2tag;
+   else if(tagCat != DEFS::pretag && tagCat == DEFS::ge0tag)
+      mycuts+=ge0tag;
+   else if(tagCat != DEFS::pretag && tagCat == DEFS::ge1tag)
+      mycuts+=ge1tag;
+   else if(tagCat != DEFS::pretag && tagCat == DEFS::ge2tag)
+      mycuts+=ge2tag;
+   // else
+      // mycuts = TCut(branchStatus1 && validity && lpt && METPt && jPt1 && jPt2);
 
    // tell the factory to use all remaining events in the trees after training for testing:
    factory->PrepareTrainingAndTestTree(mycuts, mycuts,"nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:"
@@ -818,7 +873,8 @@ void TAMUWWMVA::Plot() {
          subCommand = Form( ".x %s/correlationscatters.C(\"%s\",\"%s\",\"%s\",\"%s\",%i)", 
                             "$CMSSW_BASE/src/TAMUWW/MVA/macros", (odir+ofile).Data(), Var[ic].Data(), str->GetString().Data(), subTitle.Data(), (Int_t)kFALSE );
          
-         lines_to_process.push_back(make_pair(subTitle,subCommand));
+         if(correlationScat)
+            lines_to_process.push_back(make_pair(subTitle,subCommand));
          ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, subTitle, str->GetString());    
       }
       
@@ -862,7 +918,7 @@ void TAMUWWMVA::Plot() {
    ++ic;
    vector<Float_t> fNSignal,fNBackground;
    fNSignal.push_back(1000);
-   fNSignal.push_back(1898);
+   fNSignal.push_back(51386);
    //fNSignal.push_back(3796);
    fNBackground.push_back(1000);
    fNBackground.push_back(112883);
@@ -874,7 +930,7 @@ void TAMUWWMVA::Plot() {
    for (unsigned int isig=0; isig<fNSignal.size(); isig++) {
       title = Form( "(%ia) Classifier Cut Efficiencies", ic );
       command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/mvaeffs_noGUI.C+(%f,%f,\"%s\")", fNSignal[isig], fNBackground[isig], (odir+ofile).Data() );
-      lines_to_process.push_back(make_pair(title,command));
+      //lines_to_process.push_back(make_pair(title,command));
 
       DefaultValues::DestroyCanvases();
    }
@@ -882,6 +938,11 @@ void TAMUWWMVA::Plot() {
 
    title = Form( "(%ib) Classifier Background Rejection vs Signal Efficiency (ROC curve)", ic );
    command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/efficiencies.C(\"%s\")", (odir+ofile).Data() );
+   lines_to_process.push_back(make_pair(title,command));
+   ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
+
+   title = Form( "(%ib) Classifier Background Rejection vs Signal Efficiency (ROC curve) Simplified", ic );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/ROC_FOM.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, defaultRequiredClassifier);
 
@@ -916,7 +977,7 @@ void TAMUWWMVA::Plot() {
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "BDT");
 
    title = Form( "(%i) Plot Foams (PDEFoam)", ++ic );
-   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/PlotFoams.C", (odir+ofile).Data() );
+   command = Form( ".x $CMSSW_BASE/src/TAMUWW/MVA/macros/PlotFoams.C(\"%s\")", (odir+ofile).Data() );
    lines_to_process.push_back(make_pair(title,command));
    ActionButton(TMVAGui_inactiveButtons, TMVAGui_keyContent, title, "PDEFoam");
 

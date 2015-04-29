@@ -269,6 +269,8 @@ namespace TMVAGlob {
          TString pngName = fname + ".png";
          TString gifName = fname + ".gif";
          TString epsName = fname + ".eps";
+         TString pdfName = fname + ".pdf";
+         TString cName   = fname + ".C";
          c->cd();
 
          // create eps (other option: c->Print( epsName ))
@@ -280,8 +282,10 @@ namespace TMVAGlob {
             cout << "--- If you want to save the image as eps, gif or png, please comment out " << endl;
             cout << "--- the corresponding lines (line no. 239-241) in tmvaglob.C" << endl;
             cout << "--- --------------------------------------------------------------------" << endl;
-            c->Print(epsName);
-            c->Print(pngName);
+            //c->Print(epsName);
+            c->Print(pdfName);
+            c->Print(cName);
+            //c->Print(pngName);
             // c->Print(gifName);
          }
       }

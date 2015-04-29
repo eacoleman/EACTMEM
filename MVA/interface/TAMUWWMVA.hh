@@ -16,6 +16,7 @@
 //
 // User Defined Includes
 //
+#include "TAMUWW/SpecialTools/interface/MVAVar.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
@@ -63,6 +64,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <assert.h>
 
 //
 // Namespace
@@ -90,9 +92,6 @@ public:
    /// end if the filename already exists. The default integer to append is 1.
    TString getFilename(TString ofile = "TMVA");
 
-   /// returns the number of variables that will be trained upon
-   int getTSize();
-   
    /// major function for booking and analyzing MVA methods
    void TMVAClassification();
    
@@ -118,21 +117,30 @@ public:
    void setSignals(vector<TString> s) {signals = s;}
    void setBackgrounds(vector<TString> b) {backgrounds = b;}
    void setLeptonCat(DEFS::LeptonCat lc) {leptonCat = lc;}
+   void setTagCat(DEFS::TagCat tc) {tagCat = tc;}
+   void setJetBin(DEFS::JetBin jb) {jetBin = jb;}
    void setPlots(vector<TString> p) {plots = p;}
+   void setCorrelationScatterPlots(bool cs) {correlationScat = cs;}
    void setOfileBase(TString ofb) {ofileBase = ofb;}
    void setOfile(TString of) {ofile = of;}
+   void setLogEventProbs(bool lep) {logEventProbs = lep;}
+   void setMaxEventProbs(bool mep) {maxEventProbs = mep;}
    void setEventProbsToRun(vector<int> ep){eventProbs = ep;}
+   void setKinVarToRun(vector<TString> kv){kinVar = kv;}
 
 private:
    //
    // Member Data
    //
-   bool batch;
+   bool batch, correlationScat, logEventProbs, maxEventProbs;
    TString myMethodList, ofileBase, ofile, odir;
    vector<PhysicsProcess*> processes;
-   vector<TString> signals, backgrounds, plots;
+   vector<TString> signals, backgrounds, plots, vars, kinVar;
    vector<int> eventProbs;
    DEFS::LeptonCat leptonCat;
+   DEFS::TagCat tagCat;
+   DEFS::JetBin jetBin;
+   map<TString,MVAVar> varMap;
 
    ClassDef(TAMUWWMVA,1)
 };

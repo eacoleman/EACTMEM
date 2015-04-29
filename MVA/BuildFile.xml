@@ -1,5 +1,6 @@
 <use   name="TAMUWW/SpecialTools"/>
 <use   name="TAMUWW/MEPATNtuple"/>
+<use   name="TAMUWW/Tools"/>
 <use   name="FWCore/Framework"/>
 <use   name="FWCore/PluginManager"/>
 <use   name="FWCore/ParameterSet"/>
