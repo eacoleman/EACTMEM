@@ -344,7 +344,7 @@ vector<PhysicsProcessForOpt*> loadProcessesIntoMemory(DEFS::Ana::Type anaType, D
     phy_processes = DefaultValues::getProcessesHiggs(jetBin, tagcat, false, false, DEFS::MicroNtuple);
   }
   else if(anaType == DEFS::Ana::UNKNOWN){
-     phy_processes = DefaultValues::getProcessesTest(jetBin, tagcat, false, false);
+     phy_processes = DefaultValues::getProcessesTest(jetBin, tagcat, false, false, DEFS::MicroNtuple);
   }
 
   // Now construct a set of PhysicsProcessForOpt out of them
