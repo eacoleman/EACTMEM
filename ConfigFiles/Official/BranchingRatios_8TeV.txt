@@ -1,153 +1,173 @@
 # BranchingRatios (pb) : Higgs (ggH & qqH) taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt8TeV
 # BranchingRatios (pb) : Higgs (WH) taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR2 (may be old)
 # On the left is the process name.
-CellClass=TableCellVal
+CellClass=TableCellMixed
 
-Process     				|      BranchingRatio
-Data        				|  1.000 	+/- 0.00 
-SingleEl_Data				|  1.000 	+/- 0.00 
-SingleMu_Data				|  1.000 	+/- 0.00 
-STopS_T    					|  1.000 	+/- 0.00
-STopS_Tbar 					|  1.000 	+/- 0.00
-STopT_T    					|  1.000 	+/- 0.00
-STopT_Tbar 					|  1.000 	+/- 0.00
-STopTW_T   					|  1.000 	+/- 0.00
-STopTW_Tbar					|  1.000 	+/- 0.00
-TTbar     					|  1.000 	+/- 0.00
-TTbarLJ   					|  1.000 	+/- 0.00 
-TTbarDil  					|  1.000 	+/- 0.00  
-Wbb       					|  1.000 	+/- 0.00 
-Wcc       					|  1.000 	+/- 0.00 
-WLight    					|  1.000 	+/- 0.00 
-WJets     					|  1.000 	+/- 0.00
-W1Jets     					|  1.000 	+/- 0.00
-W2Jets     					|  1.000 	+/- 0.00
-W3Jets     					|  1.000 	+/- 0.00
-W4Jets     					|  1.000 	+/- 0.00
-WpJ     					|  1.000 	+/- 0.00 
-ZJets     					|  1.000 	+/- 0.00
-DYJets                  	|  1.000 	+/- 0.00
-ZpJ     		        	|  1.000 	+/- 0.00
-QCD       		        	|  1.000 	+/- 0.00 
-QCD_Pt20_MuEnriched      	|  1.000 	+/- 0.00
-QCD_MuEnriched           	|  1.000 	+/- 0.00
-QCD_MuFULL               	|  1.000 	+/- 0.00
-QCD_ElEnriched           	|  1.000 	+/- 0.00
-QCD_ElFULL               	|  1.000 	+/- 0.00
-QCD_Pt20to30_EMEnriched  	|  1.000 	+/- 0.00
-QCD_Pt30to80_EMEnriched  	|  1.000 	+/- 0.00
-QCD_Pt80to170_EMEnriched 	|  1.000 	+/- 0.00
-QCD_Pt170to250_EMEnriched	|  1.000 	+/- 0.00
-QCD_Pt250to350_EMEnriched	|  1.000 	+/- 0.00
-QCD_Pt350_EMEnriched     	|  1.000 	+/- 0.00
-QCD_Pt20to30_BCtoE       	|  1.000 	+/- 0.00
-QCD_Pt30to80_BCtoE       	|  1.000 	+/- 0.00
-QCD_Pt80to170_BCtoE      	|  1.000 	+/- 0.00
-WW        					|  1.000    +/- 0.00 
-WZ        					|  1.000    +/- 0.00
-ZZ        					|  1.000    +/- 0.00
-WH100						|  0.0109	+/-	0.0006213
-WH105						|  0.024	+/-	0.001344
-WH110						|  0.0477	+/-	0.0025758
-WH115						|  0.086	+/-	0.004472
-WH120						|  0.141	+/-	0.006768
-WH125						|  0.215	+/-	0.009245
-WH130						|  0.303	+/-	0.011211
-WH135						|  0.4	    +/-	0.012
-WH140						|  0.501	+/-	0.008517
-WH145						|  0.6	    +/-	0.0078
-WH150						|  0.696	+/-	0.006264
-WH160						|  0.908	+/-	0.001816
-WH170						|  0.964	+/-	0.000964
-WH180						|  0.932	+/-	0.0
-WH190						|  0.786	+/-	0.0
-WH200						|  0.741	+/-	0.0
-WH250						|  0.701	+/-	0.0
-WH300						|  0.692	+/-	0.0
-WH350						|  0.676	+/-	0.01352
-WH400						|  0.582	+/-	0.018042
-WH450						|  0.551	+/-	0.015979
-WH500						|  0.546	+/-	0.013104
-WH550						|  0.55	    +/-	0.0132
-WH600						|  0.558	+/-	0.01395
-WH650						|  0.568	+/-	0.014768
-WH700						|  0.577	+/-	0.015002
-WH750						|  0.586	+/-	0.015236
-WH800						|  0.594	+/-	0.016038
-WH850						|  0.602	+/-	0.016254
-WH900						|  0.609	+/-	0.017052
-WH950						|  0.616	+/-	0.017248
-WH1000						|  0.621	+/-	0.018009
-ggH100						|  0.00161  +/- 0.00
-ggH105						|  0.00352  +/- 0.00
-ggH110						|  0.00699  +/- 0.00
-ggH115						|  0.0126   +/- 0.00
-ggH120						|  0.0207   +/- 0.00
-ggH125						|  0.0314   +/- 0.00
-ggH130						|  0.0443   +/- 0.00
-ggH135						|  0.0586   +/- 0.00
-ggH140						|  0.0734   +/- 0.00
-ggH145						|  0.0879   +/- 0.00
-ggH150						|  0.102    +/- 0.00
-ggH160						|  0.133    +/- 0.00
-ggH170						|  0.141    +/- 0.00
-ggH180						|  0.137    +/- 0.00
-ggH190						|  0.115    +/- 0.00
-ggH200						|  0.108    +/- 0.00
-ggH250						|  0.103    +/- 0.00
-ggH300						|  0.101    +/- 0.00
-ggH350						|  0.0990   +/- 0.00
-ggH400						|  0.0852   +/- 0.00
-ggH450						|  0.0808   +/- 0.00
-ggH500						|  0.0800   +/- 0.00
-ggH550						|  0.0806   +/- 0.00
-ggH600						|  0.0818   +/- 0.00
-ggH650						|  0.0832   +/- 0.00
-ggH700						|  0.0846   +/- 0.00
-ggH750						|  0.0859   +/- 0.00
-ggH800						|  0.0872   +/- 0.00
-ggH850						|  0.0883   +/- 0.00
-ggH900						|  0.0894   +/- 0.00
-ggH950						|  0.0903   +/- 0.00
-ggH1000						|  0.0912   +/- 0.00
-qqH100						|  0.00161  +/- 0.00
-qqH105						|  0.00352  +/- 0.00
-qqH110						|  0.00699  +/- 0.00
-qqH115						|  0.0126   +/- 0.00
-qqH120						|  0.0207   +/- 0.00
-qqH125						|  0.0314   +/- 0.00
-qqH130						|  0.0443   +/- 0.00
-qqH135						|  0.0586   +/- 0.00
-qqH140						|  0.0734   +/- 0.00
-qqH145						|  0.0879   +/- 0.00
-qqH150						|  0.102    +/- 0.00
-qqH160						|  0.133    +/- 0.00
-qqH170						|  0.141    +/- 0.00
-qqH180						|  0.137    +/- 0.00
-qqH190						|  0.115    +/- 0.00
-qqH200						|  0.108    +/- 0.00
-qqH250						|  0.103    +/- 0.00
-qqH300						|  0.101    +/- 0.00
-qqH350						|  0.0990   +/- 0.00
-qqH400						|  0.0852   +/- 0.00
-qqH450						|  0.0808   +/- 0.00
-qqH500						|  0.0800   +/- 0.00
-qqH550						|  0.0806   +/- 0.00
-qqH600						|  0.0818   +/- 0.00
-qqH650						|  0.0832   +/- 0.00
-qqH700						|  0.0846   +/- 0.00
-qqH750						|  0.0859   +/- 0.00
-qqH800						|  0.0872   +/- 0.00
-qqH850						|  0.0883   +/- 0.00
-qqH900						|  0.0894   +/- 0.00
-qqH950						|  0.0903   +/- 0.00
-qqH1000						|  0.0912   +/- 0.00 
-
-
-
-
-
-
-
-
+Process     				 |      BranchingRatio       |  Comment
+Data        				 |  1.000 	 +/- 0.00        |  Inclusive
+SingleEl_Data				 |  1.000 	 +/- 0.00        |  Inclusive
+SingleMu_Data				 |  1.000 	 +/- 0.00        |  Inclusive
+STopS_T    					 |  1.000 	 +/- 0.00        |  Inclusive
+STopS_Tbar 					 |  1.000 	 +/- 0.00        |  Inclusive
+STopT_T    					 |  1.000 	 +/- 0.00        |  Inclusive
+STopT_Tbar 					 |  1.000 	 +/- 0.00        |  Inclusive
+STopTW_T   					 |  1.000 	 +/- 0.00        |  Inclusive
+STopTW_Tbar					 |  1.000 	 +/- 0.00        |  Inclusive
+TTbar     					 |  1.000 	 +/- 0.00        |  Inclusive
+TTbar_JESUp					 |  1.000 	 +/- 0.00        |  Inclusive
+TTbar_JESDown				 |  1.000 	 +/- 0.00        |  Inclusive
+TTbarLJ   					 |  1.000 	 +/- 0.00        |  Inclusive
+TTbarDil  					 |  1.000 	 +/- 0.00        |  Inclusive
+Wbb       					 |  1.000 	 +/- 0.00        |  Inclusive
+Wcc       					 |  1.000 	 +/- 0.00        |  Inclusive
+WLight    					 |  1.000 	 +/- 0.00        |  Inclusive
+WJets     					 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_JESUp					 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_JESDown				 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_matchingup			 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_matchingdown			 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_scaleup     			 |  1.000 	 +/- 0.00        |  Inclusive
+WJets_scaledown     		 |  1.000 	 +/- 0.00        |  Inclusiev
+W1Jets     					 |  1.000 	 +/- 0.00        |  Inclusive
+W2Jets     					 |  1.000 	 +/- 0.00        |  Inclusive
+W3Jets     					 |  1.000 	 +/- 0.00        |  Inclusive
+W4Jets     					 |  1.000 	 +/- 0.00        |  Inclusive
+WpJ     					 |  1.000 	 +/- 0.00        |  Inclusive
+ZJets     					 |  1.000 	 +/- 0.00        |  Inclusive
+DYJets                  	 |  1.000 	 +/- 0.00        |  Inclusive
+ZpJ     		        	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD       		        	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt20_MuEnriched      	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_MuEnriched           	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_MuFULL               	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_ElEnriched           	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_ElFULL               	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt20to30_EMEnriched  	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt30to80_EMEnriched  	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt80to170_EMEnriched 	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt170to250_EMEnriched	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt250to350_EMEnriched	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt350_EMEnriched     	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt20to30_BCtoE       	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt30to80_BCtoE       	 |  1.000 	 +/- 0.00        |  Inclusive
+QCD_Pt80to170_BCtoE      	 |  1.000 	 +/- 0.00        |  Inclusive
+WW        					 |  1.000    +/- 0.00        |  Inclusive
+WZ        					 |  1.000    +/- 0.00        |  Inclusive
+ZZ        					 |  1.000    +/- 0.00        |  Inclusive
+WH100						 |  0.0109	 +/- 0.0006213   |  WRONG
+WH105						 |  0.024	 +/- 0.001344    |  WRONG
+WH110						 |  0.0477	 +/- 0.0025758   |  WRONG
+WH115						 |  0.086	 +/- 0.004472    |  WRONG
+WH120						 |  0.141	 +/- 0.006768    |  WRONG
+WH125						 |  0.187929 +/- 0.00        |  W->l(e,mu,tau)nu * H(125)->bb
+WH125_HToBB                  |  0.187929 +/- 0.00        |  W->l(e,mu,tau)nu * H(125)->bb
+WH_HToBB_M125_JESUp          |  0.187929 +/- 0.00        |  W->l(e,mu,tau)nu * H(125)->bb
+WH_HToBB_M125_JESDown        |  0.187929 +/- 0.00        |  W->l(e,mu,tau)nu * H(125)->bb
+WH125_HToZG                  |  0.001540 +/- 0.00        |  H->Zgamma
+WH130						 |  0.303	 +/- 0.011211    |  WRONG
+WH135						 |  0.4	     +/- 0.012       |  WRONG
+WH140						 |  0.501	 +/- 0.008517    |  WRONG
+WH145						 |  0.6	     +/- 0.0078      |  WRONG
+WH150						 |  0.696	 +/- 0.006264    |  WRONG
+WH160						 |  0.908	 +/- 0.001816    |  WRONG
+WH170						 |  0.964	 +/- 0.000964    |  WRONG
+WH180						 |  0.932	 +/- 0.00        |  WRONG
+WH190						 |  0.786	 +/- 0.00        |  WRONG
+WH200						 |  0.741	 +/- 0.00        |  WRONG
+WH250						 |  0.701	 +/- 0.00        |  WRONG
+WH300						 |  0.692	 +/- 0.00        |  WRONG
+WH350						 |  0.676	 +/- 0.01352     |  WRONG
+WH400						 |  0.582	 +/- 0.018042    |  WRONG
+WH450						 |  0.551	 +/- 0.015979    |  WRONG
+WH500						 |  0.546	 +/- 0.013104    |  WRONG
+WH550						 |  0.55	 +/- 0.0132      |  WRONG
+WH600						 |  0.558	 +/- 0.01395     |  WRONG
+WH650						 |  0.568	 +/- 0.014768    |  WRONG
+WH700						 |  0.577	 +/- 0.015002    |  WRONG
+WH750						 |  0.586	 +/- 0.015236    |  WRONG
+WH800						 |  0.594	 +/- 0.016038    |  WRONG
+WH850						 |  0.602	 +/- 0.016254    |  WRONG
+WH900						 |  0.609	 +/- 0.017052    |  WRONG
+WH950						 |  0.616	 +/- 0.017248    |  WRONG
+WH1000						 |  0.621	 +/- 0.018009    |  WRONG
+ggH100						 |  0.00161  +/- 0.00        |  WRONG
+ggH105						 |  0.00352  +/- 0.00        |  WRONG
+ggH110						 |  0.00699  +/- 0.00        |  WRONG
+ggH115						 |  0.0126   +/- 0.00        |  WRONG
+ggH120						 |  0.0207   +/- 0.00        |  WRONG
+ggH125						 |  0.0947   +/- 0.00        |  H->WW * W+->l(e,mu,tau)nu * W+->jj * 2
+ggH130						 |  0.0443   +/- 0.00        |  WRONG
+ggH135						 |  0.0586   +/- 0.00        |  WRONG
+ggH140						 |  0.0734   +/- 0.00        |  WRONG
+ggH145						 |  0.0879   +/- 0.00        |  WRONG
+ggH150						 |  0.102    +/- 0.00        |  WRONG
+ggH160						 |  0.133    +/- 0.00        |  WRONG
+ggH170						 |  0.141    +/- 0.00        |  WRONG
+ggH180						 |  0.137    +/- 0.00        |  WRONG
+ggH190						 |  0.115    +/- 0.00        |  WRONG
+ggH200						 |  0.108    +/- 0.00        |  WRONG
+ggH250						 |  0.103    +/- 0.00        |  WRONG
+ggH300						 |  0.101    +/- 0.00        |  WRONG
+ggH350						 |  0.0990   +/- 0.00        |  WRONG
+ggH400						 |  0.0852   +/- 0.00        |  WRONG
+ggH450						 |  0.0808   +/- 0.00        |  WRONG
+ggH500						 |  0.0800   +/- 0.00        |  WRONG
+ggH550						 |  0.0806   +/- 0.00        |  WRONG
+ggH600						 |  0.0818   +/- 0.00        |  WRONG
+ggH650						 |  0.0832   +/- 0.00        |  WRONG
+ggH700						 |  0.0846   +/- 0.00        |  WRONG
+ggH750						 |  0.0859   +/- 0.00        |  WRONG
+ggH800						 |  0.0872   +/- 0.00        |  WRONG
+ggH850						 |  0.0883   +/- 0.00        |  WRONG
+ggH900						 |  0.0894   +/- 0.00        |  WRONG
+ggH950						 |  0.0903   +/- 0.00        |  WRONG
+ggH1000						 |  0.0912   +/- 0.00        |  WRONG
+qqH100						 |  0.00161  +/- 0.00        |  WRONG
+qqH105						 |  0.00352  +/- 0.00        |  WRONG
+qqH110						 |  0.00699  +/- 0.00        |  WRONG
+qqH115						 |  0.0126   +/- 0.00        |  WRONG
+qqH120						 |  0.0207   +/- 0.00        |  WRONG
+qqH125						 |  0.0947   +/- 0.00        |  H->WW * W->l(e,mu,tau)nu * W->jj * 2
+qqH125_JESUp				 |  0.0947   +/- 0.00        |  H->WW * W->l(e,mu,tau)nu * W->jj * 2
+qqH125_JESDown				 |  0.0947   +/- 0.00        |  H->WW * W->l(e,mu,tau)nu * W->jj * 2
+qqH130						 |  0.0443   +/- 0.00        |  WRONG
+qqH135						 |  0.0586   +/- 0.00        |  WRONG
+qqH140						 |  0.0734   +/- 0.00        |  WRONG
+qqH145						 |  0.0879   +/- 0.00        |  WRONG
+qqH150						 |  0.102    +/- 0.00        |  WRONG
+qqH160						 |  0.133    +/- 0.00        |  WRONG
+qqH170						 |  0.141    +/- 0.00        |  WRONG
+qqH180						 |  0.137    +/- 0.00        |  WRONG
+qqH190						 |  0.115    +/- 0.00        |  WRONG
+qqH200						 |  0.108    +/- 0.00        |  WRONG
+qqH250						 |  0.103    +/- 0.00        |  WRONG
+qqH300						 |  0.101    +/- 0.00        |  WRONG
+qqH350						 |  0.0990   +/- 0.00        |  WRONG
+qqH400						 |  0.0852   +/- 0.00        |  WRONG
+qqH450						 |  0.0808   +/- 0.00        |  WRONG
+qqH500						 |  0.0800   +/- 0.00        |  WRONG
+qqH550						 |  0.0806   +/- 0.00        |  WRONG
+qqH600						 |  0.0818   +/- 0.00        |  WRONG
+qqH650						 |  0.0832   +/- 0.00        |  WRONG
+qqH700						 |  0.0846   +/- 0.00        |  WRONG
+qqH750						 |  0.0859   +/- 0.00        |  WRONG
+qqH800						 |  0.0872   +/- 0.00        |  WRONG
+qqH850						 |  0.0883   +/- 0.00        |  WRONG
+qqH900						 |  0.0894   +/- 0.00        |  WRONG
+qqH950						 |  0.0903   +/- 0.00        |  WRONG
+qqH1000						 |  0.0912   +/- 0.00        |  WRONG
+WH_ZH_TTH_HToWW_M125         |  0.2150   +/- 0.00        |  H(125)->WW
+WH_ZH_TTH_HToWW_M125_JESUp   |  0.2150   +/- 0.00        |  H(125)->WW
+WH_ZH_TTH_HToWW_M125_JESDown |  0.2150   +/- 0.00        |  H(125)->WW
+WH_HToWW_M125 			     |  0.2150   +/- 0.00        |  H(125)->WW
+ZH_HToWW_M125 			     |  0.2150   +/- 0.00        |  H(125)->WW
+TTH_HToWW_M125			     |  0.2150   +/- 0.00        |  H(125)->WW
+WH_ZH_TTH_HToZZ_M125         |  0.0264   +/- 0.00        |  H(125)->ZZ
+WH_ZH_TTH_HToZZ_M125_JESUp   |  0.0264   +/- 0.00        |  H(125)->ZZ
+WH_ZH_TTH_HToZZ_M125_JESDown |  0.0264   +/- 0.00        |  H(125)->ZZ
+WH_HToZZ_M125 			     |  0.0264   +/- 0.00        |  H(125)->ZZ
+ZH_HToZZ_M125 			     |  0.0264   +/- 0.00        |  H(125)->ZZ
+TTH_HToZZ_M125			     |  0.0264   +/- 0.00        |  H(125)->ZZ
+TTH_HToBB_M125               |  0.5770   +/- 0.00        |  H(125)->bb
+TTH_Inclusive_M125           |  1.0000   +/- 0.00        |  Inclusive
 
