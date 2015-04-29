@@ -121,19 +121,38 @@ public:
    void printDecayInformation(int decayParticle, Int_t instance, Int_t depth, TString option = "");
    void printHiggsDecayInformation();
 
-    //
-    // Trigger Information
-    //
-    // Get wasAccept information for a specific trigger
+   //
+   // Trigger Information
+   //
+   // Get wasAccept information for a specific trigger
    bool triggered(char * triggerName, bool andor = true);
-    // Get wasAccept information for a specific trigger
-    bool findSpecificTrigger(string triggerName);
-    // Print wasAccept information for a specific trigger
-    void printSpecificTrigger(string triggerName);
-    // Get wasAccept information for multiple triggers. Return the && if true and || if false.
-    bool findTriggers(TString triggerName, bool andor = true);
-    // Print wasAccept information for multiple triggers
-    void printTriggers(TString triggerName);
+   // Get wasAccept information for a specific trigger
+   bool findSpecificTrigger(string triggerName);
+   // Print wasAccept information for a specific trigger
+   void printSpecificTrigger(string triggerName);
+   // Get wasAccept information for multiple triggers. Return the && if true and || if false.
+   bool findTriggers(TString triggerName, bool andor = true);
+   // Print wasAccept information for multiple triggers
+   void printTriggers(TString triggerName);
+
+   //
+   // B-Tag Information
+   //
+   int getNBTags();
+
+   //
+   // Calculate some more complicated quantities
+   //
+   double getDeltaPhiJetJet();
+   double getDeltaPhiMETJet();
+   double getMinDeltaPhiMETJet();
+   void getAngularVariables(Float_t &cosdPhiWW, Float_t &cosdPhiWH, Float_t &costhetal, 
+                            Float_t &costhetaj, Float_t &costhetaWH, Float_t &jacksonAngle,
+                            bool verbose = false);
+   double getJacobePeak();
+   double getDeltaRlepjj();
+   double getMinDPhiLepJet();
+   double getSumJetEt();
 
    //Needed for ME
    int run;

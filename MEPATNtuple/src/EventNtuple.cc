@@ -6,6 +6,8 @@
 
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/TopLepType.hh"
+#include "SHyFT/TemplateMakers/bin/AngularVars.h"
+#include "SHyFT/TemplateMakers/interface/KinFit.h"
 
 #include <algorithm>
 #include <cmath>
@@ -546,6 +548,165 @@ void EventNtuple::printTriggers(TString triggerName) {
          cout << left << setw(90) << thisTrigPath << setw(5) << "" << setw(9) << triggerMap[string(thisTrigPath)] << endl;
       }
    }
+}
+
+//______________________________________________________________________________
+int EventNtuple::getNBTags() {
+  int nBtag = 0;
+  for(unsigned int j=0; j<jLV.size();j++) {
+     //if(jLV[j].jBtagCSV==1)
+     if(jLV[j].jBtagDiscriminatorCSV>0.4)
+      nBtag++;
+  }
+  return nBtag;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getDeltaPhiJetJet(){
+   if(jLV.size() >= 2)
+      return fabs(jLV[0].DeltaPhi(jLV[1]));
+   else
+      return 0.0;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getDeltaPhiMETJet(){
+  double dPhiMetJet = 999;
+  for(unsigned int j=0; j<jLV.size() && j<10; j++) {
+    if((j+1) == 1 ){dPhiMetJet = METLV[0].DeltaPhi(jLV[j].Phi());}
+  }
+
+  if(jLV.size() >= 2)
+    return dPhiMetJet;
+  else
+    return 0.0;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getMinDeltaPhiMETJet(){
+  double minDPhiMetJet = 9e20;
+  for(unsigned int j=0; j<jLV.size() && j<10; j++) {
+    double tempDPhi = METLV[0].DeltaPhi(jLV[j]);
+    if ( fabs(tempDPhi) < minDPhiMetJet ) minDPhiMetJet = tempDPhi;
+  }
+  return minDPhiMetJet;
+}
+
+//______________________________________________________________________________
+void EventNtuple::getAngularVariables(Float_t &cosdPhiWW, Float_t &cosdPhiWH, Float_t &costhetal, 
+                                      Float_t &costhetaj, Float_t &costhetaWH, Float_t &jacksonAngle,
+                                      bool verbose){
+  double massW = 80.4 ;
+  double massMuon = 0.1;
+  double nvPz1 = 0;
+  double nvPz2 = 0;
+  double coeffA = (massW*massW - massMuon*massMuon)/2 + lLV[0].Px()*METLV[0].Px() + lLV[0].Py()*METLV[0].Py();
+  double coeffa= lLV[0].E()*lLV[0].E() - lLV[0].Pz()*lLV[0].Pz();
+  double coeffb = (-2)*coeffA*lLV[0].Pz() ;
+  double coeffc = lLV[0].E()*lLV[0].E()*(METLV[0].Px()*METLV[0].Px()+METLV[0].Py()*METLV[0].Py()) - coeffA*coeffA;
+  double rootDelta = coeffb*coeffb - 4*coeffa*coeffc ;
+
+  // imaginary roots                                                                                                  
+  if (rootDelta<0){
+     nvPz1 = (-1)*coeffb/(2*coeffa);
+     nvPz2 = (-1)*coeffb/(2*coeffa);
+  }
+  //real roots                                                                                                        
+  else {
+     double root1 = (-1)*coeffb/(2*coeffa) + sqrt(rootDelta)/(2*coeffa);
+     double root2 = (-1)*coeffb/(2*coeffa) - sqrt(rootDelta)/(2*coeffa);
+     if (fabs(root1)>fabs(root2)) {
+        nvPz1= root2; nvPz2= root1 ;
+     }
+     else {
+        nvPz1= root1; nvPz2= root2 ;
+     }
+  }
+
+  double nvEt = TMath::Sqrt(METLV[0].E()*METLV[0].E() + nvPz1*nvPz1);
+  TLorentzVector pu(lLV[0].Px(),lLV[0].Py(),lLV[0].Pz(),lLV[0].E());
+  TLorentzVector pv(METLV[0].Px(),METLV[0].Py(),nvPz1,nvEt);
+  TLorentzVector pj1(jLV[0].Px(),jLV[0].Py(),jLV[0].Pz(),jLV[0].E());
+  TLorentzVector pj2(jLV[1].Px(),jLV[1].Py(),jLV[1].Pz(),jLV[1].E());
+
+  TLorentzVector fit_mup(0,0,0,0); 
+  TLorentzVector fit_nvp(0,0,0,0);
+  TLorentzVector fit_ajp(0,0,0,0); 
+  TLorentzVector fit_bjp(0,0,0,0);
+
+  Float_t fit_chi2;
+  Int_t   fit_NDF;
+  Int_t   fit_status;
+
+  bool isMuon = false ;
+  if ( lLV[0].leptonCat == DEFS::muon ) isMuon = true ;
+       
+  KinFit::doKinematicFit(isMuon, 1,  pu,  pv,  pj1,  pj2, fit_mup,  fit_nvp, fit_ajp,  fit_bjp, 
+                 fit_chi2,  fit_NDF,  fit_status);
+
+  dg_kin_Wuv_Wjj( pu, pv, pj1, pj2, cosdPhiWW, cosdPhiWH, costhetal, costhetaj, costhetaWH);
+  jacksonAngle = JacksonAngle( pj1,pj2);
+
+  if (TMath::IsNaN(costhetal)) {
+    if(verbose)
+      cout << "WARNING::EventNtuple::getAngularVariables costhetal is a NaN" << endl
+           << "Setting its value to -999.0" << endl;
+    costhetal = -999.0;
+  }
+}
+
+//______________________________________________________________________________
+double EventNtuple::getJacobePeak(){
+  if(jLV.size() >= 2)
+    return jLV[1].Pt() / ((jLV[0]+jLV[1]).M());
+  else
+    return 0.0;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getDeltaRlepjj(){
+  if(jLV.size() >= 2) {
+    double minDeta = 9999;
+    double dRljj = 0.0;
+    for (int iJet = 0; iJet < (int)jLV.size()-1; ++iJet) {
+       for (int jJet = iJet+1; jJet < (int)jLV.size(); ++jJet) {
+          double deltaEta = fabs( jLV[iJet].Eta() - jLV[jJet].Eta() );
+          if ( deltaEta < minDeta ) {
+             minDeta = deltaEta ;
+             TLorentzVector m2jj_an = jLV[iJet] + jLV[jJet];
+             dRljj = lLV[0].DeltaR(m2jj_an);
+          }
+       }
+    }
+    return dRljj;
+  }
+  else
+    return 0.0;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getMinDPhiLepJet(){
+  if(jLV.size() >= 2) {
+    double dPhilj_f = 0;
+    if ( fabs(lLV[0].DeltaPhi(jLV[0])) < fabs(lLV[0].DeltaPhi(jLV[1])) ) {
+       dPhilj_f = fabs(lLV[0].DeltaPhi(jLV[0]));
+    }
+    else {  
+       dPhilj_f = fabs(lLV[0].DeltaPhi(jLV[1]));
+    }
+    return dPhilj_f ;
+  }
+  else
+    return 0.0;
+}
+
+//______________________________________________________________________________
+double EventNtuple::getSumJetEt() {
+  double sumJetEt = 0.0;
+  for(unsigned int j=0; j<jLV.size() && j<10; j++) {
+    sumJetEt += jLV[j].Pt();
+  }
+  return sumJetEt;
 }
 
 ClassImp(EventNtuple)
