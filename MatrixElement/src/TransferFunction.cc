@@ -289,7 +289,7 @@ NNTransferFunction::NNTransferFunction(const string& paramFile_NN_TF,const strin
 double NNTransferFunction::getTF(const PartonColl::Jet& partonJet,
 				 const PartonColl::Jet& measuredJet) const
 {
-  double x[7] = {0.,0.,0.,0.,0.,0.,0.};
+  double x[7] = {0.,0.,0.,0.,0.,0.,0.}; x[0]=x[0];
   double output = 0.;
   double energy07 = measuredJet.energy07;
 

@@ -2111,7 +2111,7 @@ void csm_model::nuisance_response(Int_t nparams,
     }
   for (icons=0;icons<(Int_t)npcm.size();icons++)
     {
-      jfound = 0;
+       jfound = 0; jfound=jfound;
       for (ipar=0;ipar<nparams;ipar++)
 	{
 	  //cout << "Comparing: " << npcm[icons].pnameoutput << " with " << paramname[ipar] << endl;
@@ -2200,7 +2200,7 @@ void csm_channel_model::nuisance_response(Int_t nparams,
   */
 
   undo_nuisance_response();
-  ntemplates = (Int_t) histotemplate.size();
+  ntemplates = (Int_t) histotemplate.size(); ntemplates=ntemplates;
 
   TH1* hcl = 0;
 
@@ -7239,7 +7239,7 @@ void mclimit_csm::bh_xsfit(Double_t *xsfit, Double_t *downerr, Double_t *uperr)
     }
 
   nens = nmc_req;
-  ngl = 0;
+  ngl = 0; ngl=ngl;
 
   //cout << "ngl: " << ngl << " " << nobstot << endl;
 
@@ -7758,7 +7758,7 @@ void mclimit_csm::bh_2d_scan(Double_t s1low, Double_t s1high, Double_t ds1,
     }
 
   nens = nmc_req;
-  ngl = 0;
+  ngl = 0; ngl=ngl;
 
   //cout << "ngl: " << ngl << " " << nobstot << endl;
 

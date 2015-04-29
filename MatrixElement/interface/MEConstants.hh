@@ -69,7 +69,8 @@ namespace MEConstants
   // The coupling is higgs mass dependent
   //const double gh    = 0.00005;
 
-
+   //Dummy usage
+   const double dummy=gwf+gg+gzu1+gzu2+gzd1+gzd2+gzl1+gzl2+gwwz+gwwh+ghbot;
 
   void PrintAllConstants(double TheAlphaS);
 
