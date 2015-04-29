@@ -1,0 +1,11 @@
+<Flags CXXFLAGS="-O0 -g -DDEBUG" />
+<use   name="TAMUWW/SpecialTools"/>
+<use   name="TAMUWW/MEPATNtuple"/>
+<use   name="TAMUWW/MVA"/>
+<use   name="JetMETAnalysis/JetUtilities"/>
+<use   name="FWCore/FWLite"/>
+<use   name="rootphysics"/>
+<use   name="rootgraphics"/>
+<use   name="root"/>
+<use   name="rootminuit2"/>
+<bin   name="TMVAClassification_x" file="TMVAClassification_x.cc" />
