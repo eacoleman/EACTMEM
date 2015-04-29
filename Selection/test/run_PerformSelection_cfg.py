@@ -46,8 +46,8 @@ inputFiles = cms.untracked.vstring(
 ######################
 # ggH125 Monte Carlo #
 ######################
-	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_10_1_3lN.root',
-	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_11_1_luM.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_10_1_3lN.root',
+#	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_11_1_luM.root',
 #	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_12_1_N49.root',
 #	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_13_1_uI3.root',
 #	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_14_1_7qv.root',
@@ -84,9 +84,15 @@ inputFiles = cms.untracked.vstring(
 #	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_8_1_rMd.root',
 #	'/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_9_1_KPu.root'
 #####################
-# WH120 Monte Carlo #
+# WH125 Monte Carlo #
 #####################
-#    'dcap::///pnfs/cms/WAX/11/store/user/ssengupt/H_M120/output/ssengupt/WH_ZH_TTH_HToWW_M-120_8TeV-pythia6/SQWaT_PAT_52X_wH_zH_ttH_120_Summer12_v2/290326670ba15ca0752d90668da7d2ec/pat_52x_test_66_1_Abv.root'
+#	'/store/user/lnujj/PatTuples_8TeV_53X/jdamgov/WH_WToLNu_HToBB_M-125_8TeV-powheg-herwigpp/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_445_1_x22.root',
+#	'/store/user/lnujj/PatTuples_8TeV_53X/jdamgov/WH_WToLNu_HToBB_M-125_8TeV-powheg-herwigpp/SQWaT_PAT_53X_Summer12_v1/829f288d768dd564418efaaf3a8ab9aa/pat_53x_test_v03_828_1_5Rd.root'
+#########################
+# WH_ZH_TTH Monte Carlo #
+#########################
+#	'/store/mc/Summer12_DR53X/WH_ZH_TTH_HToWW_M-125_8TeV-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/0CE9D2F9-3CF5-E111-A26E-00215E21DC78.root',
+#	'/store/mc/Summer12_DR53X/WH_ZH_TTH_HToWW_M-125_8TeV-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/186F9B2D-45F5-E111-81B3-E41F1318148C.root'
 #############
 # Muon Data #
 #############
@@ -106,9 +112,14 @@ inputFiles = cms.untracked.vstring(
 #	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_99_1_Xl0.root',
 #	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_98_1_bH1.root',
 #	'/store/user/lnujj/PatTuples_8TeV_53X/dimatteo/SingleElectron/SQWaT_PAT_53X_2012B-13Jul2012-v1_part1/3e4086321697e2c39c90dad08848274b/pat_53x_test_v03_data_97_1_2js.root'
+#############
+# Joey Skim #
+#############
+#	'/store/user/jdg6y/HWW125_Part8_JECup_muskim/goodell/LQ-ggh125_Part8_GENSIM/SHYFT_pat532_HWW125_Part8_JECup_muskim/9fd1d441a8eb7f2c4f1541582aa0dd17/ljmet_skim_100_1_58H.root'
+	'file:/eos/uscms/store/user/aperloff/MatrixElement/LQ-ggh125_BIG_PAT_part8/aperloff/LQ-ggh125_Part8_GENSIM/SQWaT_PAT_53X_Spring14_HWW125_Part8/33519632dfb71bf616e1fd5cd9d10cef/pat_53x_test_v03_11_1_luM.root'
     )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.source = cms.Source("PoolSource",
                             skipEvents = cms.untracked.uint32(0),
                             fileNames = inputFiles )
@@ -157,10 +168,17 @@ process.PS.doMVAeleSel       = cms.bool(True)                # if true, use the 
 process.PS.noMVAIsoCut       = cms.bool(False)               # if true, turn off the MVA and PF isolation requirements to make a "Full" sample
 process.PS.doJER             = cms.bool(True)                # if true, JER corrections will be applied to all of the jets before passing selection
 process.PS.doMETPhi          = cms.bool(True)                # if true, the inherent METx and METy shifts will be corrected for using hard coded functions only needed before CMSSW_6_2_X
+process.PS.doJESUncertainty  = cms.bool(False)               # if true, turns on the jet uncertainty scaling
+process.PS.JESUncertainty    = cms.string("none")            # if none, the jet energy uncertainty is stored
+                                                             # if up, the jet energy is scaled up by the uncertainty
+                                                             # if down, the jet energy is scaled down by the uncertainty
+process.PS.JESUncertaintyType= cms.string("TotalNoTime")     # JES uncertainty collection
+process.PS.JESUncertaintyFile= cms.string("Winter14_V5_DATA_UncertaintySources_AK5PFchs.txt")
 
 process.PS.Data              = cms.bool(False)               # is the dataset from real data or Monte Carlo
 process.PS.MCpTrigger        = cms.bool(True)                # if true, only event that pass the trigger requirements will be saved
 process.PS.saveGenParticles  = cms.bool(True)                # save the generated particle information for hard scatter decays
+process.PS.particleStatus    = cms.int32(3)                  # The hard scatter particle status (eliminates the shower particles and protons). Pythia6 = 3, herwigpp = 2
 process.PS.saveMETPhiPlots   = cms.bool(False)               # save the TH1D and TH2D plots that have to do with MET Phi Corrections.
 process.PS.noMETCut          = cms.bool(False)               # disregard the MET cut when storing the events
 process.PS.invertEID         = cms.bool(False)               # electrons which *fail* at least two of the EID requirements will be kept instead

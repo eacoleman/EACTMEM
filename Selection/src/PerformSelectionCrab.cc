@@ -55,6 +55,7 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    printLeptonInfo            =         iConfig.getParameter<bool>            ("printLeptonInfo");
    Data                       =         iConfig.getParameter<bool>            ("Data");
    saveGenParticles           =         iConfig.getParameter<bool>            ("saveGenParticles");
+   particleStatus             =         iConfig.getParameter<int>             ("particleStatus");
    saveMETPhiPlots            =         iConfig.getParameter<bool>            ("saveMETPhiPlots");
    noMETCut                   =         iConfig.getParameter<bool>            ("noMETCut");
    invertEID                  =         iConfig.getParameter<bool>            ("invertEID");
@@ -74,6 +75,10 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    noMVAIsoCut                =         iConfig.getParameter<bool>            ("noMVAIsoCut");
    doJER                      =         iConfig.getParameter<bool>            ("doJER");
    doMETPhi                   =         iConfig.getParameter<bool>            ("doMETPhi");
+   doJESUncertainty           =         iConfig.getParameter<bool>            ("doJESUncertainty");
+   JESUncertainty             =         iConfig.getParameter<string>          ("JESUncertainty");
+   JESUncertaintyType         =         iConfig.getParameter<string>          ("JESUncertaintyType");
+   JESUncertaintyFile         =         iConfig.getParameter<string>          ("JESUncertaintyFile");
 
    //-----Event Variable Inputs
    elcnt_Prim                 =         iConfig.getParameter<int>             ("elcnt_Prim");
@@ -198,6 +203,11 @@ PerformSelection::PerformSelection(const edm::ParameterSet& iConfig)
    NPtBins                    =         iConfig.getParameter<int>             ("NPtBins");
    vpt                        =         iConfig.getParameter<vector<double> > ("vpt");
 
+   if ( iConfig.exists("JESUncertainty") ){
+      if (JESUncertainty == "up" || JESUncertainty == "down") {
+         jecUnc =  new JetCorrectionUncertainty(*(new JetCorrectorParameters(JESUncertaintyFile, JESUncertaintyType)));
+      }
+   }
 }
 
 
@@ -308,9 +318,8 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    lumiSegmentNumber = iEvent.eventAuxiliary().luminosityBlock();
       
    //if (eventNumber!=2535884 && eventNumber!=3093466 && eventNumber!=9993322 && eventNumber!=3145918 && eventNumber!=3146025 && eventNumber!=4938770 && eventNumber!=4464867)
-   //   return;
-   //if (eventNumber!=5735078)
-   //   return;
+   //if (eventNumber!=513862 && eventNumber!=515700 && eventNumber!=516645 && eventNumber!=527553 && eventNumber!=629459)
+   //return;
 
    //
    // Create a set containing all the run and event numbers
@@ -367,7 +376,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    // MET Selection
    //
    metSelection();
-      
+
    //
    // Jet Selection (without muon cleaning)
    // Electron Cleaning (i.e. remove the jets which are likely to be electorns using the DR cut).
@@ -409,7 +418,6 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    el_passAll=false;
    mu_passStandard=false;
    mu_passAll=false;
-
 
    printEventInformation(printEventInfo, -1, true);
    for(unsigned int Nj=0; Nj<DEFS::NJETS; Nj++) {
@@ -779,6 +787,7 @@ void PerformSelection::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //
       EvtNtuple->jLV.clear();
       EvtNtuple->jLV = jp4;
+
       // Transfer Function Variables
       // Do the matching between the pat::Jets and the reco::genParticles
       pair<int, TLorentzVector> matchedPair;
@@ -1031,6 +1040,27 @@ void PerformSelection::jetSelection() {
 
       math::XYZTLorentzVector vvv = jetIter->p4();
 
+      jesUncScale = 1.0;
+      if (doJESUncertainty) {
+         if (JESUncertainty == "none") {
+            jesUncScale *= 1.0;
+         } 
+         else {
+            jecUnc->setJetEta(jetIter->eta());
+            jecUnc->setJetPt(jetIter->pt());
+            
+            uncert = jecUnc->getUncertainty(true);
+            
+            if (JESUncertainty == "up") {
+               jesUncScale *= (1 + uncert);
+            } 
+            else if (JESUncertainty == "down") {
+               jesUncScale *= (1 - uncert);
+            }
+         }
+      }
+
+      JERCor = 1.0;
       if (doJER && !Data) {
          // get the JER correction factor for this jet
          (jetIter->genJet() && vvv.pt()>10)? JERCor = getJERfactor(jetIter->pt(), jetIter->eta(), jetIter->genJet()->pt()) : JERCor = 1.0;
@@ -1041,9 +1071,10 @@ void PerformSelection::jetSelection() {
 
          METp4[0].SetX(newMetX);
          METp4[0].SetY(newMetY);
-
-         vvv *= JERCor;
       }
+
+      vvv *= jesUncScale;      
+      vvv *= JERCor;
 
       j_pt=vvv.pt();
       j_eta=vvv.eta();
@@ -1068,6 +1099,15 @@ void PerformSelection::jetSelection() {
          else
             continue;
       }
+
+      double genJetPt = -999;
+      if(jetIter->genJet()) genJetPt = jetIter->genJet()->pt();
+      jstream << "Jet number = " << jp4.size()-1 << endl
+              << "fancyJES_ = " << JESUncertainty << ", uncert = " << uncert << endl
+              << "Original PT = " << jetIter->pt() << ", Eta = " << jetIter->eta() << ", ptScale = " << jesUncScale*JERCor << ", GenJet Pt = " << genJetPt << endl
+              << "Scaled Jet PT = " << vvv.Pt() << ", Eta = " << vvv.Eta() << endl;
+      jstreams.push_back(jstream.str());
+      jstream.str("");
 
       //
       // Apply The Cut
@@ -1123,6 +1163,7 @@ void PerformSelection::jetSelection() {
             }
          }
 
+         /*
          jstream << "pt " << j_pt << " eta " << j_eta << " j_DRlepton " << j_DRlepton
                  << " NHEF " << jetIter->neutralHadronEnergyFraction()
                  << " NEMEF " << jetIter->neutralEmEnergyFraction()
@@ -1133,6 +1174,7 @@ void PerformSelection::jetSelection() {
                  << endl;
          jstreams.push_back(jstream.str());
          jstream.str("");
+         */
 
          //
          // b-tagging
@@ -1888,7 +1930,7 @@ void PerformSelection::saveGenPart() {
    int counter = 0;
    for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle, ++counter) {
       memMap[size_t((const reco::Candidate*)(& *genParticle))] = make_pair(counter, 9999);
-      if (genParticle->status() == 3) {
+      if (genParticle->status() == particleStatus) {
          GenParticle g;
          g.charge = genParticle->charge();
          math::XYZTLorentzVectorD const& p4t = genParticle->p4();
@@ -1957,9 +1999,9 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
    for (reco::GenParticleCollection::const_iterator genParticle = genParticleHandle->begin();genParticle != genParticleHandle->end();++genParticle) {
       if (genParticle->pt()==0)
          continue;
-      if (genParticle->status() == 3) {
+      if (genParticle->status() == particleStatus) {
          theGenObject.SetPxPyPzE(genParticle->px(),genParticle->py(),genParticle->pz(),genParticle->energy());
-         if (reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi) < bestDeltaR) {
+         if (theGenObject.Pt() > 1.0e-6 && reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi) < bestDeltaR) {
             bestDeltaR = reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), eta, phi);
             theBestGenObject = theGenObject;
             bestPDGID = genParticle->pdgId();
@@ -1972,7 +2014,6 @@ pair<int, TLorentzVector> PerformSelection::matchToGen(double eta, double phi) {
 
 //______________________________________________________________________________
 void PerformSelection::fillJetMap(map<Int_t, Int_t> & jetMap, bool jets){
-
    typedef map<double, pair<Int_t, Int_t> > ITJ;
    TLorentzVector theGenObject(0,0,0,0);
 
@@ -2004,15 +2045,17 @@ void PerformSelection::fillJetMap(map<Int_t, Int_t> & jetMap, bool jets){
          if(skip)
             continue;
          */
-         if (genParticle->status() == 3) {
+         if (genParticle->status() == particleStatus) {
             theGenObject.SetPxPyPzE(genParticle->px(),genParticle->py(),genParticle->pz(),genParticle->energy());
-            double dR = reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), jp4[recIndex].Eta(), jp4[recIndex].Phi());
-            //if(auxMap.find(dR) != auxMap.end())
-            //   cout << "PerformSelection::fillJetMap::WARNING Duplicate DeltaR when doing matching." << endl;
-            auxMap[dR] = std::make_pair(recIndex, genIndex);
-            matchMade = true;
-            //if (recIndex == 1)
-            //   cout << "RecIndex == 1 and a match made and entered into auxMap[" << dR << "] = std::make_pair(" << recIndex << "," << genIndex << ")" << endl;
+            if(theGenObject.Pt()>1.0e-6) {
+               double dR = reco::deltaR(theGenObject.Eta(), theGenObject.Phi(), jp4[recIndex].Eta(), jp4[recIndex].Phi());
+               //if(auxMap.find(dR) != auxMap.end())
+               //   cout << "PerformSelection::fillJetMap::WARNING Duplicate DeltaR when doing matching." << endl;
+               auxMap[dR] = std::make_pair(recIndex, genIndex);
+               matchMade = true;
+               //if (recIndex == 1)
+               //   cout << "RecIndex == 1 and a match made and entered into auxMap[" << dR << "] = std::make_pair(" << recIndex << "," << genIndex << ")" << endl;
+            }
          }
       }
       if (!matchMade) {
@@ -2058,16 +2101,13 @@ void PerformSelection::fillJetMap(map<Int_t, Int_t> & jetMap, bool jets){
          jetMap[iRec] = -1-iRec;
       }
    }
-
 }//fillJetMap
 
 //______________________________________________________________________________
 vector<int> PerformSelection::matchToGen_particleCollection(bool jets) {
    typedef map<Int_t, Int_t> ITJ;
-
    map<Int_t, Int_t> jetMap;
    fillJetMap(jetMap, jets);
-
    vector<int> ret(jetMap.size(),0);
 
    for (ITJ::const_iterator itj = jetMap.begin(); itj != jetMap.end(); itj++) {
@@ -2085,7 +2125,6 @@ vector<int> PerformSelection::matchToGen_particleCollection(bool jets) {
    //                                << "recJets.size()=" << jp4.size() << "\t matches.size()=" << jetMap.size() << endl;
    //if(ret.size()!=jp4.size()) cout <<"PerformSelection::matchToGen_particleCollection::WARNING:: sizes don't match!!!"  << endl
    //                                << "recJets.size()=" << jp4.size() << "\t matches.size()=" << ret.size() << endl;
-
    return ret;   
 }
 

@@ -28,6 +28,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
@@ -188,6 +189,7 @@ private:
    // program variables
    bool Data;
    bool saveGenParticles;
+   int  particleStatus;
    bool saveMETPhiPlots;
    bool noMETCut;
    bool invertEID;
@@ -205,6 +207,12 @@ private:
    bool doMVAeleSel;
    bool doJER;
    bool doMETPhi;
+   bool doJESUncertainty;
+   string JESUncertainty;
+   string JESUncertaintyType;
+   string JESUncertaintyFile;
+   JetCorrectionUncertainty* jecUnc;
+   double uncert;
    bool printEventInfo;
    bool printJetInfo;
    bool printLeptonInfo;
@@ -319,6 +327,7 @@ private:
    double j_DRlepton;
    double j_DRelMin;
    double JERCor;
+   double jesUncScale;
    double muPrim_DRjMin;
    double adphi;
    double CHEFMin;
