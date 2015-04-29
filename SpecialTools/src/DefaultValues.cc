@@ -905,7 +905,7 @@ TH2* DefaultValues::Rebin2D(TH2* old, Int_t nxgroup, Int_t nygroup, const char*n
    }
 
    //reset kCanRebin bit to avoid a rebinning in SetBinContent
-   Int_t bitRebin = hnew->TestBit(old->kCanRebin);
+   hnew->TestBit(old->kCanRebin);
    hnew->SetBit(old->kCanRebin,0);
 
    // save original statistics
@@ -1112,7 +1112,6 @@ TH2* DefaultValues::Rebin2D(TH2* old, Int_t nxgroup, Int_t nygroup, const char*n
       }
 
       //  recompute under/overflow contents in x for the new y bins
-      Int_t oldybin = 1;
       for (biny = 1; biny<=newbinsy; biny++) {
        binContent0 = binContent2 = 0;
        binError0 = binError2 = 0;
