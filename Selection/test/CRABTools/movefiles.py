@@ -48,7 +48,9 @@ parser.add_argument("-s", "--sample", help="Shared portion of the name of the fi
 parser.add_argument("-srt","--sendreceive_timeout", help="Sets the send/recieve timeout for the lcg command",
 					default="20")
 parser.add_argument("-str","--streams", help="The number of transfer streams", default="15")
-parser.add_argument("-u", "--user", help="username of the person transfering the files",
+parser.add_argument("-su", "--start_user", help="username of the person transfering the files",
+                    default=os.environ['USER'])
+parser.add_argument("-eu", "--end_user", help="username of the person transfering the files",
                     default=os.environ['USER'])
 group.add_argument("-v", "--verbose", help="Increase output verbosity of lcg-cp (-v) or srm (-debug) commands",
                     action="store_true")
@@ -61,7 +63,8 @@ if(args.debug):
      print "Argument ", args
 
 SAMPLE = args.sample
-USER = args.user
+START_USER = args.start_user
+END_USER = args.end_user
 PNFS = args.pnfs
 LCG = args.lcg
 SRT = args.sendreceive_timeout
@@ -108,12 +111,12 @@ def init_commands():
     if(START == 'T1_US_FNAL_LPC'):
 	scommand += " \"file:////"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
     else:
-        scommand += " \"srm://"+siteDBDict[START][0]+":8443"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/"
+        scommand += " \"srm://"+siteDBDict[START][0]+":8443"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/"
 
     if(END == 'T1_US_FNAL_LPC'):
         ecommand = "\"file:////"+siteDBDict[END][0]+siteDBDict[END][1]+siteDBDict[END][2]+"/"+ENDpath+"/"
     else:
-        ecommand = "\"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/"
+        ecommand = "\"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+siteDBDict[END][2]+"/"+END_USER+"/"+ENDpath+"/"
 
     return (scommand,ecommand)
 
@@ -138,17 +141,19 @@ def get_list_of_files(SAMPLE, path):
     if START.find("FNAL") > 0 and os.environ.get('HOSTNAME',"not found").find("fnal.gov") > 0 :
         FILES_UNFILTERED = os.listdir(path)
     else:
-        options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
-        proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+        #options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
+		#proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+        options = 'lcg-ls "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
+        proc = subprocess.Popen(options, shell=True, stdout=subprocess.PIPE).communicate()[0]
 		# if output is too long
         #proc = subprocess.Popen(['srmls',options], stdout=tempfile.TemporaryFile()).communicate()[0]
         FILES_UNFILTERED = proc.splitlines()
         FILES_UNFILTERED = [x.strip(' ') for x in FILES_UNFILTERED]
         FILES_UNFILTERED = [x.strip('\n') for x in FILES_UNFILTERED]
 	FILES_UNFILTERED = [x.replace("//", "/") for x in FILES_UNFILTERED]
-	FILES_UNFILTERED.remove('Picked up _JAVA_OPTIONS: -Xmx1024m')
+	#FILES_UNFILTERED.remove('Picked up _JAVA_OPTIONS: -Xmx1024m')
 	FILES_UNFILTERED = [x.split(' ',1)[1] if x.split(' ',1)[0].isdigit() else x for x in FILES_UNFILTERED]
-	FILES_UNFILTERED = [x.replace((siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/").replace("//","/"), "") for x in FILES_UNFILTERED]
+	FILES_UNFILTERED = [x.replace((siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/").replace("//","/"), "") for x in FILES_UNFILTERED]
 	FILES_UNFILTERED = [x for x in FILES_UNFILTERED if x != '']
     FILES = []
     #if(len(SAMPLE)==1):
@@ -199,8 +204,10 @@ def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
         if END.find("FNAL") > 0 and os.environ.get('HOSTNAME',"not found").find("fnal.gov") > 0 :
             FILES2 = os.listdir(dst)
         else:
-            options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
-            proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+            #options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
+            #proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+            options = '"srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
+            proc = subprocess.Popen(['lcg-ls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
             proc_splitlines = proc.splitlines()
             FILES2 = []
             for f in proc_splitlines :
@@ -251,9 +258,9 @@ TOPsrc = ""
 if(START == 'T1_US_FNAL_LPC'):
 	TOPsrc = STARTpath+"/"
 else:
-	TOPsrc = siteDBDict[START][3]+"/"+siteDBDict[START][2]+"/"+USER+"/"+STARTpath+"/"
+	TOPsrc = siteDBDict[START][3]+"/"+siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/"
 
-TOPdst = siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+USER+"/"+ENDpath+"/"
+TOPdst = siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+END_USER+"/"+ENDpath+"/"
 
 if args.debug:
 	print "DEPTH="+str(DEPTH)
