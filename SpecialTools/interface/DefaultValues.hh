@@ -6,6 +6,7 @@
 #include "TSystem.h"
 #include "TError.h"
 #include "TMath.h"
+#include "TBenchmark.h"
 #include "TList.h"
 #include "TString.h"
 #include "TObject.h"
@@ -28,6 +29,7 @@
 #include "TAMUWW/SpecialTools/interface/Table.hh"
 #include "TAMUWW/SpecialTools/interface/TableRow.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellVal.hh"
+#include "TAMUWW/SpecialTools/interface/TableCellInt.hh"
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/PhysicsProcess.hh"
 #include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
@@ -48,6 +50,8 @@ public:
    // basically returns $CMSSW_BASE+"/src/TAMUWW/Config/Official/"
    static std::string getConfigPath();
   
+   static std::string getBDTLocation(DEFS::JetBin jetBin, DEFS::TagCat tagcat, DEFS::University univ, bool filenameOnly = false);
+
    static std::string getWeightForCategory(DEFS::TagCat tagcat,  
                                            DEFS::PhysicsProcessType, int );
 
@@ -98,7 +102,9 @@ public:
    static std::vector < PhysicsProcess * > getProcessesTest(DEFS::JetBin jetBin,
                                                             DEFS::TagCat tagcat, 
                                                             bool include_data,
-                                                            bool forPlots);
+                                                            bool forPlots,
+                                                            DEFS::NtupleType ntuple_type,
+                                                            DEFS::LeptonCat lepton = DEFS::both);
 
    // Returns the cross section for the given process
    static pair<double,double> getCrossSectionAndError(TString channelName);
@@ -126,6 +132,9 @@ public:
    //Takes the highest value.
    static pair<double,double> getMaxEventProbAndError(string meType);
 
+   // Sets two vectors with the variables and spectators for a given MVA training
+   static void getMVAVar(TString filename, vector<TString>& MVAV, vector<TString>& MVAS);
+
    // Returns the index of the location of b within a, or -1 if b is not found in a
    static int vfind(vector<string> a, string b);
    static int vfind(vector<TString> a, TString b);
@@ -145,6 +154,9 @@ public:
 
    // Tests the Rebin2D function
    void Rebin2DTest(TString Options = "");
+
+   //prints a TBenchmark summary with variable precision and a list of timers
+   static void printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &ct, vector<string> timers);
 
 };
  

@@ -9,6 +9,7 @@
 //C++ libraries
 #include <iostream>
 #include <string>
+#include <map>
 
 // This namespace holds the definitions of all physics processes 
 // author: Ricardo Eusebi, Feb 12, 2009
@@ -47,9 +48,11 @@ namespace DEFS{
                ggH550 , ggH600 , ggH700 , ggH800 , ggH900 , ggH1000 , 
                qqH100 , qqH105 , qqH110 , qqH115 , qqH120 , qqH125 , qqH130 , qqH135 , qqH140 , qqH145 , qqH150 ,
                qqH160 , qqH170 , qqH180 , qqH190 , qqH200 , qqH250 , qqH300 , qqH350 , qqH400 , qqH450 , qqH500 ,
-               qqH550 , qqH600 , qqH700 , qqH800 , qqH900 , qqH1000 , 
-               STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , 
-               Wcc , WJets , WJets_part2 , W1Jets, W2Jets, W3Jets, W4Jets, WLg , Wgg , WLL , WLb , Wbb ,
+               qqH550 , qqH600 , qqH700 , qqH800 , qqH900 , qqH1000 , qqH125_JESUp, qqH125_JESDown,
+               WH_ZH_TTH_HToZZ_M125, WH125_HToBB, WH125_HToZG, WH_ZH_TTH_HToWW_M125, TTH_Inclusive_M125, TTH_HToBB_M125, WH_HToBB_M125_JESUp, WH_HToBB_M125_JESDown, WH_ZH_TTH_HToWW_M125_JESUp, WH_ZH_TTH_HToWW_M125_JESDown, WH_ZH_TTH_HToZZ_M125_JESUp, WH_ZH_TTH_HToZZ_M125_JESDown, 
+               WH_HToZZ_M125, ZH_HToZZ_M125, TTH_HToZZ_M125, WH_HToWW_M125, ZH_HToWW_M125, TTH_HToWW_M125, 
+               STopS_T , STopS_Tbar , STopT_T , STopT_Tbar , STopTW_T , STopTW_Tbar , TTbar , TTbarLJ, TTbarDil , TTbar_JESUp, TTbar_JESDown,
+               Wcc , WJets , WJets_part2 , W1Jets, W2Jets, W3Jets, W4Jets, WLg , Wgg , WLL , WLb , Wbb , WJets_JESUp, WJets_JESDown, WJets_matchingup, WJets_matchingdown, WJets_scaleup, WJets_scaledown, 
                WW , WZbb , WZ , ZZ , ZJets , Ztautau , 
                QCD_ElEnriched , QCD_ElFULL, QCD_MuEnriched , QCD_MuFULL ,
 	             QCD_Pt20to30_EMEnriched, QCD_Pt30to80_EMEnriched, QCD_Pt80to170_EMEnriched, 
@@ -107,6 +110,13 @@ namespace DEFS{
   // A routine that returns a JetBin given
   JetBin getJetBin(std::string str);
 
+  enum NBinsX {nbinsx_default=100, nbinsx_jets2=59, nbinsx_jets3=45, nbinsx_jets4=41};
+
+  // A routing which returns the number of x bins based on the JetBin
+  int getNBinsX(JetBin type);
+
+  // A routine that returns an array of the bin bondaries for the 1-D BDT plots
+  Double_t* getBinsX(JetBin type);
 
   // ---------------------------------------------------------------
   //            ALL ABOUT THE TAGGING CATEGORIES
@@ -174,7 +184,7 @@ namespace DEFS{
   //            ALL ABOUT THE CONTROL REGIONS
   // ---------------------------------------------------------------
 
-   enum ControlRegion {all, signal, control1, control2, control3, control4, control5, control6, control7, control8, control9, UVa, event, Diboson, MVAEleID, AntiMVAEleID, FlatMVAEleID, None};
+   enum ControlRegion {all, signal, control1, control2, control3, control4, control5, control6, control7, control8, control9, UVaCuts, event, Diboson, MVAEleID, AntiMVAEleID, FlatMVAEleID, None};
   static const unsigned int nControlRegion = 18;
 
   //A routine that returns a string given the type
@@ -196,6 +206,18 @@ namespace DEFS{
    NtupleType getNtupleType(std::string str);
    
    std::string getTreeName(NtupleType type, JetBin nJets = jets2);
+
+    // ---------------------------------------------------------------
+    //            ALL ABOUT THE UNIVERSITY
+    // ---------------------------------------------------------------
+     enum University {TAMU, UVa, OtherUniversity};
+     static const unsigned int nUniversity = 3;
+
+     // A routine that returns a string given the University
+     std::string getUniversityString(University univ);
+
+     // A routine that returns a University given a string
+     University getUniversity(std::string str);
 
 }
 

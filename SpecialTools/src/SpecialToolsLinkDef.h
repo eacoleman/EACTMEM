@@ -10,6 +10,7 @@
 #include "TAMUWW/SpecialTools/interface/TableCellText.hh"
 #include "TAMUWW/SpecialTools/interface/FileLocationTable.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
+#include "TAMUWW/SpecialTools/interface/MVAVar.hh"
 #include "TAMUWW/SpecialTools/interface/ProgressBar.hh"
 
 #ifdef __CINT__
@@ -34,5 +35,6 @@
 #pragma link C++ class TableCellInt+;
 #pragma link C++ class TableCellText+;
 #pragma link C++ class DefaultValues+;
+#pragma line C++ class MVAVar+;
 
 #endif

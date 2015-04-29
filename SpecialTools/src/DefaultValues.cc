@@ -20,6 +20,30 @@ string DefaultValues::getConfigPath(){
 
 }// getConfigPath
 
+// ----------------------------------------------------------------------------
+string DefaultValues::getBDTLocation(DEFS::JetBin jetBin, DEFS::TagCat tagcat, DEFS::University univ, bool filenameOnly) {
+  // The location of the table with the file locations
+  string fileLocationFile = getConfigPath()+"FileLocation_BDT.txt";
+
+  // Create the table and parse the contents of the file
+  FileLocationTable table("FileLocationTable_BDT");  
+  if(!table.parseFromFile(fileLocationFile,"TableCellText","Normal"))
+    cout<<"ERROR  DefaultValues::getBDTLocation() cannot parse config file "<<fileLocationFile<<endl;
+
+  // make sure you add the basepath to the table
+  if(!filenameOnly)
+    table.addBasePath();
+
+  // find the file location for that process
+  string row = string(Form("%s_%s",DEFS::getJetBinString(jetBin).c_str(),DEFS::getTagCatString(tagcat).c_str()));
+  TableCellText * cellFile = (TableCellText *) table.getCellRowColumn(row,"FilePath_"+DEFS::getUniversityString(univ));
+
+  if(!filenameOnly)
+    return getConfigPath()+cellFile->text;
+  else
+    return cellFile->text;
+
+}
 
 // ----------------------------------------------------------------------------
 // This method returns the table with the event expectation for the evt/tag category
@@ -92,7 +116,7 @@ vector < PhysicsProcess * > DefaultValues::getProcesses(vector<DEFS::PhysicsProc
 
     PhysicsProcess * pr = getSingleProcess(processName[prn], jetBin, normTable, fileTable, forPlots, ntupleType);
     if (pr == 0) {
-      cout<<"ERROR DefaultValues::getProcesses couldnot add process"<<endl;
+      cout<<"ERROR DefaultValues::getProcesses could not add process"<<endl;
       continue;
     }
 
@@ -138,25 +162,39 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    map<DEFS::LeptonCat,double> xsec;
    xsec[DEFS::electron] = getCrossSectionAndError(prName).first;
    xsec[DEFS::muon]     = getCrossSectionAndError(prName).first;
+   xsec[DEFS::both]     = getCrossSectionAndError(prName).first;
    map<DEFS::LeptonCat,double> lumi;
    if (process==DEFS::PhysicsProcess::SingleEl_Data || process==DEFS::PhysicsProcess::SingleMu_Data ||
        process==DEFS::PhysicsProcess::QCD_ElFULL || process==DEFS::PhysicsProcess::QCD_MuFULL){
       lumi[DEFS::electron] = 1.0;
       lumi[DEFS::muon]     = 1.0;
+      lumi[DEFS::both]     = 1.0;
    }
    else{
       lumi[DEFS::electron] = 19148;
       lumi[DEFS::muon]     = 19279;
+      lumi[DEFS::both]     = 19213.5;
    }
    map<DEFS::LeptonCat,double> br;
    br[DEFS::electron] = getBranchingRatio(prName);
    br[DEFS::muon]     = getBranchingRatio(prName);
+   br[DEFS::both]     = getBranchingRatio(prName);
    map<DEFS::LeptonCat,unsigned int> numMCEvts;
    numMCEvts[DEFS::electron] = (unsigned int)getNumMCEvts(prName);
    numMCEvts[DEFS::muon]     = (unsigned int)getNumMCEvts(prName);
+   numMCEvts[DEFS::both]     = (unsigned int)getNumMCEvts(prName);
    map<DEFS::LeptonCat,double> sf;
    sf[DEFS::electron] = getScaleFactor(prName,DEFS::electron);
    sf[DEFS::muon]     = getScaleFactor(prName,DEFS::muon);
+   if (process==DEFS::PhysicsProcess::QCD_ElFULL) {
+      sf[DEFS::both]  = getScaleFactor(prName,DEFS::electron);
+   }
+   else if (process==DEFS::PhysicsProcess::QCD_MuFULL) {
+      sf[DEFS::both]  = getScaleFactor(prName,DEFS::muon);
+   }
+   else {
+      sf[DEFS::both]     = getScaleFactor(prName,DEFS::both);
+   }
 
    // Create the PhysicsProcess
    PhysicsProcess *  proc;
@@ -165,7 +203,7 @@ PhysicsProcess * DefaultValues::getSingleProcess(DEFS::PhysicsProcessType proces
    else
       proc =  new PhysicsProcess(prName, getTypeTitle(process), cellFile->text, DEFS::getTreeName(ntupleType,jetBin));
    proc->setPhysicsParameters(xsec, lumi, br, numMCEvts, sf);
-   
+
    // and return it.
    return proc;
    
@@ -305,26 +343,45 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::STopTW_T);
    procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    procs.push_back(DEFS::PhysicsProcess::TTbar);
+   //procs.push_back(DEFS::PhysicsProcess::TTbar_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::TTbar_JESDown);
    procs.push_back(DEFS::PhysicsProcess::WW);
    if(lepton==DEFS::electron || lepton==DEFS::both) {
     procs.push_back(DEFS::PhysicsProcess::QCD_ElFULL);
-    //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
    }
    if(lepton==DEFS::muon || lepton==DEFS::both) {
     procs.push_back(DEFS::PhysicsProcess::QCD_MuFULL);
-    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
    }
    procs.push_back(DEFS::PhysicsProcess::ZJets);
    procs.push_back(DEFS::PhysicsProcess::WJets);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_matchingup);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_matchingdown);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_scaleup);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_scaledown);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::WJets_JESDown);
+   procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125_JESDown);
+   //procs.push_back(DEFS::PhysicsProcess::WH_HToZZ_M125);
+   //procs.push_back(DEFS::PhysicsProcess::ZH_HToZZ_M125);
+   //procs.push_back(DEFS::PhysicsProcess::TTH_HToZZ_M125);
+   procs.push_back(DEFS::PhysicsProcess::WH125_HToBB);
+   //procs.push_back(DEFS::PhysicsProcess::WH_HToBB_M125_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::WH_HToBB_M125_JESDown);
+   procs.push_back(DEFS::PhysicsProcess::TTH_HToBB_M125);
+   //procs.push_back(DEFS::PhysicsProcess::TTH_HToBB_M125_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::TTH_HToBB_M125_JESDown);
    procs.push_back(DEFS::PhysicsProcess::ggH125);
    procs.push_back(DEFS::PhysicsProcess::qqH125);
-   procs.push_back(DEFS::PhysicsProcess::WH125);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
-   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::qqH125_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::qqH125_JESDown);
+   procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125_JESUp);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125_JESDown);
+   //procs.push_back(DEFS::PhysicsProcess::WH_HToWW_M125);
+   //procs.push_back(DEFS::PhysicsProcess::ZH_HToWW_M125);
+   //procs.push_back(DEFS::PhysicsProcess::TTH_HToWW_M125);
 
    if (include_data) {
       if(lepton==DEFS::electron || lepton==DEFS::both)
@@ -336,13 +393,15 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
 
    return getProcesses(procs, jetBin, tagcat, forPlots, ntupleType);
 
-}//getProcessesWW
+}//getProcessesHiggs
 
 // ----------------------------------------------------------------------------
 vector < PhysicsProcess * > DefaultValues::getProcessesTest(DEFS::JetBin jetBin,
-                                                                DEFS::TagCat tagcat, 
-                                                                bool include_data,
-                                                                bool forPlots){
+                                                            DEFS::TagCat tagcat, 
+                                                            bool include_data,
+                                                            bool forPlots,
+                                                            DEFS::NtupleType ntupleType,
+                                                            DEFS::LeptonCat lepton){
 
    vector<DEFS::PhysicsProcess::Type> procs;
    
@@ -354,23 +413,32 @@ vector < PhysicsProcess * > DefaultValues::getProcessesTest(DEFS::JetBin jetBin,
    //procs.push_back(DEFS::PhysicsProcess::STopTW_T);
    //procs.push_back(DEFS::PhysicsProcess::STopTW_Tbar);
    //procs.push_back(DEFS::PhysicsProcess::TTbar);
-   procs.push_back(DEFS::PhysicsProcess::WJets); 
+   //procs.push_back(DEFS::PhysicsProcess::WJets); 
    //procs.push_back(DEFS::PhysicsProcess::ZJets);
    //procs.push_back(DEFS::PhysicsProcess::QCD_ElEnriched);
    //procs.push_back(DEFS::PhysicsProcess::QCD_MuEnriched);
-   procs.push_back(DEFS::PhysicsProcess::WW);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt20to30_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt30to80_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt80to170_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt170to250_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt250to350_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::QCD_Pt350_EMEnriched);
+   //procs.push_back(DEFS::PhysicsProcess::WW);
    //procs.push_back(DEFS::PhysicsProcess::WZ);
    //procs.push_back(DEFS::PhysicsProcess::ZZ);
-   procs.push_back(DEFS::PhysicsProcess::ggH125);
+   //procs.push_back(DEFS::PhysicsProcess::ggH125);
    //procs.push_back(DEFS::PhysicsProcess::qqH125);
    //procs.push_back(DEFS::PhysicsProcess::WH125);
+   procs.push_back(DEFS::PhysicsProcess::WH_HToWW_M125);
+   //procs.push_back(DEFS::PhysicsProcess::WH125_HToBB);
+   //procs.push_back(DEFS::PhysicsProcess::TTH_Inclusive_M125);
    
    if (include_data) {
-      procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
+      //procs.push_back(DEFS::PhysicsProcess::SingleEl_Data);
       //procs.push_back(DEFS::PhysicsProcess::SingleMu_Data);
    }
 
-   return getProcesses(procs, jetBin, tagcat, forPlots, DEFS::MicroNtuple);
+   return getProcesses(procs, jetBin, tagcat, forPlots, ntupleType);
 
 }//getProcessesTest
 
@@ -404,7 +472,7 @@ double DefaultValues::getBranchingRatio(TString channelName)
   Table table;
   double br;
 
-  table.parseFromFile(getConfigPath()+"BranchingRatios_8TeV.txt","TableCellVal");
+  table.parseFromFile(getConfigPath()+"BranchingRatios_8TeV.txt","TableCellMixed");
   TableCell * cell = table.getCellRowColumn(string(channelName),"BranchingRatio");
   if(cell){
     br = ((TableCellVal*)cell)->val.value;
@@ -468,13 +536,13 @@ double DefaultValues::getScaleFactor(TString channelName)
 // ----------------------------------------------------------------------------
 double DefaultValues::getScaleFactor(TString channelName, DEFS::LeptonCat leptonCat) {
   Table table;
-  vector<double> sf;
+  multimap<DEFS::LeptonCat,double> sf;
   vector<TableRow> tableRows;
 
   table.parseFromFile(getConfigPath()+string("ScaleFactors_8TeV.txt"),"TableCellMixed");
   tableRows = table.getRows();
 
-  for(unsigned int irow=0; irow< tableRows.size(); irow++) {
+  for(unsigned int irow=0; irow<tableRows.size(); irow++) {
     if(DEFS::PhysicsProcess::getProcessType(string(channelName))!=DEFS::PhysicsProcessType::UNKNOWN)
       assert(tableRows[irow]["ScaleFactor"]);
     if(leptonCat!=DEFS::LeptonCat::none)
@@ -484,11 +552,11 @@ double DefaultValues::getScaleFactor(TString channelName, DEFS::LeptonCat lepton
        leptonCat!=DEFS::LeptonCat::none &&
        (DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text) == leptonCat || 
        DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text) == DEFS::getLeptonCat("both"))) {
-      sf.push_back(((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value);
+      sf.insert(std::pair<DEFS::LeptonCat,double>(DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text),((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value));
     }
     else if(TString(tableRows[irow].GetName()).CompareTo(channelName)==0 &&
        leptonCat==DEFS::LeptonCat::none) {
-      sf.push_back(((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value);
+      sf.insert(std::pair<DEFS::LeptonCat,double>(DEFS::getLeptonCat(((TableCellText*)tableRows[irow]["LeptonCat"])->text),((TableCellVal*)tableRows[irow]["ScaleFactor"])->val.value));
     }
   }
 
@@ -499,20 +567,35 @@ double DefaultValues::getScaleFactor(TString channelName, DEFS::LeptonCat lepton
          << "Please check channel names." << endl;
     return -1.;
   }
-  else if(sf.size()==1 && sf[0]==0.0) {
+  else if(sf.size()==1 && sf.find(leptonCat)->second==0.0) {
+    if(sf.find(DEFS::both)!=sf.end() && sf.find(DEFS::both)->second!=0.0) {
+      return sf.find(DEFS::both)->second;
+    }
     cout << "WARNING::getScaleFactor::The scale factor for " << channelName << " is 0.0 +/- 0.0" << endl
          << "This means the process will be killed" << endl;
-    return sf[0];
+    return sf.find(leptonCat)->second;
   }
   else if(sf.size()>1) {
-    cout << "WARNING::getScaleFactor::channelName " << channelName << " and LeptonCat " << DEFS::getLeptonCatString(leptonCat)
-         << " returned more than one (" << sf.size() << ") scale factor that matched all of the criteria. Returning -1 for the scale factor." << endl 
-         << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
-         << "Please check channel names." << endl;
-    return -1.;
+    if(sf.count(leptonCat)>1) {
+      cout << "WARNING::getScaleFactor::channelName " << channelName << " and LeptonCat " << DEFS::getLeptonCatString(leptonCat)
+           << " returned more than one (" << sf.count(leptonCat) << ") scale factor that matched all of the criteria. Returning -1 for the scale factor." << endl 
+           << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+           << "Please check channel names." << endl;
+      return -1.;
+    }
+    else if(sf.find(DEFS::both)!=sf.end() && sf.find(leptonCat)!=sf.end()) {
+      return sf.find(leptonCat)->second;
+    }
+    else {
+      cout << "WARNING::getScaleFactor::channelName " << channelName << " and LeptonCat " << DEFS::getLeptonCatString(leptonCat)
+           << " returned more than one (" << sf.size() << ") scale factor that matched all of the criteria. Returning -1 for the scale factor." << endl 
+           << "The events will have the same scale as the MC sample, but on a negative scale." << endl 
+           << "Please check channel names." << endl;
+      return -1.;
+    }
   }
   else {
-    return sf[0];
+    return sf.find(leptonCat)->second;
   }
 }//getScaleFactor
 
@@ -628,6 +711,25 @@ pair<double,double> DefaultValues::getMaxEventProbAndError(string meType) {
 
   return getMaxEventProbAndError(DEFS::PhysicsProcessType::UNKNOWN,meType);
 }//getMaxEventProbAndError
+
+// ----------------------------------------------------------------------------
+void DefaultValues::getMVAVar(TString filename, vector<TString>& MVAV, vector<TString>& MVAS)
+{
+  Table table;
+  table.parseFromFile(getConfigPath()+"BDTVariableList.txt", "TableCellMixed");
+
+  int nvar = ((TableCellInt*)table.getCellRowColumn(string(filename),"NVar"))->val;
+  int nspec = ((TableCellInt*)table.getCellRowColumn(string(filename),"NSpec"))->val;
+
+  for(int v = 0; v<nvar; v++) {
+    MVAV.push_back(((TableCellText*)table.getCellRowColumn(string(filename),Form("%i",v)))->text);
+  }
+  for(int s = nvar; s<nvar+nspec; s++) {
+    MVAS.push_back(((TableCellText*)table.getCellRowColumn(string(filename),Form("%i",s)))->text);
+  }
+
+  return;
+}//getMVAVar
 
 // ----------------------------------------------------------------------------
 int DefaultValues::vfind(vector<string> a, string b) {
@@ -1068,4 +1170,22 @@ void DefaultValues::Rebin2DTest(TString Options) {
   //Print options: range (no uf/of), all (with uf/of)
   h->Print("all");
   hh->Print("all");
+}
+
+
+// ----------------------------------------------------------------------------
+void DefaultValues::printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &ct, vector<string> timers) {
+  // Prints a summary of all benchmarks.
+
+   rt = 0;
+   ct = 0;
+
+   for (unsigned int i=0;i<timers.size();i++) {
+      cout << Form("%-10s: Real Time = %6.*f seconds Cpu Time = %6.*f seconds",timers[i].c_str(),
+                   precision,bench->GetRealTime(timers[i].c_str()),precision,bench->GetCpuTime(timers[i].c_str())) << endl;
+      rt += bench->GetRealTime(timers[i].c_str());
+      ct += bench->GetCpuTime(timers[i].c_str());
+   }
+   cout << Form("%-10s: Real Time = %6.*f seconds Cpu Time = %6.*f seconds","TOTAL",precision,rt,precision,ct) << endl;
+
 }
