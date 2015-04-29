@@ -1,0 +1,21 @@
+
+ MedianEventProbs | MatrixElementType | PhysicsProcessType |    tmeParam |    MedianEventProb 
+                0 |                WW |                 WW |     0 +/- 0 | 2.391546e-10 +/- 0 
+                1 |                WZ |                 WZ |     0 +/- 0 | 4.906673e-12 +/- 0 
+                2 |              WZbb |                 WZ |     0 +/- 0 | 6.567607e-12 +/- 0 
+                3 |               WLg |              WJets |     0 +/- 0 | 1.300328e-07 +/- 0 
+                4 |               WLg |              WJets |     0 +/- 0 | 4.422508e-08 +/- 0 
+                5 |               Wgg |              WJets |     0 +/- 0 | 3.309222e-08 +/- 0 
+                6 |               WLL |              WJets |     0 +/- 0 | 6.101245e-09 +/- 0 
+                7 |               WLb |              WJets | 172.5 +/- 0 | 4.925576e-10 +/- 0 
+                8 |               Wbb |              WJets |     0 +/- 0 | 3.195975e-10 +/- 0 
+                9 |            ZLight |              ZJets |     0 +/- 0 | 2.014442e-08 +/- 0 
+               10 |             STopT |            STopT_T | 172.5 +/- 0 | 4.289709e-10 +/- 0 
+               10 |             STopT |         STopT_Tbar | 172.5 +/- 0 | 2.239826e-10 +/- 0 
+               11 |             STopS |            STopS_T | 172.5 +/- 0 | 4.976798e-11 +/- 0 
+               11 |             STopS |         STopS_Tbar | 172.5 +/- 0 | 3.076242e-11 +/- 0 
+               12 |               QCD |         QCD_ElFULL |     0 +/- 0 |  1.04846e-05 +/- 0 
+               19 |               HWW |             ggH125 |   125 +/- 0 | 3.001251e-13 +/- 0 
+               54 |                WH |              WH125 |   125 +/- 0 | 1.481892e-15 +/- 0 
+
+
