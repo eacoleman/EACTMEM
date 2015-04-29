@@ -135,7 +135,7 @@ int main(int argc,char**argv) {
           << "#expected limit command combine -M Asymptotic --significance *DATACARDNAME* -t -1 --expectSignal=1 -m 125" << endl;
 
   // process counter line
-  int jmax = vecSig.size()+vecBak.size();
+  //int jmax = vecSig.size()+vecBak.size();
 
   // Input total number of bins
   outFile << "imax " << left << setw(2) << "1" << "  number of channels" << endl;

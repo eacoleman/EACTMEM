@@ -198,8 +198,8 @@ int main(int argc, char**argv) {
    CommandLine cl;
    if (!cl.parse(argc,argv)) return 0;
    string          ofile     = cl.getValue<string>       ("ofile",         "MaxMeanMedianEventProbs.txt");
-   string          lepCat    = cl.getValue<string>       ("lep",              "both");
-   DEFS::LeptonCat leptonCat = DEFS::getLeptonCat(lepCat);
+   //string          lepCat    = cl.getValue<string>       ("lep",              "both");
+   //DEFS::LeptonCat leptonCat = DEFS::getLeptonCat(lepCat);
    string          jetBinS   = cl.getValue<string>       ("jetBin",           "jets2");
    DEFS::JetBin    jetBin    = DEFS::getJetBin(jetBinS);
    string          tagcatS   = cl.getValue<string>       ("tagcat",           "pretag");
