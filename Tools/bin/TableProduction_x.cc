@@ -1123,7 +1123,7 @@ void TableProduction::writeAllTablesToRoot(string rootLoc = "")
    
    string process = "";
    
-   TFile* tempRootFile = new TFile(rootLoc.c_str(), "RECREATE");
+   TFile* tempRootFile = new TFile(rootLoc.c_str(), "RECREATE"); tempRootFile=tempRootFile;
    
    outputTableMapToRoot(muonAcceptanceTables);
    outputTableMapToRoot(electronAcceptanceTables);

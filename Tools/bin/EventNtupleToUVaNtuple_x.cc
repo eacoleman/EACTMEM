@@ -399,7 +399,7 @@ void printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &cp, bo
             double massW = 80.4 ;
             double massMuon = 0.1;
             double nvPz1 = 0;
-            double nvPz2 = 0;
+            double nvPz2 = 0; nvPz2=nvPz2;
             double coeffA = (massW*massW - massMuon*massMuon)/2 + ntuple->lLV[0].Px()*ntuple->METLV[0].Px() + ntuple->lLV[0].Py()*ntuple->METLV[0].Py();
             double coeffa= ntuple->lLV[0].E()*ntuple->lLV[0].E() - ntuple->lLV[0].Pz()*ntuple->lLV[0].Pz();
             double coeffb = (-2)*coeffA*ntuple->lLV[0].Pz() ;

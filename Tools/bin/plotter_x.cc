@@ -1355,10 +1355,10 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    else if(leptonCat == DEFS::muon) signalFactor = 10000;//1.18733488512815566e+04;
    else signalFactor = 10000;
 
-   Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
-   Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
-   Double_t jetptbinslow[9] = {20,25,30,35,40,50,70,100,1000};   
-   Double_t jetptbinshigh[10] = {20,50,80,100,110,120,130,140,160,1000};
+   //Double_t leptonptbinslow[9] = {20,25,30,35,40,50,70,100,1000};
+   //Double_t leptonptbinshigh[10] = {20,50,55,60,65,70,80,100,120,1000};
+   //Double_t jetptbinslow[9] = {20,25,30,35,40,50,70,100,1000};   
+   //Double_t jetptbinshigh[10] = {20,50,80,100,110,120,130,140,160,1000};
    Double_t Mjjbinslow[11] = {20,40,50,60,70,80,90,100,200,300,1000};
    Double_t Mjjbinshigh[11] = {20,100,110,120,130,150,180,200,250,350,1000};
    Double_t Mtbinshigh[11] = {0,20,40,60,70,80,100,120,140,200,1000};
