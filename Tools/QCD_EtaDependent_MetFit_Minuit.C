@@ -110,46 +110,52 @@ void getHistosFromDrawOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq,  int rebinEta, 
 
 }//getHistosFromDrawOutput
 
-void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr, int rebinEta, int rebinMet, bool full){
+void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr, int rebinEta, int rebinMet, bool full, TString lepton){
 
   bool removesw2 = false;// true;
 
   // list of background processes. WJets and QCD are handled separately
   TString hn = "MET_vs_AbsLeptEta_";
+  TString leptonAbbreviation;
+  if(lepton.CompareTo("electron")==0) leptonAbbreviation = "El";
+  else if(lepton.CompareTo("muon")==0) leptonAbbreviation = "Mu";
 
   // Name of the data histo
-  TString data = hn+"SingleEl_Data_electron"; // 19148 pb-1
+  TString data = hn+"Single"+leptonAbbreviation+"_Data_"+lepton; // electron = 19148 pb-1, muon = 19279 pb-1
 
   // Name of the WJets histo
-  TString wj = hn+"WJets_electron";
+  TString wj = hn+"WJets_"+lepton;
 
   // Name of the QCD histo
   TString qcd;
   if(full)
-     qcd = hn+"QCD_ElFULL_electron"; // 19148 pb-1
+     qcd = hn+"QCD_"+leptonAbbreviation+"FULL_"+lepton; // 19148 pb-1
   else
-     qcd = hn+"QCD_ElEnriched_electron"; // 1169 pb-1
+     qcd = hn+"QCD_"+leptonAbbreviation+"Enriched_"+lepton; // 1169 pb-1
 
   // Vector containing all other histos. Proper normalization 
   // to the luminosity of the signal data is assumed
   vector<TString> backs;
-  backs.push_back(hn+"STopS_T_electron");
-  backs.push_back(hn+"STopS_Tbar_electron");
-  backs.push_back(hn+"STopT_T_electron");
-  backs.push_back(hn+"STopT_Tbar_electron");
-  backs.push_back(hn+"STopTW_T_electron");
-  backs.push_back(hn+"STopTW_Tbar_electron");
-  backs.push_back(hn+"TTbar_electron");
-  backs.push_back(hn+"ZJets_electron");
-  backs.push_back(hn+"WW_electron");
-  backs.push_back(hn+"WZ_electron");
-  backs.push_back(hn+"ggH125_electron");
-  backs.push_back(hn+"qqH125_electron");
-  backs.push_back(hn+"WH125_electron");
+  backs.push_back(hn+"STopS_T_"+lepton);
+  backs.push_back(hn+"STopS_Tbar_"+lepton);
+  backs.push_back(hn+"STopT_T_"+lepton);
+  backs.push_back(hn+"STopT_Tbar_"+lepton);
+  backs.push_back(hn+"STopTW_T_"+lepton);
+  backs.push_back(hn+"STopTW_Tbar_"+lepton);
+  backs.push_back(hn+"TTbar_"+lepton);
+  backs.push_back(hn+"ZJets_"+lepton);
+  backs.push_back(hn+"WW_"+lepton);
+  backs.push_back(hn+"WZ_"+lepton);
+  backs.push_back(hn+"ggH125_"+lepton);
+  backs.push_back(hn+"qqH125_"+lepton);
+  backs.push_back(hn+"WH125_HToBB_"+lepton);
+  backs.push_back(hn+"TTH_HToBB_M125_"+lepton);
+  backs.push_back(hn+"WH_ZH_TTH_HToWW_M125_"+lepton);
+  backs.push_back(hn+"WH_ZH_TTH_HToZZ_M125_"+lepton);
    
   // Open the input file and get all histos
   //  TFile *_file0 = TFile::Open("/uscms_data/d2/eusebi/validationForQCD/histos_electron.root");
-  TFile *_file0 = TFile::Open("./histos_electron.root");
+  TFile *_file0 = TFile::Open("./histos_"+lepton+".root");
 
   // Data
   hd =  (TH2D*) _file0->Get(data);
@@ -179,18 +185,22 @@ void getHistosFromPlotterOutput(TH2D *& hd, TH2D *& hw, TH2D *& hq, TH2D  *& hr,
 }// getHistosFromPlotterOutput
 
 
-void QCD_EtaDependent_MetFit_Minuit(bool full = true){
+void QCD_EtaDependent_MetFit_Minuit(TString lepton = "electron", bool full = true){
 
   // ============ GET THE INPUT HISTOS ==============
   int rebinMet = 20; // best value(s): 5 or 20
   int rebinEta = 2; // best value(s): 2 or 41
   bool fixQCDFraction = false;
 
-  double lum_data = 19148; // units of pb-1
-  double lum_qcd;
-  if(full)
-     lum_qcd = 18937.6012264;// units of pb-1
-     //lum_qcd = 19148;// units of pb-1
+  double lum_data = 0;
+  double lum_qcd = 0;
+
+  if(lepton.CompareTo("electron")==0) lum_data = 19148; // units of pb-1
+  else if(lepton.CompareTo("muon")==0) lum_data = 19279; // units of pb-1
+  if(full) {
+     if(lepton.CompareTo("electron")==0) lum_qcd = 18937.6012264; // units of pb-1
+     else if(lepton.CompareTo("muon")==0) lum_qcd = 19279; // units of pb-1
+  }
   else
      lum_qcd = 1143.95; // units of pb-1
      //lum_qcd = 1169; // units of pb-1
@@ -200,7 +210,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
 
   // Data, WJets, QCD
   TH2D * hd, *hw, *hq, *hr;
-  getHistosFromPlotterOutput(hd,hw,hq,hr,rebinEta,rebinMet,full);
+  getHistosFromPlotterOutput(hd,hw,hq,hr,rebinEta,rebinMet,full,lepton);
   //getHistosFromDrawOutput(hd,hw,hq, rebinEta,rebinMet);
 
   fout1->cd();
@@ -394,7 +404,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
       // get the results of the fit here
     
       // Retrieve the central value (central) and errors (up,down)
-      double central, err_down, err_up, junk, junk1, junk2;
+      double err_down, err_up, junk, junk1, junk2;
       minuit.GetParameter(0, val0, junk);
       minuit.mnerrs(0, err_up, err_down, junk1, junk2);
       err0 =  0.5*(fabs(err_up)+fabs(err_down));
@@ -406,9 +416,9 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
       cout<<"\t qcd_sf ="<<val0<<" +/- "<<err0<<endl;
       cout<<"\t wj_sf  ="<<val1<<" +/- "<<err1<<endl;
 
-      double met_sint = met_s->Integral();
-      double met_qint = met_q->Integral();
-      double met_wint = met_w->Integral();
+      //double met_sint = met_s->Integral();
+      //double met_qint = met_q->Integral();
+      //double met_wint = met_w->Integral();
 
       Double_t amin,edm,errdef;
       Int_t nvpar,nparx,icstat;
@@ -544,7 +554,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cint->cd(5); qcd_nev->Draw("E");
   cint->cd(6); wj_nev->Draw("E");
   cint->SaveAs("Stats.pdf");
-  cint->SaveAs("Stats.eps");
+  cint->SaveAs("Stats.png");
   cint->Write();
   da_int->Write();
   qcd_int->Write();
@@ -558,7 +568,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cfr->cd(1); qcd_fr->Draw("E");
   cfr->cd(2); wj_fr->Draw("E");
   cfr->SaveAs("FractionsVsEta.pdf");
-  cfr->SaveAs("FractionsVsEta.eps");
+  cfr->SaveAs("FractionsVsEta.png");
   cfr->Write();
   qcd_fr->Write();
   wj_fr->Write();
@@ -568,7 +578,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cyi->cd(1); qcd_yield->Draw("E");
   cyi->cd(2); wj_yield->Draw("E");
   cyi->SaveAs("EventYieldsVsEta.pdf");
-  cyi->SaveAs("EventYieldsVsEta.eps");
+  cyi->SaveAs("EventYieldsVsEta.png");
   cyi->Write();
   qcd_yield->Write();
   wj_yield->Write();
@@ -578,7 +588,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cxs->cd(1); qcd_xs->Draw("E");
   cxs->cd(2); wj_xs->Draw("E");
   cxs->SaveAs("EventXSVsEta.pdf");
-  cxs->SaveAs("EventXSVsEta.eps");
+  cxs->SaveAs("EventXSVsEta.png");
   cxs->Write();
   qcd_xs->Write();
   wj_xs->Write();
@@ -588,7 +598,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   cwe->cd(1); qcd_sf->Draw("E");
   cwe->cd(2); wj_sf->Draw("E"); wjsm_sf->Draw("sameE3"); wj_sf->Draw("sameE");
   cwe->SaveAs("SfVsEta.pdf");
-  cwe->SaveAs("SfVsEta.eps");
+  cwe->SaveAs("SfVsEta.png");
   cwe->Write();
   qcd_sf->Write();
   wj_sf->Write();
@@ -598,7 +608,7 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   ccl->cd(1); qcd_close->Draw("E");
   ccl->cd(2); wj_close->Draw("E");
   ccl->SaveAs("ClosureVsEta.pdf");
-  ccl->SaveAs("ClosureVsEta.eps");
+  ccl->SaveAs("ClosureVsEta.png");
   ccl->Write();
   qcd_close->Write();
   wj_close->Write();
@@ -606,19 +616,19 @@ void QCD_EtaDependent_MetFit_Minuit(bool full = true){
   TCanvas * cchi2 = new TCanvas("chi2","chi2",400,400);
   chi2->Draw("E");
   cchi2->SaveAs("chi2.pdf");
-  cchi2->SaveAs("chi2.eps");
+  cchi2->SaveAs("chi2.png");
   chi2->Write();
   cchi2->Write();
 
   cfits->SaveAs("AllMetFits.pdf");
   cfits->SaveAs("AllMetFits.png");
-  cfits->SaveAs("AllMetFits.eps");
+  cfits->SaveAs("AllMetFits.png");
   cfits->Write();
   
   // ============ CREATE THE OUTPUT HISTOS ==============
-  TFile *fout = new TFile("QCDWeight_electron.root","RECREATE");
+  TFile *fout = new TFile("QCDWeight_"+lepton+".root","RECREATE");
   
-  TH1 * qcdweight = (TH1*) qcd_sf->Clone("QCDWeight_electron");
+  TH1 * qcdweight = (TH1*) qcd_sf->Clone("QCDWeight_"+lepton);
   qcdweight->SetDirectory(0);
   qcdweight->Write();
   fout->Close();
