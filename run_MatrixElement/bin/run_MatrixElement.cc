@@ -12,6 +12,7 @@
 
 // CMSSW libraries
 #include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/Utilities/interface/EDMException.h"
 
 // This code libraries
 #include "TAMUWW/Integrator/interface/CubaIntegrator.hh"
@@ -88,16 +89,38 @@ int main(int argc, char* argv[]){
 // **** Transfer Functions ****
 // ****************************
 
+  //Full Paths
+  string tf_ttbar_b_file_path, tf_ttbar_uds_file_path, tf_ttbar_g_file_path;
+  string paths[] = {"TAMUWW/ConfigFiles/Official/TransferFunctions/",""};
+
   // NEW TF's
-  edm::FileInPath tf_ttbar_uds_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_UDS_00_24.txt");
-  edm::FileInPath tf_ttbar_g_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_G_00_24.txt");
-  edm::FileInPath tf_ttbar_b_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_00_24.txt");
+  int maxTries = 2;
+  for(int count=0; count<maxTries; count++) {
+    try {
+      edm::FileInPath tf_ttbar_uds_file(paths[count]+"TF_TTbarMG_UDS_00_24.txt");
+      edm::FileInPath tf_ttbar_g_file(paths[count]+"TF_TTbarMG_G_00_24.txt");
+      edm::FileInPath tf_ttbar_b_file(paths[count]+"TF_TTbarMG_B_00_24.txt");
+      tf_ttbar_b_file_path = tf_ttbar_b_file.fullPath();
+      tf_ttbar_uds_file_path = tf_ttbar_uds_file.fullPath();
+      tf_ttbar_g_file_path = tf_ttbar_g_file.fullPath();
+      break;
+    }
+    catch (edm::Exception ex) {
+      if(count==maxTries-1) throw ex;
+    }
+  }
+
+  //edm::FileInPath tf_ttbar_uds_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_UDS_00_24.txt");
+  //edm::FileInPath tf_ttbar_g_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_G_00_24.txt");
+  //edm::FileInPath tf_ttbar_b_file("TAMUWW/ConfigFiles/Official/TransferFunctions/TF_TTbarMG_B_00_24.txt");
  
   // The double-gaussian transfer functions
-  DGTransferFunction bTF    ( tf_ttbar_b_file.fullPath());
-  DGTransferFunction lightTF( tf_ttbar_uds_file.fullPath());
-  DGTransferFunction gluonTF( tf_ttbar_g_file.fullPath());
-  
+  //DGTransferFunction bTF    ( tf_ttbar_b_file.fullPath());
+  //DGTransferFunction lightTF( tf_ttbar_uds_file.fullPath());
+  //DGTransferFunction gluonTF( tf_ttbar_g_file.fullPath());
+  DGTransferFunction bTF    ( tf_ttbar_b_file_path);
+  DGTransferFunction lightTF( tf_ttbar_uds_file_path);
+  DGTransferFunction gluonTF( tf_ttbar_g_file_path);
 
   
 // ------------------------------------------------------------------
