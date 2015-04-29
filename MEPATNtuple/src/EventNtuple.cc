@@ -599,7 +599,7 @@ void EventNtuple::getAngularVariables(Float_t &cosdPhiWW, Float_t &cosdPhiWH, Fl
   double massW = 80.4 ;
   double massMuon = 0.1;
   double nvPz1 = 0;
-  double nvPz2 = 0;
+  double nvPz2 = 0; nvPz2=nvPz2;
   double coeffA = (massW*massW - massMuon*massMuon)/2 + lLV[0].Px()*METLV[0].Px() + lLV[0].Py()*METLV[0].Py();
   double coeffa= lLV[0].E()*lLV[0].E() - lLV[0].Pz()*lLV[0].Pz();
   double coeffb = (-2)*coeffA*lLV[0].Pz() ;
