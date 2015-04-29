@@ -4,6 +4,7 @@
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "TAMUWW/Tools/interface/CSVreweight.hh"
+#include "TAMUWW/Tools/interface/TTbarreweight.hh"
 #include "JetMETAnalysis/JetUtilities/interface/CommandLine.h"
 #include "SHyFT/TemplateMakers/bin/AngularVars.h"
 #include "SHyFT/TemplateMakers/bin/KinFit.h"
@@ -38,11 +39,17 @@ using DEFS::LeptonCat;
 //  Declare Local Functions
 ////////////////////////////////////////////////////////////////////////////////
 
+///Progress bar
+static inline void loadbar2(unsigned int x, unsigned int n, unsigned int w = 50);
+
 /// Setup tree for UVa Type Ntuple
 void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString,unsigned*> &uintBranches);
 
 /// Set initial Ntuple values. These will be the values assuming no other value is set in the future.
 void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*> &uintBranches);
+
+/// Print a summary output of the TBenchmark
+void printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &cp, bool event = false);
 
 ////////////////////////////////////////////////////////////////////////////////
 //  main
@@ -64,7 +71,6 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
    vector<TString> ofiles      = cl.getVector<TString> ("ofiles",                               "WW_UVa:::WZ_UVa");
    TString         ofileFormat = cl.getValue<TString>  ("ofileFormat",                                    ".root");
    TString         otreeName   = cl.getValue<TString>  ("otreeName",                                    "anaTree");
-   bool            isMC        = cl.getValue<bool>     ("isMC",                                             false);
    string          lepCat      = cl.getValue<string>   ("leptonCat",                                       "both");
    DEFS::LeptonCat leptonCat   = DEFS::getLeptonCat    (lepCat);
    bool            debug       = cl.getValue<bool>     ("debug",                                            false);
@@ -74,7 +80,13 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
    
    TBenchmark* m_benchmark = new TBenchmark();
    m_benchmark->Reset();
-   m_benchmark->Start("event");
+   m_benchmark->Start("program");
+
+   TBenchmark* func_benchmark = new TBenchmark();
+   func_benchmark->Reset();
+
+   TBenchmark* event_benchmark = new TBenchmark();
+   event_benchmark->Reset();
 
    if(!ifilePath.EndsWith("/")) ifilePath += "/";
    if(!ofilePath.EndsWith("/")) ofilePath += "/";
@@ -91,9 +103,11 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
 
    EventNtuple *ntuple = new EventNtuple();
    CSVreweight* csvweight = new CSVreweight();
+   TTbarreweight* ttbarweight = new TTbarreweight();
+   PUreweight* puweight = 0;
 
    for(unsigned int f=0; f<ifiles.size(); f++) {
-
+      func_benchmark->Start("setup");
       TFile* ifile = TFile::Open(ifilePath+ifiles[f]+ifileFormat);
       ifile->cd(ifolder);
 
@@ -112,16 +126,39 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
 
       TTree *uvaNtuple = new TTree(otreeName,otreeName);
       setupTree(uvaNtuple,doubleBranches,uintBranches);
+
+      if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("Full")) {
+        //string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
+        string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig_minBiasXsec69400_coarseBinning_withAdditionalNPVHist.root";
+        string MCname   = string(ifilePath+ifiles[f]+ifileFormat);
+        if(ifiles[f].Contains("Dp6p7")) {
+           cout << "ERROR EventNtupleToUVaNtuple_x::main() PU reweighting for QCD_ElEnriched has not been implemented yet." << endl;
+           return 0;
+        }
+        else {
+           puweight = new PUreweight(dataname,MCname,"pileup_noTrig","PS/TPUDist",make_pair(1,10));
+        }
+      }
+      func_benchmark->Stop("setup");
       for(int i=0; i<nEventNtuple; i++)
       {
+         event_benchmark->Start("event");
+         func_benchmark->Start("getEntry");
          itree->GetEntry(i);
+         func_benchmark->Stop("getEntry");
          if(i==0) {
             assert(ntuple!=0);
          }
-         if (i%10000==0) cout << "\tEntry " << i << " of " << nEventNtuple << endl;
+         //if (i%1000==0) cout << "\tEntry " << i << " of " << nEventNtuple << endl;
+         func_benchmark->Start("loadbar2");
+         if(!debug)
+           loadbar2(i+1,nEventNtuple);
+         func_benchmark->Stop("loadbar2");
          if (leptonCat != ntuple->lLV[0].leptonCat && leptonCat!=DEFS::both) continue;
 
+         func_benchmark->Start("setInitialValues");
          setInitialValues(doubleBranches,uintBranches);
+         func_benchmark->Stop("setInitialValues");
 
          if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("QCD") && !ifiles[f].Contains("Full")) {
             (*doubleBranches["nIntxn"]) = ntuple->vLV[0].npus[1];
@@ -132,6 +169,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["nIntxnT"]) = 0;
          }
 
+         func_benchmark->Start("leptonInfo");
          if(ntuple->lLV[0].leptonCat==DEFS::muon) {
             (*doubleBranches["pfIso"]) = ntuple->lLV[0].lpfIso;
             (*doubleBranches["muPt"]) = ntuple->lLV[0].Pt();         
@@ -158,6 +196,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
              (*doubleBranches["elePt"]) = ntuple->lLV[0].Pt();
              //(*doubleBranches["elePt_New"]) = electron_->p4().Pt();
              (*doubleBranches["eleMVAID"]) = ntuple->lLV[0].emvaTrig;
+             (*doubleBranches["eleMVAIDloose"]) = ntuple->lLV[0].emvaNonTrig;
              (*doubleBranches["eleSCEta"]) = ntuple->lLV[0].eSuperClusterEta;
 
              if(ntuple->lLV[0].eIsEE == 1 ){
@@ -189,6 +228,8 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
                 (*doubleBranches["deta_EB"]) = ntuple->lLV[0].eDeltaEta;
              }
          }
+         func_benchmark->Stop("leptonInfo");
+         func_benchmark->Start("jetInfo");
          //if(i>=70000 && i<80000) cout << "sfsg1" << endl;
          int nLowJets = 0;
          double sumJetEt = 0.0;
@@ -204,6 +245,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches[histName + "Pt"]) = ntuple->jLV[j].Pt();
             (*doubleBranches[histName + "Eta"]) = ntuple->jLV[j].Eta();
             (*doubleBranches[histName + "Phi"]) = ntuple->jLV[j].Phi();
+            (*doubleBranches[histName + "Et"]) = ntuple->jLV[j].Et();
 
             sumJetEt += ntuple->jLV[j].Pt();
 
@@ -235,7 +277,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["dEtaJetJet"]) = fabs( ntuple->jLV[0].Eta() - ntuple->jLV[1].Eta() );
             (*doubleBranches["EtaJetJet"]) = m2jjTemp.Eta();
             (*doubleBranches["dPhiJetJet"]) = fabs(ntuple->jLV[0].DeltaPhi(ntuple->jLV[1]));
-            TLorentzVector MWWjjTemp = ntuple->lLV[0] + ntuple->METLV[0] + m2jjTemp ;
+            TLorentzVector MWWjjTemp = ntuple->lLV[0] + ntuple->METLV[0] + m2jjTemp;
             (*doubleBranches["MWWTop2jets"]) = MWWjjTemp.M();
             double dPhilj_f = 0;
             if ( fabs(ntuple->lLV[0].DeltaPhi(ntuple->jLV[0])) < fabs(ntuple->lLV[0].DeltaPhi(ntuple->jLV[1])) ) {
@@ -247,7 +289,7 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["minDPhiLepJet"]) = dPhilj_f ;
             (*doubleBranches["dPhiMetJet"]) = dPhiMetJet;
             (*doubleBranches["Ptlnujj"]) = MWWjjTemp.Pt();
-            (*doubleBranches["JacobePeak"]) = ntuple->jLV[1].Pt() / ntuple->Mjj; 
+            (*doubleBranches["JacobePeak"]) = ntuple->jLV[1].Pt() / ((ntuple->jLV[0]+ntuple->jLV[1]).M()); 
 
             double minDeta = 9999;
             for (int iJet = 0; iJet < (int)ntuple->jLV.size()-1; ++iJet) {
@@ -262,7 +304,8 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
                }
             }
          }
-
+         func_benchmark->Stop("jetInfo");
+         func_benchmark->Start("misc.");
          (*doubleBranches["nPV"]) = ntuple->vLV[0].npv;
          
          (*doubleBranches["minDPhiMetJet"]) = minDPhiMetJet;
@@ -280,27 +323,25 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          leptonTrans.SetE(ntuple->lLV[0].Pt());
          TLorentzVector WTrans = leptonTrans + metLV;
          (*doubleBranches["mT"])      = WTrans.M();
-/*
+
          //Calculate Ht using all available jets
          double ht = 0.0;
-         if (muPlusJets_ && muons.size() > 0) ht += muons[0].pt();
-         if (ePlusJets_ && electrons.size() > 0) ht += electrons[0].pt();
+         if (ntuple->lLV.size() > 0) ht += ntuple->lLV[0].Pt();
          //	 ht += muon_->pt();
          
          
-         double htLep = ht + met.et(); //htLep = only lepPt and MET
+         double htLep = ht + ntuple->METLV[0].Pt(); //htLep = only lepPt and MET
          
-         for (unsigned int iJet = 0; iJet < jets.size(); ++iJet) {
-            const pat::Jet *jet_ = dynamic_cast<const pat::Jet *>(jets[iJet].masterClonePtr().get());
-            ht += jet_->et();
+         for (unsigned int iJet = 0; iJet < ntuple->jLV.size(); ++iJet) {
+            ht += ntuple->jLV[iJet].Et();
          }
          
-         double htAll = ht + met.et(); //htAll = everything: lepPt + MET + sum(jetEt)
+         double htAll = ht + ntuple->METLV[0].Pt(); //htAll = everything: lepPt + MET + sum(jetEt)
          
          (*doubleBranches["ht"])      = ht;
          (*doubleBranches["htLep"])   = htLep;
          (*doubleBranches["htAll"])   = htAll;
-*/
+
          (*uintBranches["run"])       = ntuple->run;
          //(*uintBranches["lumi"])      = ev.id().luminosityBlock();
          (*uintBranches["event"])     = ntuple->event;
@@ -315,18 +356,9 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
          // (*doubleBranches["minDPhiLepJet_an"]) = dPhilj ;
          // (*doubleBranches["Ptlnujj_an"]) = Ptlnujj;
          // (*doubleBranches["JacobePeak_an"]) = Jacobe
-
+         func_benchmark->Stop("misc.");
+         func_benchmark->Start("puweight");
          if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("Full")) {
-            PUreweight* puweight;
-            string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
-            string MCname   = string(ifilePath+ifiles[f]+ifileFormat);
-            if(ifiles[f].Contains("Dp6p7")) {
-               cout << "ERROR EventNtupleToUVaNtuple_x::main() PU reweighting for QCD_ElEnriched has not been implemented yet." << endl;
-               return 0;
-            }
-            else {
-               puweight = new PUreweight(dataname,MCname,"pileup_noTrig","PS/TPUDist");
-            }
             double weight = puweight->getWeight(ntuple->vLV[0].npus[1]);
             double weight_true = puweight->getWeight(ntuple->vLV[0].tnpus[1]);
             (*doubleBranches["weight"]) = weight;
@@ -336,21 +368,30 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["weight"]) = 0;
             (*doubleBranches["weight_true"]) = 0;
          }
-
+         func_benchmark->Stop("puweight");
          // (*doubleBranches["Pt1st"]) = Pt1st ;
          // (*doubleBranches["Pt2nd"]) = Pt2nd ;
          // (*doubleBranches["Pt3rd"]) = Pt3rd ;
          
          // (*doubleBranches["discrTCmax"]) = discrTCmax ;
          // (*doubleBranches["discrTC2nd"]) = discrTC2nd ;
+         func_benchmark->Start("btag");
          (*doubleBranches["nBTagsSSV"]) = nbtagsSSV;
          (*doubleBranches["nBTagsTC"]) = nbtagsTC;
          (*doubleBranches["nBTagsCSV"]) = nbtagsCSV;
-         if(isMC)
+         if(!ifiles[f].Contains("Data") && !ifiles[f].Contains("QCD") && !ifiles[f].Contains("Full"))
           (*doubleBranches["csvWeight"]) = csvweight->getWeight(ntuple);
          else
           (*doubleBranches["csvWeight"]) = 1.0;
+         func_benchmark->Stop("btag");
+         func_benchmark->Start("ttbarweight");
+         if(ifiles[f].Contains("TTbar") || ifiles[f].Contains("TTBar") || ifiles[f].Contains("TTJets"))
+          (*doubleBranches["top_weight"]) = ttbarweight->getWeight(ntuple,0);
+         else
+          (*doubleBranches["top_weight"]) = 1.0;
+         func_benchmark->Stop("ttbarweight");
 
+         func_benchmark->Start("jetInfoSize2");
          if(ntuple->jLV.size() >= 2) {
 
             //------solve neutrino Pz                                                                                           
@@ -455,19 +496,36 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
             (*doubleBranches["jacksonAngle"]) = jacksonAngle;
 
          }
-
+         func_benchmark->Stop("jetInfoSize2");
+         func_benchmark->Start("fill");
          uvaNtuple->Fill();
+         func_benchmark->Stop("fill");
+         event_benchmark->Stop("event");
+         if(debug) {
+           float rt = 0, ct = 0;
+           cout << endl << "EventNtupleToUVaNtuple_x::func_benchmark" << endl;
+           //func_benchmark->Summary(rt,ct);
+           printSummary(func_benchmark, 8, rt, ct, false);
+           cout << endl << "EventNtupleToUVaNtuple_x::event_benchmark" << endl;
+           //event_benchmark->Summary(rt,ct);
+           printSummary(event_benchmark, 8, rt, ct, true);
+         }
+         func_benchmark->Reset();
+         event_benchmark->Reset();
       }
       
       uvaNtuple->AutoSave();
       uvaNtuple->Write();
       ofile->Close();
       ifile->Close();
+
+      delete func_benchmark;
+      delete event_benchmark;
    }
 
-   m_benchmark->Stop("event");
-   cout << "EventNtupleToUVaNtuple_x" << endl << "\tCPU time = " << m_benchmark->GetCpuTime("event") << " s" << endl
-        << "\tReal time = " << m_benchmark->GetRealTime("event") << " s" << endl;
+   m_benchmark->Stop("program");
+   cout << endl << "EventNtupleToUVaNtuple_x" << endl << "\tCPU time = " << m_benchmark->GetCpuTime("program") << " s" << endl
+        << "\tReal time = " << m_benchmark->GetRealTime("program") << " s" << endl;
    delete m_benchmark;
 
    return 0;
@@ -512,6 +570,7 @@ void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString
    doubleBranches["deta_EB"] = new double(0.0);
    doubleBranches["hoe_EB"] = new double(0.0);
    doubleBranches["eleMVAID"] = new double(0.0);
+   doubleBranches["eleMVAIDloose"] = new double(0.0);
    doubleBranches["eleSCEta"] = new double(0.0);
 
 
@@ -522,6 +581,8 @@ void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString
    doubleBranches["nBTagsTC"] = new double(0.0);
    doubleBranches["nBTagsCSV"] = new double(0.0);
    doubleBranches["csvWeight"] = new double(0.0);
+
+   doubleBranches["top_weight"] = new double(0.0);
 
    doubleBranches["jet1discrCSV"] = new double(0.0);
    doubleBranches["jet2discrCSV"] = new double(0.0);
@@ -566,6 +627,17 @@ void setupTree(TTree* uvaNtuple,map<TString,double*> &doubleBranches,map<TString
    doubleBranches["jet8Phi"] = new double(0.0);
    doubleBranches["jet9Phi"] = new double(0.0);
    doubleBranches["jet10Phi"] = new double(0.0);
+
+   doubleBranches["jet1Et"] = new double(0.0);
+   doubleBranches["jet2Et"] = new double(0.0);
+   doubleBranches["jet3Et"] = new double(0.0);
+   doubleBranches["jet4Et"] = new double(0.0);
+   doubleBranches["jet5Et"] = new double(0.0);
+   doubleBranches["jet6Et"] = new double(0.0);
+   doubleBranches["jet7Et"] = new double(0.0);
+   doubleBranches["jet8Et"] = new double(0.0);
+   doubleBranches["jet9Et"] = new double(0.0);
+   doubleBranches["jet10Et"] = new double(0.0);
 
    doubleBranches["sumJetEt"] = new double(0.0);
 
@@ -714,4 +786,54 @@ void setInitialValues(map<TString,double*> &doubleBranches,map<TString,unsigned*
       (* (iIMap->second)) = 9999; // not a lot of good choices here
    }
    //cout << "DONE" << endl;
+}
+
+//______________________________________________________________________________
+static inline void loadbar2(unsigned int x, unsigned int n, unsigned int w) {
+   if ( (x != n) && (x % (n/100) != 0) ) return;
+ 
+   float ratio  =  x/(float)n;
+   int   c      =  ratio * w;
+ 
+   cout << setw(3) << (int)(ratio*100) << "% [";
+   for (int x=0; x<c; x++) cout << "=";
+   for (unsigned int x=c; x<w; x++) cout << " ";
+   cout << "] (" << x << "/" << n << ")\r" << flush;
+}
+
+//______________________________________________________________________________
+void printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &ct, bool event) {
+// Prints a summary of all benchmarks.
+
+   vector<TString> bench_names;
+   //bench_names.push_back("program");
+   if(!event) {
+    bench_names.push_back("setup");
+    bench_names.push_back("getEntry");
+    bench_names.push_back("loadbar2");
+    bench_names.push_back("setInitialValues");
+    bench_names.push_back("leptonInfo");
+    bench_names.push_back("jetInfo");
+    bench_names.push_back("misc.");
+    bench_names.push_back("puweight");
+    bench_names.push_back("btag");
+    bench_names.push_back("ttbarweight");
+    bench_names.push_back("jetInfoSize2");
+    bench_names.push_back("fill");
+   }
+   else {
+     bench_names.push_back("event");
+   }
+
+   rt = 0;
+   ct = 0;
+
+   for (unsigned int i=0;i<bench_names.size();i++) {
+      cout << Form("%-10s: Real Time = %6.*f seconds Cpu Time = %6.*f seconds",(const char*)bench_names[i],
+                   precision,bench->GetRealTime(bench_names[i]),precision,bench->GetCpuTime(bench_names[i])) << endl;
+      rt += bench->GetRealTime(bench_names[i]);
+      ct += bench->GetCpuTime(bench_names[i]);
+   }
+   cout << Form("%-10s: Real Time = %6.*f seconds Cpu Time = %6.*f seconds","TOTAL",precision,rt,precision,ct) << endl;
+
 }
