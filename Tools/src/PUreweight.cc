@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <utility>
 
 //Root libraries
 #include "TFile.h"
@@ -13,16 +14,19 @@
 using std::cout;
 using std::endl;
 using std::string;
+using std::pair;
 
 
 
 //------------------------------------------------------------------------
-PUreweight::PUreweight(TString dataFile, TString MCFile, TString dataHisto, TString MCHisto){
+PUreweight::PUreweight(TString dataFile, TString MCFile, TString dataHisto, TString MCHisto, pair<int,int> rebin){
 
   TH1 * PU_intended   = getHistoFromFile(dataFile,dataHisto);
   TH1 * PU_generated  = getHistoFromFile(MCFile,MCHisto);
 
   if (PU_intended && PU_generated){
+    PU_intended->Rebin(rebin.first);
+    PU_generated->Rebin(rebin.second);
     PU_intended->Scale( 1.0/ PU_intended->Integral());
     PU_generated->Scale( 1.0/ PU_generated->Integral());
     weights_ = PU_intended;

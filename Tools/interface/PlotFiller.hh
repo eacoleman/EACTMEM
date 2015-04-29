@@ -12,8 +12,12 @@
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
 #include "TAMUWW/MEPATNtuple/interface/MicroNtuple.hh"
+#include "TAMUWW/SpecialTools/interface/MVAVar.hh"
 #include "TAMUWW/Tools/interface/PUreweight.hh"
 #include "TAMUWW/Tools/interface/TriggerEfficiency.hh"
+
+//ROOT libraries
+#include "TBenchmark.h"
 
 //C++ libraries
 #include <iostream>
@@ -33,7 +37,7 @@ public:
    // NOTE That the user must provide the fill function at construction (because it is a required function).
    PlotFiller(MapOfPlots &plotsTemp,
               std::vector<PhysicsProcess*> &procsTemp,
-              void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double) );
+              void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, std::map<TString,MVAVar>&, double) );
    ~PlotFiller();
    
    // Simple functions to change the functionality of the code.
@@ -43,6 +47,8 @@ public:
    void setInitializeEventFunction(void (*userInitEventFuncTemp) (EventNtuple*, const PhysicsProcess*));
    void setMVAWeightDir(TString MVAWD);
    void setMVAMethods(vector<TString> MVAM);
+   void setMVAVar(vector<TString> mvav);
+   void setMVASpec(vector<TString> mvas);
    
    // Debug functions
    void setMaximumEventsDEBUG(unsigned int maxEvts);
@@ -58,11 +64,14 @@ private:
    unsigned int debugNumberOfEvents;
    bool debug;
    TString MVAWeightDir;
-   vector<TString> MVAMethods;   
+      vector<TString> MVAMethods, MVAV, MVAS;
+   std::map<TString,MVAVar> MVAVars;
+   TBenchmark* event_benchmark;
+   TBenchmark* func_benchmark;
 
    // These are the custom functions.
    // Fills the plots
-   void (*userFillFunc) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double);
+   void (*userFillFunc) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, std::map<TString,MVAVar>&, double);
    // Returns a double that will multiply the weight
    double (*userWeightFunc) (EventNtuple*, const PhysicsProcess*);
    // Returns true if the event passes the cut

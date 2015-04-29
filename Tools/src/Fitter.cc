@@ -338,8 +338,8 @@ void Fitter::initializeHistNames()
    histNames.push_back("ZJets");
    histNames.push_back("TTbar");
    //histNames.push_back("QCD_ElEnriched");
-   histNames.push_back("QCD_ElFULL");
-   //histNames.push_back("QCD_MuFULL");
+   //histNames.push_back("QCD_ElFULL");
+   histNames.push_back("QCD_MuFULL");
    histNames.push_back("ggH125");
    histNames.push_back("qqH125");
    histNames.push_back("WH125");

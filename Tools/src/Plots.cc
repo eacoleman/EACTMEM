@@ -290,7 +290,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
    // This takes care of putting all the processes with the same groupName together
    // typically SingleTop Histos together, or diboson together etc.
    std::vector<TH1*> groupedHistos = doGrouping(procs);
-
+   //for(unsigned int i = 0; i < procs.size(); i++) {cout << "procs[i]->groupName = " << procs[i]->groupName << endl;}
    // Create the total Data and MC histos and Stacks
    TString tempName = templateHisto->GetName();
    TH1     * tMC = (TH1*) templateHisto->Clone(tempName+"_TotalMC");   tMC->Sumw2();
@@ -311,7 +311,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
    {
       TString hname = groupedHistos[h]->GetTitle();
       hname.ToUpper();
-
+      //cout << "groupedHistos[h]->GetTitle() = " << hname << endl; 
       if (hname.Contains("DATA"))
       {
          sDa->Add(groupedHistos[h],"hist");
@@ -383,7 +383,7 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
       sMC->Draw(gOption+"colz");
    
    if (areMCHists)
-      sDa->Draw(gOption+"ep,SAME");
+      sDa->Draw(gOption+"ep SAME");
    else
       sDa->Draw(gOption+"ep");
    //Draw the MC error bars
@@ -480,7 +480,8 @@ vector<TH1*> FormattedPlot::doGrouping(vector<PhysicsProcess*> procs){
   
   // Loop over original histos
   for (unsigned int h=0; h < histos.size(); h ++){
- 
+    //cout << "\thistos[h]->GetName() = " << histos[h]->GetName() << endl;
+    //cout << "\thistos[h]->GetTitle() = " << histos[h]->GetTitle() << endl;
     // Find the histo in groupedHistos that matches the title, return null pointer if it can't.
     TH1 * hgroup = findTitleInTH1Vector(histos[h]->GetTitle(),groupedHistos);
     
@@ -584,13 +585,13 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
 
     // Skip all this if either histo has no integral
     if (totalData->Integral() == 0){
-      cout<<"WARNING in Plots::drawKSandChi2Tests() not drawing KS or chi2 because  "
+      cout<<"\tWARNING in Plots::drawKSandChi2Tests() not drawing KS or chi2 because  "
 	  <<totalData->GetName()<<" has zero integral"<<endl;
       return ;
     }
     // Skip all this if either histo has no integral
     if (all->Integral() == 0){
-      cout<<"WARNING in Plots::drawKSandChi2Tests() not drawing KS or chi2 because  "
+      cout<<"\tWARNING in Plots::drawKSandChi2Tests() not drawing KS or chi2 because  "
 	  <<all->GetName()<<" has zero integral"<<endl;
       return ;
     }
@@ -602,7 +603,7 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
    int NDF;
    int igood;
 
-   
+/*   
    TLatex * ks      = new TLatex(x, y     , Form("KSTest   = %5.4g", totalData->KolmogorovTest(all)));
    ks->SetName("ks");
    TLatex * chi2P   = new TLatex(x, y*0.92, Form("Chi2Prob = %5.4g", all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
@@ -613,6 +614,11 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
    ks->Draw();
    chi2P->Draw();
    chi2NDF->Draw();
+*/
+   TLatex Tl;
+   Tl.DrawLatex(x, y*1.00, Form("KSTest   = %5.4g", totalData->KolmogorovTest(all)));
+   Tl.DrawLatex(x, y*0.92, Form("Chi2Prob = %5.4g", all->Chi2TestX(totalData,chi2,NDF,igood,"WW")));
+   Tl.DrawLatex(x, y*0.84, Form("Chi2/NDF = %5.4g", chi2/NDF));
 
 }
 

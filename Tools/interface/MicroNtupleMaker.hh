@@ -115,6 +115,10 @@ public:
    void setProcess(TString p) {currentProcess = p;}
    void setOutputPath(TString p) {outputPath = p;}
    void setMissingEventsFlag(bool f) {missingEventsFlag = f;}
+   void setFillBDT(bool f) {fillBDT = f;}
+   void setDebug(bool d) {debug = d;}
+   void setAllBDTReaders();
+   pair<int,int> setMVAVar(EventNtuple * ntuple, MicroNtuple * mnt);
    void writeMissingEventsFile(map<int,int> &missingME);
    int  getIntLength(int i);
 
@@ -181,8 +185,11 @@ private:
    TTreeIndex* index;
    EventNtuple * mergeEventNtuple;
    map<int,int> eventIndex;
+   map<int,int> duplicateIndex;
    bool imFilled;
    map<int,int> missingME;
-
+   bool fillBDT;
+   vector<pair<MVAVarMap, TMVA::Reader*> > BDTReaders;
+   bool debug;
 };
 #endif

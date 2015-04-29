@@ -1,9 +1,11 @@
+#include "TAMUWW/Tools/interface/mymath.hh"
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/Tools/interface/PlotMap.hh"
 #include "TAMUWW/Tools/interface/PlotFiller.hh"
 #include "JetMETAnalysis/JetUtilities/interface/TProfileMDF.h"
 #include "TAMUWW/Tools/interface/CutOptimization.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
+#include "TAMUWW/SpecialTools/interface/MVAVar.hh"
 #include "TAMUWW/Tools/interface/CreateCondorScriptME.hh"
 #include "TAMUWW/Tools/interface/MicroNtupleMaker.hh"
 
@@ -13,7 +15,11 @@
 #pragma link off all functions;
 #pragma link off all nestedclasses;
 
+#pragma link C++ namespace mymath;
+#pragma link C++ function mymath::deltaPhi;
+#pragma link C++ function mymath::deltaR;
 #pragma link C++ class DefaultValues+;
+#pragma link C++ class MVAVar+;
 #pragma link C++ class TProfileMDF+;
 #pragma link C++ class PhysicsProcess+;
 #pragma link C++ class Plot+;

@@ -3,6 +3,7 @@
 
 // C++ libraries
 #include <string>
+#include <utility>
 
 // ROOT libraries
 #include "TString.h"
@@ -12,7 +13,7 @@ class PUreweight{
 
  public:
 
-  PUreweight(TString dataFile, TString MCFile, TString dataHisto, TString MCHisto);
+  PUreweight(TString dataFile, TString MCFile, TString dataHisto, TString MCHisto, std::pair<int,int> rebin);
   double getWeight(double tnpu);
   TH1 *getHistoFromFile(TString filename, TString histoname); 
 

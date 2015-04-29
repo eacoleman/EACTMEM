@@ -17,7 +17,7 @@ using namespace std;
 
 PlotFiller::PlotFiller(MapOfPlots &plotsTemp,
                        vector<PhysicsProcess*> &procsTemp,
-                       void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, double)):
+                       void (*userFillFuncTemp) (MapOfPlots &, TString, EventNtuple*, METree*, MicroNtuple*, vector<TString>, map<TString,MVAVar>&, double)):
    plots(plotsTemp),
    processes(procsTemp),
    userFillFunc(userFillFuncTemp)
@@ -30,11 +30,17 @@ PlotFiller::PlotFiller(MapOfPlots &plotsTemp,
    numberOfEvents = 0;
    
    debug = false;
+
+   event_benchmark = new TBenchmark();
+   event_benchmark->Reset();
+   func_benchmark = new TBenchmark();
+   func_benchmark->Reset();
 }
 
 PlotFiller::~PlotFiller()
 {
-   
+   delete event_benchmark;
+   delete func_benchmark;
 }
 
 void PlotFiller::setWeightFunction(double (*userWeightFuncTemp) (EventNtuple*, const PhysicsProcess*))
@@ -71,6 +77,16 @@ void PlotFiller::setMVAWeightDir(TString MVAWD)
 void PlotFiller::setMVAMethods(vector<TString> MVAM)
 {
    MVAMethods = MVAM;
+}
+
+void PlotFiller::setMVAVar(vector<TString> mvav)
+{
+   MVAV = mvav;
+}
+
+void PlotFiller::setMVASpec(vector<TString> mvas)
+{
+   MVAS = mvas;
 }
 
 void PlotFiller::run()
@@ -115,9 +131,22 @@ void PlotFiller::run()
       if (c->GetBranch("mnt")) {
          mnt = new MicroNtuple(2);
          c->SetBranchAddress("mnt",&mnt);
-         if (!MVAWeightDir.IsNull() && !MVAMethods.empty()) {
+         if (!MVAWeightDir.IsNull() && !MVAMethods.empty() && !MVAV.empty()) {
             c->GetEntry(16);
-            mnt->setMVAReader(MVAMethods,MVAWeightDir);
+
+            MVAVar::setVarMap(MVAVars);
+            for(unsigned int iMVA=0; iMVA<MVAV.size(); iMVA++) {
+               MVAVars[MVAV[iMVA]].use = true;
+               MVAVars[MVAV[iMVA]].index = iMVA;
+               MVAVars[MVAV[iMVA]].maxIndex = MVAV.size();
+            }
+            for(unsigned int iMVA=0; iMVA<MVAS.size(); iMVA++) {
+               MVAVars[MVAS[iMVA]].use = true;
+               MVAVars[MVAS[iMVA]].index = iMVA;
+               MVAVars[MVAS[iMVA]].maxIndex = MVAS.size();
+            }
+
+            mnt->setMVAReader(MVAMethods,MVAWeightDir,MVAVars);
          }
       }
       else {
@@ -149,6 +178,12 @@ void PlotFiller::run()
 
       for (unsigned int ev = 0 ; ev < numberOfEvents ; ev++)
       {
+         //if debug, time the event
+         if(debug) {
+            event_benchmark->Start("event");
+            func_benchmark->Start("GetEntry");
+         }
+
          // Report every now and then
          if ((ev % 10000) == 0)
             cout<<"\t\tevent "<<ev<<endl;
@@ -156,6 +191,9 @@ void PlotFiller::run()
          // Get the given entry
          c->GetEntry(ev);
          
+         if(debug)
+            func_benchmark->Stop("GetEntry");
+
          // Runs before any cuts are made
          userInitEventFunc(ntuple, processes[i]);
          
@@ -169,11 +207,25 @@ void PlotFiller::run()
          
          // Fill plots
          //cout << "Entry = " << ev << endl; 
-         userFillFunc(plots, processes[i]->name, ntuple, metree, mnt, MVAMethods, weight);
+         userFillFunc(plots, processes[i]->name, ntuple, metree, mnt, MVAMethods, MVAVars, weight);
          
          // Keep track of the total number of events & weights passing the cuts 
          sumW += weight;
          numProcEvts++;
+
+         if(debug) {
+            event_benchmark->Stop("event");
+            float rt = 0, ct = 0;
+            cout << endl << "PlotFiller::event_benchmark" << endl;
+            vector<string> timers(1,"event");
+            DefaultValues::printSummary(event_benchmark, 8, rt, ct, timers);
+            event_benchmark->Reset();
+
+            cout << endl << "PlotFiller::func_benchmark" << endl;
+            vector<string> timers2(1,"GetEntry");
+            DefaultValues::printSummary(func_benchmark, 8, rt, ct, timers2);
+            func_benchmark->Reset();
+         }
       }
       
       cout << "Number of " << processes[i]->name << " events passing the cuts: " << numProcEvts << " with weights: " << sumW << endl;
