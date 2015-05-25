@@ -1,8 +1,13 @@
+#ifndef BACKGROUNDESTIMATOR_HH
+#define BACKGROUNDESTIMATOR_HH
 // This Program Takes input Monte Carlo histograms of several processes
 // and fits them to a data histogram. It only scales WJets and QCD.
 // 
 // Written by Travis Lamb
 // Started on the 14th of July, 2012
+
+//TAMU Libraries
+#include "TAMUWW/Tools/interface/Plots.hh"
 
 // C++ Libraries
 #include <iostream>
@@ -15,12 +20,15 @@
 #include "TPad.h"
 #include "TH1.h"
 #include "THStack.h"
+#include "TFile.h"
+#include "TMinuit.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
 
-namespace Histograms
-{
-   std::map<std::string, TH1D*> monteCarloHistograms;
-   TH1D* dataHistogram;
-}
+// Root Math Core headers
+#include <Math/SpecFuncMathCore.h>
+#include <Math/PdfFuncMathCore.h>
+#include <Math/ProbFuncMathCore.h>
 
 //##################################################
 //########## BACKGROUND ESTIMATION CLASS ###########
@@ -57,6 +65,9 @@ private:
    THStack* dataStack;
    TList* mcList;
    TList* dataList;
+
+   ROOT::Minuit2::Minuit2Minimizer*  minFit; 
+   ROOT::Math::IMultiGenFunction * funcFit;
    
 public:
    BackgroundEstimator(std::string lepton, std::string object, std::string inFileLoc, std::string outFileLoc = "");
@@ -70,8 +81,10 @@ public:
    void writeHistograms();
    
    //These are the functions that return chi^2
-   static double fitFunc(const double *par);
-   
+   double fitFunc(const double *par);
+   std::map<std::string, TH1D*> monteCarloHistograms;
+   TH1D* dataHistogram;
+
    //Changes the write location
    void setWriteLocation(std::string outFileLoc);
    //Changes the write location
@@ -84,10 +97,6 @@ public:
    std::pair<double, double> getParameters();
    // Returns the Chi2/NDF
    double getReducedChiSquared();
-   
-   //Must be static because the static fitFunc uses them.
-   //static std::map<std::string, TH1D*> monteCarloHistograms;
-   //static TH1D* dataHistogram;
    
 private:
    void initializeFileLocations(std::string inFileLoc, std::string outFileLoc);
@@ -103,3 +112,5 @@ private:
    // e.g. "AngleJ1J2", "MET", "j1Pt_Mjj"
    std::vector<std::string> getPlotNames();
 };
+
+#endif

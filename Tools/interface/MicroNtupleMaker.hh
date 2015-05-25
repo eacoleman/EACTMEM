@@ -13,8 +13,10 @@
 #include <utility>
 #include <sstream>
 #include <fstream>
+#include <unistd.h>
 
 // ROOT libraries
+#include "TEnv.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -25,6 +27,10 @@
 #include "TString.h"
 #include "TBenchmark.h"
 #include "TTreeIndex.h"
+#include "TFileInfo.h"
+#include "TFileCollection.h"
+#include "TSystemDirectory.h"
+#include "THashList.h"
 
 // This code libraries
 #include "TAMUWW/MEPATNtuple/interface/METree.hh"
@@ -73,8 +79,9 @@ createMicroNtuples(...)
 //RE auxiliary struct to make all the microntuples automatically
 class  MyStr{
 public:
-  MyStr(TString d, TString n, bool m, bool nw, bool nwg){
-    dirs.push_back(d);
+  MyStr(TString d, TString n, bool m, bool nw, bool nwg, bool addDir = true){
+    if(addDir)
+      dirs.push_back(d);
     name = n;
     mistag = m ;
     nonw = nw;
@@ -113,6 +120,8 @@ public:
                         bool doLight=false, bool doNonW= false, bool doUntag=false);
    void setEventNtuplePath(TString mnen) {mergeNewEventNtuple = mnen;}
    void setProcess(TString p) {currentProcess = p;}
+   void setAddDir(vector<TString> ad) {addDir = ad;}
+   void setXROOTD(bool uxrd) {useXROOTD = uxrd;}
    void setOutputPath(TString p) {outputPath = p;}
    void setMissingEventsFlag(bool f) {missingEventsFlag = f;}
    void setFillBDT(bool f) {fillBDT = f;}
@@ -129,8 +138,8 @@ public:
     int   c      =  ratio * w;
  
     cout << setw(3) << (int)(ratio*100) << "% [";
-    for (int x=0; x<c; x++) cout << "=";
-    for (unsigned int x=c; x<w; x++) cout << " ";
+    for (int ix=0; ix<c; ix++) cout << "=";
+    for (unsigned int ix=c; ix<w; ix++) cout << " ";
     cout << "]\r" << flush;
   }
   static inline void loadbar2(unsigned int x, unsigned int n, unsigned int w = 50) {
@@ -140,8 +149,8 @@ public:
     int   c      =  ratio * w;
  
     cout << setw(3) << (int)(ratio*100) << "% [";
-    for (int x=0; x<c; x++) cout << "=";
-    for (unsigned int x=c; x<w; x++) cout << " ";
+    for (int ix=0; ix<c; ix++) cout << "=";
+    for (unsigned int ix=c; ix<w; ix++) cout << " ";
     cout << "] (" << x << "/" << n << ")\r" << flush;
   }
 
@@ -160,10 +169,10 @@ static inline void loadBar(int x, int n, int r, int w)
     printf("%3d%% [", (int)(ratio*100) );
  
     // Show the load bar.
-    for (int x=0; x<c; x++)
+    for (int ix=0; ix<c; ix++)
        printf("=");
  
-    for (int x=c; x<w; x++)
+    for (int ix=c; ix<w; ix++)
        printf(" ");
  
     // ANSI Control codes to go back to the
@@ -177,6 +186,8 @@ private:
 
    TString outputPath;
    TString currentProcess;
+   vector<TString> addDir;
+   bool useXROOTD;
    unsigned nentries;
    bool missingEventsFlag;
    TString mergeNewEventNtuple;   

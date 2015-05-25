@@ -1,3 +1,6 @@
+#ifndef FITTER_HH
+#define FITTER_HH
+
 // This Program Takes input Monte Carlo histograms of several processes
 // and fits them to a data histogram. It only scales any two processes.
 // 
@@ -33,18 +36,6 @@
 #include "TAMUWW/Tools/interface/Plots.hh"
 #include "TAMUWW/SpecialTools/interface/DefaultValues.hh"
 #include "TAMUWW/SpecialTools/interface/FigureOfMerit.hh"
-
-namespace HistogramsFitter
-{
-   std::map<std::string, TH1D*> monteCarloHistograms;
-   TH1D* dataHistogram;
-   //names of the processes that will vary
-   static std::vector<std::string> fProcessNames;
-   static std::vector<double> fProcessXsec;
-   static std::vector<double> fProcessXsecError;
-   TH1D* signalHistogram;
-   TH1D* backgroundHistogram;
-}
 
 //##################################################
 //########## BACKGROUND ESTIMATION CLASS ###########
@@ -84,6 +75,9 @@ private:
    TList* dataList;
 
    DefaultValues DV;
+
+   ROOT::Minuit2::Minuit2Minimizer*  minFit; 
+   ROOT::Math::IMultiGenFunction * funcFit;
    
 public:
    Fitter(std::string lepton, std::string object, std::vector<std::string> fproc, std::string inFileLoc, std::string outFileLoc = "");
@@ -99,7 +93,15 @@ public:
    void addSigBkgHistograms(std::vector<std::string> sig);
    
    //These are the functions that return chi^2
-   static double fitFunc(const double *par);
+    double fitFunc(const double *par);
+   std::map<std::string, TH1D*> monteCarloHistograms;
+   TH1D* dataHistogram;
+   //names of the processes that will vary
+   std::vector<std::string> fProcessNames;
+   std::vector<double> fProcessXsec;
+   std::vector<double> fProcessXsecError;
+   TH1D* signalHistogram;
+   TH1D* backgroundHistogram;
    
    //Changes the write location
    void setWriteLocation(std::string outFileLoc);
@@ -138,3 +140,5 @@ private:
    // e.g. "AngleJ1J2", "MET", "j1Pt_Mjj"
    std::vector<std::string> getPlotNames();
 };
+
+#endif

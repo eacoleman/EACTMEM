@@ -25,12 +25,6 @@
 
 using namespace std;
 
-// Function to get chi2 and KS
-void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range);
-
-// Function to get luminosity
-void drawLumi(float intLum);
-
 // ##################################################
 // ################### PLOT CLASS ###################
 // ##################################################
@@ -455,6 +449,163 @@ TCanvas* FormattedPlot::getCanvas(vector<PhysicsProcess*> procs)
 }
 
 // ------------------------------------------------------------
+// Just like the getCanvas member function, but in the TDR style
+TCanvas* FormattedPlot::getCanvasTDR(vector<PhysicsProcess*> procs) {
+  Style* st = new Style();
+  st->setTDRStyle();
+
+  // These flags are to determine if this FormattedPlot contains data or Monte Carlo histograms
+  // With these flags, it is possible for the user to create canvases with only data or only Monte Carlo
+  bool areMCHists = false;
+  bool areDataHists = false;
+
+  // Format the colors
+  formatColors(procs);
+
+  // Do the scaling of the histos to lum or to data
+  scaleToData(procs,leptonCat);
+
+  // Do the grouping of the histos and return the list of histograms to be plotted.
+  // This takes care of putting all the processes with the same groupName together
+  // typically SingleTop Histos together, or diboson together etc.
+  std::vector<TH1*> groupedHistos = doGrouping(procs);
+  // Create the total Data and MC histos and Stacks
+  TString tempName = templateHisto->GetName();
+  TH1     * tMC = (TH1*) templateHisto->Clone(tempName+"_TotalMC");   tMC->Sumw2();
+  TH1     * tDa = (TH1*) templateHisto->Clone(tempName+"_TotalData"); tDa->Sumw2();
+  TH1     * signal = 0;
+  THStack * sMC = new THStack(tempName+"_stackMC",tempName+"_stackMC");
+  THStack * sDa = new THStack(tempName+"_stackData",tempName+"_stackData");
+
+  // Make the legend
+  TLegend * l = st->tdrLeg(0.35,0.64,0.55,0.89);
+  l->SetName(tempName+"_legend");
+  TLegend * lsig = st->tdrLeg(0.65,0.64,0.85,0.89);
+  lsig->SetName(tempName+"_signal_legend");
+
+  // Create the totalHistos and Stacks for the MC and Data processes
+  for (unsigned int h = 0 ; h < groupedHistos.size() ; h++) {
+    TString hname = groupedHistos[h]->GetTitle();
+    hname.ToUpper();
+
+    if (hname.Contains("DATA")) {
+      sDa->Add(groupedHistos[h],"hist");
+      tDa->Add(groupedHistos[h]);
+      lsig->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"lpe");
+
+      areDataHists = true;
+    }
+    else {
+      sMC->Add(groupedHistos[h],"hist");
+      tMC->Add(groupedHistos[h]);
+      if(hname.Contains("H(125)"))
+        lsig->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"f");
+      else
+        l->AddEntry(groupedHistos[h],groupedHistos[h]->GetTitle(),"f");
+
+      areMCHists = true;
+    }
+
+    // Check if this is the signal we want to overlay
+    if (overlaySignalName.Contains(groupedHistos[h]->GetTitle())){
+
+      ostringstream signalNameStream;
+      signalNameStream <<  groupedHistos[h]->GetName() << "_x" << overlaySignalFactor;
+      signal = (TH1*)groupedHistos[h]->Clone(TString(signalNameStream.str()));
+      signal->Scale(overlaySignalFactor);
+
+      //ostringstream legendTitleStream;
+      //legendTitleStream << signal->GetTitle() << "(x" << overlaySignalFactor << ")";
+      //string legendTitle = legendTitleStream.str();
+      //lsig->AddEntry(signal,legendTitle.c_str(),"lp0");
+      //Form("%s(x%.0d)",signal->GetTitle(),overlaySignalFactor);
+      lsig->AddEntry(signal,signal->GetTitle(),"lp0");
+      lsig->AddEntry((TObject*)0,Form("(x%.0f)",overlaySignalFactor),"");
+
+    } // if this is the signal histo
+      
+  }// for grouped histos
+   
+   // Create and Draw the Canvas
+  TH1D* frame_up = new TH1D();
+  frame_up->GetXaxis()->SetLimits(range.first, range.second);
+  frame_up->GetXaxis()->SetMoreLogLabels();
+  frame_up->GetXaxis()->SetNoExponent();
+  frame_up->GetYaxis()->SetRangeUser(0.0001,max(tMC->GetBinContent(tMC->GetMaximumBin()),
+                                     tDa->GetBinContent(tDa->GetMaximumBin()))*1.25);
+  frame_up->GetXaxis()->SetTitle(axisTitles[0].c_str());
+  frame_up->GetYaxis()->SetTitle(axisTitles[1].c_str());
+  TH1D* frame_down = new TH1D();
+  frame_down->GetXaxis()->SetLimits(range.first, range.second);
+  frame_down->GetXaxis()->SetMoreLogLabels();
+  frame_down->GetXaxis()->SetNoExponent();
+  frame_down->GetYaxis()->SetRangeUser(-0.50,0.50);
+  frame_down->GetXaxis()->SetTitle(axisTitles[0].c_str());
+  frame_down->GetYaxis()->SetTitle("#frac{Data - MC}{MC}");
+  if (signal != 0) {
+    signal->GetXaxis()->SetRangeUser(range.first, range.second);
+  }
+  TCanvas * can = st->tdrDiCanvas(templateHisto->GetTitle(),frame_up,frame_down,2,11,procs[0]->intLum[leptonCat]/1000);
+  can->cd(1);
+
+  TPad* padMain = (TPad*)can->GetPad(0);
+  padMain->SetLogx(logxy.first);
+  padMain->SetLogy(logxy.second);
+
+   //Define the graphics option
+  string gOption = stacked ? "": "nostack";
+  if (areDataHists)
+    st->tdrDraw(sMC,gOption);
+  else
+    st->tdrDraw(sMC,gOption+"colz");
+
+  if (areMCHists)
+    st->tdrDraw(sDa,gOption+"ep");
+  else
+    st->tdrDraw(sDa,gOption+"ep");
+  //Draw the MC error bars
+  if(tMC != 0)
+    st->tdrDraw(tMC,"E2",kNone,kGray+2,kNone,kGray+2,3005,kGray+2);
+
+  //Draw the signal overlay
+  if (signal != 0) {
+    signal->SetLineWidth(2);
+    st->tdrDraw(signal,"hist",kNone,kRed-4,kSolid,kRed-4,kNone,0);
+  }
+
+  // Add the KS and Chi2 info in the active canvas
+  //if (areMCHists && areDataHists)
+  //  drawKSandChi2Tests(tDa, tMC, range);
+
+  // Add the Legend
+  l->Draw("same");
+  lsig->Draw("same");
+
+  // canRatio: this is the pad with the Data/MC on it
+  TVirtualPad * canRatio = can->GetPad(2);
+  canRatio->SetGridx();
+  canRatio->SetGridy();
+  canRatio->cd();
+  TPad* padRatio = (TPad*)canRatio->GetPad(0);
+  padRatio->SetLogx(logxy.first);
+  st->tdrGrid(true);
+  
+  // Create the Ratio plot
+  TH1* hRatio = (TH1*) tDa->Clone(tempName+"_Ratio");
+  hRatio->SetTitle("#frac{Data - MC}{MC}");
+  hRatio->Add(tMC,-1);
+  hRatio->Divide(tMC);
+
+  // Format the ratio plot and Draw it
+  st->tdrDraw(hRatio,"");
+
+  delete st;
+
+  // Return the Canvas
+  return can;
+}
+
+// ------------------------------------------------------------
 // Find the first histo in groupedHistos that matches the title,
 // return a null pointer if it can't find one
 TH1 * FormattedPlot::findTitleInTH1Vector(TString title, vector<TH1*> groupedHistos) {
@@ -581,7 +732,7 @@ void FormattedPlot::formatStack(THStack * stack, double maxi)
 }
 
 //________________________________________________________________________________
-void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
+void FormattedPlot::drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
 
     // Skip all this if either histo has no integral
     if (totalData->Integral() == 0){
@@ -623,7 +774,7 @@ void drawKSandChi2Tests(TH1* totalData, TH1* all, pair<double, double> range){
 }
 
 //______________________________________________________________________________
-void drawLumi(float intLum)
+void FormattedPlot::drawLumi(float intLum)
 {                                
    TLatex latex; 
    latex.SetNDC();                                         

@@ -1,3 +1,5 @@
+#ifndef PLOTFILLER_HH
+#define PLOTFILLER_HH
 
 // Title:     PlotFiller.hh
 // Author:    Travis Lamb
@@ -99,3 +101,5 @@ private:
       return;
    }
 };
+
+#endif

@@ -1,3 +1,6 @@
+//CMSSW libraries
+#include "DataFormats/Math/interface/deltaPhi.h"
+
 //Our libraries
 #include "TAMUWW/MEPATNtuple/interface/EventNtuple.hh"
 #include "TAMUWW/SpecialTools/interface/Defs.hh"
@@ -257,9 +260,9 @@ void printSummary(TBenchmark* bench, int precision, Float_t &rt, Float_t &cp, bo
                (*doubleBranches[histName + "dREle"]) = ntuple->jLV[j].DRlj;
             }
 
-            double tempDPhi = ntuple->METLV[0].DeltaPhi(ntuple->jLV[j]);
+            double tempDPhi = reco::deltaPhi(ntuple->METLV[0].Phi(),ntuple->jLV[j].Phi());
             if ( fabs(tempDPhi) < minDPhiMetJet ) minDPhiMetJet = tempDPhi;
-            if((j+1) == 1 ){dPhiMetJet = ntuple->METLV[0].DeltaPhi(ntuple->jLV[j].Phi());}
+            if((j+1) == 1 ){dPhiMetJet = reco::deltaPhi(ntuple->METLV[0].Phi(),ntuple->jLV[0].Phi());}
 
             (*doubleBranches[histName + "discrCSV"]) = ntuple->jLV[j].jBtagDiscriminatorCSV;
 

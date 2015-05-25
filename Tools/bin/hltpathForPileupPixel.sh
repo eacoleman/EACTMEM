@@ -13,6 +13,10 @@ setenv PUJSON $CMSSW_BASE/src/TAMUWW/Selection/test/JSON/pileup_JSON_DCSONLY_190
 #pileup_JSON_DCSONLY_190389-196531_patch2.txt
 #pileup_JSON_DCSONLY_190389-196531_patch2.txt
 
+#setenv MBXSEC 69400
+#setenv MBXSEC 74258
+setenv MBXSEC 64542
+
 # Get the centrally produced pile-up JSON file:
 # https://twiki.cern.ch/twiki/bin/view/CMS/PileupJSONFileforData#2012_Pileup_JSON_Files
 # rfdir /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/PileUp/
@@ -32,7 +36,7 @@ echo "noTrig"
 #pileupCalc.py -i $JSON --inputLumiJSON=pileupJSON12_jt400.txt --calcMode=true --minBiasXsec=69400 --maxPileupBin=60 --numPileupBins=600 --pileupHistName=pileup_jt400 pileup12_jt400.root --verbose
 
 #pileupCalc.py -i $JSON --inputLumiJSON=$PUJSON --calcMode=true --minBiasXsec=69400 --maxPileupBin=60 --numPileupBins=600 --pileupHistName=pileup_noTrig pileup12_noTrig.root --verbose
-pileupCalc.py -i $JSON --inputLumiJSON=$PUJSON --calcMode=true --minBiasXsec=69400 --maxPileupBin=60 --numPileupBins=60 --pileupHistName=pileup_noTrig pileup12_noTrig_minBiasXsec69400_coarseBinning.root --verbose
+pileupCalc.py -i $JSON --inputLumiJSON=$PUJSON --calcMode=true --minBiasXsec=$MBXSEC --maxPileupBin=60 --numPileupBins=60 --pileupHistName=pileup_noTrig pileup12_noTrig_minBiasXsec${MBXSEC}_coarseBinning.root --verbose
 #pileupCalc.py -i $JSON --inputLumiJSON=$PUJSON --calcMode=true --minBiasXsec=69400 --maxPileupBin=200 --numPileupBins=2000 --pileupHistName=pileup_noTrig pileup12_noTrig_forDelphes.root --verbose
 
 #echo "Adding pileup12_*.root files together in pileup12_July14th_mb694pxlcorr.root"

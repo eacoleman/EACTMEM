@@ -22,6 +22,7 @@
 // ROOT libraries
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TEnv.h"
 #include "TBenchmark.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -64,7 +65,9 @@ namespace UserFunctions
    bool doMETPhiCorrection;
    bool doPUreweight;
    bool doCSVreweight;
+   TString doCSVsys;
    bool doTTbarreweight;
+   TString doTTbarsys;
    bool doFNAL;
    bool doMetPhiWeight;
    TH1D* metPhiWeight= 0;
@@ -640,15 +643,29 @@ double UserFunctions::weightFunc(EventNtuple* ntuple, const PhysicsProcess* proc
    }
 
    //CSV reweighting
-   if (doCSVreweight)
-      if (!auxName.Contains("DATA") && !auxName.Contains("QCD"))
-         weight *= csvweight->getWeight(ntuple);
+   if (doCSVreweight) {
+      if (!auxName.Contains("DATA") && !auxName.Contains("QCD")) {
+         if(doCSVsys.CompareTo("up",TString::kIgnoreCase)==0)
+            weight *= TMath::Power(csvweight->getWeight(ntuple),2);
+         else if(doCSVsys.CompareTo("down",TString::kIgnoreCase)==0)
+            weight *= 1.0;
+         else
+            weight *= csvweight->getWeight(ntuple);
+      }
+   }
    
    //TTbar reweighting
-   if (doTTbarreweight)
-      if(auxName.Contains("TTBAR"))
-         weight *= ttbarweight->getWeight(ntuple,proc);
+   if (doTTbarreweight) {
+      if(auxName.Contains("TTBAR")) {
+         if(doTTbarsys.CompareTo("up",TString::kIgnoreCase)==0)
+            weight *= TMath::Power(ttbarweight->getWeight(ntuple,proc),2);
+         else if(doTTbarsys.CompareTo("down",TString::kIgnoreCase)==0)
+            weight *= 1.0;
+         else
+            weight *= ttbarweight->getWeight(ntuple,proc);
          //weight *= ttbarWeight(ntuple,proc);
+      }
+   }
 
    // WJets weighting (specific to fix shape issues)
    if (WJweight && auxName.Contains("WJETS")){
@@ -797,6 +814,10 @@ void UserFunctions::processFunc(EventNtuple* ntuple, const PhysicsProcess* proc)
    cout << "Initializing PU Reweighting:" << endl;
    //string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig.root";
    string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig_minBiasXsec69400_coarseBinning_withAdditionalNPVHist.root";
+   //PU Up
+   //string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig_minBiasXsec74258_coarseBinning_withAdditionalNPVHist.root";
+   //PUDown
+   //string dataname = DefaultValues::getConfigPath()+"pileup12_noTrig_minBiasXsec64542_coarseBinning_withAdditionalNPVHist.root";
    string MCname   = DefaultValues::getConfigPath()+"TPUDistributions.root";
    if(auxName.Contains("QCD") && (auxName.Contains("ElFULL") || auxName.Contains("ElEnriched"))) {
       cout << "\t" << auxName << ": Using pileup_SingleEl from " << dataname << " and " << TString("TPUDist_")+proc->name << " from " << MCname << endl;
@@ -1142,7 +1163,9 @@ int main(int argc,char**argv) {
    UserFunctions::doMETPhiCorrection = cl.getValue<bool>      ("doMETPhi",        false);
    UserFunctions::doPUreweight       = cl.getValue<bool>      ("doPUrewt",         true);
    UserFunctions::doCSVreweight      = cl.getValue<bool>      ("doCSVrewt",        true);
+   UserFunctions::doCSVsys           = cl.getValue<TString>   ("doCSVsys",       "none");
    UserFunctions::doTTbarreweight    = cl.getValue<bool>      ("doTTbarrewt",      true);
+   UserFunctions::doTTbarsys         = cl.getValue<TString>   ("doTTbarsys",     "none");
    UserFunctions::doFNAL             = cl.getValue<bool>      ("doFNAL",          false);
    UserFunctions::doMetPhiWeight     = cl.getValue<bool>      ("doMetPhiWeight",  false);
    UserFunctions::outDir             = cl.getValue<string>    ("outDir",            ".");
@@ -1164,6 +1187,9 @@ int main(int argc,char**argv) {
 
    if (!cl.check()) return 0;
    cl.print();
+
+   // Trying to speed up the code
+   gEnv->SetValue("TFile.AsyncPrefetching", 1);
 
    // Check that the leptcat actually exists
    if (UserFunctions::leptonCat == DEFS::none) {
@@ -1264,7 +1290,7 @@ void writePlotsToFile(TString histoFileName, TString canvasFileName,
       for ( map<string,  Plot * >::iterator p2 = p->second.begin(); 
             p2 != p->second.end() ; p2++){
          //try {
-            TCanvas* can = ((FormattedPlot*) p2->second)->getCanvas(procs);
+            TCanvas* can = ((FormattedPlot*) p2->second)->getCanvasTDR(procs);
             TString canName = UserFunctions::outDir+"/"+can->GetName();
             canName += "_"+DEFS::getLeptonCatString(UserFunctions::leptonCat);
             cout << "\tSaving canvas " << canName << " ... ";
@@ -2028,7 +2054,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    //a->templateHisto = new TH1D(name + lepStr, name,100,-1.0,1.0);
    a->templateHisto = new TH1D(name + lepStr, name,
                                DEFS::getNBinsX(UserFunctions::jetBin),
-                               DEFS::getBinsX(UserFunctions::jetBin));
+                               &DEFS::getBinsX(UserFunctions::jetBin)[0]);
    a->axisTitles.push_back("MEBDT");
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(-0.6,0.6);
@@ -2043,7 +2069,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    //a->templateHisto = new TH1D(name + lepStr, name,100,-1.0,1.0);
    a->templateHisto = new TH1D(name + lepStr, name,
                                DEFS::getNBinsX(UserFunctions::jetBin),
-                               DEFS::getBinsX(UserFunctions::jetBin));
+                               &DEFS::getBinsX(UserFunctions::jetBin)[0]);
    a->axisTitles.push_back("KinBDT");
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(-0.6,0.6);
@@ -2058,7 +2084,7 @@ MapOfPlots getPlotsForLeptonCat(DEFS::LeptonCat leptonCat, bool norm_data){
    //a->templateHisto = new TH1D(name + lepStr, name,100,-1.0,1.0);
    a->templateHisto = new TH1D(name + lepStr, name,
                                DEFS::getNBinsX(UserFunctions::jetBin),
-                               DEFS::getBinsX(UserFunctions::jetBin));
+                               &DEFS::getBinsX(UserFunctions::jetBin)[0]);
    a->axisTitles.push_back("MVADiscriminator");
    a->axisTitles.push_back("Number of Events");
    a->range = make_pair(-0.6,0.6);

@@ -4,26 +4,8 @@
 // Written by Travis Lamb
 // Started on the 14th of July, 2012
 
-//C++ Libraries
-#include <iostream>
-#include <vector>
-#include <map>
-
 // TAMU Libraries
 #include "TAMUWW/Tools/interface/BackgroundEstimator.hh"
-#include "TAMUWW/Tools/interface/Plots.hh"
-
-// Root Libraries
-
-#include "TFile.h"
-#include "TMinuit.h"
-#include "Minuit2/Minuit2Minimizer.h"
-#include "Math/Functor.h"
-
-// Root Math Core headers
-#include <Math/SpecFuncMathCore.h>
-#include <Math/PdfFuncMathCore.h>
-#include <Math/ProbFuncMathCore.h>
 
 using namespace std;
 using namespace ROOT::Minuit2;
@@ -32,7 +14,8 @@ using namespace ROOT::Minuit2;
 //################ PUBLIC FUNCTIONS ################
 //##################################################
 
-BackgroundEstimator::BackgroundEstimator(string lepton, string object, string inFileLoc, string outFileLoc)
+BackgroundEstimator::BackgroundEstimator(string lepton, string object, string inFileLoc, string outFileLoc) :
+minFit(0), funcFit(0)
 {
    leptonName = lepton;
    objectName = object;
@@ -55,17 +38,17 @@ BackgroundEstimator::BackgroundEstimator(string lepton, string object, string in
 BackgroundEstimator::~BackgroundEstimator()
 {
    // Destroy montecarlo histograms
-   for(map<string, TH1D*>::iterator mapIt = Histograms::monteCarloHistograms.begin(); mapIt != Histograms::monteCarloHistograms.begin(); mapIt++)
+   for(map<string, TH1D*>::iterator mapIt = monteCarloHistograms.begin(); mapIt != monteCarloHistograms.begin(); mapIt++)
    {
       mapIt->second->~TH1D();
       delete mapIt->second;
    }
    
-   Histograms::monteCarloHistograms.clear();
+   monteCarloHistograms.clear();
    
    // Destroy data histogram
-   Histograms::dataHistogram->~TH1D();
-   delete Histograms::dataHistogram;
+   dataHistogram->~TH1D();
+   delete dataHistogram;
 }
 
 void BackgroundEstimator::readHistograms()
@@ -92,24 +75,24 @@ void BackgroundEstimator::readHistograms()
       if(name == "QCD")
       {
          if(leptonName == "electron")
-            Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_ElEnriched").c_str());
+            monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_ElEnriched").c_str());
          else
-            Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_MuEnriched").c_str());
+            monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name + "_MuEnriched").c_str());
       }
       else
-         Histograms::monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
+         monteCarloHistograms[name] = (TH1D*) mcList->FindObject((prefix + "_" + name).c_str());
       
       if (debug)
-         Histograms::monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
+         monteCarloHistograms[name]->Rebin(rebinSizeDEBUG);
    }
    
    // Data histogram
    if(leptonName == "electron")
-      Histograms::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (el)").c_str());
+      dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (el)").c_str());
    else
-      Histograms::dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (mu)").c_str());
+      dataHistogram = (TH1D*) dataList->FindObject((prefix + "_Data (mu)").c_str());
    if (debug)
-      Histograms::dataHistogram->Rebin(rebinSizeDEBUG);
+      dataHistogram->Rebin(rebinSizeDEBUG);
    
    rootInFile.Close();
 }
@@ -118,8 +101,8 @@ void BackgroundEstimator::fitHistograms()
 {
    const double* parameters = fitAndReturnParameters();
    
-   Histograms::monteCarloHistograms["QCD"]->Scale(parameters[0]);
-   Histograms::monteCarloHistograms["WJets"]->Scale(parameters[1]);
+   monteCarloHistograms["QCD"]->Scale(parameters[0]);
+   monteCarloHistograms["WJets"]->Scale(parameters[1]);
    
    mcStack->Modified();
 }
@@ -235,8 +218,8 @@ void BackgroundEstimator::initializeHistNames()
 
 const double* BackgroundEstimator::fitAndReturnParameters()
 {
-   ROOT::Math::Functor funcFit(&fitFunc,2);
-   Minuit2Minimizer* minFit = new Minuit2Minimizer(kMigrad);
+   funcFit = new ROOT::Math::Functor(this,&BackgroundEstimator::fitFunc,2);
+   minFit = new ROOT::Minuit2::Minuit2Minimizer( ROOT::Minuit2::kMigrad );
    
    // Tolerance and printouts
    minFit->SetPrintLevel(3);
@@ -248,7 +231,7 @@ const double* BackgroundEstimator::fitAndReturnParameters()
    minFit->SetValidError(true);
    
    // Fitting
-   minFit->SetFunction(funcFit);
+   minFit->SetFunction(*funcFit);
    
    double parameter[2] = {1.0, 1.0};
    double step[2] = {0.01, 0.01};
@@ -268,10 +251,10 @@ const double* BackgroundEstimator::fitAndReturnParameters()
    cout << endl << "##### FIT RESULTS #####" << endl;
    minFit->PrintResults();
    
-   reducedChiSquared = minFit->MinValue() / (Histograms::dataHistogram->GetNbinsX() - 2);
+   reducedChiSquared = minFit->MinValue() / (dataHistogram->GetNbinsX() - 2);
    
    cout << "Chi2\t  = " << minFit->MinValue() << endl;
-   cout << "NDF\t  = " << Histograms::dataHistogram->GetNbinsX() - 2 << endl;
+   cout << "NDF\t  = " << dataHistogram->GetNbinsX() - 2 << endl;
    cout << "Chi2/NDF\t  = " << reducedChiSquared << endl;
    
    scaleParameters.first = minFit->X()[0];
@@ -322,26 +305,26 @@ vector<string> BackgroundEstimator::getPlotNames()
 
 double BackgroundEstimator::fitFunc(const double *par)
 {
-   Histograms::dataHistogram->GetNbinsX();
+   dataHistogram->GetNbinsX();
    double chiSquare = 0;
    
-   for(int bin = 1; bin <= Histograms::dataHistogram->GetNbinsX(); bin++)
+   for(int bin = 1; bin <= dataHistogram->GetNbinsX(); bin++)
    {
       double mc = 0;
       double mcError2 = 0;
       double data = 0;
       double dataError2 = 0;
       
-      mc += par[0]*Histograms::monteCarloHistograms["QCD"]->GetBinContent(bin);
-      mc += par[1]*Histograms::monteCarloHistograms["WJets"]->GetBinContent(bin);
+      mc += par[0]*monteCarloHistograms["QCD"]->GetBinContent(bin);
+      mc += par[1]*monteCarloHistograms["WJets"]->GetBinContent(bin);
       
-      mcError2 += pow(par[0]*Histograms::monteCarloHistograms["QCD"]->GetBinError(bin), 2);
-      mcError2 += pow(par[1]*Histograms::monteCarloHistograms["WJets"]->GetBinError(bin), 2);
+      mcError2 += pow(par[0]*monteCarloHistograms["QCD"]->GetBinError(bin), 2);
+      mcError2 += pow(par[1]*monteCarloHistograms["WJets"]->GetBinError(bin), 2);
       
-      data += Histograms::dataHistogram->GetBinContent(bin);
-      dataError2 += pow(Histograms::dataHistogram->GetBinError(bin), 2);
+      data += dataHistogram->GetBinContent(bin);
+      dataError2 += pow(dataHistogram->GetBinError(bin), 2);
    
-      for(map<string, TH1D*>::iterator it = Histograms::monteCarloHistograms.begin(); it != Histograms::monteCarloHistograms.end(); it++)
+      for(map<string, TH1D*>::iterator it = monteCarloHistograms.begin(); it != monteCarloHistograms.end(); it++)
       {
          if( ((*it).first != "QCD") && ((*it).first != "WJets") )
          {

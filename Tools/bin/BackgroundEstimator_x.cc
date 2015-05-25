@@ -12,8 +12,8 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
    // DEBUG
    double sum = 0;
    cout << "Data Integral: ";
-   cout << Histograms::dataHistogram->Integral() << endl;
-   for(map<string, TH1D*>::iterator mapit = Histograms::monteCarloHistograms.begin(); mapit != Histograms::monteCarloHistograms.end(); mapit++)
+   cout << histFit.dataHistogram->Integral() << endl;
+   for(map<string, TH1D*>::iterator mapit = histFit.monteCarloHistograms.begin(); mapit != histFit.monteCarloHistograms.end(); mapit++)
    {
       cout << mapit->first << " Integral: ";
       cout << mapit->second->Integral() << endl;
@@ -27,8 +27,8 @@ int BackgroundEstimator_x(string lep, string cat, string inFileLoc, string outFi
    // DEBUG
    sum = 0;
    cout << "Data Integral: ";
-   cout << Histograms::dataHistogram->Integral() << endl;
-   for(map<string, TH1D*>::iterator mapit = Histograms::monteCarloHistograms.begin(); mapit != Histograms::monteCarloHistograms.end(); mapit++)
+   cout << histFit.dataHistogram->Integral() << endl;
+   for(map<string, TH1D*>::iterator mapit = histFit.monteCarloHistograms.begin(); mapit != histFit.monteCarloHistograms.end(); mapit++)
    {
       cout << mapit->first << " Integral: ";
       cout << mapit->second->Integral() << endl;

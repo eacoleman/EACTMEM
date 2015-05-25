@@ -108,6 +108,10 @@ void PlotFiller::run()
       METree * metree = 0;
       MicroNtuple * mnt = 0;
       TChain * c = processes[i]->chain;
+      //Trying to speed up processing
+      //c->SetCacheSize(10000000);
+      //c->AddBranchToCache("*");
+
       if (c->GetBranch("EvtTree")) {
          ntuple = new EventNtuple();
          c->SetBranchAddress("EvtTree",&ntuple);
@@ -179,7 +183,7 @@ void PlotFiller::run()
       for (unsigned int ev = 0 ; ev < numberOfEvents ; ev++)
       {
          //if debug, time the event
-         if(debug) {
+         if(debug && numberOfEvents<100) {
             event_benchmark->Start("event");
             func_benchmark->Start("GetEntry");
          }
@@ -191,7 +195,7 @@ void PlotFiller::run()
          // Get the given entry
          c->GetEntry(ev);
          
-         if(debug)
+         if(debug && numberOfEvents<100)
             func_benchmark->Stop("GetEntry");
 
          // Runs before any cuts are made
@@ -213,7 +217,7 @@ void PlotFiller::run()
          sumW += weight;
          numProcEvts++;
 
-         if(debug) {
+         if(debug && numberOfEvents<100) {
             event_benchmark->Stop("event");
             float rt = 0, ct = 0;
             cout << endl << "PlotFiller::event_benchmark" << endl;
