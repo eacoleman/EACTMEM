@@ -42,6 +42,8 @@ W3Jets                       |  both        |   1.000    +/- 1.000          |
 W4Jets                       |  both        |   1.000    +/- 1.000          |
 ZJets     					 |  both 		|	1.000    +/- 1.000 			|
 DYJets              		 |  both 		|	1.000    +/- 1.000 			|
+DYJets_JESUp           		 |  both 		|	1.0070493454 +/- 1.000		|   To account for 4 failed jobs when making the EventNtuple (99.3% successful)
+DYJets_JESDown         		 |  both 		|	1.0070493454 +/- 1.000		|   To account for 4 failed jobs when making the EventNtuple (99.3% successful)
 ZpJ     					 |  both 		|	1.000    +/- 1.000 			|
 QCD       					 |  both 		|	1.000    +/- 1.000 			|
 QCD_Pt20_MuEnriched     	 |  both 		|	1.000    +/- 1.000 			|
@@ -63,6 +65,8 @@ QCD_Pt170to250_EMEnriched	 |  both		|	1.000    +/- 0.00 			|
 QCD_Pt250to350_EMEnriched	 |  both		|	1.000    +/- 0.00 			|
 QCD_Pt350_EMEnriched     	 |  both		|	1.000    +/- 0.00 			|
 WW        					 |  both		|	1.000    +/- 1.000 			|
+WW_JESUp   					 |  both		|	0.9975124378 +/- 1.000      |   Scaled down for failed jobs (401 out of 402)
+WW_JESDown 					 |  both		|	0.9975124378 +/- 1.000      |   Scaled down for failed jobs (401 out of 402)
 WZ        					 |  both		|	1.000    +/- 1.000 			|
 ZZ        					 |  both		|	1.000    +/- 1.000 			|
 WH100						 |	both		|	1.000 	 +/- 1.000 			|
