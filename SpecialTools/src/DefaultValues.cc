@@ -360,12 +360,12 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    //procs.push_back(DEFS::PhysicsProcess::WJets_scaledown);
    //procs.push_back(DEFS::PhysicsProcess::WJets_JESUp);
    //procs.push_back(DEFS::PhysicsProcess::WJets_JESDown);
-   procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125);
    //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125_JESUp);
    //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToZZ_M125_JESDown);
-   //procs.push_back(DEFS::PhysicsProcess::WH_HToZZ_M125);
-   //procs.push_back(DEFS::PhysicsProcess::ZH_HToZZ_M125);
-   //procs.push_back(DEFS::PhysicsProcess::TTH_HToZZ_M125);
+   procs.push_back(DEFS::PhysicsProcess::WH_HToZZ_M125);
+   procs.push_back(DEFS::PhysicsProcess::ZH_HToZZ_M125);
+   procs.push_back(DEFS::PhysicsProcess::TTH_HToZZ_M125);
    procs.push_back(DEFS::PhysicsProcess::WH125_HToBB);
    //procs.push_back(DEFS::PhysicsProcess::WH_HToBB_M125_JESUp);
    //procs.push_back(DEFS::PhysicsProcess::WH_HToBB_M125_JESDown);
@@ -376,12 +376,12 @@ vector < PhysicsProcess * > DefaultValues::getProcessesHiggs(DEFS::JetBin jetBin
    procs.push_back(DEFS::PhysicsProcess::qqH125);
    //procs.push_back(DEFS::PhysicsProcess::qqH125_JESUp);
    //procs.push_back(DEFS::PhysicsProcess::qqH125_JESDown);
-   procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125);
+   //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125);
    //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125_JESUp);
    //procs.push_back(DEFS::PhysicsProcess::WH_ZH_TTH_HToWW_M125_JESDown);
-   //procs.push_back(DEFS::PhysicsProcess::WH_HToWW_M125);
-   //procs.push_back(DEFS::PhysicsProcess::ZH_HToWW_M125);
-   //procs.push_back(DEFS::PhysicsProcess::TTH_HToWW_M125);
+   procs.push_back(DEFS::PhysicsProcess::WH_HToWW_M125);
+   procs.push_back(DEFS::PhysicsProcess::ZH_HToWW_M125);
+   procs.push_back(DEFS::PhysicsProcess::TTH_HToWW_M125);
 
    if (include_data) {
       if(lepton==DEFS::electron || lepton==DEFS::both)
