@@ -8,6 +8,11 @@
 #define EVENTNTUPLE_HH
 
 //
+// CMSSW Includes
+//
+#include "DataFormats/Math/interface/deltaPhi.h"
+
+//
 // User Defined Includes
 //
 #include "TAMUWW/SpecialTools/interface/Defs.hh"

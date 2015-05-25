@@ -571,22 +571,17 @@ double EventNtuple::getDeltaPhiJetJet(){
 
 //______________________________________________________________________________
 double EventNtuple::getDeltaPhiMETJet(){
-  double dPhiMetJet = 999;
-  for(unsigned int j=0; j<jLV.size() && j<10; j++) {
-    if((j+1) == 1 ){dPhiMetJet = METLV[0].DeltaPhi(jLV[j].Phi());}
-  }
-
-  if(jLV.size() >= 2)
-    return dPhiMetJet;
+  if(jLV.size() >= 1)
+     return reco::deltaPhi(METLV[0].Phi(),jLV[0].Phi());
   else
-    return 0.0;
+    return 999.0;
 }
 
 //______________________________________________________________________________
 double EventNtuple::getMinDeltaPhiMETJet(){
   double minDPhiMetJet = 9e20;
   for(unsigned int j=0; j<jLV.size() && j<10; j++) {
-    double tempDPhi = METLV[0].DeltaPhi(jLV[j]);
+     double tempDPhi = reco::deltaPhi(METLV[0].Phi(),jLV[j].Phi());
     if ( fabs(tempDPhi) < minDPhiMetJet ) minDPhiMetJet = tempDPhi;
   }
   return minDPhiMetJet;
