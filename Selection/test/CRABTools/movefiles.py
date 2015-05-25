@@ -6,13 +6,10 @@ class Error(EnvironmentError):
     pass
 
 siteDBDict = {
-    'T1_US_FNAL_STORE' : ('cmssrm.fnal.gov'    , '//srm/managerv2?SFN=',         '/11/store/user/',   '/pnfs/cms/WAX/'),
-    'T1_US_FNAL_EOS'   : ('cmseos.fnal.gov'    , '/srm/v2/server?SFN=' ,  '/eos/uscms/store/user/',                 ''),
-    'T1_US_FNAL_RES'   : ('cmssrm.fnal.gov'    , '//srm/managerv2?SFN=',             '/resilient/',   '/pnfs/cms/WAX/'),
-#    'T1_US_FNAL_LPC'   : ('localhost/'         , ''                    ,                        '', os.environ['HOME']),
-	'T1_US_FNAL_LPC'   : (''                   , ''                    ,                        '', os.environ['HOME']),
-#    'T3_US_TAMU'       : ('hurr.tamu.edu'      , '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '')	
-    'T3_US_TAMU'       : ('srm.brazos.tamu.edu', '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '')
+#   alias: ('host', local_file_system, 'server', 'path_to_user_area','local_home','xrootd_path')    
+    'T1_US_FNAL_EOS'   : (False, 'cmseos.fnal.gov'    , '/srm/v2/server?SFN=' ,  '/eos/uscms/store/user/',                 '', 'root://cmsxrootd.fnal.gov//store/user/'),
+	'T1_US_FNAL_LPC'   : (True, ''                   , ''                    ,                        '', os.environ['HOME'], ''),
+    'T3_US_TAMU'       : (False, 'srm.brazos.tamu.edu', '/srm/v2/server?SFN=' , '/fdata/hepx/store/user/',                 '', '')
 }
 
 #program name available through the %(prog)s command
@@ -35,8 +32,11 @@ parser.add_argument("-diff","--diff",
                     action="store_true")
 parser.add_argument("-i","--ignore", help="Patterns of files/folders to ignore",
                     nargs='+', type=str, default=())
-parser.add_argument("-lcg", "--lcg", help="Tells the program to use the lcg-cp command rather than srmcp",
+protocol = parser.add_mutually_exclusive_group()
+protocol.add_argument("-lcg", "--lcg", help="Tells the program to use the lcg-cp command rather than srmcp",
                     action="store_true")
+protocol.add_argument("-x", "--xrdcp", help="Tells the program to use the xrdcp command rather than the lcg or srm protocols",
+                      action="store_true")
 parser.add_argument("-pnfs", "--pnfs", help="dCache location of original files", choices=["store","resilient"],
                     default="store")
 group.add_argument("-q", "--quiet", help="decrease output verbosity to minimal amount",
@@ -54,7 +54,7 @@ parser.add_argument("-eu", "--end_user", help="username of the person transferin
                     default=os.environ['USER'])
 group.add_argument("-v", "--verbose", help="Increase output verbosity of lcg-cp (-v) or srm (-debug) commands",
                     action="store_true")
-parser.add_argument('--version', action='version', version='%(prog)s 1.6')
+parser.add_argument('--version', action='version', version='%(prog)s 1.7')
 args = parser.parse_args()
 
 if(args.debug):
@@ -67,6 +67,7 @@ START_USER = args.start_user
 END_USER = args.end_user
 PNFS = args.pnfs
 LCG = args.lcg
+XRDCP = args.xrdcp
 SRT = args.sendreceive_timeout
 START = args.STARTserver
 STARTpath = args.STARTpath
@@ -74,6 +75,7 @@ END = args.ENDserver
 ENDpath = args.ENDpath
 DIFF = args.diff
 VERBOSE = args.verbose
+QUIET = args.quiet
 RECURSIVE = args.recursive
 IGNORE = tuple(args.ignore)
 DEPTH = 1
@@ -102,21 +104,32 @@ def init_commands():
             scommand = "lcg-cp -v -b -n "+STREAMS+" --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
         else:
             scommand = "lcg-cp -b -n "+STREAMS+" --sendreceive-timeout "+SRT+" --srm-timeout 60 -D srmv2"
+    elif (XRDCP):
+        if(VERBOSE):
+            scommand = "xrdcp -v"
+        elif(QUIET):
+            scommand = "xrdcp -s"
+        else:
+            scommand = "xrdcp"
     else:
         if(VERBOSE):
             scommand = "srmcp -2 -pushmode=true -debug=true"
         else:
             scommand = "srmcp -2 -pushmode=true"
         
-    if(START == 'T1_US_FNAL_LPC'):
-	scommand += " \"file:////"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+STARTpath+"/"
+    if(siteDBDict[START][0]):
+        scommand += " \"file:////"+siteDBDict[START][2]+siteDBDict[START][3]+"/"+STARTpath+"/"
+    elif(XRDCP):
+        scommand += " "+siteDBDict[START][5]+"/"+START_USER+"/"+STARTpath+"/"
     else:
-        scommand += " \"srm://"+siteDBDict[START][0]+":8443"+siteDBDict[START][1]+siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/"
+        scommand += " \"srm://"+siteDBDict[START][1]+":8443"+siteDBDict[START][2]+siteDBDict[START][3]+"/"+START_USER+"/"+STARTpath+"/"
 
-    if(END == 'T1_US_FNAL_LPC'):
-        ecommand = "\"file:////"+siteDBDict[END][0]+siteDBDict[END][1]+siteDBDict[END][2]+"/"+ENDpath+"/"
+    if(siteDBDict[END][0]):
+        ecommand = "\"file:////"+siteDBDict[END][1]+siteDBDict[END][2]+siteDBDict[END][3]+"/"+ENDpath+"/"
+    elif(XRDCP):
+        ecommand = siteDBDict[END][5]+"/"END_USER+"/"+ENDpath+"/"
     else:
-        ecommand = "\"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+siteDBDict[END][2]+"/"+END_USER+"/"+ENDpath+"/"
+        ecommand = "\"srm://"+siteDBDict[END][1]+":8443"+siteDBDict[END][2]+siteDBDict[END][3]+"/"+END_USER+"/"+ENDpath+"/"
 
     return (scommand,ecommand)
 
@@ -128,12 +141,12 @@ def make_directory(END, path):
             os.makedirs(path)
     else:
         if LCG :
-            cmd = "lcg-ls -v -b -D srmv2 \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+            cmd = "lcg-ls -v -b -D srmv2 \"srm://"+siteDBDict[END][1]+":8443"+siteDBDict[END][2]+path+"\""
         else:
-            cmd = "srmls -2 -pushmode=true \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+            cmd = "srmls -2 -pushmode=true \"srm://"+siteDBDict[END][1]+":8443"+siteDBDict[END][2]+path+"\""
         if os.system(cmd)!=0 :
             print "making directory "+path
-            cmd = "srmmkdir -2 -pushmode=true \"srm://"+siteDBDict[END][0]+":8443"+siteDBDict[END][1]+path+"\""
+            cmd = "srmmkdir -2 -pushmode=true \"srm://"+siteDBDict[END][1]+":8443"+siteDBDict[END][2]+path+"\""
             os.system(cmd)
 
 def get_list_of_files(SAMPLE, path):
@@ -143,7 +156,7 @@ def get_list_of_files(SAMPLE, path):
     else:
         #options = '-2 -pushmode=true "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
 		#proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-        options = 'lcg-ls "srm://'+siteDBDict[START][0]+':8443'+siteDBDict[START][1]+path+'"'
+        options = 'lcg-ls "srm://'+siteDBDict[START][1]+':8443'+siteDBDict[START][2]+path+'"'
         proc = subprocess.Popen(options, shell=True, stdout=subprocess.PIPE).communicate()[0]
 		# if output is too long
         #proc = subprocess.Popen(['srmls',options], stdout=tempfile.TemporaryFile()).communicate()[0]
@@ -153,7 +166,7 @@ def get_list_of_files(SAMPLE, path):
 	FILES_UNFILTERED = [x.replace("//", "/") for x in FILES_UNFILTERED]
 	#FILES_UNFILTERED.remove('Picked up _JAVA_OPTIONS: -Xmx1024m')
 	FILES_UNFILTERED = [x.split(' ',1)[1] if x.split(' ',1)[0].isdigit() else x for x in FILES_UNFILTERED]
-	FILES_UNFILTERED = [x.replace((siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/").replace("//","/"), "") for x in FILES_UNFILTERED]
+	FILES_UNFILTERED = [x.replace((siteDBDict[START][3]+"/"+START_USER+"/"+STARTpath+"/").replace("//","/"), "") for x in FILES_UNFILTERED]
 	FILES_UNFILTERED = [x for x in FILES_UNFILTERED if x != '']
     FILES = []
     #if(len(SAMPLE)==1):
@@ -206,7 +219,7 @@ def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
         else:
             #options = '-2 -pushmode=true "srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
             #proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-            options = '"srm://'+siteDBDict[END][0]+':8443'+siteDBDict[END][1]+dst+'"'
+            options = '"srm://'+siteDBDict[END][1]+':8443'+siteDBDict[END][2]+dst+'"'
             proc = subprocess.Popen(['lcg-ls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
             proc_splitlines = proc.splitlines()
             FILES2 = []
@@ -255,12 +268,12 @@ def copytree(src, dst, DEPTH, CURRENTdepth, symlinks=False, ignore=None):
 run_checks()
 
 TOPsrc = ""
-if(START == 'T1_US_FNAL_LPC'):
+if(siteDBDict[START][0]):
 	TOPsrc = STARTpath+"/"
 else:
-	TOPsrc = siteDBDict[START][3]+"/"+siteDBDict[START][2]+"/"+START_USER+"/"+STARTpath+"/"
+	TOPsrc = siteDBDict[START][4]+"/"+siteDBDict[START][3]+"/"+START_USER+"/"+STARTpath+"/"
 
-TOPdst = siteDBDict[END][3]+"/"+siteDBDict[END][2]+"/"+END_USER+"/"+ENDpath+"/"
+TOPdst = siteDBDict[END][4]+"/"+siteDBDict[END][3]+"/"+END_USER+"/"+ENDpath+"/"
 
 if args.debug:
 	print "DEPTH="+str(DEPTH)

@@ -3,14 +3,10 @@ import os, sys, getopt, argparse, fnmatch, errno, subprocess, tempfile
 from subprocess import call
 from glob import glob
 
-#output_file = "WJets_part2_JESUp_part"
-#output_file = "WJets_part2_JESDown_part"
-#output_file = "WJets_part1_JESUp_part"
-output_file = "WJets_part1_JESDown_part"
-#files = glob("/eos/uscms/store/user/aperloff/MatrixElement/PS_outfiles_20150202_MC12/WJets_part2_JESUp/PS_*.root")
-#files = glob("/eos/uscms/store/user/aperloff/MatrixElement/PS_outfiles_20150202_MC13/WJets_part2_JESDown/PS_*.root")
-#files = glob("/eos/uscms/store/user/aperloff/MatrixElement/PS_outfiles_20150202_MC12/WJets_part1_JESUp/PS_*.root")
-files = glob("/eos/uscms/store/user/aperloff/MatrixElement/PS_outfiles_20150202_MC13/WJets_part1_JESDown/PS_*.root")
+#output_file = "/eos/uscms/store/user/eusebi/Winter12to13ME8TeV/rootOutput/WJets_partialHadd/WJets_part"
+output_file = "/uscms_data/d2/aperloff/WJets_partialHadd/WJets_part"
+#files = glob("/eos/uscms/store/user/aperloff/MatrixElement/PS_outfiles_20130916_MC13/WJets_part1_nominal/PS_*.root")
+files = glob("/eos/uscms/store/user/eusebi/Winter12to13ME8TeV/rootOutput/WJets/WJets*.root")
 #print files
 #raw_input()
 
@@ -21,6 +17,6 @@ for i in range(1+file_split):
 	command = "nohup hadd " + output_file+str(i)+".root "
 	for f in current_set_of_files:
 		command += f+" "
-	command += " > out_"+str(i)+".txt &"
+	command += " > " + output_file+str(i)+".txt &"
 	#print command
 	os.system(command)
