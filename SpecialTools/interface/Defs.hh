@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 // This namespace holds the definitions of all physics processes 
 // author: Ricardo Eusebi, Feb 12, 2009
@@ -116,7 +117,7 @@ namespace DEFS{
   int getNBinsX(JetBin type);
 
   // A routine that returns an array of the bin bondaries for the 1-D BDT plots
-  Double_t* getBinsX(JetBin type);
+  std::vector<Double_t> getBinsX(JetBin type);
 
   // ---------------------------------------------------------------
   //            ALL ABOUT THE TAGGING CATEGORIES
