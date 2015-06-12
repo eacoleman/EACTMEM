@@ -9,7 +9,8 @@ class tChannelEventProb3Jet : public EventProb3Jet, public topEventProb
    public:
       tChannelEventProb3Jet(Integrator& integrator, 
                             const TransferFunction& bTF,
-                            const TransferFunction& lightTF);
+                            const TransferFunction& lightTF,
+                            double tMass);
 
    protected:
       tChannelEventProb3Jet(Integrator& integrator, 

@@ -33,14 +33,17 @@ extern "C"
 #endif
 
 // ------------------------------------------------------------------
-tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, const TransferFunction& btf, const TransferFunction& lighttf) :
+tChannelEventProb2Jet::tChannelEventProb2Jet(Integrator& integrator, 
+                                             const TransferFunction& btf, 
+                                             const TransferFunction& lighttf
+                                             double tMass) :
   EventProb2Jet(DEFS::EP::STopT, integrator, 3,4, btf), 
   m_lightTF(lighttf), //m_lightTF is stored locally (in the .hh)
   swapPartonMom(false), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
+  setTopMassAndWidth(tMass);
 }
 
 // // ------------------------------------------------------------------

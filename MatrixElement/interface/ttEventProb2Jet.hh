@@ -7,7 +7,8 @@
 class ttEventProb2Jet : public EventProb2Jet, public topEventProb
 {
    public:
-      ttEventProb2Jet(Integrator& integrator, const TransferFunction& tf);
+      ttEventProb2Jet(Integrator& integrator, const TransferFunction& tf,
+                      double tMass);
 
    protected:
 

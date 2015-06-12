@@ -7,8 +7,7 @@
 class WHEventProb2Jet : public EventProb2Jet, public HiggsEventProb
 {
    public:
-      WHEventProb2Jet(Integrator& integrator, const TransferFunction& tf,
-                      double higgsMass);
+      WHEventProb2Jet(Integrator& integrator, const TransferFunction& tf);
       virtual void setupIntegral();
       virtual void getPeaks(VecVecDouble& answer, const double bounds[]) const;
 

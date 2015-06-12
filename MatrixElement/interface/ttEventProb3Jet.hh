@@ -8,7 +8,7 @@ class ttEventProb3Jet : public EventProb3Jet, public topEventProb
 {
    public:
       ttEventProb3Jet(Integrator& integrator, const TransferFunction& bTF,
-                      const TransferFunction& lightTF);
+                      const TransferFunction& lightTF, double tMass);
       virtual unsigned getProbMax() const;
 
    protected:

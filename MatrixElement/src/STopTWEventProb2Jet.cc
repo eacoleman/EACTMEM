@@ -44,12 +44,16 @@ extern "C"
 #endif
 
 // ------------------------------------------------------------------
-STopTWEventProb2Jet::STopTWEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf) :
+STopTWEventProb2Jet::STopTWEventProb2Jet(Integrator& integrator, 
+                                         const TransferFunction& lighttf,
+                                         double tMass) :
   EventProb2Jet(DEFS::EP::STopTW, integrator, 6, 8, lighttf),
-  decTWjj(false),swapPartonMom(false), alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
+  decTWjj(false),
+  swapPartonMom(false),
+  alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
+  setTopMassAndWidth(tMass);
 }
 
 // ------------------------------------------------------------------

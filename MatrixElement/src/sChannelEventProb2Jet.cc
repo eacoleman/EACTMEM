@@ -31,13 +31,15 @@ extern "C"
 #endif
 
 // ------------------------------------------------------------------
-sChannelEventProb2Jet::sChannelEventProb2Jet(Integrator& integrator,const TransferFunction& tf) :
+sChannelEventProb2Jet::sChannelEventProb2Jet(Integrator& integrator,
+                                             const TransferFunction& tf,
+                                             double tMass) :
   EventProb2Jet(DEFS::EP::STopS, integrator, 3,4, tf), 
   swapPartonMom(false), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
   // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
+  setTopMassAndWidth(tMass);
 }
 
 // ------------------------------------------------------------------

@@ -10,7 +10,8 @@ class tChannelEventProb2Jet : public EventProb2Jet, public topEventProb
    public:
       tChannelEventProb2Jet(Integrator& integrator, 
                             const TransferFunction& btf,
-			    const TransferFunction& lighttf);
+			                      const TransferFunction& lighttf,
+                            double tMass);
 
       virtual void setDynamicBounds();
   //  virtual unsigned getProbMax() const;

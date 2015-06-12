@@ -8,7 +8,7 @@ class WHEventProb3Jet : public EventProb3Jet, public HiggsEventProb
 {
    public:
       WHEventProb3Jet(Integrator& integrator, const TransferFunction& bTF,
-                      const TransferFunction& lightTF, double higgsMass);
+                      const TransferFunction& lightTF);
 
 
       ~WHEventProb3Jet() {}

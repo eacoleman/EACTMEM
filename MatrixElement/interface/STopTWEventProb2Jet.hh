@@ -7,7 +7,9 @@
 class STopTWEventProb2Jet : public EventProb2Jet, public topEventProb
 {
    public:
-      STopTWEventProb2Jet(Integrator& integrator, const TransferFunction& lighttf);
+      STopTWEventProb2Jet(Integrator& integrator,
+                          const TransferFunction& lightt,
+                          double tMass);
   //virtual void setDynamicBounds();
 
    protected:

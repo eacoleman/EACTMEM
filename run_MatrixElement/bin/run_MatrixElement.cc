@@ -258,21 +258,6 @@ int main(int argc, char* argv[]){
   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
   eventProbs2jet.push_back(new ZLightEventProb2Jet(rootIntZLight, lightTF));
 
-
-  ///Top and QCD (reduced version doesn't compute ttbar and STopTW MEs, which take up the majority of computing time due to additional integration)
-//   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
-//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-  eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
-  eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
-//   eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt_reduceComputingTime, lightTF));
-//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
-//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
-//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
-  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
-
-
   ///HWW:
   eventProbs2jet.push_back(new HWWEventProb2Jet(rootInt, lightTF));
 
@@ -282,7 +267,25 @@ int main(int argc, char* argv[]){
   
   ///VBF H:
   //eventProbs2jet.push_back();
-  
+
+  ///QCD
+  eventProbs2jet.push_back(new QCDEventProb2Jet(rootInt, gluonTF));
+
+  ///Top (reduced version doesn't compute ttbar and STopTW MEs, which take up the majority of computing time due to additional integration)
+//   eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF));
+//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+
+//TODO: are we even interested in single top?
+//   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
+//   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
+
+//   eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt_reduceComputingTime, lightTF));
+//   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
+//   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
+//   eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
+
 
   // ***************************
   // **** Loading into MEJob
