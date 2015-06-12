@@ -19,12 +19,12 @@ extern "C"
 
 ttEventProb3Jet::ttEventProb3Jet(Integrator& integrator,
                                  const TransferFunction& bTF,
-                                 const TransferFunction& lightTF) :
+                                 const TransferFunction& lightTF,
+                                 double tMass) :
    EventProb3Jet(DEFS::EP::TTbar, integrator, 7, 2, bTF, lightTF)
 {
   // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
-
+  setTopMassAndWidth(tMass);
 }
 
 

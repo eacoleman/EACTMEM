@@ -35,13 +35,12 @@ using std::endl;
 
 // ------------------------------------------------------------------
 WHEventProb2Jet::WHEventProb2Jet(Integrator& integrator,
-                                 const TransferFunction& tf,
-                                 double higgsMass) :
+                                 const TransferFunction& tf) :
   EventProb2Jet(DEFS::EP::WH, integrator, 3, 4, tf), 
   swapPartonMom(false), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 { 
-  setHiggsMassAndWidth(higgsMass);
+  setHiggsMassAndWidth(MEConstants::hMass);
 }
 
 // ------------------------------------------------------------------

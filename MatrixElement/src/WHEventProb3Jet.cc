@@ -35,14 +35,13 @@ extern "C" {
 // ------------------------------------------------------------------
 WHEventProb3Jet::WHEventProb3Jet(Integrator& integrator,
                                  const TransferFunction& bTF,
-                                 const TransferFunction& lightTF,
-				 double higgsMass) :
+                                 const TransferFunction& lightTF) :
 
   // base class with 7 variables and up to 4 permutations 
-  EventProb3Jet(DEFS::EP::WH, integrator, 7, 4, bTF, lightTF){
-
+  EventProb3Jet(DEFS::EP::WH, integrator, 7, 4, bTF, lightTF)
+{
   // set the Higgs mass and width
-  setHiggsMassAndWidth(higgsMass);
+  setHiggsMassAndWidth(MEConstants::higgsMass);
 
 #ifdef MADGRAPH_TEST
   std::cout<<" WARNING, WHEventProb3Jet compiled with MADGRAPH_TEST flag!!"<<std::endl;

@@ -24,6 +24,7 @@ namespace MEConstants
    const double zMass = 91.118;
    const double zWidth = 2.441;
    const double topMass = 172.5;
+   const double hMass = 125.09;
 
    // Charged Electroweak couplings
    const double sin2w = 0.2312;

@@ -36,14 +36,13 @@ extern "C"
 
 // ------------------------------------------------------------------
 ttEventProb2Jet::ttEventProb2Jet(Integrator& integrator,
-                                 const TransferFunction& tf) :
+                                 const TransferFunction& tf,
+                                 double tMass) :
   EventProb2Jet(DEFS::EP::TTbar, integrator, 6, 2, tf), 
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
 {
-
   // Set the top mass and width
-  setTopMassAndWidth(MEConstants::topMass);
-
+  setTopMassAndWidth(tMass);
 }
 
 // ------------------------------------------------------------------
