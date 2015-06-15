@@ -234,7 +234,7 @@ void MEJob::m_setHiggsMass(double mass){
 
   }//for map
 
-}//m_setTopMass
+}//m_setHiggsMass
 
 
 //-----------------------------------------------------------------------------
@@ -321,8 +321,7 @@ void MEJob::m_doEvent(PartonColl& partons){
       int* failPtr = &fail;
       int* nevalPtr = &neval;
 
-      if (m_useDynamicBounds)
-	sm_eventProb->setDynamicBounds();
+      if (m_useDynamicBounds) sm_eventProb->setDynamicBounds();
 	
       sm_eventProb->prepareForIntegral();
 

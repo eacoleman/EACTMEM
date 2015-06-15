@@ -73,7 +73,7 @@ void STopTWEventProb2Jet::setTopMassAndWidth(double mTop) {
 
 void STopTWEventProb2Jet::changeVars(const vector<double>& parameters)
 {
-   using AuxFunctions::Math::square;
+  using AuxFunctions::Math::square;
 
   TLorentzVector& jet1 = getPartonColl()->getJet(0);
   TLorentzVector& jet2 = getPartonColl()->getJet(1);
