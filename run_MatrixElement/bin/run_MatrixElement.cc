@@ -36,6 +36,7 @@
 #include "TAMUWW/MatrixElement/interface/WLLEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WbbEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WLbEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/ZZEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/ZLightEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/QCDEventProb2Jet.hh"
 #include "TAMUWW/MatrixElement/interface/WHEventProb3Jet.hh"
@@ -243,32 +244,44 @@ int main(int argc, char* argv[]){
 //   eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
 //   eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
 
-  //Diboson:
-  eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
-  eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
-  eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));
+  // Drell-Yan backgrounds, Z+jets backgrounds:
+  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootIntZLight, lightTF));
 
-
-  ///W or Z backgrounds:
+  // W+jets backgrounds:
   eventProbs2jet.push_back(new WLgEventProb2Jet(rootInt, lightTF, gluonTF));
   eventProbs2jet.push_back(new WLgSubleadingEventProb2Jet(rootInt, lightTF, gluonTF));
   eventProbs2jet.push_back(new WggEventProb2Jet(rootInt, gluonTF));
   eventProbs2jet.push_back(new WLLEventProb2Jet(rootInt, lightTF));
   eventProbs2jet.push_back(new WLbEventProb2Jet(rootInt, lightTF, bTF));
   eventProbs2jet.push_back(new WbbEventProb2Jet(rootInt, bTF));
-  eventProbs2jet.push_back(new ZLightEventProb2Jet(rootIntZLight, lightTF));
 
-  ///Top 
-  for(int massIter=0; massIter<10; massIter++) {
-    eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF, 100 + massIter*10));
+  // WW backgrounds:
+  eventProbs2jet.push_back(new WWEventProb2Jet(rootInt, lightTF));
+
+  // WZ backgrounds: 
+  eventProbs2jet.push_back(new WZEventProb2Jet(rootInt, lightTF));
+  eventProbs2jet.push_back(new WZtobbEventProb2Jet(rootInt, bTF));
+
+  // ZZ backgrounds: TODO - make sure this actually works
+  eventProbs2jet.push_back(new ZZEventProb2Jet(rootInt, lightTF));
+
+  /// Top signal and backgrounds
+  for(double massIter=0.; massIter<10.; massIter++) {
+    double massVal = 100 + massIter * 10;
+
+    // single top backgrounds
+    eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF,
+                                                       massVal));
+    eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF, massVal));
+
+    // ?????????
+    eventProbs2jet.push_back(new ttEventProb2Jet(divonneInt, bTF, massVal));
     eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
     eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
     eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
   }
 
 //TODO: implement single top with varied mass?
-//   eventProbs2jet.push_back(new tChannelEventProb2Jet(rootInt, bTF, lightTF));
-//   eventProbs2jet.push_back(new sChannelEventProb2Jet(rootInt, bTF));
 
 //   eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt_reduceComputingTime, lightTF));
 //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);

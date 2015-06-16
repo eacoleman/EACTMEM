@@ -1,10 +1,10 @@
-// Author: Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
-// Created : 10/15/2010
+// Author: Evan Coleman, Ricardo Eusebi, Ilya Osipenkov Texas A&M University.
+// Created : 6/16/2015
 // The diagrams can be compared with madgraph using the processes 
-// u u~ -> e+ ve u~ d (u~ u -> e+ ve u~ d), u u~ -> e- ve~ u d~ (u~ u -> e- ve~ u d~)
+// p p > Z Z, Z > l+ l-, Z > j j            (p=q=d u s c b d~ u~ s~ c~ b~)
 
 
-#include "TAMUWW/MatrixElement/interface/WWEventProb2Jet.hh"
+#include "TAMUWW/MatrixElement/interface/ZZEventProb2Jet.hh"
 
 
 #include "TAMUWW/MatrixElement/interface/DHELASWrapper.hh"
@@ -36,8 +36,8 @@ using std::endl;
 // #endif
 
 // ------------------------------------------------------------------
-WWEventProb2Jet::WWEventProb2Jet(Integrator& integrator,
-                                   const TransferFunction& tf) :
+ZZEventProb2Jet:ZZEventProb2Jet(Integrator& integrator,
+                                const TransferFunction& tf) :
   EventProb2Jet(DEFS::EP::WW, integrator, 3, 4, tf), 
   swapPartonMom(false),
   alphas_process(0.13) //Take the alphas_process value from MadGraph or use MEConstants::alphas
@@ -49,7 +49,7 @@ WWEventProb2Jet::WWEventProb2Jet(Integrator& integrator,
 
 
 // ------------------------------------------------------------------
-void WWEventProb2Jet::changeVars(const vector<double>& parameters)
+void ZZEventProb2Jet::changeVars(const vector<double>& parameters)
 {
    TLorentzVector& jet1 = getPartonColl()->getJet(0);
    TLorentzVector& jet2 = getPartonColl()->getJet(1);
@@ -63,7 +63,7 @@ void WWEventProb2Jet::changeVars(const vector<double>& parameters)
 }
 
 // ------------------------------------------------------------------
-double WWEventProb2Jet::matrixElement() const
+double ZZEventProb2Jet::matrixElement() const
 {
    typedef SimpleArray<DHELAS::HelArray, 1> Array1;
    typedef SimpleArray<DHELAS::HelArray, 2> Array2;
@@ -81,7 +81,7 @@ double WWEventProb2Jet::matrixElement() const
    double answer = 0;
    //cout << "Setting Coefficients" << endl;
    doublecomplex factorGWF[2]   = {doublecomplex(MEConstants::gwf, 0),
-				   doublecomplex(0, 0)};
+           doublecomplex(0, 0)};
 
    enum {vecSize = 4};
    typedef SimpleArray<doublecomplex, vecSize> OutputType;
@@ -100,40 +100,37 @@ double WWEventProb2Jet::matrixElement() const
       Array2 vec1;
       Array2 vec2;
       if ( !swapPartonMom ) {
-	      vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
       } else {
-	      vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
       }
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
       Array1 vec5 = DHELAS::ixxxxx<1>(partons->getJet(0), 0, -1);
       Array1 vec6 = DHELAS::oxxxxx<1>(partons->getJet(1), 0, 1);
-
+ 
       Array1 vec7 = DHELAS::jioxxx(vec3, vec4, factorGWF, wMass, wWidth);
       Array2 vec8 = DHELAS::fvixxx(vec1, vec7, factorGWF, 0, 0);
       Array4 vec9 = DHELAS::jioxxx(vec8, vec2, factorGWF, wMass, wWidth);
 
       OutputType output1 = DHELAS::iovxxx(vec5, vec6, vec9, factorGWF);
 
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
- 	doublecomplex temp1 = output1[i];
-	//	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
+      for (unsigned i = 0; i < vecSize; ++i) {
+        doublecomplex temp1 = output1[i];
+     // doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-	doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
-	//doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
-	doublecomplex m2 =0;
+        doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+     // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+        doublecomplex m2 =0;
 
-	answer+= (m1+m2).real();
-	//	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+        answer+= (m1+m2).real();
+     // cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
       }
-      //setJetTypes(+1);
 
+   // setJetTypes(+1);
 
-   }
-   else
-   {
+   } else {
       // Calculate the lepton only once per integration
       static Array1 vec3; //wavefunction
       static double lepE = 0;
@@ -146,10 +143,10 @@ double WWEventProb2Jet::matrixElement() const
       Array2 vec1;
       Array2 vec2;
       if ( !swapPartonMom ) {
-	vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
       } else {
-	vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
       }
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
@@ -163,18 +160,18 @@ double WWEventProb2Jet::matrixElement() const
       OutputType output1 = DHELAS::iovxxx(vec6, vec5, vec9, factorGWF);
       
       for (unsigned i = 0; i < vecSize; ++i) {
- 	      doublecomplex temp1 = output1[i];
-	   //	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
+        doublecomplex temp1 = output1[i];
+     // doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-	      doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
-	   // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
-	      doublecomplex m2 = 0;
+        doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+     // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+        doublecomplex m2 =0;
 
-	      answer+= (m1+m2).real();
-	   //	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+        answer+= (m1+m2).real();
+     // cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
       }
-   
-   // setJetTypes(-1);
+  
+  // setJetTypes(-1);
 
    }
 
@@ -220,7 +217,7 @@ double WWEventProb2Jet::matrixElement() const
 
 }
 
-void WWEventProb2Jet::setPartonTypes() const
+void ZZEventProb2Jet::setPartonTypes() const
 {
 
   //cout << "Setting Parton Types, Lepton Charge =" << getPartonColl()->getLepCharge() << endl;
@@ -233,7 +230,7 @@ void WWEventProb2Jet::setPartonTypes() const
   }
 }
 
-void WWEventProb2Jet::setJetTypes()
+void ZZEventProb2Jet::setJetTypes()
 {
 
   if ( getPartonColl()->getLepCharge() > 0 ) {
@@ -252,7 +249,7 @@ void WWEventProb2Jet::setJetTypes()
 
 }
 
-void WWEventProb2Jet::getScale(double& scale1, double& scale2) const
+void ZZEventProb2Jet::getScale(double& scale1, double& scale2) const
 {
    double scale = getPartonColl()->sHat();
    if (scale < 0)
@@ -261,7 +258,7 @@ void WWEventProb2Jet::getScale(double& scale1, double& scale2) const
       scale1 = scale2 = std::sqrt(scale);
 }
 
-bool WWEventProb2Jet::onSwitch()
+bool ZZEventProb2Jet::onSwitch()
 {
   
   switch (getLoop()) {
