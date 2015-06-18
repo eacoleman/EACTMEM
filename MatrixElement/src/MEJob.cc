@@ -342,12 +342,12 @@ void MEJob::m_doEvent(PartonColl& partons){
 
       //save the error of the integration
       if (!(error[0] >= 0) && !(error[0] >= 0))
-	error[0] = 0;
+	      error[0] = 0;
 
-      if (returnVal[0])
-	probstat.tRelerr[counter] = error[0] / returnVal[0];
+      if (returnVal[0]) 
+        probstat.tRelerr[counter] = error[0] / returnVal[0];
       else
-	probstat.tRelerr[counter] = 0;
+	      probstat.tRelerr[counter] = 0;
 
       // save the fail, Prob and MaxProbs
       probstat.tIfail  [counter] = *failPtr;

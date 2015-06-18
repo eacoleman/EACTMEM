@@ -81,7 +81,7 @@ double WWEventProb2Jet::matrixElement() const
    double answer = 0;
    //cout << "Setting Coefficients" << endl;
    doublecomplex factorGWF[2]   = {doublecomplex(MEConstants::gwf, 0),
-				   doublecomplex(0, 0)};
+           doublecomplex(0, 0)};
 
    enum {vecSize = 4};
    typedef SimpleArray<doublecomplex, vecSize> OutputType;
@@ -100,10 +100,10 @@ double WWEventProb2Jet::matrixElement() const
       Array2 vec1;
       Array2 vec2;
       if ( !swapPartonMom ) {
-	      vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
       } else {
-	      vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
       }
       Array1 vec4 = DHELAS::oxxxxx<1>(partons->getNeutrino(), 0, 1);
@@ -116,19 +116,19 @@ double WWEventProb2Jet::matrixElement() const
 
       OutputType output1 = DHELAS::iovxxx(vec5, vec6, vec9, factorGWF);
 
-      for (unsigned i = 0; i < vecSize; ++i)
-      {
- 	doublecomplex temp1 = output1[i];
-	//	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
-
-	doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
-	//doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
-	doublecomplex m2 =0;
-
-	answer+= (m1+m2).real();
-	//	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+      for (unsigned i = 0; i < vecSize; ++i) {
+       doublecomplex temp1 = output1[i];
+    // doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
+      
+       doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+    // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+       doublecomplex m2 =0;
+      
+       answer+= (m1+m2).real();
+    // cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
       }
-      //setJetTypes(+1);
+
+   // setJetTypes(+1);
 
 
    }
@@ -146,10 +146,10 @@ double WWEventProb2Jet::matrixElement() const
       Array2 vec1;
       Array2 vec2;
       if ( !swapPartonMom ) {
-	vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton1(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton2(), 0, -1);
       } else {
-	vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
+        vec1 = DHELAS::ixxxxx<2>(partons->getParton2(), 0, +1);
         vec2 = DHELAS::oxxxxx<2>(partons->getParton1(), 0, -1);
       }
       Array1 vec4 = DHELAS::ixxxxx<1>(partons->getNeutrino(), 0, -1);
@@ -163,15 +163,15 @@ double WWEventProb2Jet::matrixElement() const
       OutputType output1 = DHELAS::iovxxx(vec6, vec5, vec9, factorGWF);
       
       for (unsigned i = 0; i < vecSize; ++i) {
- 	      doublecomplex temp1 = output1[i];
-	   //	doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
+        doublecomplex temp1 = output1[i];
+     // doublecomplex temp2 =  output1[i] + output3[i] + output5[i] + output7[i] + output8[i];
 
-	      doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
-	   // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
-	      doublecomplex m2 = 0;
+        doublecomplex m1 = ( temp1*9.0 )*std::conj(temp1)/1.0;
+     // doublecomplex m2 = ( -temp1*2.0 +temp2*16.0)*std::conj(temp2)/3.0;
+        doublecomplex m2 = 0;
 
-	      answer+= (m1+m2).real();
-	   //	cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
+        answer+= (m1+m2).real();
+     // cout << "current helicity 'amplitude'" << m1.real() << " + " << m1.imag() << "i" << endl;
       }
    
    // setJetTypes(-1);

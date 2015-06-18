@@ -281,8 +281,6 @@ int main(int argc, char* argv[]){
     eventProbs2jet.back()->setBounds(5, 0, TMath::Pi());
   }
 
-//TODO: implement single top with varied mass?
-
 //   eventProbs2jet.push_back(new STopTWEventProb2Jet(divonneInt_reduceComputingTime, lightTF));
 //   eventProbs2jet.back()->setBounds(3, 0, MEConstants::beamEnergy);
 //   eventProbs2jet.back()->setBounds(4, 0, TMath::TwoPi());
